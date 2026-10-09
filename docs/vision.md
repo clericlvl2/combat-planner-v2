@@ -402,10 +402,9 @@ The accepted prototypes define:
 
 ### Process
 
-- Agents build HTML prototypes with the Mantine theme from `packages/ui/theme.ts`.
-- The owner reviews in a browser and corrects in words.
-- The accepted prototype is committed under `design/` and is the source of truth for
-  implementation.
+- Agents build components and screens as Storybook stories in `packages/ui`.
+- The owner reviews in Storybook and corrects in words.
+- Accepted stories are the source of truth for implementation.
 - Coverage: every page, on phone and desktop, in every state, plus every player-view
   screen.
 
@@ -426,18 +425,35 @@ The accepted prototypes define:
 - Vite+ (`vp`, ^1.1): one binary and one `vite.config.ts` for dev server, build,
   lint, format, type check, tests, library packaging and monorepo tasks.
 - TypeScript.
-- Mantine with `postcss-preset-mantine`.
+- Mantine 9: `@mantine/core`, `@mantine/hooks`, `postcss-preset-mantine`,
+  `postcss-simple-vars`. Styles are imported from `styles.layer.css` so project CSS
+  always wins.
 - CSS Modules.
 - React Router, data mode.
 - TanStack Query.
 - dnd-kit: `@dnd-kit/core` and `@dnd-kit/sortable`.
 - react-i18next. The player view sets the language from the combat document.
+- `@tabler/icons-react`.
+- `@fontsource/*` for self-hosted fonts.
 - `react-qr-code`.
 - `ulid`.
 
+### Storybook
+
+- Storybook 10 with `@storybook/react-vite`.
+- Addons: `@storybook/addon-docs`, `@storybook/addon-themes`,
+  `@storybook/addon-vitest`, `@storybook/addon-mcp`,
+  `storybook-addon-remix-react-router`.
+- Stories use CSF factories.
+- Screen stories get data through a fake API client in context, not through
+  network mocks.
+- Stories run as tests through `vp test`. Screenshot tests run in a separate Vitest
+  project over composed stories, with baselines committed and generated in a pinned
+  Playwright Docker image.
+
 ### Server
 
-- Node.
+- Node 24.
 - Hono with `@hono/zod-validator`.
 - Zod.
 - Drizzle with `better-sqlite3`.
@@ -454,7 +470,7 @@ The accepted prototypes define:
 - `apps/server`.
 - `packages/domain`: pure functions, schemas, actions.
 - `packages/api`: Hono sub-apps and the exported `AppType`.
-- `packages/ui`: theme.
+- `packages/ui`: theme, components, Storybook.
 - `vp run` builds packages before the apps that depend on them, with caching.
 - `packages/*` are packaged with `vp pack`.
 
@@ -465,10 +481,12 @@ The accepted prototypes define:
 
 ### Tests
 
-- Vitest through `vp test` for domain and server.
-- Playwright for end-to-end.
-- The domain tests in `packages/domain` are the behavior specification. Where this
-  document and the tests disagree, the tests win.
+- Domain and server: Vitest through `vp test`. The domain tests in
+  `packages/domain` are the behavior specification. Where this document and the
+  tests disagree, the tests win.
+- Components and screens: Storybook stories only. A story's play function is its
+  interaction test; its screenshot is its visual baseline.
+- End to end: Playwright against the real server and database.
 
 ### Hosting
 
