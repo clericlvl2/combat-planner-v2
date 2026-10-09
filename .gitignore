@@ -11,3 +11,4 @@ test-results/
 *.db-*
 data/
 .DS_Store
+docs/design/inventory/*.png
