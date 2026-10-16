@@ -71,9 +71,9 @@
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | rework 1 → `fix-2.3-organisms-i`, guard `.claude/artifacts/guard/2.3-organisms-i.md` (P1 PlayerRow shows enemy fields by data, not by role) |
 | fix-2.3-organisms-i | merged 8514075..21703a1 (gate `.claude/run/fix-2.3-organisms-i/` green), guard-bee running | MessageScreen, PlayerRow |
-| 2.3-UnitRow | reported `.claude/artifacts/reports/2.3-UnitRow.md`, rebased on 21703a1, gate running | UnitRow |
+| 2.3-UnitRow | merged f22b0fa..b59bc66 (gate `.claude/run/2.3-UnitRow/` green), guard-bee running | UnitRow |
 | 2.3-UnitForm | running worker-bee 2026-10-17T06:40+03:00 | UnitForm |
-| 2.3-NumpadSheet | todo | NumpadSheet |
+| 2.3-NumpadSheet | todo, unblocked (UnitRow merged), next builder slot | NumpadSheet |
 | fix-2.3 | todo | |
 | 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
