@@ -71,7 +71,7 @@
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | guarded after rework 1 (`fix-2.3-organisms-i` guarded), guard `.claude/artifacts/guard/2.3-organisms-i.md` |
 | fix-2.3-organisms-i | guarded `.claude/artifacts/guard/fix-2.3-organisms-i.md` (P3 ×1 report hashes, no action) | MessageScreen, PlayerRow |
-| 2.3-UnitRow | merged f22b0fa..b59bc66 (gate `.claude/run/2.3-UnitRow/` green), guard-bee running | UnitRow |
+| 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | reported `.claude/artifacts/reports/2.3-UnitForm.md`, gate running | UnitForm |
 | 2.3-NumpadSheet | running worker-bee 2026-10-17T07:35+03:00 | NumpadSheet |
 | fix-2.3 | todo | |
@@ -477,6 +477,17 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-UnitRow → `fix-2.3`: `[data-flash]` не красит рамку у мёртвых и
+  disabled рядов (UnitRow.module.css:23, порядок страницы active > off >
+  flash); `aria-label` «Roll initiative» на ролевом блоке
+  (UnitRow.tsx:172-184); InitiativePopover исключает свой триггер из
+  закрытия по внешнему pointerdown, как Menu (InitiativePopover.tsx:57-63);
+  колбэки UnitRow опциональны при `readOnly` (UnitRow.tsx:52-68); пункт
+  NoteField одного экземпляра (уже в `fix-2.3` для PlayerRow) покрывает и
+  UnitRow (UnitRow.tsx:223-225, :285). P3 о гейте до финального rebase:
+  `merge.sh` после rebase сравнивает код и отказывает с «CODE DIFF AFTER
+  REBASE, re-gate», так что неотгейтованный код не сливается.
 
 - fix-2.3-organisms-i, вне scope, гипотеза → бриф `fix-2.4` на решение
   оркестратора: `project.ts:35-38` отдаёт HP, защиты и заметку захватившему
