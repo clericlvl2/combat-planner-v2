@@ -3,7 +3,6 @@ import type {
   CombatId,
   PlayerCombat,
   PlayerId,
-  Preset,
   PresetId,
   Tag,
   TagId,
@@ -43,8 +42,6 @@ import type {
   DocumentListener,
   EndListener,
   LinkToken,
-  PresetCreateInput,
-  PresetPatch,
   Session,
   Settings,
   SignInInput,
@@ -97,15 +94,6 @@ const authSessionSchema = authResponseSchema.nullable();
 type AuthResponse = z.infer<typeof authResponseSchema>;
 
 type PlannedRoutes = {
-  '/presets': {
-    $get: JsonEndpoint<NoInput, Preset[]>;
-    $post: JsonEndpoint<{ json: PresetCreateInput }, Preset>;
-  };
-  '/presets/:id': {
-    $patch: JsonEndpoint<IdParam & { json: PresetPatch }, Preset>;
-    $delete: JsonEndpoint<IdParam, null>;
-  };
-  '/presets/:id/duplicate': { $post: JsonEndpoint<IdParam & { json: { id: PresetId } }, Preset> };
   '/tags': {
     $get: JsonEndpoint<NoInput, Tag[]>;
     $post: JsonEndpoint<{ json: TagCreateInput }, Tag>;

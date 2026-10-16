@@ -7,6 +7,7 @@ import { combatsApp } from './combats/routes.ts';
 import type { AppDatabase } from './db/index.ts';
 import type { ApiEnv } from './env.ts';
 import { healthApp } from './health.ts';
+import { presetsApp } from './presets/routes.ts';
 import { linkApp } from './link/routes.ts';
 import { playApp } from './play/routes.ts';
 
@@ -29,6 +30,7 @@ export function createApiApp({ db, env, auth }: ApiAppDeps) {
     })
     .route('/auth', createAuthApp(instance))
     .route('/health', healthApp)
+    .route('/presets', presetsApp)
     .route('/combats', combatsApp)
     .route('/combats', actionsApp)
     .route('/combats', eventsApp)
