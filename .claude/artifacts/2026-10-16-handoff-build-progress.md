@@ -43,7 +43,7 @@
 | -1-renders | guarded — | renders, errata |
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | running worker-bee 2026-10-16T17:26:07+03:00 | theme, PhoneFrame, ThemeAudit, Button, check scripts |
-| 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
+| 1-domain-core | running worker-bee 2026-10-16T17:27:46+03:00 | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
 | 2.1-atoms-a | todo | IconButton, ToolButton, TextField, TextArea |
