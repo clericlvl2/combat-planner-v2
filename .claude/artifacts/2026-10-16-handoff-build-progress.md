@@ -84,7 +84,7 @@
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
 | fix-3 | todo, after `3-server-rest` guard | sse leak, final events, client stream errors |
-| 3-server-rest | reported `.claude/artifacts/reports/3-server-rest.md`, rebase conflict in `hono-client.ts` back to the agent | auth, presets, tags, settings, account |
+| 3-server-rest | rebased (conflict in `hono-client.ts` resolved by the agent, stubs gone), report `.claude/artifacts/reports/3-server-rest.md`, gate running | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
