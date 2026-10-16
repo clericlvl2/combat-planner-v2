@@ -1,0 +1,17 @@
+{
+  "filterTitle": "Nach Schlagwort filtern",
+  "assignTitle": "Schlagwörter · {{name}}",
+  "tags": "Schlagwörter",
+  "searchTags": "Schlagwörter suchen",
+  "searchOrCreate": "Suchen oder erstellen",
+  "showAll": "Alle zeigen",
+  "showPresets_one": "{{count}} Vorlage zeigen",
+  "showPresets_few": "{{count}} Vorlagen zeigen",
+  "showPresets_many": "{{count}} Vorlagen zeigen",
+  "showPresets_other": "{{count}} Vorlagen zeigen",
+  "done": "Fertig",
+  "doneTags_one": "Fertig · {{count}} Schlagwort",
+  "doneTags_few": "Fertig · {{count}} Schlagwörter",
+  "doneTags_many": "Fertig · {{count}} Schlagwörter",
+  "doneTags_other": "Fertig · {{count}} Schlagwörter"
+}

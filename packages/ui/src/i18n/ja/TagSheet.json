@@ -1,0 +1,17 @@
+{
+  "filterTitle": "タグで絞り込む",
+  "assignTitle": "タグ · {{name}}",
+  "tags": "タグ",
+  "searchTags": "タグを検索",
+  "searchOrCreate": "検索または作成",
+  "showAll": "すべて表示",
+  "showPresets_one": "{{count}}件のプリセットを表示",
+  "showPresets_few": "{{count}}件のプリセットを表示",
+  "showPresets_many": "{{count}}件のプリセットを表示",
+  "showPresets_other": "{{count}}件のプリセットを表示",
+  "done": "完了",
+  "doneTags_one": "完了 · {{count}}個のタグ",
+  "doneTags_few": "完了 · {{count}}個のタグ",
+  "doneTags_many": "完了 · {{count}}個のタグ",
+  "doneTags_other": "完了 · {{count}}個のタグ"
+}

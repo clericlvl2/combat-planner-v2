@@ -1,0 +1,17 @@
+{
+  "filterTitle": "Filter by tag",
+  "assignTitle": "Tags · {{name}}",
+  "tags": "Tags",
+  "searchTags": "Search tags",
+  "searchOrCreate": "Search or create",
+  "showAll": "Show all",
+  "showPresets_one": "Show {{count}} preset",
+  "showPresets_few": "Show {{count}} presets",
+  "showPresets_many": "Show {{count}} presets",
+  "showPresets_other": "Show {{count}} presets",
+  "done": "Done",
+  "doneTags_one": "Done · {{count}} tag",
+  "doneTags_few": "Done · {{count}} tags",
+  "doneTags_many": "Done · {{count}} tags",
+  "doneTags_other": "Done · {{count}} tags"
+}

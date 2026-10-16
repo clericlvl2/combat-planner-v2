@@ -1,0 +1,17 @@
+{
+  "filterTitle": "Filtrer par étiquette",
+  "assignTitle": "Étiquettes · {{name}}",
+  "tags": "Étiquettes",
+  "searchTags": "Rechercher des étiquettes",
+  "searchOrCreate": "Rechercher ou créer",
+  "showAll": "Tout afficher",
+  "showPresets_one": "Afficher {{count}} modèle",
+  "showPresets_few": "Afficher {{count}} modèles",
+  "showPresets_many": "Afficher {{count}} modèles",
+  "showPresets_other": "Afficher {{count}} modèles",
+  "done": "Terminé",
+  "doneTags_one": "Terminé · {{count}} étiquette",
+  "doneTags_few": "Terminé · {{count}} étiquettes",
+  "doneTags_many": "Terminé · {{count}} étiquettes",
+  "doneTags_other": "Terminé · {{count}} étiquettes"
+}

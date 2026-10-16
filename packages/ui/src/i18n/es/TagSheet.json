@@ -1,0 +1,17 @@
+{
+  "filterTitle": "Filtrar por etiqueta",
+  "assignTitle": "Etiquetas · {{name}}",
+  "tags": "Etiquetas",
+  "searchTags": "Buscar etiquetas",
+  "searchOrCreate": "Buscar o crear",
+  "showAll": "Mostrar todo",
+  "showPresets_one": "Mostrar {{count}} plantilla",
+  "showPresets_few": "Mostrar {{count}} plantillas",
+  "showPresets_many": "Mostrar {{count}} plantillas",
+  "showPresets_other": "Mostrar {{count}} plantillas",
+  "done": "Listo",
+  "doneTags_one": "Listo · {{count}} etiqueta",
+  "doneTags_few": "Listo · {{count}} etiquetas",
+  "doneTags_many": "Listo · {{count}} etiquetas",
+  "doneTags_other": "Listo · {{count}} etiquetas"
+}

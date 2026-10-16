@@ -1,0 +1,17 @@
+{
+  "filterTitle": "Фильтр по тегам",
+  "assignTitle": "Теги · {{name}}",
+  "tags": "Теги",
+  "searchTags": "Поиск тегов",
+  "searchOrCreate": "Найти или создать",
+  "showAll": "Показать все",
+  "showPresets_one": "Показать {{count}} заготовку",
+  "showPresets_few": "Показать {{count}} заготовки",
+  "showPresets_many": "Показать {{count}} заготовок",
+  "showPresets_other": "Показать {{count}} заготовки",
+  "done": "Готово",
+  "doneTags_one": "Готово · {{count}} тег",
+  "doneTags_few": "Готово · {{count}} тега",
+  "doneTags_many": "Готово · {{count}} тегов",
+  "doneTags_other": "Готово · {{count}} тега"
+}
