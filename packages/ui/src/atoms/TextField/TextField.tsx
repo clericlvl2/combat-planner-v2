@@ -52,7 +52,7 @@ export function TextField({
   const counterId = `${inputId}-counter`;
   const errorId = `${inputId}-error`;
   const showCounter = counter && maxLength !== undefined;
-  const over = maxLength !== undefined && value.length > maxLength;
+  const over = maxLength !== undefined && value.length >= maxLength;
   const describedBy = [error ? errorId : null, showCounter ? counterId : null]
     .filter(Boolean)
     .join(' ');

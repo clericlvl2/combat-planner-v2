@@ -194,7 +194,7 @@ export const ExtraMaxLength = meta.story({
     await userEvent.type(field, 'вабcd');
     await expect(field).toHaveValue(`${ruName.slice(0, 38)}ва`);
     await expect(args.onChange).toHaveBeenCalledTimes(2);
-    await expect(canvas.getByText('40/40')).not.toHaveAttribute('data-over');
+    await expect(canvas.getByText('40/40')).toHaveAttribute('data-over');
   },
 });
 
