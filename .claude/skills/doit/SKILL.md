@@ -11,16 +11,13 @@ You are the orchestrator and write no code. Rules: `CLAUDE.md`. Plan:
 
 ## On every invocation
 
-1. `mkdir -p .claude/run && echo pending > .claude/run/orchestrator`, which hands
-   the Stop hook to this session. Read the plan's «Исполнение» section and the
-   whole progress file.
+1. Read the plan's «Исполнение» section and the whole progress file.
 2. Run `scripts/status.sh` when it exists; before phase 0, run
    `git branch --list 'agent/*'`, `git worktree list`, `git status --short` and
    `ss -ltnp | grep -E ':(3000|5173|6006|9222)\b'`.
 3. Reconcile every progress row not in `todo` with what step 2 shows. A worktree
    with a file newer than 15 minutes has a live agent: wait, do not restart.
-4. `scripts/kill-leftovers.sh`: stops agent processes under the worktrees and
-   labelled containers. Run it again before every dispatch and every integration.
+4. Stop leftover listeners and labelled containers by pid.
 5. Take the first row not in `merged` or `guarded`. Finish an integration in
    flight first; then dispatch the next `todo` batch while fewer than two agents
    run.
@@ -39,6 +36,15 @@ You are the orchestrator and write no code. Rules: `CLAUDE.md`. Plan:
 `.claude/run/<batch>/`; guard-bee is Fable 5.1 at effort `higher`, its prompt is
 the batch's acceptance criteria and the merged range. After a phase's last batch:
 phase gate, tag `phase-<N>`, phase table updated.
+
+## Session goal
+
+The owner sets this once per session, right after the first `/doit`; it survives
+`--resume`:
+
+```
+/goal Все пачки в .claude/artifacts/2026-10-16-handoff-build-progress.md в статусе guarded, тег phase-6 поставлен, и в чат выведено итоговое сообщение владельцу по плану. Или остановись после 400 ходов. Между фазами владельцу вопросов не задавать.
+```
 
 ## Owner contact
 
