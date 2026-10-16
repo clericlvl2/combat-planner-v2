@@ -170,7 +170,7 @@ export const ToolButtonLabelCountL = meta.story({
 
 export const ActiveEn = meta.story({
   name: 'Active · en',
-  args: { icon: IconSortDescending, label: 'Last played', active: true },
+  args: sortActive,
 });
 
 export const ActiveDe = meta.story({
