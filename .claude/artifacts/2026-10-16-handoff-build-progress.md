@@ -81,7 +81,7 @@
 | 2.4-PlayerView | todo | Heroes, TurnOrder |
 | 2.4-Library | todo | Library |
 | 2.4-AppPages | todo | SignIn, SignUp, Settings, Account, About |
-| 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
+| 2.4-SystemScreens | running worker-bee 2026-10-17T09:00+03:00 | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
