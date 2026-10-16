@@ -1,0 +1,6 @@
+Anatomy TagsActiveCountDefault ToolButtonLabelCountM
+ActiveEn SortActiveDefault
+ActiveRu ExtraLocaleRu
+ExtraClick SortDefaultFocus
+ExtraKeyboard TagsActiveCountFocus
+SortDefaultDefault ToolButtonIconM
