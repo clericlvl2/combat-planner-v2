@@ -81,7 +81,7 @@
 | 2.4-AppPages | todo | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
-| 3-server-schema | todo | schema, migrations, client-hono, server main |
+| 3-server-schema | running worker-bee 2026-10-16T18:38:49+03:00 | schema, migrations, client-hono, server main |
 | 3-server-actions | todo | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
