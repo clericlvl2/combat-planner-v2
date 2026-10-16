@@ -43,6 +43,7 @@ export function InitiativePopover({
   onClose,
   anchor,
   className,
+  onKeyDown,
   ...rest
 }: InitiativePopoverProps) {
   const { t } = useTranslation('InitiativePopover');
@@ -70,7 +71,8 @@ export function InitiativePopover({
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (!inline || event.key !== 'Escape') return;
+    onKeyDown?.(event);
+    if (event.defaultPrevented || !inline || event.key !== 'Escape') return;
     event.preventDefault();
     onClose();
   };
@@ -87,20 +89,16 @@ export function InitiativePopover({
       <span className={classes.title}>
         {title} <span className={classes.bonus}>({signed(bonus)})</span>
       </span>
-      <div className={classes.steps} data-empty={value === null || undefined}>
+      <div className={classes.steps}>
         <Stepper
           className={classes.stepper}
-          value={value ?? 0}
+          value={value}
+          signed={false}
           min={LIMITS.initiative.min}
           max={LIMITS.initiative.max}
           size="M"
           onChange={onSet}
         />
-        {value === null ? (
-          <span className={classes.dash} aria-hidden="true">
-            —
-          </span>
-        ) : null}
       </div>
       <Button size="S" fullWidth icon={IconDice5} onClick={handleRoll}>
         {t('roll', { bonus: signed(bonus) })}

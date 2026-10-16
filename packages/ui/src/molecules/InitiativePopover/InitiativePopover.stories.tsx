@@ -97,13 +97,18 @@ export const Anatomy = meta.story({
 
 export const Set = meta.story({
   args: { value: 15, bonus: 3 },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('spinbutton')).toHaveValue('15');
+  },
 });
 
 export const NoInitiativeYet = meta.story({
   name: 'No initiative yet',
   args: { value: null, bonus: 2 },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('—')).toBeVisible();
+    const field = canvas.getByRole('spinbutton');
+    await expect(field).toHaveValue('—');
+    await expect(field).not.toHaveAttribute('aria-valuenow');
     await expect(canvas.getByRole('button', { name: 'Roll d20 +2' })).toBeVisible();
   },
 });
@@ -124,12 +129,16 @@ export const NegativeBonus = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: 'Roll d20 −1' })).toBeVisible();
     await expect(canvas.getByText('(−1)')).toBeVisible();
+    await expect(canvas.getByRole('spinbutton')).toHaveValue('4');
   },
 });
 
 export const HighRoll = meta.story({
   name: 'High roll',
   args: { value: 27, bonus: 7 },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('spinbutton')).toHaveValue('27');
+  },
 });
 
 export const Ru = meta.story({
@@ -168,7 +177,7 @@ export const ExtraTypeValue = meta.story({
     await userEvent.type(field, '22{Enter}');
     await expect(args.onSet).toHaveBeenLastCalledWith(22);
     await expect(field).toHaveAttribute('aria-valuenow', '22');
-    await expect(canvas.queryByText('—')).toBeNull();
+    await expect(field).toHaveValue('22');
   },
 });
 
@@ -235,6 +244,18 @@ export const ExtraEscape = meta.story({
   },
 });
 
+export const ExtraKeyDownComposed = meta.story({
+  name: 'Keyboard: consumer onKeyDown and Escape',
+  args: { value: 15, bonus: 3, onKeyDown: fn() },
+  play: async ({ args, canvas }) => {
+    await userEvent.tab();
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onKeyDown).toHaveBeenCalledOnce();
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+  },
+});
+
 export const ExtraFlow = meta.story({
   name: 'Flow: roll, plus, tap outside closes',
   args: { value: null, bonus: 3, random: () => 0.65 },
@@ -242,8 +263,10 @@ export const ExtraFlow = meta.story({
     await userEvent.click(canvas.getByRole('button', { name: 'Roll d20 +3' }));
     await expect(args.onRoll).toHaveBeenCalledWith(17, 14);
     await expect(canvas.getByRole('spinbutton')).toHaveAttribute('aria-valuenow', '17');
+    await expect(canvas.getByRole('spinbutton')).toHaveValue('17');
     await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
     await expect(args.onSet).toHaveBeenCalledWith(18);
+    await expect(canvas.getByRole('spinbutton')).toHaveValue('18');
     await expect(args.onClose).not.toHaveBeenCalled();
     await userEvent.click(canvasElement.ownerDocument.body);
     await expect(args.onClose).toHaveBeenCalledOnce();

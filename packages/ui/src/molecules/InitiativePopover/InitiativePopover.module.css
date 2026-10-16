@@ -27,35 +27,12 @@
 }
 
 .steps {
-  position: relative;
   display: flex;
   justify-content: center;
 
   & > .stepper {
     width: auto;
   }
-
-  &[data-empty] input:not(:focus) {
-    color: transparent;
-  }
-
-  &:has(input:focus) > .dash {
-    display: none;
-  }
-}
-
-.dash {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--cp-color-ink);
-  font-family: var(--cp-font-display);
-  font-size: var(--mantine-font-size-number);
-  font-weight: 700;
-  line-height: 1;
-  pointer-events: none;
 }
 
 .anchor {
