@@ -1,3 +1,5 @@
+import { LOCALES } from '@combat-planner/api/client';
+import type { Locale } from '@combat-planner/api/client';
 import { MantineProvider, mergeThemeOverrides } from '@mantine/core';
 import type { MantineThemeOverride } from '@mantine/core';
 import { createInstance } from 'i18next';
@@ -7,9 +9,9 @@ import type { ReactNode } from 'react';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
 import { cssVariablesResolver, theme } from './theme.ts';
 
-export const locales = ['en', 'de', 'es', 'fr', 'ja', 'ru'] as const;
+export const locales = LOCALES;
 
-export type Locale = (typeof locales)[number];
+export type { Locale };
 
 export type Motion = 'on' | 'off';
 
