@@ -66,11 +66,11 @@
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | merged d5356ed..b71d879 (gate `.claude/run/2.3-organisms-e/`, visual flake passed on retry), guard-bee running | CombatHeader, CombatCard |
-| 2.3-organisms-f | reported `.claude/artifacts/reports/2.3-organisms-f.md`, rebased on b71d879, gate running | PresetCard, HpHistory |
+| 2.3-organisms-f | merged cdcd1ed..d0d0419 (gate `.claude/run/2.3-organisms-f/` green), guard-bee running | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | rework 1 → `fix-2.3-organisms-i`, guard `.claude/artifacts/guard/2.3-organisms-i.md` (P1 PlayerRow shows enemy fields by data, not by role) |
-| fix-2.3-organisms-i | reported `.claude/artifacts/reports/fix-2.3-organisms-i.md`, waits for the 2.3-organisms-f integration | MessageScreen, PlayerRow |
+| fix-2.3-organisms-i | reported `.claude/artifacts/reports/fix-2.3-organisms-i.md`, rebased on d0d0419, gate running | MessageScreen, PlayerRow |
 | 2.3-UnitRow | running worker-bee 2026-10-17T05:50+03:00 | UnitRow |
 | 2.3-UnitForm | running worker-bee 2026-10-17T06:40+03:00 | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
