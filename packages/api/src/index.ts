@@ -1,5 +1,10 @@
 export { createApiApp } from './app.ts';
-export type { AppType } from './app.ts';
+export type { ApiAppDeps, ApiAppEnv, AppType } from './app.ts';
+export { openDatabase } from './db/index.ts';
+export type { AppDatabase, OpenedDatabase } from './db/index.ts';
+export { runMigrations } from './db/migrate.ts';
+export { apiEnvSchema, oauthProviderSchema } from './env.ts';
+export type { ApiEnv, OauthProvider } from './env.ts';
 export { RECONNECTING_AFTER_MS, createHonoApiClient } from './hono-client.ts';
 export type {
   EventSourceConstructor,

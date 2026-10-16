@@ -1,8 +1,20 @@
-import { healthSchema, tickSchema } from '@combat-planner/domain';
-import { describe, expect, it } from 'vite-plus/test';
+import { healthSchema } from '@combat-planner/domain';
+import { afterAll, describe, expect, it } from 'vite-plus/test';
 import { createApiApp } from './app.ts';
+import { openDatabase } from './db/index.ts';
+import type { ApiEnv } from './env.ts';
 
-const app = createApiApp({ tickIntervalMs: 5 });
+const env: ApiEnv = {
+  betterAuthSecret: 'test-secret',
+  betterAuthUrl: 'http://localhost:3000',
+  linkSecret: 'test-link-secret',
+};
+const opened = openDatabase(':memory:');
+const app = createApiApp({ db: opened.db, env });
+
+afterAll(() => {
+  opened.close();
+});
 
 describe('api app', () => {
   it('answers /health with an ok status', async () => {
@@ -11,19 +23,8 @@ describe('api app', () => {
     expect(healthSchema.parse(await response.json())).toEqual({ status: 'ok' });
   });
 
-  it('streams numbered ticks from /events', async () => {
+  it('answers an unknown route with 404', async () => {
     const response = await app.request('/events');
-    expect(response.headers.get('content-type')).toContain('text/event-stream');
-    const reader = response.body!.pipeThrough(new TextDecoderStream()).getReader();
-    let received = '';
-    while (!received.includes('id: 1\n')) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      received += value;
-    }
-    await reader.cancel();
-    const dataLines = received.split('\n').filter((line) => line.startsWith('data: '));
-    const ticks = dataLines.map((line) => tickSchema.parse(JSON.parse(line.slice(6))).tick);
-    expect(ticks.slice(0, 2)).toEqual([0, 1]);
+    expect(response.status).toBe(404);
   });
 });
