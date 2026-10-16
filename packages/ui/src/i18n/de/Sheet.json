@@ -1,0 +1,18 @@
+{
+  "close": "Schließen",
+  "back": "Zurück",
+  "sortCombats": "Kämpfe sortieren",
+  "done": "Fertig",
+  "tagsTitle": "Schlagwörter · {{name}}",
+  "doneTags": "Fertig · {{n}} Schlagwörter",
+  "searchOrCreate": "Suchen oder erstellen",
+  "editCombat": "Kampf bearbeiten",
+  "save": "Speichern",
+  "newCombat": "Neuer Kampf",
+  "titleRequired": "Titel ist erforderlich",
+  "cancel": "Abbrechen",
+  "create": "Erstellen",
+  "color": "Farbe",
+  "opener": "Sortieren",
+  "tag": "Schlagwort {{n}}"
+}

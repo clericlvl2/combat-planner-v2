@@ -1,0 +1,18 @@
+{
+  "close": "Cerrar",
+  "back": "Atrás",
+  "sortCombats": "Ordenar combates",
+  "done": "Listo",
+  "tagsTitle": "Etiquetas · {{name}}",
+  "doneTags": "Listo · {{n}} etiquetas",
+  "searchOrCreate": "Buscar o crear",
+  "editCombat": "Editar combate",
+  "save": "Guardar",
+  "newCombat": "Nuevo combate",
+  "titleRequired": "El título es obligatorio",
+  "cancel": "Cancelar",
+  "create": "Crear",
+  "color": "Color del combate",
+  "opener": "Ordenar",
+  "tag": "Etiqueta {{n}}"
+}

@@ -1,0 +1,18 @@
+{
+  "close": "閉じる",
+  "back": "戻る",
+  "sortCombats": "戦闘を並べ替え",
+  "done": "完了",
+  "tagsTitle": "タグ · {{name}}",
+  "doneTags": "完了 · {{n}}個のタグ",
+  "searchOrCreate": "検索または作成",
+  "editCombat": "戦闘を編集",
+  "save": "保存",
+  "newCombat": "新しい戦闘",
+  "titleRequired": "タイトルは必須です",
+  "cancel": "キャンセル",
+  "create": "作成",
+  "color": "色",
+  "opener": "並べ替え",
+  "tag": "タグ {{n}}"
+}

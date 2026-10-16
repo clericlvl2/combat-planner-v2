@@ -1,0 +1,18 @@
+{
+  "close": "Закрыть",
+  "back": "Назад",
+  "sortCombats": "Сортировка сражений",
+  "done": "Готово",
+  "tagsTitle": "Теги · {{name}}",
+  "doneTags": "Готово · {{n}} тегов",
+  "searchOrCreate": "Найти или создать",
+  "editCombat": "Изменить бой",
+  "save": "Сохранить",
+  "newCombat": "Новый бой",
+  "titleRequired": "Нужно название",
+  "cancel": "Отмена",
+  "create": "Создать",
+  "color": "Цвет",
+  "opener": "Сортировать",
+  "tag": "Тег {{n}}"
+}
