@@ -1,0 +1,106 @@
+.root {
+  position: relative;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-body);
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:has(.label) {
+    min-height: 44px;
+  }
+
+  &:has(.input:disabled) {
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+  }
+}
+
+.input {
+  position: absolute;
+  inset: -2px;
+  width: calc(100% + 4px);
+  height: calc(100% + 4px);
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  cursor: inherit;
+}
+
+.ring {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--cp-color-muted);
+  border-radius: 50%;
+  background: var(--cp-color-surface);
+
+  .root[data-size='S'] & {
+    width: 18px;
+    height: 18px;
+  }
+
+  .root[data-size='L'] & {
+    width: 26px;
+    height: 26px;
+  }
+
+  &:has(.input:checked) {
+    border-color: var(--cp-color-ink);
+  }
+
+  &:has(.input:disabled) {
+    border-color: var(--cp-color-disabled);
+  }
+
+  &:has(.input:focus-visible),
+  .root[data-focus] & {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  .root[data-tap] & {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--cp-color-ink);
+  pointer-events: none;
+
+  .root[data-size='S'] & {
+    width: 8px;
+    height: 8px;
+  }
+
+  .root[data-size='L'] & {
+    width: 12px;
+    height: 12px;
+  }
+
+  .ring:has(.input:disabled) & {
+    background: var(--cp-color-disabled);
+  }
+}
+
+.label {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
