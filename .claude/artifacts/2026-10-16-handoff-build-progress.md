@@ -55,8 +55,8 @@
 | 2.2-molecules-a | guarded `.claude/artifacts/guard/2.2-molecules-a.md` | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | running worker-bee 2026-10-16T20:22+03:00 | HpBox, HistoryRow, DefenseLine |
-| 2.2-molecules-d | running worker-bee 2026-10-16T20:30+03:00 | NoteField, InitiativePopover |
-| 2.2-molecules-e | todo | Toast, EmptyState |
+| 2.2-molecules-d | rebased, report `.claude/artifacts/reports/2.2-molecules-d.md`, gate running | NoteField, InitiativePopover |
+| 2.2-molecules-e | running worker-bee 2026-10-16T20:46+03:00 | Toast, EmptyState |
 | fix-2.2 | todo | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
 | 2.3-organisms-b | todo | Menu, Drawer |
@@ -88,6 +88,18 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.2-molecules-d, решения оркестратора 2026-10-16: `fix-2.2` даёт Stepper
+  `signed?: boolean` (по умолчанию `min < 0`) и `value: number | null` с пустым
+  `—`; InitiativePopover передаёт `signed={false}` и `null` вместо `0` с
+  оверлеем, baselines перегенерируются; шаг от пустой инициативы с 0 принят;
+  `onRoll(initiative, roll)` с сырым d20 и `rolledInitiative` принят; `onSet`
+  на каждое изменение Stepper (Set-кнопки нет) принят; NoteField на TextArea с
+  переопределением рамки/отступов принят; сохранение на blur/Enter/collapse
+  принято; флоу-шаги молекул через `Extra`-истории с play приняты
+  (check-stories требует коды флоу только у экранов); «Note: <text>» как
+  доступное имя принято; de «Initiativewert», fr «Valeur d’initiative» —
+  владельцу.
 
 - 2.2-molecules-b, решения оркестратора 2026-10-16: CheckList красит не
   отмеченные строки, а строку `hl` по скрипту страницы (Create сверху при
@@ -187,6 +199,9 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.2-molecules-d: InitiativePopover со знаком `+15` (уходит в `fix-2.2`); de/fr
+  заголовки отличаются от en; NoteField «Field, editing» без каретки.
 
 - 2.2-molecules-b: CardActions `Open: *` и `* · unit menu` без панели Menu
   (организм 2.3); CheckList строка Create внизу в размере строки, страница
