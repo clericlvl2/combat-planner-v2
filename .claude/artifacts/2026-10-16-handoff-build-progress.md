@@ -53,7 +53,7 @@
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
-| fix-2.1 | rebased, report `.claude/artifacts/reports/fix-2.1.md`, gate running | |
+| fix-2.1 | rebased, report `.claude/artifacts/reports/fix-2.1.md`, gate restarted 2026-10-16T20:02+03:00 (first run died at `visual`, power loss) | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
@@ -82,7 +82,7 @@
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
-| 3-server-actions | running worker-bee 2026-10-16T19:03:14+03:00 | combats routes, actions route, link |
+| 3-server-actions | restarted 1, worker-bee 2026-10-16T20:04+03:00 (power loss after three commits, REPORT.md not final) | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
