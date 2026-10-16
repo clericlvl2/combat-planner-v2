@@ -4,7 +4,6 @@ import type {
   PlayerCombat,
   PlayerId,
   PresetId,
-  Tag,
   TagId,
 } from '@combat-planner/domain';
 import {
@@ -46,7 +45,6 @@ import type {
   Settings,
   SignInInput,
   SignUpInput,
-  TagCreateInput,
   Unsubscribe,
 } from './client.ts';
 
@@ -81,7 +79,6 @@ type JsonEndpoint<Input, Output> = {
 };
 
 type NoInput = Record<never, never>;
-type IdParam = { param: { id: string } };
 
 const authUserSchema = z.object({
   id: z.string().min(1),
@@ -94,14 +91,6 @@ const authSessionSchema = authResponseSchema.nullable();
 type AuthResponse = z.infer<typeof authResponseSchema>;
 
 type PlannedRoutes = {
-  '/tags': {
-    $get: JsonEndpoint<NoInput, Tag[]>;
-    $post: JsonEndpoint<{ json: TagCreateInput }, Tag>;
-  };
-  '/tags/:id': {
-    $patch: JsonEndpoint<IdParam & { json: { name: string } }, Tag>;
-    $delete: JsonEndpoint<IdParam, null>;
-  };
   '/settings': {
     $get: JsonEndpoint<NoInput, Settings>;
     $patch: JsonEndpoint<{ json: Settings }, Settings>;
