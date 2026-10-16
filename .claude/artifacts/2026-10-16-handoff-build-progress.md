@@ -73,7 +73,7 @@
 | fix-2.3-organisms-i | guarded `.claude/artifacts/guard/fix-2.3-organisms-i.md` (P3 ×1 report hashes, no action) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
-| 2.3-NumpadSheet | rebased (conflict in `allow-same.txt` resolved by the agent), report `.claude/artifacts/reports/2.3-NumpadSheet.md`, gate running | NumpadSheet |
+| 2.3-NumpadSheet | merged 270586d..0f286d6 (gate `.claude/run/2.3-NumpadSheet/` green), guard-bee running | NumpadSheet |
 | fix-2.3 | brief drafted, waits for the 2.3-NumpadSheet guard | |
 | 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
