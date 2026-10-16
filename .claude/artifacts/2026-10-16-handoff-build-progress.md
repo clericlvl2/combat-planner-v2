@@ -72,8 +72,8 @@
 | 2.3-organisms-i | guarded after rework 1 (`fix-2.3-organisms-i` guarded), guard `.claude/artifacts/guard/2.3-organisms-i.md` |
 | fix-2.3-organisms-i | guarded `.claude/artifacts/guard/fix-2.3-organisms-i.md` (P3 ×1 report hashes, no action) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | merged f22b0fa..b59bc66 (gate `.claude/run/2.3-UnitRow/` green), guard-bee running | UnitRow |
-| 2.3-UnitForm | running worker-bee 2026-10-17T06:40+03:00 | UnitForm |
-| 2.3-NumpadSheet | todo, unblocked (UnitRow merged), next builder slot | NumpadSheet |
+| 2.3-UnitForm | reported `.claude/artifacts/reports/2.3-UnitForm.md`, gate running | UnitForm |
+| 2.3-NumpadSheet | running worker-bee 2026-10-17T07:35+03:00 | NumpadSheet |
 | fix-2.3 | todo | |
 | 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
@@ -93,6 +93,22 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-UnitForm, решения оркестратора 2026-10-17: пустое имя в режиме Add →
+  `<Type> N` (vision и страница), имя из пробелов или пустое в Edit блокирует
+  отправку с ошибкой «Enter a name» — принято; шесть `Stepper` вместо
+  `NumberField` по SPEC страницы — принято; пропсы `opened`, `combatTitle`,
+  `roleCounts`, `tags: TagSheetTag[]` (счётчики по всей Library), `presets` —
+  domain `Preset`, `UnitDraft` = domain `UnitForm` — приняты; TagSheet поверх
+  формы полноэкранно — принято. → `fix-2.3`: `check-stories.mjs` читает
+  `items` страницы UnitForm (сейчас ячеек нет, все истории `Extra*`),
+  UnitForm переименовывает экспорты и baselines; подсказка про бросок
+  инициативы (vision Unit → Form: в Setup — на Start, в Active — при
+  добавлении; страница считает `hint`, ячейки её не рисуют) — vision выше
+  хэндоффа, UnitForm получает проп `mode`-зависимой подсказки; Stepper
+  `format` показывает `+0` при `signed` (Stepper.tsx:32); TextField `over` при
+  `value.length >= maxLength` красит счётчик (TextField.tsx:55, страница
+  UnitForm `nameCountColor`).
 
 - 2.3-UnitRow, решения оркестратора 2026-10-17: вариант для NumpadSheet —
   пропсы `readOnly` и `flash` (таймер 2 с у экрана) — принято; UnitRow сам
@@ -376,6 +392,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-UnitForm: TagSheet полноэкранный со своим скримом (рендер — внутри
+  карточки формы); строки Stepper 48 без зазора (галерея 52 + 4); `0` вместо
+  `+0` и счётчик 40/40 не красный (до `fix-2.3`); кольцо фокуса после кликов.
 
 - 2.3-UnitRow: языковые истории переводят роль, DefenseLine и чипы (страница
   переводит только HP), ja-строка защит переносится; кольцо фокуса на
