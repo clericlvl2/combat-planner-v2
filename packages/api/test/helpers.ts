@@ -31,7 +31,12 @@ export interface TestApp {
   close(): void;
 }
 
-export function createTestApp(deps: Pick<ApiAppDeps, 'auth'> = {}): TestApp {
+export interface TestAppOptions {
+  auth?: ApiAppDeps['auth'];
+  env?: Partial<ApiEnv>;
+}
+
+export function createTestApp({ auth, env: overrides = {} }: TestAppOptions = {}): TestApp {
   const directory = mkdtempSync(path.join(tmpdir(), 'combat-planner-api-'));
   const opened = openDatabase(path.join(directory, 'test.db'));
   runMigrations(opened.db);
@@ -43,7 +48,7 @@ export function createTestApp(deps: Pick<ApiAppDeps, 'auth'> = {}): TestApp {
       .run();
   }
   return {
-    app: createApiApp({ db: opened.db, env, ...deps }),
+    app: createApiApp({ db: opened.db, env: { ...env, ...overrides }, auth }),
     db: opened.db,
     close: () => {
       opened.close();
@@ -119,3 +124,49 @@ export const fetchCombat = async (app: Requester, id = COMBAT_ID): Promise<Comba
   const response = await call(app, 'GET', `/combats/${id}`);
   return (await response.json()) as Combat;
 };
+
+export interface Browser {
+  request(route: string, init?: RequestInit): Promise<Response>;
+}
+
+export const createBrowser = (app: { request: AppType['request'] }): Browser => {
+  const cookies = new Map<string, string>();
+  return {
+    request: async (route, init = {}) => {
+      const headers = new Headers(init.headers);
+      if (cookies.size > 0) {
+        headers.set('cookie', [...cookies].map(([name, value]) => `${name}=${value}`).join('; '));
+      }
+      const response = await app.request(route, { ...init, headers });
+      for (const cookie of response.headers.getSetCookie()) {
+        const [pair] = cookie.split(';');
+        const separator = pair?.indexOf('=') ?? -1;
+        if (!pair || separator < 0) continue;
+        const name = pair.slice(0, separator);
+        const value = pair.slice(separator + 1);
+        if (value === '') cookies.delete(name);
+        else cookies.set(name, value);
+      }
+      return response;
+    },
+  };
+};
+
+export const browse = (
+  browser: Browser,
+  method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
+  route: string,
+  body?: unknown,
+): Promise<Response> =>
+  browser.request(route, {
+    method,
+    headers: body === undefined ? {} : { 'content-type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
+
+export const signUp = async (
+  browser: Browser,
+  email: string,
+  name = 'Dungeon Master',
+  password = 'correct horse battery',
+): Promise<Response> => browse(browser, 'POST', '/auth/sign-up/email', { name, email, password });

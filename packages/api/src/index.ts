@@ -1,5 +1,7 @@
 export { createApiApp } from './app.ts';
 export type { ApiAppDeps, ApiAppEnv, AppType } from './app.ts';
+export { AUTH_BASE_PATH, createAuth, createAuthApp } from './auth/index.ts';
+export type { AuthInstance, AuthRoutes, AuthUser, CreateAuthOptions } from './auth/index.ts';
 export { requireUser } from './auth/require-user.ts';
 export type { ResolvedSession, SessionResolver } from './auth/require-user.ts';
 export { actionsApp } from './combats/actions.ts';

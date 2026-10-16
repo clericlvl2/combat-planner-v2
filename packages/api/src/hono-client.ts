@@ -97,14 +97,6 @@ const authSessionSchema = authResponseSchema.nullable();
 type AuthResponse = z.infer<typeof authResponseSchema>;
 
 type PlannedRoutes = {
-  '/auth/sign-up/email': {
-    $post: JsonEndpoint<{ json: { name: string; email: string; password: string } }, AuthResponse>;
-  };
-  '/auth/sign-in/email': {
-    $post: JsonEndpoint<{ json: { email: string; password: string } }, AuthResponse>;
-  };
-  '/auth/sign-out': { $post: JsonEndpoint<NoInput, { success: boolean }> };
-  '/auth/get-session': { $get: JsonEndpoint<NoInput, AuthResponse | null> };
   '/presets': {
     $get: JsonEndpoint<NoInput, Preset[]>;
     $post: JsonEndpoint<{ json: PresetCreateInput }, Preset>;
