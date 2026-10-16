@@ -60,8 +60,8 @@
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
 | fix-2.2 | guarded `.claude/artifacts/guard/fix-2.2.md` | |
 | 2.3-organisms-a | rework 1 → `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` (P1 Sheet focus escapes on Shift+Tab) |
-| fix-2.3-organisms-a | todo, brief ready, waits for a builder slot | Sheet, Dialog |
-| 2.3-organisms-b | running worker-bee 2026-10-17T01:05+03:00 | Menu, Drawer |
+| fix-2.3-organisms-a | running worker-bee (agent of 2.3-organisms-a) 2026-10-17T02:15+03:00 | Sheet, Dialog |
+| 2.3-organisms-b | rebased, report `.claude/artifacts/reports/2.3-organisms-b.md`, gate running | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
 | 2.3-organisms-d | rebased, report `.claude/artifacts/reports/2.3-organisms-d.md`, gate running | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
@@ -91,6 +91,16 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-b, решения оркестратора 2026-10-17: `hint?` и `divider?` у
+  пунктов Menu приняты; API Menu — источник через `target` (React-элемент),
+  `data-open` клонируется на источник, `aria-haspopup`/`aria-expanded` ставит
+  источник, без `target` панель рендерится inline — принят и обязателен для
+  CombatHeader, PlayerHeader, CombatCard, PresetCard; `PopoverFrame`
+  экспортирован из Menu, `fix-2.3` переводит InitiativePopover на него; Drawer
+  на собственной разметке с `FocusTrap` принят; вес текущего пункта 700 по
+  скрипту и рендеру принят; дефолтные `drawerSections` приняты; свайп
+  открытия — на экране-хосте (4-web).
 
 - 2.3-organisms-d, решения оркестратора 2026-10-17: высота баров 98 с верхним
   отступом 10 (SPEC 12 даёт 100, а разметка страницы, бриф и
@@ -269,6 +279,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-b: Drawer на полную высоту PhoneFrame (ячейка страницы 640),
+  скрим ink 50 %; ячейки Menu в углу PhoneFrame с отступом 12; открытое у
+  источника меню с фокусом на первом пункте.
 
 - 2.3-organisms-d: верхний отступ баров 10 вместо 12 (итог 98); pressed/focus
   TurnBar без ячеек на странице.
