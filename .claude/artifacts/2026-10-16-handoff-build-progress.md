@@ -53,9 +53,9 @@
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
 | fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
 | 2.2-molecules-a | merged 770ad71, gate ok `.claude/run/2.2-molecules-a/summary.log`, guard running | Stepper, Segmented, RadioList |
-| 2.2-molecules-b | running worker-bee 2026-10-16T20:16+03:00 | CheckList, SwatchRow, CardActions |
+| 2.2-molecules-b | rebased, report `.claude/artifacts/reports/2.2-molecules-b.md`, gate running | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | running worker-bee 2026-10-16T20:22+03:00 | HpBox, HistoryRow, DefenseLine |
-| 2.2-molecules-d | todo | NoteField, InitiativePopover |
+| 2.2-molecules-d | running worker-bee 2026-10-16T20:30+03:00 | NoteField, InitiativePopover |
 | 2.2-molecules-e | todo | Toast, EmptyState |
 | fix-2.2 | todo | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
@@ -88,6 +88,17 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.2-molecules-b, решения оркестратора 2026-10-16: CheckList красит не
+  отмеченные строки, а строку `hl` по скрипту страницы (Create сверху при
+  отсутствии совпадений, иначе первая подходящая) — принято, SPEC «Selected row
+  tinted» уступает рендеру; `query?` и фильтрация внутри CheckList, Create
+  только без совпадений, `onCreate` получает обрезанный запрос, `emptyLabel?` —
+  приняты, лимит `LIMITS.tagName` в TagSheet; Enter/Space на строке приняты;
+  `data-tap` проброс у SwatchRow/CardActions и `open?`/`aria-haspopup="menu"` у
+  CardActions приняты; трейлер коммитов по CLAUDE.md (Fable 5.1) — верно.
+  Baselines CardActions с открытым ⋯ без панели Menu — перегенерация в
+  `fix-2.2` не требуется, композиция с Menu живёт в историях организмов.
 
 - 2.2-molecules-a, решения оркестратора 2026-10-16: тон роли Segmented по
   значению (`hero/enemy/ally`), не по английской подписи — принято, строки
@@ -176,6 +187,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.2-molecules-b: CardActions `Open: *` и `* · unit menu` без панели Menu
+  (организм 2.3); CheckList строка Create внизу в размере строки, страница
+  хардкодит 48/16.
 
 - 2.2-molecules-a: Segmented `Role · de/ru/fr` — выбранный Ally зелёный, не ink;
   `ExtraOptionDisabled` заканчивается с фокус-кольцом на Enemy.
