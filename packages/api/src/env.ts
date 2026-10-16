@@ -10,6 +10,7 @@ export const apiEnvSchema = z.object({
   betterAuthSecret: z.string().min(1),
   betterAuthUrl: z.url(),
   linkSecret: z.string().min(1),
+  trustedOrigins: z.array(z.string().min(1)).optional(),
   google: oauthProviderSchema.optional(),
   github: oauthProviderSchema.optional(),
 });

@@ -1,6 +1,9 @@
+import { LIMITS, displayNameSchema } from '@combat-planner/domain';
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
+import { APIError } from 'better-auth/api';
 import { Hono } from 'hono';
+import type { JSONParsed } from 'hono/utils/types';
 import type { ApiAppEnv } from '../app.ts';
 import type { AppDatabase } from '../db/index.ts';
 import * as schema from '../db/schema.ts';
@@ -8,17 +11,76 @@ import type { ApiEnv } from '../env.ts';
 
 export const AUTH_BASE_PATH = '/api/auth';
 
+const DISABLED_AUTH_PATHS = [
+  '/account-info',
+  '/change-email',
+  '/change-password',
+  '/delete-user',
+  '/delete-user/callback',
+  '/get-access-token',
+  '/link-social',
+  '/list-accounts',
+  '/list-sessions',
+  '/ok',
+  '/refresh-token',
+  '/request-password-reset',
+  '/reset-password',
+  '/revoke-other-sessions',
+  '/revoke-session',
+  '/revoke-sessions',
+  '/send-verification-email',
+  '/unlink-account',
+  '/update-session',
+  '/update-user',
+  '/verify-email',
+  '/verify-password',
+];
+
+const EMAIL_SIGN_UP = '/sign-up/email';
+
+const INVALID_DISPLAY_NAME = {
+  code: 'invalid',
+  message: `Display name must be 1 to ${LIMITS.displayName} characters`,
+} as const;
+
+const clampDisplayName = (name: string): string => {
+  let clamped = '';
+  for (const char of name) {
+    if (clamped.length + char.length > LIMITS.displayName) break;
+    clamped += char;
+  }
+  return clamped;
+};
+
+const boundedDisplayName = (
+  name: string,
+  path: string | undefined,
+  email: string | undefined,
+): string => {
+  if (path === EMAIL_SIGN_UP) {
+    if (displayNameSchema.safeParse(name).success) return name;
+    throw new APIError('BAD_REQUEST', INVALID_DISPLAY_NAME);
+  }
+  const bounded = clampDisplayName(name) || clampDisplayName(email?.split('@')[0] ?? '');
+  if (bounded === '') throw new APIError('BAD_REQUEST', INVALID_DISPLAY_NAME);
+  return bounded;
+};
+
 export interface CreateAuthOptions {
   db: AppDatabase;
   env: ApiEnv;
+  originCheck?: boolean;
 }
 
-export function createAuth({ db, env }: CreateAuthOptions) {
+export function createAuth({ db, env, originCheck }: CreateAuthOptions) {
   return betterAuth({
     database: drizzleAdapter(db, { provider: 'sqlite', schema }),
     secret: env.betterAuthSecret,
     baseURL: env.betterAuthUrl,
     basePath: AUTH_BASE_PATH,
+    trustedOrigins: env.trustedOrigins,
+    disabledPaths: DISABLED_AUTH_PATHS,
+    advanced: { disableOriginCheck: originCheck === undefined ? undefined : !originCheck },
     emailAndPassword: { enabled: true },
     socialProviders: {
       ...(env.google ? { google: env.google } : {}),
@@ -29,36 +91,54 @@ export function createAuth({ db, env }: CreateAuthOptions) {
         language: { type: 'string', required: false, defaultValue: 'en', input: false },
       },
     },
+    databaseHooks: {
+      user: {
+        create: {
+          before: async (user, context) => ({
+            data: { name: boundedDisplayName(user.name, context?.path, user.email) },
+          }),
+        },
+        update: {
+          before: async (user, context) => {
+            if (user.name === undefined) return;
+            return { data: { name: boundedDisplayName(user.name, context?.path, user.email) } };
+          },
+        },
+      },
+    },
   });
 }
 
 export type AuthInstance = ReturnType<typeof createAuth>;
 export type AuthUser = AuthInstance['$Infer']['Session']['user'];
 
-type AuthEndpoint<Input, Output> = {
-  input: Input;
-  output: Output;
+type AuthApi = AuthInstance['api'];
+
+type AuthCall = (...args: never[]) => Promise<unknown>;
+
+type NoInput = Record<never, never>;
+
+type JsonInput<Call extends AuthCall> =
+  NonNullable<Parameters<Call>[0]> extends { body: infer Body }
+    ? { json: Body }
+    : NonNullable<Parameters<Call>[0]> extends { body?: infer Body }
+      ? [NonNullable<Body>] extends [never]
+        ? NoInput
+        : { json?: NonNullable<Body> }
+      : NoInput;
+
+type AuthEndpoint<Call extends AuthCall> = {
+  input: JsonInput<Call>;
+  output: JSONParsed<Awaited<ReturnType<Call>>>;
   outputFormat: 'json';
   status: 200;
 };
 
-type NoInput = Record<never, never>;
-
 export type AuthRoutes = {
-  '/sign-up/email': {
-    $post: AuthEndpoint<
-      { json: { name: string; email: string; password: string } },
-      { token: string | null; user: AuthUser }
-    >;
-  };
-  '/sign-in/email': {
-    $post: AuthEndpoint<
-      { json: { email: string; password: string } },
-      { token: string; user: AuthUser }
-    >;
-  };
-  '/sign-out': { $post: AuthEndpoint<NoInput, { success: boolean }> };
-  '/get-session': { $get: AuthEndpoint<NoInput, AuthInstance['$Infer']['Session'] | null> };
+  '/sign-up/email': { $post: AuthEndpoint<AuthApi['signUpEmail']> };
+  '/sign-in/email': { $post: AuthEndpoint<AuthApi['signInEmail']> };
+  '/sign-out': { $post: AuthEndpoint<AuthApi['signOut']> };
+  '/get-session': { $get: AuthEndpoint<AuthApi['getSession']> };
 };
 
 const WILDCARD = '/*';

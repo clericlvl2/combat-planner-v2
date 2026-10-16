@@ -16,6 +16,12 @@ const secret = (name: string): string => {
   return randomBytes(32).toString('hex');
 };
 
+const list = (name: string): string[] | undefined =>
+  variable(name)
+    ?.split(',')
+    .map((item) => item.trim())
+    .filter((item) => item !== '');
+
 const provider = (idName: string, secretName: string) => {
   const clientId = variable(idName);
   const clientSecret = variable(secretName);
@@ -29,6 +35,7 @@ const env = apiEnvSchema.parse({
   betterAuthSecret: secret('BETTER_AUTH_SECRET'),
   betterAuthUrl: variable('BETTER_AUTH_URL') ?? `http://localhost:${port}`,
   linkSecret: secret('LINK_SECRET'),
+  trustedOrigins: list('BETTER_AUTH_TRUSTED_ORIGINS'),
   google: provider('GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET'),
   github: provider('GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET'),
 });
