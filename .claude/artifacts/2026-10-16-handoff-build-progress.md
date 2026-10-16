@@ -63,7 +63,7 @@
 | fix-2.3-organisms-a | running worker-bee (agent of 2.3-organisms-a) 2026-10-17T02:15+03:00 | Sheet, Dialog |
 | 2.3-organisms-b | rebased, report `.claude/artifacts/reports/2.3-organisms-b.md`, gate running | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
-| 2.3-organisms-d | rebased, report `.claude/artifacts/reports/2.3-organisms-d.md`, gate running | BottomBar, TurnBar |
+| 2.3-organisms-d | merged 16174a8, gate ok `.claude/run/2.3-organisms-d/summary.log`, guard running | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
 | 2.3-organisms-g | running worker-bee 2026-10-17T01:50+03:00 (ahead of c/e/f: they need Menu from b) | ConditionPicker, TagSheet |
