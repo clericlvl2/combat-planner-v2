@@ -8,5 +8,7 @@
   "retry": "再試行",
   "undoneDamage": "取り消し：{{name}} への {{amount}} ダメージ",
   "duplicated": "{{title}}（コピー）を作成しました",
-  "deleted": "{{title}} を削除しました"
+  "deleted": "{{title}} を削除しました",
+  "combatChanged": "戦闘が変更されました。もう一度お試しください。",
+  "reconnecting": "再接続中…"
 }

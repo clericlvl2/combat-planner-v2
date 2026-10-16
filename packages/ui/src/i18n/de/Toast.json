@@ -8,5 +8,7 @@
   "retry": "Wiederholen",
   "undoneDamage": "Rückgängig: {{amount}} Schaden an {{name}}",
   "duplicated": "{{title}} (Kopie) erstellt",
-  "deleted": "{{title}} gelöscht"
+  "deleted": "{{title}} gelöscht",
+  "combatChanged": "Der Kampf wurde geändert. Versuche es erneut.",
+  "reconnecting": "Verbindung wird wiederhergestellt…"
 }

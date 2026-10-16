@@ -8,5 +8,7 @@
   "retry": "Retry",
   "undoneDamage": "Undid: {{amount}} damage to {{name}}",
   "duplicated": "{{title}} (copy) created",
-  "deleted": "{{title}} deleted"
+  "deleted": "{{title}} deleted",
+  "combatChanged": "The combat changed. Try again.",
+  "reconnecting": "Reconnecting…"
 }

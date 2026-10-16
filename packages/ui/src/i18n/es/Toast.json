@@ -8,5 +8,7 @@
   "retry": "Reintentar",
   "undoneDamage": "Deshecho: {{amount}} de daño a {{name}}",
   "duplicated": "{{title}} (copia) creado",
-  "deleted": "{{title}} eliminado"
+  "deleted": "{{title}} eliminado",
+  "combatChanged": "El combate ha cambiado. Inténtalo de nuevo.",
+  "reconnecting": "Reconectando…"
 }

@@ -8,5 +8,7 @@
   "retry": "Повторить",
   "undoneDamage": "Отменено: {{amount}} урона по {{name}}",
   "duplicated": "{{title}} (копия) создан",
-  "deleted": "{{title}} удалён"
+  "deleted": "{{title}} удалён",
+  "combatChanged": "Бой изменился. Попробуйте ещё раз.",
+  "reconnecting": "Переподключение…"
 }
