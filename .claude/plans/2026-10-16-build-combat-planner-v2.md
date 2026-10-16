@@ -85,8 +85,8 @@ better-sqlite3, Better Auth. Версии ставятся последними 
 прототип, не приложение; пометка `status="Draft"` на страницах не означает
 незавершённость; `VISION-UPDATES.md` и `TODO.md` в архиве.
 
-Приёмка: PNG на каждую из 49 страниц и на каждый из 35 кодов флоу; errata
-закоммичена. Коммит `docs(design): handoff renders and errata`.
+Приёмка: PNG на каждую из 57 страниц и на каждый из 30 кодов флоу, 87 файлов;
+errata закоммичена. Коммит `docs(design): handoff renders and errata`.
 
 ## Фаза 0 — тулчейн, спайк
 

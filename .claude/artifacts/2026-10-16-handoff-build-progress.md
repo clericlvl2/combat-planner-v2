@@ -14,7 +14,7 @@
 
 | Фаза | Что | Пачки | Тег |
 |------|-----|-------|-----|
-| −1 | рендеры хэндоффа, errata | оркестратор + chrome-rider | |
+| −1 | рендеры хэндоффа, errata | оркестратор + chrome-rider | phase--1 |
 | 0 | тулчейн, спайк, скрипты, CLAUDE.md Commands | 0-toolchain | |
 | 0.5 | тема, PhoneFrame, ThemeAudit, эталонный Button, check-скрипты | 0.5-reference | |
 | 1 | domain, контракт ApiClient | 1-domain-core, 1-domain-rest, 1-api-contract | |
@@ -29,13 +29,15 @@
 
 ## Текущий шаг
 
-Ожидание «го» владельца на фазу −1.
+Фаза −1 завершена: 87 рендеров в `docs/design/renders/` (57 страниц, 30 флоу,
+1280 wide, DPR 1, 40 MB), `docs/design/handoff-errata.md`. Следующий шаг: новая
+сессия, бриф `0-toolchain`, worktree `../combat-planner-v2.wt/0-toolchain`.
 
 ## Пачки
 
 | Пачка | Статус | Единицы |
 |-------|--------|---------|
-| -1-renders | todo | renders, errata |
+| -1-renders | merged | renders, errata |
 | 0-toolchain | todo | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | todo | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
