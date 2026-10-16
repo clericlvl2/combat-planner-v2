@@ -1,0 +1,119 @@
+.inline {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-field);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+
+  &[data-expanded] {
+    border-color: var(--cp-color-ink);
+  }
+}
+
+.header {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: 44px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  text-align: start;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  & > svg {
+    flex: none;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: -3px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: -3px;
+  }
+}
+
+.heading {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--mantine-font-size-small);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.count {
+  flex: none;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  white-space: nowrap;
+}
+
+.listFrame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+
+  &[data-inset] {
+    padding: 0 12px 8px;
+  }
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+
+  &[data-long] {
+    max-height: 248px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+}
+
+.empty {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  margin: 0;
+  border-top: 1px solid var(--cp-color-border);
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-snug);
+}
+
+.fade {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 40px;
+  background: linear-gradient(
+    color-mix(in srgb, var(--cp-color-surface) 0%, transparent),
+    var(--cp-color-surface)
+  );
+  pointer-events: none;
+}

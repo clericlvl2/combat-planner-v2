@@ -1,0 +1,8 @@
+{
+  "title": "Historial de PG",
+  "empty": "Aún no hay cambios",
+  "count_one": "{{count}} cambio",
+  "count_few": "{{count}} cambios",
+  "count_many": "{{count}} cambios",
+  "count_other": "{{count}} cambios"
+}

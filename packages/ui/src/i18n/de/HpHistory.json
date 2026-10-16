@@ -1,0 +1,8 @@
+{
+  "title": "TP-Verlauf",
+  "empty": "Noch keine Änderungen",
+  "count_one": "{{count}} Änderung",
+  "count_few": "{{count}} Änderungen",
+  "count_many": "{{count}} Änderungen",
+  "count_other": "{{count}} Änderungen"
+}

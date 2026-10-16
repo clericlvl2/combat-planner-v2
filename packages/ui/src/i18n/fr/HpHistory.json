@@ -1,0 +1,8 @@
+{
+  "title": "Historique des PV",
+  "empty": "Aucun changement",
+  "count_one": "{{count}} changement",
+  "count_few": "{{count}} changements",
+  "count_many": "{{count}} changements",
+  "count_other": "{{count}} changements"
+}

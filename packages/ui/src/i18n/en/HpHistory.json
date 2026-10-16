@@ -1,0 +1,8 @@
+{
+  "title": "HP History",
+  "empty": "No changes yet",
+  "count_one": "{{count}} change",
+  "count_few": "{{count}} changes",
+  "count_many": "{{count}} changes",
+  "count_other": "{{count}} changes"
+}

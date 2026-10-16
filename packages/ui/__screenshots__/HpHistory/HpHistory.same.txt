@@ -1,0 +1,3 @@
+Anatomy OpenEveryKind
+ExtraInlineOpen ExtraReadOnly OpenAFewChanges
+ExtraSheetEscape ExtraSheetEscapeMotionOn
