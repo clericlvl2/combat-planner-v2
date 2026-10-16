@@ -211,6 +211,20 @@ export const ExtraOptionDisabled = meta.story({
   },
 });
 
+export const ExtraNoMatch = meta.story({
+  name: 'Value matching no option',
+  args: { value: 'neutral' },
+  play: async ({ args, canvas }) => {
+    for (const radio of canvas.getAllByRole('radio')) {
+      await expect(radio).not.toBeChecked();
+    }
+    await userEvent.tab();
+    await expect(canvas.getByRole('radio', { name: 'Hero' })).toHaveFocus();
+    await userEvent.keyboard('{ArrowRight}');
+    await expect(args.onChange).toHaveBeenLastCalledWith('enemy');
+  },
+});
+
 export const ExtraLocaleDe = meta.story({
   name: 'Locale de',
   globals: { locale: 'de' },

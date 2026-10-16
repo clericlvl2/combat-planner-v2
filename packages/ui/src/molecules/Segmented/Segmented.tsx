@@ -46,9 +46,10 @@ export function Segmented<T extends string>({
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const enabled = (index: number) => !disabled && options[index]?.disabled !== true;
   const selectedIndex = options.findIndex((option) => option.value === value);
-  const tabStop = enabled(selectedIndex)
-    ? selectedIndex
-    : options.findIndex((_, index) => enabled(index));
+  const tabStop =
+    selectedIndex >= 0 && enabled(selectedIndex)
+      ? selectedIndex
+      : options.findIndex((_, index) => enabled(index));
 
   const select = (index: number) => {
     const option = options[index];
