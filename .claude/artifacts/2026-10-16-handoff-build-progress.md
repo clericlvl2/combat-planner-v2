@@ -576,7 +576,7 @@
 
 - 2.3-organisms-h: `pnpm test` (импорт stories) и `visual` («Failed to fetch
   dynamically imported module» visual.test.tsx — Vite оптимизировал
-  `react-qr-code` посреди прогона) упали на импорте; оба повтора прошли (1184
+  `react-qr-code` посреди прогона) упали на импорте; оба повтора прошли (1204
   и 777 тестов). `gate.sh` теперь повторяет и `visual` один раз.
 
 - 2.3-organisms-c, `pnpm test`: CardActions.stories.tsx не импортировался
