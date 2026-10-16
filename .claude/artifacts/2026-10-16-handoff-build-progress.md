@@ -17,7 +17,7 @@
 | −1 | рендеры хэндоффа, errata | оркестратор + chrome-rider | phase--1 |
 | 0 | тулчейн, спайк, скрипты, CLAUDE.md Commands | 0-toolchain | phase-0 |
 | 0.5 | тема, PhoneFrame, ThemeAudit, эталонный Button, check-скрипты | 0.5-reference | phase-0.5 |
-| 1 | domain, контракт ApiClient | 1-domain-core, 1-domain-rest, 1-api-contract | |
+| 1 | domain, контракт ApiClient | 1-domain-core, 1-domain-rest, 1-api-contract, fix-1-domain-core, fix-1-api-contract | phase-1 |
 | 2.1 | атомы | 2.1-atoms-a…d, fix-2.1 | |
 | 2.2 | молекулы | 2.2-molecules-a…e, fix-2.2 | |
 | 2.3 | организмы | 2.3-organisms-a…i, 2.3-UnitRow, 2.3-UnitForm, 2.3-NumpadSheet, fix-2.3 | |
@@ -29,12 +29,13 @@
 
 ## Текущий шаг
 
-Фаза 0 закрыта тегом `phase-0`. Пачка `0.5-reference` запущена 2026-10-16T17:26:07+03:00: бриф
-`.claude/artifacts/briefs/0.5-reference.md`, worktree
-`../combat-planner-v2.wt/0.5-reference`, Opus 5.5, high. Гейт на этой машине
-идёт с `COMBAT_PLANNER_NO_DOCKER=1` (маркер `.docker-*` не проверяется), пока
-владелец не даст доступ к Docker. Следующий шаг: hand-back, интеграция, тег
-`phase-0.5`, затем фаза 1 (две пачки параллельно).
+Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Идёт фаза 2.1:
+`2.1-atoms-a`, `2.1-atoms-b` слиты и проверены, `2.1-atoms-c` на гейте,
+`2.1-atoms-d` строится. Далее `fix-2.1` (один агент), затем молекулы 2.2 по две
+параллельно. Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
+Интеграция: `.claude/run/gate.sh <batch> <worktree> <range>` в фоне, затем
+`.claude/run/merge.sh <batch>` (rebase на master, где с момента гейта менялись
+только `.claude/**`, ff-merge, удаление worktree и ветки).
 
 ## Пачки
 
@@ -43,10 +44,10 @@
 | -1-renders | guarded — | renders, errata |
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
-| 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
+| 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` , P2 closed by fix-1-domain-core | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | guarded `.claude/artifacts/guard/1-domain-rest.md` | project, undo, index, tests |
-| 1-api-contract | rework 1 → fix-1-api-contract, guard `.claude/artifacts/guard/1-api-contract.md` (2 P1) | ApiClient |
-| fix-1-api-contract | merged 5d06366, guard running | ApiClient |
+| 1-api-contract | guarded `.claude/artifacts/guard/1-api-contract.md`, P1 ×2 closed by fix-1-api-contract | ApiClient |
+| fix-1-api-contract | guarded `.claude/artifacts/guard/fix-1-api-contract.md` | ApiClient |
 | fix-1-domain-core | guarded `.claude/artifacts/guard/fix-1-domain-core.md` | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
@@ -158,6 +159,11 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-1-api-contract, P3: имя типа `Link` в `@combat-planner/api` может
+  столкнуться с `Link` роутера; `LinkReissueResult` `{ token, version }` против
+  `Link` `{ token, generation }`; memory-клиент в тесте не эмитит переходы
+  соединения (это делает `FakeApiClient` в 2.4).
 
 - 0-toolchain, P3: `check-commit.sh` исключает `pnpm-lock.yaml` и
   `**/__screenshots__/**` из лимита 1500 строк; CLAUDE.md Checks об этом не
