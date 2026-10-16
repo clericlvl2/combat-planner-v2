@@ -62,8 +62,8 @@
 | 2.3-organisms-a | rework 1 → `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` (P1 Sheet focus escapes on Shift+Tab) |
 | fix-2.3-organisms-a | merged 42544a4, gate ok `.claude/run/fix-2.3-organisms-a/summary.log` (re-gated after 2.3-organisms-g), guard running | Sheet, Dialog |
 | 2.3-organisms-b | rework 1 → `fix-2.3-organisms-b`, guard `.claude/artifacts/guard/2.3-organisms-b.md` (P1 Drawer Shift+Tab, P1 Menu focus with motion on) |
-| fix-2.3-organisms-b | todo, brief ready, next builder slot (before e/f, which compose Menu) | Menu, Drawer |
-| 2.3-organisms-c | running worker-bee 2026-10-17T03:10+03:00 | PageHeader, PlayerHeader |
+| fix-2.3-organisms-b | running worker-bee (agent of 2.3-organisms-b) 2026-10-17T03:40+03:00 | Menu, Drawer |
+| 2.3-organisms-c | rebased, report `.claude/artifacts/reports/2.3-organisms-c.md`, gate running | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
@@ -92,6 +92,15 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-c, решения оркестратора 2026-10-17: пропсы PageHeader
+  (`onBack?` для Nested, `action?`, `search?`/`onSearch`, `tools?`/`onTool`,
+  `filters?`/`onRemoveFilter`/`onClearFilters`) приняты, `nav: 'close'` и `sub`
+  не строятся (ни ячейки, ни экрана); пункт меню игрока «Heroes» по vision
+  вместо «Change hero» страницы — принято; пропсы PlayerHeader и хост,
+  владеющий открытием меню, приняты; fr «Plus» вместо «Menu» не принято —
+  `fix-2.3` ставит «Menu» с записью в `allow-same.txt` (верный перевод важнее
+  обхода проверки).
 
 - fix-2.3-organisms-a, решение оркестратора 2026-10-17: ключи `_few`/`_many`
   в en/de/es/fr/ja повторяют `_other`, потому что `check-i18n` требует
@@ -294,6 +303,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-c: «9:41» от PhoneFrame с отступом 32 (страница PlayerHeader
+  24); «Menu tapped» с открытым меню и фокусом на первом пункте; ru-плейсхолдер
+  без многоточия.
 
 - 2.3-organisms-g: TagSheet «“mo” matches» без строки Create (решение
   владельца); список из 8 тегов вместо 6; «Created and checked» без метки
