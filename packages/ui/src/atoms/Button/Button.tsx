@@ -16,7 +16,6 @@ export interface ButtonProps extends Omit<
   icon?: Icon;
   fullWidth?: boolean;
   disabled?: boolean;
-  type?: 'button' | 'submit' | 'reset';
   onClick?: MouseEventHandler<HTMLButtonElement>;
   children: ReactNode;
 }
@@ -27,7 +26,6 @@ export function Button({
   icon: IconComponent,
   fullWidth = false,
   disabled = false,
-  type = 'button',
   onClick,
   children,
   className,
@@ -38,7 +36,7 @@ export function Button({
     <UnstyledButton
       {...rest}
       component="button"
-      type={type}
+      type="button"
       className={className ? `${classes.root} ${className}` : classes.root}
       data-variant={variant}
       data-size={size}

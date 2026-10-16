@@ -55,7 +55,7 @@
     color: var(--cp-color-ink);
   }
 
-  &:active:not(:disabled),
+  &:active,
   &[data-pressed] {
     background: var(--cp-color-ink-pressed);
 
@@ -74,6 +74,11 @@
     background: var(--cp-color-disabled);
     color: var(--cp-color-muted);
     cursor: not-allowed;
+
+    &[data-variant='primary'],
+    &[data-variant='danger'] {
+      background: var(--cp-color-disabled);
+    }
 
     &[data-variant='secondary'] {
       background: var(--cp-color-surface);
