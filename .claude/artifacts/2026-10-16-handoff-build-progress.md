@@ -57,8 +57,8 @@
 | 2.2-molecules-c | guarded `.claude/artifacts/guard/2.2-molecules-c.md` | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
-| fix-2.2 | rebased, report `.claude/artifacts/reports/fix-2.2.md`, gate running | |
-| 2.3-organisms-a | todo | Sheet, Dialog |
+| fix-2.2 | merged 9bc5b56, gate ok `.claude/run/fix-2.2/summary.log`, guard running | |
+| 2.3-organisms-a | running worker-bee 2026-10-17T00:35+03:00 | Sheet, Dialog |
 | 2.3-organisms-b | todo | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
 | 2.3-organisms-d | todo | BottomBar, TurnBar |
