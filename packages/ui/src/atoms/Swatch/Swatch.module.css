@@ -1,0 +1,60 @@
+.root {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  aspect-ratio: 1;
+  vertical-align: top;
+  padding: 0;
+  border: none;
+  border-radius: var(--mantine-radius-field);
+  background: var(--swatch-fill);
+  color: var(--cp-color-surface);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-size='S'] {
+    width: 32px;
+    height: 32px;
+  }
+
+  &[data-size='L'] {
+    width: 48px;
+    height: 48px;
+  }
+
+  &[data-selected] {
+    box-shadow:
+      0 0 0 2px var(--cp-color-surface),
+      0 0 0 4px var(--cp-color-ink);
+  }
+
+  &[data-tap] {
+    box-shadow: 0 0 0 3px var(--cp-state-tap-marker);
+  }
+
+  &:disabled,
+  &[data-disabled] {
+    background: var(--cp-color-disabled);
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+
+    &[data-selected] {
+      outline-offset: 6px;
+    }
+  }
+}
+
+.check {
+  flex: none;
+}
