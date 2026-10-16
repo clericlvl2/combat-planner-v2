@@ -59,7 +59,8 @@
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
 | fix-2.2 | guarded `.claude/artifacts/guard/fix-2.2.md` | |
-| 2.3-organisms-a | merged 4ed54f8, gate ok `.claude/run/2.3-organisms-a/summary.log`, guard running | Sheet, Dialog |
+| 2.3-organisms-a | rework 1 → `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` (P1 Sheet focus escapes on Shift+Tab) |
+| fix-2.3-organisms-a | todo, brief ready, waits for a builder slot | Sheet, Dialog |
 | 2.3-organisms-b | running worker-bee 2026-10-17T01:05+03:00 | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
 | 2.3-organisms-d | rebased, report `.claude/artifacts/reports/2.3-organisms-d.md`, gate running | BottomBar, TurnBar |
