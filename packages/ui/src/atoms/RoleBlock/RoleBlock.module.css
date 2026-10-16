@@ -22,25 +22,25 @@
     cursor: pointer;
   }
 
-  &[data-role='hero'] {
+  &[data-unit-role='hero'] {
     background: var(--cp-role-hero);
   }
 
-  &[data-role='ally'] {
+  &[data-unit-role='ally'] {
     background: var(--cp-role-ally);
   }
 
-  &[data-inactive][data-role] {
+  &[data-inactive][data-unit-role] {
     background: var(--cp-role-inactive);
   }
 
-  &[data-role]:focus-visible,
-  &[data-role][data-focus] {
+  &[data-unit-role]:focus-visible,
+  &[data-unit-role][data-focus] {
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
   }
 
-  &[data-role][data-tap] {
+  &[data-unit-role][data-tap] {
     outline: 3px solid var(--cp-state-tap-marker);
     outline-offset: -3px;
   }

@@ -9,7 +9,7 @@ export type UnitRole = 'hero' | 'enemy' | 'ally';
 export type RoleBlockTop = { kind: 'initiative'; value: number } | { kind: 'hp'; value: number };
 
 export interface RoleBlockProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'onClick'> {
-  role: UnitRole;
+  unitRole: UnitRole;
   top: RoleBlockTop | null;
   label?: string;
   active?: boolean;
@@ -25,7 +25,7 @@ function formatValue(value: number): string {
 }
 
 export function RoleBlock({
-  role,
+  unitRole,
   top,
   label,
   active = false,
@@ -38,7 +38,7 @@ export function RoleBlock({
   ...rest
 }: RoleBlockProps) {
   const { t } = useTranslation('RoleBlock');
-  const shownLabel = label ?? (top?.kind === 'hp' ? t('hp') : t(role));
+  const shownLabel = label ?? (top?.kind === 'hp' ? t('hp') : t(unitRole));
   const content = (
     <>
       {active ? <span className={classes.notch} data-notch="" aria-hidden="true" /> : null}
@@ -57,7 +57,7 @@ export function RoleBlock({
   );
   const shared = {
     className: className ? `${classes.root} ${className}` : classes.root,
-    'data-role': role,
+    'data-unit-role': unitRole,
     'data-active': active || undefined,
     'data-inactive': dead || disabled || undefined,
   };
