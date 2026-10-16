@@ -84,8 +84,8 @@
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
-| fix-3 | todo, after `3-server-rest` guard | sse leak, final events, client stream errors |
-| 3-server-rest | merged 3a92985, gate ok `.claude/run/3-server-rest/summary.log` (re-gated after 2.3-organisms-a), guard running | auth, presets, tags, settings, account |
+| fix-3 | todo, brief ready, waits for a builder slot | live, auth |
+| 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
@@ -332,6 +332,13 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 3-server-rest → `fix-3`: P2 лимит display name только в `PATCH /account`
+  (sign-up, `/update-user`, social не ограничены, клиент падает на
+  `sessionSchema`); P2 (гипотеза) нет `trustedOrigins` — sign-in под `pnpm dev`
+  с 5173 получает 403; P3 wildcard открывает `/change-password`; P3 типы
+  `AuthRoutes` вручную. Вне scope → `2.4-api-hooks`: в `ApiClient` нет social
+  sign-in и списка настроенных провайдеров (vision Account).
 
 - fix-2.2, P3 → `fix-2.3`: `inputMode` Stepper по `min < 0`, не по `signed`
   (Stepper.tsx:121; InitiativePopover с min −9 стал `numeric`); `ExtraReadOnly`
