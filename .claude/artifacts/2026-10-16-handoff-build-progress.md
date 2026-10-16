@@ -65,12 +65,12 @@
 | fix-2.3-organisms-b | guarded `.claude/artifacts/guard/fix-2.3-organisms-b.md` (P1 ×2 closed) | Menu, Drawer |
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
-| 2.3-organisms-e | running worker-bee 2026-10-17T05:00+03:00 | CombatHeader, CombatCard |
+| 2.3-organisms-e | rebased, report `.claude/artifacts/reports/2.3-organisms-e.md`, gate running | CombatHeader, CombatCard |
 | 2.3-organisms-f | running worker-bee 2026-10-17T05:30+03:00 | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | merged c2860d6, gate ok `.claude/run/2.3-organisms-i/summary.log` (test and visual passed on retry, import flake), guard running | MessageScreen, PlayerRow |
-| 2.3-UnitRow | todo | UnitRow |
+| 2.3-UnitRow | running worker-bee 2026-10-17T05:50+03:00 | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
 | fix-2.3 | todo | |
@@ -92,6 +92,15 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-e, решения оркестратора 2026-10-17: меню CombatHeader по
+  странице с Add unit (в Active другого входа нет, vision разрешает добавлять
+  юнитов в Active) — принято, правка vision между фазами; API CombatHeader
+  (хост владеет `open`, `onClose`, `onRoundChange`, `onEscalationChange`,
+  `onMenuSelect`) и поповеры принят; → `fix-2.3`: `undoDisabled` у CombatHeader
+  (vision: undo до 10 шагов, при пустой истории пункт неактивен); API
+  CombatCard и статус чипом + мета-строкой по странице и vision приняты; fr
+  «Menu» в allow-same — по решению для PlayerHeader.
 
 - 2.3-organisms-i, решения оркестратора 2026-10-17: фон своего героя белый по
   скрипту и рендеру (vision и SPEC говорят «light blue») — принято, правка
@@ -343,6 +352,9 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-e: открытые меню и выбор грани с фокус-кольцом; ja-заголовок
+  CombatCard в одну строку при 366.
 
 - 2.3-organisms-i: ряд PlayerRow 342 в историях (в списке 366); CardActions под
   заметкой своего ряда; MessageScreen на весь экран с отступами скрипта.
