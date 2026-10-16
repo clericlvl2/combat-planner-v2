@@ -44,8 +44,8 @@ consistent design. A feature must be both easy to maintain and useful at the tab
 - Where the handoff shows a behavior this document does not describe, the handoff
   applies. Where the two conflict, this document applies and the nearest handoff
   component is used for the visuals.
-- Domain tests in `packages/domain` are the executable form of this document.
-  Where they disagree, the tests win.
+- Domain tests in `packages/domain` are the executable form of this document and
+  are written from it.
 
 ## Roles
 
@@ -545,8 +545,8 @@ donations, credits, "Not affiliated with Pelgrane Press".
 - `packages/api`: Drizzle schema, Hono sub-apps, the exported `AppType`, the
   `ApiClient` interface and its Hono implementation.
 - `packages/ui`: theme, components, hooks, screens, fake API client, Storybook.
-- `vp run` builds packages before the apps that depend on them, with caching.
-- `packages/*` are packaged with `vp pack`.
+- Internal packages are imported from source through workspace links and TS
+  project references; nothing is packed.
 
 ### Dev
 
@@ -619,9 +619,10 @@ donations, credits, "Not affiliated with Pelgrane Press".
 - The owner reviews design in Storybook and in a browser, and features on a phone.
 - Agents own code, tests and code review. They build the whole application from
   the handoff and this document in one run; the owner reviews the result.
-- Gate: `vp check`, `vp test`, Storybook build, `vp build`, e2e. No commit is made
-  without the gate passing.
-- Linear history; one commit per build phase.
+- Checks: an agent runs the type check and its unit's tests before each commit;
+  the orchestrator runs lint, type check, tests, Storybook build and app build
+  before integrating a branch; e2e runs before a phase tag once it exists.
+- Linear history; one commit per unit of work; a tag per build phase.
 
 ## Roadmap
 

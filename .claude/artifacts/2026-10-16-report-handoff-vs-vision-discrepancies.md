@@ -1,9 +1,10 @@
 # Handoff vs vision.md: discrepancies
 
 Three read-only sweeps over `docs/design/handoff/` (atoms+molecules, organisms, screens
-and flows) against `docs/vision.md`. Visual values excluded. Decision column holds the owner's answers of 2026-10-16; `fold` = handoff rule goes into vision.md as is.
+and flows) against `docs/vision.md`. Visual values excluded. Frozen 2026-10-16; later
+decisions go to the plan. Decision column holds the owner's answers.
 
-## Conflicts, owner decides
+## Conflicts, decided
 
 | # | Topic | Handoff | vision.md | Decision |
 |---|-------|---------|-----------|----------|
@@ -24,7 +25,7 @@ and flows) against `docs/vision.md`. Visual values excluded. Decision column hol
 | 15 | From Library add | CS-F1.4 arrow "Add · ×6" vs UnitForm CTA "Add <name>" single | pick a preset (singular) |  one preset per add, form closes |
 | 16 | Next turn blocked by dead units | reason text only "Every unit is disabled" | blocked when all disabled or dead |  one text for both |
 
-## Handoff rules absent in vision.md, fold unless objected
+## Handoff rules absent in vision.md, folded
 
 - Start unavailable with no units; TurnBar "Add a unit first"; combat-screen EmptyState with Add unit.
 - UnitForm: empty name → "<Type> 1"; Type default Enemy; hint about initiative roll per status.

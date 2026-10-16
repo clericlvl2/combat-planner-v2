@@ -2,362 +2,354 @@
 
 Собрать приложение целиком по `docs/vision.md` и `docs/design/handoff/` за один прогон
 агентов, без владельца между фазами. Владелец получает одно сообщение в конце.
+Правила для агентов, жизненный цикл документов, ветки, коммиты, проверки и
+интеграция: корневой `CLAUDE.md`. Этот план их не повторяет.
 
 ## Источники
 
 - `docs/vision.md` — закон для поведения, данных, стека, архитектуры.
-- `docs/design/handoff/` — закон для визуала, раскладки, дерева компонентов, состояний.
-  Вход `Styleguide.dc.html`, правила `README.md`, токены `Tokens.dc.html`, размеры
-  `Baselines.dc.html`. Файлы хэндоффа только читаются, не правятся.
-- Не источник: `docs/archive/` (прежний vision, брейншторм, рабочие заметки дизайна).
-- Расхождение хэндоффа с vision.md, где оба описывают одно и то же по-разному, агент
-  не решает: записывает в прогресс-файл под «Вопросы владельцу» и останавливает фазу.
-  Оркестратор задаёт вопрос владельцу и ждёт.
+- `docs/design/handoff/` — закон для визуала, раскладки, дерева компонентов,
+  состояний. Только чтение. `docs/design/handoff-errata.md` перечисляет строки
+  бандла, которые не действуют.
+- `docs/design/renders/` — PNG каждой страницы и каждого флоу хэндоффа, снятые в
+  браузере в фазе −1.
+- Не источник: `docs/archive/`.
+- Вопрос, на который источники не отвечают, не останавливает прогон: агент строит
+  по vision.md, затем по хэндоффу, вопрос пишет в `REPORT.md`. Оркестратор
+  собирает вопросы в итоговое сообщение.
 
-## Решения владельца, зафиксированные 2026-10-16
+## Решения владельца
+
+2026-10-16:
 
 - Эскалация растёт на 1 при переходе на новый раунд, максимум 6.
-- Set Temp заменяет temp HP. Heal не поднимает HP выше Max.
-- Duplicate юнита ставит копию сразу под оригиналом с именем `<name> 2`, `<name> 3`.
-- Копия боя: `<title> (copy)`, Setup, полные HP, без temp HP, состояний, инициативы,
-  захватов, ссылки, лога и даты last played.
-- Тег до 24 символов, совпадение без учёта регистра, написание существующего тега
-  переиспользуется.
-- Удаление пресета не меняет юнитов в боях.
+- Set Temp заменяет temp HP. Heal не поднимает HP выше Max. Set Max обрезает HP.
+- Duplicate юнита: копия под оригиналом, `<name> 2`, HP полные, инициатива скопирована.
+- Копия боя: `<title> (copy)`, Setup, полные HP, без захватов, ссылки, лога.
+- Тег до 24 символов, без учёта регистра. Удаление пресета не трогает юнитов.
 - Save as preset копирует имя, тип, Max HP, AC, PD, MD, бонус инициативы.
-- Если героя заняли, пока игрок выбирал, — тост и неактивный Join.
-- События DM приходят игроку тостами; отозванная ссылка и удалённый бой — экраном.
-- Подпись сортировки по дате открытия: «Last played».
-- Тексты тостов, диалогов, пустых состояний и About пишут агенты на английском и
-  переводят на de, es, fr, ja, ru. Владелец правит после.
-- Коммит после каждой зелёной фазы.
-- Ревью между фазами: только `guard-bee` по критериям этого плана.
-- Запуск сборок, тестов, Storybook, dev-серверов и Docker разрешён на весь прогон.
-- Не делать: тёмную тему, десктопную раскладку, redo, сброс пароля, офлайн, дизайн
-  состояний загрузки (загрузка — пустой экран, без индикатора).
-- Из стека убраны dnd-kit (ручного порядка боёв нет, других перетаскиваний нет) и
-  `@storybook/addon-themes` (одна тема).
-- Расхождения хэндоффа и vision.md разобраны до старта, решения внесены в
-  `docs/vision.md`; таблица в
-  `.claude/artifacts/2026-10-16-report-handoff-vs-vision-discrepancies.md`.
-  Где хэндофф и vision.md теперь расходятся (игрок правит инициативу и в Active,
-  несколько героев у игрока с чекбоксами на экране Heroes, Edit у своей строки
-  игрока, бонус инициативы в форме пресета, About с дополнительными строками,
-  тост Undo без Redo), агенты строят по vision.md, беря ближайший компонент
-  хэндоффа.
+- Игрок: несколько героев, экран Heroes с чекбоксами, Join/Done; инициатива и в
+  Active; Edit своей карточки с заблокированным типом; имена игроков видны всем.
+- Удаление юнита с подтверждением и тостом с Undo. Тост Undo без Redo. Тост
+  ошибки с Retry. 409 — тихий перезапрос и тост. SSE — тост «Reconnecting…».
+- Защиты 0–99 везде. Бонус инициативы в форме пресета. Create тега только при
+  отсутствии совпадений. Копия пресета наверх. Один пресет за добавление.
+- Подпись сортировки «Last played». About с описанием, privacy note, донатами,
+  credits. Тексты пишут агенты на английском и переводят; владелец правит после.
+- Не делать: тёмную тему, десктоп, redo, сброс пароля, офлайн, индикаторы загрузки.
+- Из стека убраны dnd-kit и `@storybook/addon-themes`; `vp pack` не используется,
+  пакеты импортируются из исходников.
+- Ревью между пачками: только `guard-bee`. Запуск процессов, браузера и Docker
+  разрешён на весь прогон. Одновременно не больше двух агентов-исполнителей.
+- Модели: Fable 5.1 на domain, сервер и guard-bee; Opus 5.5 на всё остальное.
+- Автокомпакт оркестратора 50 %.
 
-## Модель исполнения
+## Исполнение
 
-Правила веток, коммитов и общих файлов для агентов: корневой `CLAUDE.md`.
+- Оркестратор не пишет код. Он пишет брифы, создаёт worktree, запускает агентов,
+  интегрирует ветки, гоняет гейт, ведёт прогресс-файл, пишет `handoff-errata.md`.
+- Пачка — единица запуска агента. Бриф пачки `.claude/artifacts/briefs/<batch>.md`:
+  путь worktree, список единиц работы (имена = темы коммитов), файлы хэндоффа и
+  рендеры для чтения, разрешённые пути, критерии приёмки, команды pre-commit.
+- Исполнитель `worker-bee`. Модель и усилие по таблице фазы.
+- Размер пачки: атомы 3–4, молекулы 3, организмы 2, UnitRow / UnitForm /
+  NumpadSheet / CombatScreen по одному. Экраны по одному на агента.
+- Между уровнями UI пачка `fix-<уровень>`: один агент правит ошибки нижнего уровня,
+  найденные при сборке верхнего, и перегенерирует зависимые скриншоты. Агенты
+  верхнего уровня баги нижнего не правят, а пишут их в `REPORT.md`.
+- После автокомпакта: прочитать план и прогресс-файл, выполнить `scripts/status.sh`,
+  сверить каждую строку прогресса не в `todo`, продолжить с первой незавершённой.
+  Агент с mtime в worktree моложе 15 минут жив, его не перезапускают.
+- Агент без отчёта и без свежих файлов перезапускается с тем же брифом в том же
+  worktree; незакоммиченное отбрасывается `git checkout -- .`.
 
-- Оркестратор (главная сессия) не пишет код. Он создаёт worktree и ветку на
-  агента, запускает агентов, гоняет гейт, вливает ветки в `master`, ставит теги,
-  ведёт прогресс-файл.
-- Исполнитель: `worker-bee`. Бриф агенту: путь worktree, раздел этого плана,
-  список его единиц работы (компоненты, модули), список файлов хэндоффа для
-  чтения, список путей, которые можно трогать, команды проверки перед коммитом.
-- Единица работы агента — пачка из 5–7 компонентов или 2–4 модулей. Внутри уровня
-  пачки идут параллельно, каждая в своём worktree.
-- Интеграция пачки: агент делает `git rebase master` и отчитывается; оркестратор
-  гоняет полный гейт на ветке, затем `guard-bee` сверяет коммиты ветки с
-  критериями фазы; P0–P1 возвращаются агенту тем же брифом; после зелёного гейта
-  `git merge --ff-only` в `master`, ветка и worktree удаляются.
-- Гейт, все четыре команды зелёные: `pnpm check`, `pnpm test`,
-  `pnpm storybook:build`, `pnpm build`. Точные команды закрепляет фаза 0 в
-  корневом `CLAUDE.md`; остальные фазы используют их без изменений.
-- После последней пачки фазы: полный гейт на `master`, тег `phase-<N>`.
-- Прогресс-файл `.claude/artifacts/2026-10-16-handoff-build-progress.md`: таблица
-  фаз и чеклисты единиц работы. Статус единицы выводится из `git log master` и
-  диска (папка компонента с кодом, историями и скриншотами), не со слов агента.
-  Оркестратор обновляет файл после каждого отчёта и каждого слияния. После
-  автокомпакта оркестратор читает план и прогресс-файл и продолжает с первой
-  незавершённой единицы.
-- Агент, чей отчёт не пришёл, перезапускается с тем же брифом в том же worktree:
-  коммиты сохранены, незакоммиченное отбрасывается `git checkout -- .`.
+## Гейт и версии
 
-## Версии
+Три уровня проверок и скрипты `scripts/check-*.mjs`: `CLAUDE.md`, раздел Checks.
+Точные команды закрепляет фаза 0 в разделе Commands.
 
 Node 24 (`.nvmrc`), pnpm 10, React 19, Vite+ `vp` ^1.1, TypeScript 5, Mantine 9,
-Storybook 10, Vitest через `vp test`, Playwright (версия, под которую есть образ
-`mcr.microsoft.com/playwright:v<X>-noble`), Hono 4, Zod, Drizzle ORM, better-sqlite3,
-Better Auth. Точные версии ставятся как последние стабильные на момент фазы 0 и
-записываются в корневой `CLAUDE.md`. Если `vp` не умеет какую-то операцию, она
-делается инструментом, который `vp` оборачивает (vitest, oxlint, tsc), через
-конфигурацию `vp`; второй параллельный тулчейн не заводится.
+Storybook 10, Vitest через `vp test`, Playwright с образом
+`mcr.microsoft.com/playwright:v<X>-noble`, Hono 4, Zod, Drizzle ORM,
+better-sqlite3, Better Auth. Версии ставятся последними стабильными в фазе 0 и
+записываются в `CLAUDE.md`.
 
-## Фаза 0 — монорепо и тулчейн
+## Фаза −1 — рендеры хэндоффа и errata
 
-Один агент.
+Оркестратор и `chrome-rider` (Sonnet 5.5, lower). `npx serve docs/design/handoff`,
+браузер снимает каждую страницу `*.dc.html?embed=1` в
+`docs/design/renders/<Name>.png` и каждый флоу экранных страниц
+`?embed=1&flow=<CODE>` в `docs/design/renders/<Screen>-<CODE>.png`, полная высота,
+ширина окна 1280. Оркестратор пишет `docs/design/handoff-errata.md`: строки README
+о выборе стека и об открытых вопросах не действуют; `PROTOTYPE-RULES.md` описывает
+прототип, не приложение; пометка `status="Draft"` на страницах не означает
+незавершённость; `VISION-UPDATES.md` и `TODO.md` в архиве.
 
-Создать:
+Приёмка: PNG на каждую из 49 страниц и на каждый из 35 кодов флоу; errata
+закоммичена. Коммит `docs(design): handoff renders and errata`.
 
-- `pnpm-workspace.yaml`, корневой `package.json` со скриптами `check`, `test`,
-  `storybook`, `storybook:build`, `build`, `dev`, `screenshots:update`, `e2e`.
-- `.nvmrc` = `24`, `.npmrc` (`shamefully-hoist=false`), `.editorconfig`.
-- `tsconfig.base.json`, по `tsconfig.json` в каждом пакете, project references.
-- `vite.config.ts` в корне или по пакетам (как требует `vp`) с Vitest-проектами:
-  `unit` (domain, api, server), `storybook` (addon-vitest, browser provider
-  `playwright()` из `@vitest/browser-playwright`, `setProjectAnnotations` в
-  `setupFiles`), `visual` (скриншоты по composed stories, baselines в
-  `packages/ui/__screenshots__/`, обновление через скрипт `screenshots:update`,
-  который гоняет проект `visual` внутри закреплённого Docker-образа Playwright).
-- `packages/domain`, `packages/api`, `packages/ui`, `apps/web`, `apps/server` —
-  скелеты с `package.json`, `src/index.ts`, одним тестом или одной историей.
-- `packages/ui`: Mantine 9 с `styles.layer.css`, `postcss.config.cjs`
-  (`postcss-preset-mantine`, `postcss-simple-vars`), Storybook 10
-  (`@storybook/react-vite`, `addon-docs`, `addon-vitest`, `addon-mcp`,
-  `storybook-addon-remix-react-router`), CSF factories, `preview.tsx` с
-  `MantineProvider` и i18n-декоратором с переключателем локали в тулбаре, одна
-  история `Hello` со скриншотом.
-- `apps/web`: Vite dev с proxy `/api` → `http://localhost:3000`.
-- `apps/server`: Hono «hello», порт 3000, отдаёт `apps/web/dist` при наличии.
-- Корневой `CLAUDE.md`: точные команды гейта, структура пакетов, версии, правила
-  для агентов (где лежат истории, как называются, как обновлять скриншоты, что
-  хэндофф и vision — закон).
-- `.gitignore` дополнить тем, что требует тулчейн.
+## Фаза 0 — тулчейн, спайк
 
-Критерии приёмки: четыре команды гейта зелёные; `pnpm dev` поднимает web и server;
-`pnpm storybook` показывает историю `Hello`; скриншот `Hello` закоммичен и
-воспроизводится командой `screenshots:update`.
+Пачка `0-toolchain`, Opus 5.5, high. Лимит: 150 вызовов инструментов, после него
+агент отчитывается, что получилось и что нет.
 
-## Фаза 1 — packages/domain
+Дерево решений, каждый пункт фиксируется в `CLAUDE.md` Commands и Versions:
 
-Две пачки: `1-domain-core` (types, schemas, actions, health, sort, names, reduce,
-authorize) и затем `1-domain-rest` (project, undo, index, тесты по таблицам).
-Коммит на модуль. Тесты — спецификация поведения; при расхождении с vision.md агент
-записывает вопрос, тесты пишет по vision.md.
+- `vp` ^1.1 как единый бинарь. Если `vp test` не поднимает Vitest-проекты с
+  браузерным провайдером после двух попыток — Vitest вызывается напрямую через
+  `vitest --project`, остальное остаётся на `vp`.
+- Storybook 10 + `@storybook/addon-vitest` + `@vitest/browser-playwright`. Если
+  CSF factories не работают с addon-vitest — обычный CSF3 с
+  `setProjectAnnotations` в `setupFiles`; выбор записывается, эталонный Button
+  следует ему.
+- Проект `visual`: скриншоты composed stories через `toMatchScreenshot`, baselines в
+  `packages/ui/__screenshots__/<Name>/`, генерация только скриптом
+  `screenshots:update`, который запускает проект внутри образа Playwright и пишет
+  маркер `.docker-<tag>`. Если браузерный Vitest не снимает скриншоты — Playwright
+  test runner по `index.json` Storybook, тот же каталог baselines.
+- `storybook-addon-remix-react-router` и `@storybook/addon-mcp`: если не ставятся с
+  React Router 7 или Storybook 10 — не ставятся, записывается в Versions.
+- Mantine 9: `styles.layer.css`, postcss-preset-mantine.
 
-`packages/domain/src`:
+Создать: `pnpm-workspace.yaml`; корневой `package.json` со скриптами `check`,
+`test`, `storybook`, `storybook:build`, `build`, `dev`, `screenshots:update`,
+`e2e`, `status`; `.nvmrc` = 24; `tsconfig.base.json` и project references;
+`vite.config.ts` с проектами `unit`, `storybook`, `visual`; скелеты
+`packages/domain`, `packages/api`, `packages/ui`, `apps/web`, `apps/server` с
+одним тестом или историей; `apps/web` с proxy `/api`; `apps/server` Hono с
+маршрутами `/api/health` и `/api/events` (SSE, тик раз в секунду), статика из
+`apps/web/dist`; все зависимости из раздела Stack vision.md плюс тестовые;
+`scripts/check-comments.mjs`, `scripts/check-commit.sh`, `scripts/status.sh`;
+`.gitignore`.
 
-- `types.ts`: `Combat` (`id`, `title`, `description`, `color` 0–7, `status`
-  `setup|active`, `round`, `escalation`, `activeUnitId`, `lastPlayedAt`,
+Единицы (коммиты): `workspace`, `vitest projects`, `storybook`, `skeletons`,
+`scripts`, `CLAUDE.md commands`.
+
+Приёмка: с чистого клона `pnpm install --frozen-lockfile` и четыре команды гейта
+зелёные; `pnpm dev` поднимает web и server, SSE `/api/events` читается через proxy
+в браузере; история `Hello` со скриншотом, воспроизводимым `screenshots:update`;
+`docker run` закреплённого образа Playwright проходит; `CLAUDE.md` Commands,
+Versions, Dependencies заполнены. Тег `phase-0`.
+
+## Фаза 0.5 — тема и эталонный Button
+
+Пачка `0.5-reference`, Opus 5.5, high.
+
+- `packages/ui/src/theme.ts`: палитра из `Tokens.dc.html` (base, roles, health, HP
+  actions, 12 conditions), шрифты Unbounded / Rubik / Noto Sans JP через
+  `@fontsource`, размеры 11/12/14/16/18/22/28/44, межстрочные 1/1.25/1.45, spacing
+  4/8/12/16/24/32, radius 2/12/16/24/full, `defaultProps` и `classNames` под
+  хэндофф, выключенные transitions и focus ring Mantine в пользу стилей хэндоффа.
+- `packages/ui/src/layout.ts`: константы `Baselines.dc.html`.
+- `packages/ui/src/provider.tsx`: `UiProvider` с `motion: 'on' | 'off'`.
+- `PhoneFrame` декоратор, i18n-декоратор с переключателем локали.
+- История `ThemeAudit`: все токены на одном экране, скриншот сверяется с
+  `renders/Tokens.png`.
+- Атом `Button` целиком по `Button.dc.html`: все ячейки Variants × states, Sizes,
+  Edge cases как истории с именами ячеек, `play` на поведение, шесть файлов i18n,
+  скриншоты из Docker, селекторы `&:active, &[data-pressed]`.
+- `scripts/check-stories.mjs`, `check-i18n.mjs`, `check-screenshots.mjs`,
+  проверенные на Button; строка в `CLAUDE.md` Commands, включающая их в `check`.
+
+Единицы: `theme`, `PhoneFrame`, `ThemeAudit`, `Button`, `check scripts`.
+
+Приёмка: guard-bee сверяет `Button` со всеми ячейками страницы и с
+`renders/Button.png`; скрипты падают на подложенном нарушении каждого правила
+(тест-фикстуры в `scripts/test/`). Тег `phase-0.5`.
+
+## Фаза 1 — packages/domain и контракт API
+
+Fable 5.1, high. Три пачки подряд.
+
+`1-domain-core`, единицы `types`, `schemas`, `actions`, `health`, `sort`, `names`,
+`reduce`, `authorize`:
+
+- `types.ts`: `Combat` (`id`, `title`, `description`, `color` 0–7, `status`,
+  `round`, `escalation`, `activeUnitId | null`, `lastPlayedAt | null`,
   `linkGeneration`, `version`, `units[]`, `players: Record<playerId, displayName>`),
-  `Unit` (поля из vision.md «Unit → Fields» плюс `id`, `claimedBy`, `hpHistory[]`),
-  `HpHistoryEntry` (`kind` `damage|heal|temp|max`, `amount`, `result`, `round|null`,
-  `at`), `Preset`, `Tag`, `Condition` (12), `HealthStatus`, `Viewer`
-  (`'dm' | { playerId }`).
-- `schemas.ts`: Zod-схемы всех типов и действий, лимиты из vision.md «Limits» и
-  «Unit → Fields» как константы `LIMITS`.
-- `actions.ts`: дискриминированный union. Бой: `start`, `nextTurn`, `editRound`,
-  `setEscalation`, `restart`, `clear`, `undo`. Юнит: `addUnit`, `editUnit`,
+  `Unit` (поля vision.md «Unit → Fields» плюс `id`, `claimedBy | null`,
+  `hpHistory[]`), `HpHistoryEntry` (`kind` `damage|heal|temp|max`, `amount`,
+  `result`, `round | null`, `at`), `Preset`, `Tag`, `Condition`, `HealthStatus`,
+  `Viewer`.
+- `schemas.ts`: Zod-схемы и `LIMITS`.
+- `actions.ts`: `start` (с массивом бросков), `nextTurn`, `editRound`,
+  `setEscalation`, `restart`, `clear`, `undo`, `addUnit`, `editUnit`,
   `duplicateUnit`, `removeUnit`, `setDisabled`, `setInitiative`, `rollInitiative`
-  (бросок в payload, сервер проверяет диапазон 1–20), `damage`, `heal`, `setTempHp`,
-  `setMaxHp`, `setDefenses`, `toggleCondition`, `editNote`, `claimUnit`,
-  `releaseUnit`. У каждого действия `id` (ULID), `version`. `rollInitiative` при
-  `start` — массив бросков для юнитов без инициативы.
-- `reduce.ts`: `apply(combat, action, author, now) → { combat, patch } | DomainError`.
-  Чистая функция. Правила: порядок юнитов, пропуск disabled и dead, лимит 99,
-  правила HP, Set Max обрезает HP, Set Temp заменяет, восстановление при Restart,
-  Clear и удаление последнего юнита переводят в setup, переходы из таблицы
-  «Transitions», причина блокировки Next turn (`nextTurnBlockReason(combat)`).
-- `authorize.ts`: `authorize(combat, action, author)` — таблица «Unit → Actions»
-  и правила claims.
-- `project.ts`: `project(combat, viewer)` по таблице «Visibility for players»;
-  disabled-юниты игрокам не отдаются; у DM видны `claimedBy` с именем игрока.
-- `undo.ts`: patch = снимок изменённых полей до действия; `applyPatch`.
-  Глубина 10, `claimUnit`/`releaseUnit` без patch, undo останавливается на них.
-- `health.ts`: `healthStatus(hp, max)`, `hpSegments(hp, max)` 0–4.
-- `sort.ts`: порядок юнитов; сортировки списков боёв и пресетов.
-- `names.ts`: `duplicateName(existing, name)`, `copyTitle(title)`.
-- `index.ts` — публичный API.
+  (бросок в payload), `damage`, `heal`, `setTempHp`, `setMaxHp`, `toggleCondition`,
+  `editNote`, `claimUnit`, `releaseUnit`. У каждого `id`, `version`.
+- `reduce.ts`: `apply(combat, action, author, now) → { combat, patch } | DomainError`,
+  `nextTurnBlockReason(combat)`.
+- `authorize.ts`: таблица «Unit → Actions» и правила claims.
 
-Тесты `packages/domain/test/*.test.ts`: один файл на раздел vision.md
-(`transitions`, `hp`, `turn-order`, `undo`, `authorize`, `project`, `limits`,
-`library`). Покрытие веток `reduce.ts` 100 %.
+`1-domain-rest`, единицы `project`, `undo`, `index`, `tests`:
 
-Критерии приёмки: все действия из списка реализованы и протестированы; каждая
-строка таблиц «Transitions», «Unit → Actions», «Visibility for players» и каждый
-пункт «Unit → Rules» имеет тест с тем же названием; `project` никогда не кладёт
-скрытое поле в документ игрока (тест обходит все поля).
+- `project.ts` по таблице видимости; disabled-юниты игрокам не отдаются.
+- `undo.ts`: patch — снимок изменённых полей; глубина 10; `claimUnit` и
+  `releaseUnit` без patch.
+- Тесты `packages/domain/test/<раздел>.test.ts`: импорт только из
+  `src/index.ts`; имя теста = строка таблицы или пункт правил vision.md
+  (скрипт `check-domain-tests.mjs` сверяет); ветки `reduce.ts` покрыты.
+
+`1-api-contract`, единица `ApiClient`: `packages/api/src/client.ts` — интерфейс с
+явными сигнатурами: `combats.list/create/update/remove/duplicate/open`,
+`combats.dispatch(id, action) → { version }`,
+`combats.subscribe(id, viewer, onDocument, onEnd) → unsubscribe`,
+`link.reissue`, `play.get(id, token)`, `presets.*`, `tags.*`, `settings.*`,
+`account.remove`, `auth.*`; `ApiEvent = document | deleted(title) | linkRevoked`;
+`ApiError` с `status`. Фазы 2.4 и 3 реализуют его без изменений.
+
+Приёмка: каждая строка таблиц «Transitions», «Unit → Actions», «Visibility for
+players» и каждый пункт «Unit → Rules» имеет тест с тем же названием;
+`project` не кладёт скрытое поле в документ игрока (тест обходит все поля). Тег
+`phase-1`.
 
 ## Фаза 2 — packages/ui
 
-Четыре агента, последовательно по уровням дерева, внутри уровня параллельно.
+Opus 5.5, medium. Одна папка на компонент
+`packages/ui/src/<level>/<Name>/` с `<Name>.tsx`, `<Name>.module.css`,
+`<Name>.stories.tsx`, по образцу `atoms/Button`. Истории на каждую ячейку
+страницы хэндоффа, имя истории = подпись ячейки; `play` на поведение из Flow;
+i18n `packages/ui/src/i18n/<lng>/<Name>.json`; иконки `@tabler/icons-react`;
+Mantine-компонент берётся при совпадении смысла, размеры и цвета
+переопределяются до хэндоффа. Бриф пачки называет рендеры для сверки.
 
-Общее для всех:
+2.1 Атомы, пачки по две параллельно:
+`2.1-atoms-a`: IconButton, ToolButton, TextField, TextArea.
+`2.1-atoms-b`: SearchField, NumberField, Checkbox, Radio.
+`2.1-atoms-c`: Swatch, Chip, StatSquare.
+`2.1-atoms-d`: EscalationDie, RoleBlock.
+Затем `fix-2.1`.
 
-- Один компонент — одна папка `packages/ui/src/<level>/<Name>/` с `<Name>.tsx`,
-  `<Name>.module.css`, `<Name>.stories.tsx`. Уровни `atoms`, `molecules`,
-  `organisms`, `screens`.
-- Для каждого компонента история на каждую ячейку «Variants × states», каждый
-  размер S/M/L и каждый edge case со страницы `<Name>.dc.html`. Название истории
-  совпадает с подписью ячейки в хэндоффе.
-- Интерактивным компонентам — `play`-функция на поведение из раздела Flow.
-- Строки через `useTranslation`; ключи в `packages/ui/src/i18n/<lng>/<namespace>.json`,
-  шесть локалей. Edge-case-истории с длинными строками используют de и ru.
-- Иконки `@tabler/icons-react`, имена из хэндоффа.
-- Шрифты через `@fontsource/unbounded`, `@fontsource/rubik`,
-  `@fontsource/noto-sans-jp`.
-- Mantine-компонент берётся, когда у него тот же смысл (Button, TextInput,
-  Checkbox, Radio, Modal/Drawer, Menu, Popover, Notifications); размеры, радиусы,
-  бордюры и цвета переопределяются через тему и CSS Modules до значений хэндоффа.
-  Когда Mantine-компонента нет, пишется свой.
+2.2 Молекулы:
+`2.2-molecules-a`: Stepper, Segmented, RadioList.
+`2.2-molecules-b`: CheckList, SwatchRow, CardActions.
+`2.2-molecules-c`: HpBox, HistoryRow, DefenseLine.
+`2.2-molecules-d`: NoteField, InitiativePopover.
+`2.2-molecules-e`: Toast, EmptyState.
+Затем `fix-2.2`.
 
-2.0 Тема (входит в бриф первого агента). `packages/ui/src/theme.ts`: палитра из
-`Tokens.dc.html` (base, roles, health, hp actions, 12 conditions как именованные
-цвета), шрифты, размеры шрифтов 11/12/14/16/18/22/28/44, межстрочные 1/1.25/1.45,
-spacing 4/8/12/16/24/32, radius 2/12/16/24/full, `defaultProps` и `classNames`
-для Mantine-компонентов под хэндофф. `packages/ui/src/layout.ts`: константы из
-`Baselines.dc.html` (390×844, шапки 126/168, панель 98, кнопка 58/29, отступы
-12/28, лист 12/2/14, диалог 24/16, тост 12/12/24, drawer 300).
-`PhoneFrame`-декоратор для Storybook: 390 шириной, фон `#FAF6EE`.
+2.3 Организмы:
+`2.3-organisms-a`: Sheet, Dialog. `2.3-organisms-b`: Menu, Drawer.
+`2.3-organisms-c`: PageHeader, PlayerHeader. `2.3-organisms-d`: BottomBar, TurnBar.
+`2.3-organisms-e`: CombatHeader, CombatCard. `2.3-organisms-f`: PresetCard, HpHistory.
+`2.3-organisms-g`: ConditionPicker, TagSheet. `2.3-organisms-h`: SortSheet, ShareSheet.
+`2.3-organisms-i`: MessageScreen, PlayerRow.
+`2.3-UnitRow`, `2.3-UnitForm`, `2.3-NumpadSheet` — по одному.
+Затем `fix-2.3`.
 
-2.1 Атомы, две пачки параллельно, после 2.0.
-Пачка `2.1-atoms-a`: Button, IconButton, ToolButton, TextField, TextArea,
-SearchField, NumberField.
-Пачка `2.1-atoms-b`: Checkbox, Radio, Swatch, Chip, StatSquare, EscalationDie,
-RoleBlock.
+2.4 Хуки и экраны. Сначала `2.4-api-hooks`: `packages/ui/src/api/` —
+`ApiProvider`, `useApi`, `FakeApiClient` (in-memory, применяет редьюсер domain,
+проецирует по viewer, эмулирует SSE подписчиками, принимает `scenario` с готовым
+состоянием и `delay: 0`); `packages/ui/src/hooks/` — `useCombatList`,
+`useCombat(id, viewer)`, `usePresets`, `useTags`, `useSettings`, `useAccount`,
+`useToasts`, `useConnection`. Затем экраны, по одному на агента, две параллели:
+`2.4-CombatScreen`, `2.4-CombatList`, `2.4-PlayerView` (Heroes, TurnOrder),
+`2.4-Library`, `2.4-AppPages` (SignIn, SignUp, Settings, Account, About),
+`2.4-SystemScreens` (NotFound, UnexpectedError, CombatNotFound, LinkExpired,
+CombatDeleted, CantReachServer). Истории экранов: каждое Key state и каждый шаг
+флоу как отдельная история с именем = код шага, состояние шага задаётся
+`scenario`, `play` делает только действие шага и `expect`. Затем `fix-2.4`.
 
-2.2 Молекулы, две пачки параллельно, после 2.1.
-Пачка `2.2-molecules-a`: Stepper, Segmented, RadioList, CheckList, SwatchRow,
-CardActions, EmptyState.
-Пачка `2.2-molecules-b`: HpBox, HistoryRow, DefenseLine, NoteField,
-InitiativePopover, Toast.
+Экраны и состояния, которых нет в хэндоффе, строятся так:
 
-2.3 Организмы, три пачки параллельно, после 2.2.
-Пачка `2.3-organisms-a`: Sheet, Dialog, Menu, Drawer, PageHeader, PlayerHeader,
-BottomBar.
-Пачка `2.3-organisms-b`: CombatHeader, TurnBar, UnitRow, PlayerRow, CombatCard,
-PresetCard, HpHistory.
-Пачка `2.3-organisms-c`: ConditionPicker, TagSheet, SortSheet, NumpadSheet,
-UnitForm, ShareSheet, MessageScreen.
+- Heroes: экран PV-F1 с `CheckList` вместо `RadioList`; свои герои с `RoleBlock`
+  «You», чужие заблокированы подписью «<Name> is playing»; кнопка Join / Done.
+- Edit своей карточки игроком: `UnitForm` без вкладок, `Segmented` типа
+  disabled на Hero.
+- About: строки Version, Rules, Source как в AP-F4, ниже абзац описания, строки
+  Privacy, Donate, Credits тем же стилем строк, дисклеймер внизу.
+- Тост после Undo: `Toast` без кнопки.
+- Can't reach the server: `MessageScreen` с кнопкой Try again.
+- Тосты «Reconnecting…», «The combat changed. Try again.», «<hero> was just
+  taken», «The DM removed <hero>. Pick a hero.»: `Toast` без кнопки.
 
-2.4 Экраны и хуки, после 2.3. Сначала одна пачка `2.4-api-hooks` (интерфейс
-`ApiClient`, `FakeApiClient`, хуки), затем три пачки параллельно:
-`2.4-screens-combat` (CombatScreen, CombatList), `2.4-screens-player`
-(PlayerView: Heroes, Turn order, LinkExpired, CombatDeleted), `2.4-screens-app`
-(Library, SignIn, SignUp, Settings, Account, About, NotFound, UnexpectedError,
-CombatNotFound, CantReachServer).
-
-- `packages/api/src/client.ts`: интерфейс `ApiClient` (методы REST из фазы 3,
-  `dispatch(combatId, action)`, `subscribe(combatId, onDocument, onEnd)`), тип
-  `ApiEvent` (`document | deleted | linkRevoked`). Фаза 3 реализует этот интерфейс
-  на сервере и в `hono/client`; фаза 2.4 определяет его и пишет `FakeApiClient`.
-- `packages/ui/src/api/`: `ApiProvider`, `useApi`, `FakeApiClient` — in-memory,
-  применяет редьюсер из `packages/domain`, проецирует документ по viewer,
-  эмулирует SSE через подписчиков, задержка 0.
-- `packages/ui/src/hooks/`: `useCombatList`, `useCombat(id, viewer)` (документ,
-  `dispatch`, статус подписки), `usePresets`, `useTags`, `useSettings`,
-  `useAccount`, `useToasts`. Компоненты и экраны не вызывают клиент напрямую.
-- Экраны `packages/ui/src/screens/`: `CombatScreen`, `PlayerView`, `CombatList`,
-  `Library`, `SignIn`, `SignUp`, `Settings`, `Account`, `About`, `NotFound`,
-  `UnexpectedError`, `CombatNotFound`, `LinkExpired`, `CombatDeleted`,
-  `PlayerClaim`. Каждый экран принимает только идентификаторы и колбэки
-  навигации; данные берёт через хуки.
-- Истории экранов: каждое «Key state» и каждый шаг каждого флоу CS-F1…F8,
-  PV-F1…F5, CL-F1…F6, LB-F1…F6, AP-F1…F5 со страниц `CombatScreen.dc.html`,
-  `PlayerView.dc.html`, `CombatList.dc.html`, `Library.dc.html`, `AppPages.dc.html`.
-  Название истории = код шага. `play`-функция проходит флоу от первого шага до
-  текущего.
-- Сравнение с `screenshots/01…13`: истории с теми же кодами визуально совпадают с
-  PNG; агент прикладывает в отчёт список отличий.
-
-Критерии приёмки фазы 2: каждый `*.dc.html` из дерева компонентов имеет папку и
-истории на все ячейки; скриншоты всех историй закоммичены; `play`-функции зелёные
-в проекте `storybook`; в локалях нет ключа без перевода во всех шести файлах
-(проверка скриптом `pnpm i18n:check`, добавляется в `check`).
+Приёмка пачки: `check-stories`, `check-i18n`, `check-screenshots` зелёные; guard-bee
+сверяет каждую историю с ячейкой страницы и с рендером. После `fix-2.4` тег
+`phase-2`.
 
 ## Фаза 3 — сервер
 
-Пачка `3-server-schema` (Drizzle-схема, миграции, `ApiClient` через `hono/client`,
-`apps/server`), затем параллельно `3-server-combats` (combats, actions, SSE, link,
-play) и `3-server-rest` (auth, presets, tags, settings, account). Коммит на
-sub-app.
+Fable 5.1, high.
 
-`packages/api`:
+`3-server-schema`, единицы `schema`, `migrations`, `client-hono`, `server main`:
+Drizzle-схема (таблицы Better Auth; `combats` с `document` JSON и `version`;
+`action_log` с `seq`, `action`, `author`, `patch | null`, `undoneBy | null`;
+`players`; `presets`, `tags`, `preset_tags`; `settings`), SQLite WAL, миграции в
+`packages/api/drizzle/`; `ApiClient` через `hono/client` и `EventSource`;
+`apps/server/src/main.ts` с миграциями при старте, статикой, переменными `PORT`,
+`DATABASE_PATH`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `LINK_SECRET`,
+`GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET`, `.env.example`.
 
-- Drizzle-схема: таблицы Better Auth; `combats` (`id`, `dmId`, `title`,
-  `description`, `color`, `status`, `lastPlayedAt`, `linkGeneration`, `document`
-  JSON, `version`, `createdAt`, `updatedAt`); `action_log` (`id`, `combatId`, `seq`,
-  `action` JSON, `author`, `patch` JSON nullable, `undoneBy` nullable, `createdAt`);
-  `players` (`combatId`, `playerId`, `displayName`); `presets`, `tags`,
-  `preset_tags`; `settings` (`dmId`, `language`). SQLite WAL. Миграции в
-  `packages/api/drizzle/`.
-- Hono sub-apps: `/api/auth/*` (Better Auth, email+password, Google и GitHub при
-  наличии env), `/api/combats` (list с сортировкой на клиенте, create, patch
-  метаданных, delete, duplicate, `POST :id/open` ставит `lastPlayedAt`),
-  `POST /api/combats/:id/actions` (идемпотентность по `action.id`, проверка
-  `version` → 409, `authorize`, `apply`, запись в лог, broadcast; ответ
-  `{ version }`), `GET /api/combats/:id/events` (SSE, `id` = version, heartbeat
-  15 с, `Last-Event-ID`), `POST /api/combats/:id/link/reissue`,
-  `GET /api/play/:id?t=` и те же actions/events для игрока с заголовком
-  `X-Player-Id`, `/api/presets`, `/api/tags`, `/api/settings`,
-  `DELETE /api/account`. Экспорт `AppType`.
-- Токен ссылки: HMAC-SHA256 от `combatId:generation` секретом `LINK_SECRET`.
-- Удаление боя и reissue шлют финальное событие и закрывают поток.
-- Реализация `ApiClient` через `hono/client` в `packages/api/src/client-hono.ts`
-  и `EventSource` для подписки.
+Затем параллельно:
 
-`apps/server`: `src/main.ts` — миграции при старте, статика из `apps/web/dist`,
-переменные `PORT`, `DATABASE_PATH`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`,
-`LINK_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `GITHUB_CLIENT_ID/SECRET`;
-`.env.example`.
+`3-server-actions`, единицы `combats routes`, `actions route`, `link`:
+`/api/combats` list/create/patch/delete/duplicate/`:id/open`;
+`POST /api/combats/:id/actions` — идемпотентность по `action.id`, `version` → 409,
+`authorize`, `apply`, лог, broadcast, ответ `{ version }`;
+`POST /api/combats/:id/link/reissue`; токен HMAC-SHA256 от `combatId:generation`
+секретом `LINK_SECRET`.
 
-Тесты `packages/api/test`: Vitest с временной SQLite: каждый маршрут, 409 на
-старой версии, идемпотентность, проекция в SSE для DM и игрока, финальные события,
-отказ игроку в чужом действии, истёкший токен.
+`3-server-live`, единицы `events route`, `play routes`:
+`GET /api/combats/:id/events` — SSE, `id` = version, heartbeat 15 с,
+`Last-Event-ID`; `GET /api/play/:id?t=` и actions/events игрока с заголовком
+`X-Player-Id`; финальные события `deleted` с названием и `linkRevoked`.
 
-Критерии приёмки: все маршруты из списка покрыты тестами; документ игрока в SSE не
-содержит скрытых полей (тест); сервер стартует на пустой базе.
+`3-server-rest`, единицы `auth`, `presets`, `tags`, `settings`, `account`:
+Better Auth email+password, Google и GitHub по env; `/api/presets`, `/api/tags`,
+`/api/settings`, `DELETE /api/account`. Экспорт `AppType`.
+
+Тесты `packages/api/test` на временной SQLite: каждый маршрут, 409, идемпотентность,
+проекция в SSE для DM и игрока, финальные события, отказ игроку в чужом действии,
+истёкший токен. Приёмка: все маршруты покрыты; документ игрока в SSE без скрытых
+полей (тест); сервер стартует на пустой базе. Тег `phase-3`.
 
 ## Фаза 4 — apps/web
 
-Один агент.
+Пачка `4-web`, Opus 5.5, medium. Единицы `router`, `providers`,
+`player identity`, `drawer`, `smoke e2e`.
 
-- React Router data mode, маршруты из таблицы «Pages» vision.md; `/` → `/combats`.
-- Guard: без сессии — `/auth/sign-in`; после sign-up — пустой `/combats`.
-- Провайдеры: `MantineProvider` с темой из `packages/ui`, `ApiProvider` с реальным
-  клиентом, `QueryClientProvider`, i18n (язык DM из `/api/settings`; в player view
-  — из документа боя), `Notifications`.
-- Открытие `/combats/:id` вызывает `POST :id/open`.
-- `playerId` ULID в `localStorage`; заголовок `X-Player-Id` во всех запросах игрока
-  и в SSE.
-- При `linkRevoked` / `deleted` переход на `LinkExpired` / `CombatDeleted`.
-- Drawer открывается свайпом вправо и кнопкой в шапке.
-- Vite proxy `/api`; `pnpm dev` поднимает оба процесса.
+React Router data mode по таблице «Pages»; guard без сессии; провайдеры
+`MantineProvider`, `UiProvider`, `ApiProvider` с реальным клиентом,
+`QueryClientProvider`, i18n (язык DM из `/api/settings`, у игрока из документа),
+`Notifications`; `POST :id/open` при открытии боя; `playerId` ULID в
+`localStorage` и заголовок `X-Player-Id`; переходы на LinkExpired /
+CombatDeleted по финальным событиям; drawer по свайпу и кнопке; `useConnection`
+для тостов связи. Smoke e2e в `e2e/smoke.spec.ts`: sign-up, create, add unit,
+start, next turn, игрок во втором контексте видит порядок.
 
-Критерии приёмки: каждый путь из «Pages» рендерит нужный экран (роутер-тест на
-`createMemoryRouter`); ручной сценарий из фазы 5 проходит в dev.
+Приёмка: роутер-тест на `createMemoryRouter` по каждому пути; `pnpm e2e` smoke
+зелёный против собранного сервера. Тег `phase-4`.
 
 ## Фаза 5 — e2e
 
-Один агент. Playwright в `e2e/`, запуск `pnpm e2e` против собранного сервера с
-временной базой.
+Пачка `5-e2e`, Opus 5.5, medium. Единицы по группам сценариев: `auth`, `combat
+lifecycle`, `player`, `library`, `account`.
 
-Сценарии: sign-up и sign-in; создание боя, добавление трёх юнитов (Hero, Enemy,
-Ally), дубликат, сохранение в пресет, добавление из библиотеки; share — второй
-контекст открывает ссылку, вводит имя, занимает героя; DM запускает бой — у игрока
-появился порядок; игрок наносит урон своему герою — DM видит через SSE; DM Next turn
-до оборота раунда — эскалация 1; undo; reissue — у игрока освобождён захват;
-удаление боя — у игрока экран Combat deleted; библиотека: теги, фильтр,
+Сценарии: sign-up и sign-in; создание боя, три юнита (Hero, Enemy, Ally),
+дубликат, Save as preset, добавление из библиотеки; share — второй контекст
+открывает ссылку, вводит имя, берёт героя; Start — у игрока порядок; игрок наносит
+урон себе — DM видит через SSE; Next turn до оборота раунда — эскалация 1; undo;
+reissue — у игрока снят захват; удаление боя — экран Combat deleted; теги, фильтр,
 сортировки; смена языка; удаление аккаунта.
 
-Критерии приёмки: `pnpm e2e` зелёный локально.
+Приёмка: `pnpm e2e` зелёный. Тег `phase-5`.
 
 ## Фаза 6 — Docker
 
-Один агент.
+Пачка `6-docker`, Opus 5.5, medium. Единицы `Dockerfile`, `compose`, `README`.
 
-- `Dockerfile` multi-stage на `node:24-slim`: pnpm, установка, `pnpm build`,
-  prod-слой только с `apps/server` и его зависимостями; `better-sqlite3`
-  собирается или берётся prebuilt под образ.
-- `docker-compose.yml`: сервис `app`, порт `3000`, volume `data:/data`,
-  `env_file: .env`.
-- `README.md` в корне: запуск dev, Storybook, тесты, скриншоты, `docker compose up`.
-- Проверка: `docker build`, `docker run` с volume, `curl /api/health` и `/`.
-  Плагин `docker compose` на машине владельца отсутствует; если его нет и в момент
-  фазы, `docker compose up` остаётся непроверенным и это пишется в отчёт.
+Multi-stage на `node:24-slim`, prod-слой с `apps/server`; `docker-compose.yml` с
+volume `data:/data` и `env_file`; корневой `README.md`: dev, Storybook, тесты,
+скриншоты, `docker compose up`. Приёмка: `docker compose up` отвечает на
+`/api/health` и `/`. Тег `phase-6`.
 
 ## Итоговое сообщение владельцу
 
-Одно сообщение: команды запуска dev, Storybook, e2e, Docker; что смотреть в
-Storybook (экраны по кодам флоу) и в браузере (сценарий фазы 5); список вопросов
-из прогресс-файла; список отличий от скриншотов хэндоффа; замечания guard-bee
-P2–P3, не исправленные.
+Команды запуска dev, Storybook, e2e, Docker; что смотреть в Storybook по кодам флоу
+и в браузере по сценарию фазы 5; вопросы из отчётов; отличия от рендеров;
+замечания guard-bee P2–P3; `REVIEWED.md` пуст, все переводы черновые.
 
 ## Вне scope
 
-- Файлы в `docs/design/` — не правятся.
-- `docs/vision.md` — правится только по ответу владельца на вопрос.
-- Тёмная тема, десктопная раскладка, redo, сброс пароля, офлайн, индикаторы
-  загрузки, пункты «Roadmap» vision.md.
+Файлы `docs/design/handoff/` и `docs/archive/` не правятся. Тёмная тема, десктоп,
+redo, сброс пароля, офлайн, индикаторы загрузки, пункты Roadmap vision.md.

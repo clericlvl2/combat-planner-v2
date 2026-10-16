@@ -1,88 +1,90 @@
 # Build progress: Combat Planner v2
 
-План: `.claude/plans/2026-10-16-build-combat-planner-v2.md`. Правила веток и
-коммитов: `CLAUDE.md`. Оркестратор после автокомпакта читает план и этот файл и
-продолжает с первой единицы работы, не отмеченной `done`.
+План: `.claude/plans/2026-10-16-build-combat-planner-v2.md`. Правила: `CLAUDE.md`.
+Пишет только оркестратор. После автокомпакта: прочитать план и этот файл,
+выполнить `pnpm status` (`scripts/status.sh`), сверить каждую строку не в `todo`,
+продолжить с первой незавершённой.
 
-Статус единицы выводится из `git log master` (коммит с её именем) и диска, не из
-отчёта агента. Статусы пачек: `todo`, `running <ветка>`, `gate`, `guard`,
-`merged`, `blocked`. Статусы единиц: `todo`, `done <hash>`.
+Статусы пачек: `todo` → `running <agent-id> <started>` → `reported <report>` →
+`rebased` → `gate ok|fail <log>` → `merged <hash>` → `guarded <path>`;
+`gate fail` или guard P0–P1 → `rework <n>`; молчание → `restarted <n>`.
+Статус единицы: `todo` | `done <hash>`, по `git log master`.
 
 ## Фазы
 
-| Фаза | Что | Статус | Тег |
-|------|-----|--------|-----|
-| 0 | монорепо, vp, Storybook, Mantine, скелеты пакетов, команды гейта в CLAUDE.md | todo | |
-| 1 | packages/domain: типы, действия, редьюсер, проекция, undo, тесты-спецификация | todo | |
-| 2.0 | тема Mantine из Tokens и Baselines, PhoneFrame-декоратор | todo | |
-| 2.1 | атомы, 14 компонентов, 2 пачки | todo | |
-| 2.2 | молекулы, 13 компонентов, 2 пачки | todo | |
-| 2.3 | организмы, 21 компонент, 3 пачки | todo | |
-| 2.4 | ApiClient, FakeApiClient, хуки, 15 экранов, 4 пачки | todo | |
-| 3 | packages/api и apps/server: схема, маршруты, auth, SSE, 3 пачки | todo | |
-| 4 | apps/web: роутер, провайдеры, реальный клиент | todo | |
-| 5 | e2e Playwright | todo | |
-| 6 | Dockerfile, compose, README | todo | |
+| Фаза | Что | Пачки | Тег |
+|------|-----|-------|-----|
+| −1 | рендеры хэндоффа, errata | оркестратор + chrome-rider | |
+| 0 | тулчейн, спайк, скрипты, CLAUDE.md Commands | 0-toolchain | |
+| 0.5 | тема, PhoneFrame, ThemeAudit, эталонный Button, check-скрипты | 0.5-reference | |
+| 1 | domain, контракт ApiClient | 1-domain-core, 1-domain-rest, 1-api-contract | |
+| 2.1 | атомы | 2.1-atoms-a…d, fix-2.1 | |
+| 2.2 | молекулы | 2.2-molecules-a…e, fix-2.2 | |
+| 2.3 | организмы | 2.3-organisms-a…i, 2.3-UnitRow, 2.3-UnitForm, 2.3-NumpadSheet, fix-2.3 | |
+| 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4 | |
+| 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest | |
+| 4 | web | 4-web | |
+| 5 | e2e | 5-e2e | |
+| 6 | docker | 6-docker | |
 
 ## Текущий шаг
 
-Ожидание «го» владельца на фазу 0.
+Ожидание «го» владельца на фазу −1.
 
-## Чеклист
+## Пачки
 
-### 0 toolchain — todo
-- [ ] workspace, root scripts, .nvmrc, tsconfig
-- [ ] vite.config с проектами unit / storybook / visual
-- [ ] packages/ui: Mantine, Storybook, Hello story, screenshot
-- [ ] apps/web, apps/server скелеты, proxy
-- [ ] CLAUDE.md: команды
+| Пачка | Статус | Единицы |
+|-------|--------|---------|
+| -1-renders | todo | renders, errata |
+| 0-toolchain | todo | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
+| 0.5-reference | todo | theme, PhoneFrame, ThemeAudit, Button, check scripts |
+| 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
+| 1-domain-rest | todo | project, undo, index, tests |
+| 1-api-contract | todo | ApiClient |
+| 2.1-atoms-a | todo | IconButton, ToolButton, TextField, TextArea |
+| 2.1-atoms-b | todo | SearchField, NumberField, Checkbox, Radio |
+| 2.1-atoms-c | todo | Swatch, Chip, StatSquare |
+| 2.1-atoms-d | todo | EscalationDie, RoleBlock |
+| fix-2.1 | todo | |
+| 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
+| 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
+| 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
+| 2.2-molecules-d | todo | NoteField, InitiativePopover |
+| 2.2-molecules-e | todo | Toast, EmptyState |
+| fix-2.2 | todo | |
+| 2.3-organisms-a | todo | Sheet, Dialog |
+| 2.3-organisms-b | todo | Menu, Drawer |
+| 2.3-organisms-c | todo | PageHeader, PlayerHeader |
+| 2.3-organisms-d | todo | BottomBar, TurnBar |
+| 2.3-organisms-e | todo | CombatHeader, CombatCard |
+| 2.3-organisms-f | todo | PresetCard, HpHistory |
+| 2.3-organisms-g | todo | ConditionPicker, TagSheet |
+| 2.3-organisms-h | todo | SortSheet, ShareSheet |
+| 2.3-organisms-i | todo | MessageScreen, PlayerRow |
+| 2.3-UnitRow | todo | UnitRow |
+| 2.3-UnitForm | todo | UnitForm |
+| 2.3-NumpadSheet | todo | NumpadSheet |
+| fix-2.3 | todo | |
+| 2.4-api-hooks | todo | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
+| 2.4-CombatScreen | todo | CombatScreen |
+| 2.4-CombatList | todo | CombatList |
+| 2.4-PlayerView | todo | Heroes, TurnOrder |
+| 2.4-Library | todo | Library |
+| 2.4-AppPages | todo | SignIn, SignUp, Settings, Account, About |
+| 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
+| fix-2.4 | todo | |
+| 3-server-schema | todo | schema, migrations, client-hono, server main |
+| 3-server-actions | todo | combats routes, actions route, link |
+| 3-server-live | todo | events route, play routes |
+| 3-server-rest | todo | auth, presets, tags, settings, account |
+| 4-web | todo | router, providers, player identity, drawer, smoke e2e |
+| 5-e2e | todo | auth, combat lifecycle, player, library, account |
+| 6-docker | todo | Dockerfile, compose, README |
 
-### 1 domain
-- `1-domain-core` — todo: types, schemas, actions, health, sort, names, reduce, authorize
-- `1-domain-rest` — todo: project, undo, index, table tests
+## Вопросы владельцу
 
-### 2.0 theme — todo
-- [ ] theme.ts, layout.ts, PhoneFrame
-
-### 2.1 atoms
-- `2.1-atoms-a` — todo: Button, IconButton, ToolButton, TextField, TextArea, SearchField, NumberField
-- `2.1-atoms-b` — todo: Checkbox, Radio, Swatch, Chip, StatSquare, EscalationDie, RoleBlock
-
-### 2.2 molecules
-- `2.2-molecules-a` — todo: Stepper, Segmented, RadioList, CheckList, SwatchRow, CardActions, EmptyState
-- `2.2-molecules-b` — todo: HpBox, HistoryRow, DefenseLine, NoteField, InitiativePopover, Toast
-
-### 2.3 organisms
-- `2.3-organisms-a` — todo: Sheet, Dialog, Menu, Drawer, PageHeader, PlayerHeader, BottomBar
-- `2.3-organisms-b` — todo: CombatHeader, TurnBar, UnitRow, PlayerRow, CombatCard, PresetCard, HpHistory
-- `2.3-organisms-c` — todo: ConditionPicker, TagSheet, SortSheet, NumpadSheet, UnitForm, ShareSheet, MessageScreen
-
-### 2.4 screens
-- `2.4-api-hooks` — todo: ApiClient, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts
-- `2.4-screens-combat` — todo: CombatScreen, CombatList
-- `2.4-screens-player` — todo: Heroes, TurnOrder, LinkExpired, CombatDeleted
-- `2.4-screens-app` — todo: Library, SignIn, SignUp, Settings, Account, About, NotFound, UnexpectedError, CombatNotFound, CantReachServer
-
-### 3 server
-- `3-server-schema` — todo: schema, migrations, client-hono, apps/server main
-- `3-server-combats` — todo: combats, actions, events, link, play
-- `3-server-rest` — todo: auth, presets, tags, settings, account
-
-### 4 web — todo
-- [ ] router, guards, providers, playerId, SSE end events, drawer gestures
-
-### 5 e2e — todo
-- [ ] scenarios from the plan
-
-### 6 docker — todo
-- [ ] Dockerfile, compose, README, build + run smoke
-
-## Отчёты агентов
-
-## Падения гейта
+## Отличия от рендеров
 
 ## Замечания guard-bee P2–P3, отложены
 
-## Отличия от скриншотов хэндоффа
-
-## Вопросы владельцу
+## Падения гейта

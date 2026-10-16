@@ -14,4 +14,6 @@ data/
 docs/archive/inventory/*.png
 .idea/
 
-.worktrees/
+.claude/run/
+REPORT.md
+.claude/settings.local.json
