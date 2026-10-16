@@ -81,7 +81,7 @@
 | 2.4-AppPages | todo | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
-| 3-server-schema | running worker-bee 2026-10-16T18:38:49+03:00 | schema, migrations, client-hono, server main |
+| 3-server-schema | rebased, report `.claude/artifacts/reports/3-server-schema.md`, gate running | schema, migrations, client-hono, server main |
 | 3-server-actions | todo | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
@@ -91,6 +91,13 @@
 
 ## Вопросы владельцу
 
+- 3-server-schema, решения оркестратора 2026-10-16 по 13 вопросам отчёта: все
+  приняты и становятся контрактом для `3-server-actions/live/rest`: `seq` —
+  `max(seq)+1` в транзакции; auth через собственные пути Better Auth
+  (`/api/auth/*`); SSE игрока с `?playerId=` в query; токен ссылки
+  `<combatId>.<generation>.<hmac>`; SSE JSON с полем `type`; секреты
+  обязательны только при `NODE_ENV=production`; `createApiApp({ db, env })`
+  кладёт их в контекст Hono (`ApiAppEnv`).
 - 2.1-atoms-d, решения оркестратора 2026-10-16: у страницы RoleBlock нет
   Flow (бриф ошибался) — play в cell-историях принят; `radius` и `size` не
   добавлены; «You» как отдельный белый чип по странице (vision говорит «You»
