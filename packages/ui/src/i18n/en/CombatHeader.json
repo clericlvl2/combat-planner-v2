@@ -1,0 +1,18 @@
+{
+  "back": "Back to combats",
+  "round": "Round",
+  "editRound": "Edit round, round {{round}}",
+  "setup": "Setup",
+  "setEscalation": "Set escalation die",
+  "escalationTitle": "Escalation die",
+  "escalationFace": "Escalation {{value}}",
+  "escalationHint": "Next turn raises it by 1 each round, up to {{max}}",
+  "roundHint": "{{min}}–{{max}}. Changing the round doesn’t move the turn.",
+  "menu": "Menu",
+  "menuLabel": "Combat menu",
+  "addUnit": "Add unit",
+  "undo": "Undo",
+  "share": "Share",
+  "restart": "Restart combat",
+  "clear": "Clear combat"
+}

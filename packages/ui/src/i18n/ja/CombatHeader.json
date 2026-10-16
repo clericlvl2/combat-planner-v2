@@ -1,0 +1,18 @@
+{
+  "back": "戦闘一覧に戻る",
+  "round": "ラウンド",
+  "editRound": "ラウンドを編集、ラウンド{{round}}",
+  "setup": "準備中",
+  "setEscalation": "エスカレーションダイスを設定",
+  "escalationTitle": "エスカレーションダイス",
+  "escalationFace": "エスカレーション{{value}}",
+  "escalationHint": "「次のターン」で毎ラウンド1ずつ上がり、最大{{max}}",
+  "roundHint": "{{min}}–{{max}}。ラウンドを変えてもターンは移りません。",
+  "menu": "メニュー",
+  "menuLabel": "戦闘メニュー",
+  "addUnit": "ユニットを追加",
+  "undo": "元に戻す",
+  "share": "共有",
+  "restart": "戦闘をやり直す",
+  "clear": "戦闘をクリア"
+}

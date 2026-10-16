@@ -7,3 +7,4 @@ HistoryRow.tempAmount
 HistoryRow.absorbed
 Drawer.title
 SortSheet.alphabetical
+CombatHeader.menu

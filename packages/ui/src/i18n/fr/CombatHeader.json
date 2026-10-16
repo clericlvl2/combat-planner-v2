@@ -1,0 +1,18 @@
+{
+  "back": "Retour aux combats",
+  "round": "Tour",
+  "editRound": "Modifier le tour, tour {{round}}",
+  "setup": "Préparation",
+  "setEscalation": "Régler le dé d’escalade",
+  "escalationTitle": "Dé d’escalade",
+  "escalationFace": "Escalade {{value}}",
+  "escalationHint": "Tour suivant l’augmente de 1 à chaque tour, jusqu’à {{max}}",
+  "roundHint": "{{min}}–{{max}}. Changer de tour ne change pas qui joue.",
+  "menu": "Menu",
+  "menuLabel": "Menu du combat",
+  "addUnit": "Ajouter une unité",
+  "undo": "Annuler",
+  "share": "Partager",
+  "restart": "Recommencer le combat",
+  "clear": "Vider le combat"
+}
