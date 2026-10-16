@@ -68,7 +68,7 @@
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
-| 2.3-organisms-h | todo | SortSheet, ShareSheet |
+| 2.3-organisms-h | running worker-bee 2026-10-17T04:00+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b) | SortSheet, ShareSheet |
 | 2.3-organisms-i | todo | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
@@ -85,13 +85,22 @@
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
-| fix-3 | running worker-bee Opus 5.5 xhigh 2026-10-17T02:55+03:00 | live, auth |
+| fix-3 | rebased, report `.claude/artifacts/reports/fix-3.md`, gate running | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- fix-3, решения оркестратора 2026-10-17: пустое имя из social-профиля →
+  локальная часть email, обрезанная по лимиту — принято; `originCheck?` в
+  `CreateAuthOptions` только для теста — принято; `/reset-password/:token` и
+  `/error` остаются (инертны / нужны OAuth) — принято; трейлер Opus 5.5 —
+  верно. Бриф ошибочно просил `apps/server/.env.example`: скрипты `dev`/`start`
+  читают корневой `.env`. Бриф `4-web` переносит строку
+  `BETTER_AUTH_TRUSTED_ORIGINS=http://localhost:5173` в корневой
+  `.env.example` и удаляет `apps/server/.env.example`.
 
 - 2.3-organisms-c, решения оркестратора 2026-10-17: пропсы PageHeader
   (`onBack?` для Nested, `action?`, `search?`/`onSearch`, `tools?`/`onTool`,
