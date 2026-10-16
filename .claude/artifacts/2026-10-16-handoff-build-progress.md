@@ -57,7 +57,7 @@
 | 2.2-molecules-c | guarded `.claude/artifacts/guard/2.2-molecules-c.md` | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
-| fix-2.2 | running worker-bee 2026-10-16T23:40+03:00 | |
+| fix-2.2 | rebased, report `.claude/artifacts/reports/fix-2.2.md`, gate running | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
 | 2.3-organisms-b | todo | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
@@ -81,13 +81,18 @@
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
-| 3-server-live | merged d325504, gate ok `.claude/run/3-server-live/summary.log`, guard running | events route, play routes |
-| 3-server-rest | running worker-bee 2026-10-16T21:25+03:00, resumed 23:21 after API rate limit | auth, presets, tags, settings, account |
+| 3-server-live | merged d325504, gate ok `.claude/run/3-server-live/summary.log`, guard restarted on Opus 5.5 xhigh (Fable limit) | events route, play routes |
+| 3-server-rest | restarted 1, worker-bee Opus 5.5 xhigh 2026-10-17T00:10+03:00 (Fable limit; `auth` committed, presets uncommitted) | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- fix-2.2, решения оркестратора 2026-10-17: шаг Stepper от `null` с базы 0
+  (+ → 1, − → −1) принят; чип HistoryRow на `variant="meta"` с
+  `--chip-fill`/`--chip-text` из стилей HistoryRow принят; read-only HpBox без
+  `onClick`, без `readOnly`-пропа — принят.
 
 - 3-server-live, решения оркестратора 2026-10-16 по 12 вопросам отчёта: все
   приняты и становятся контрактом: 410 `{ code: 'linkRevoked' }` для любого
