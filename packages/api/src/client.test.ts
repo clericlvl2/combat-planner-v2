@@ -125,6 +125,8 @@ function createMemoryClient() {
       signIn: async () => session,
       signOut: async () => {},
       session: async () => session,
+      providers: async () => [],
+      socialSignIn: async (provider) => ({ url: `https://${provider}.example/authorize` }),
     },
     combats: combatsApi,
     link: {

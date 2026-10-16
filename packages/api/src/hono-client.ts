@@ -21,7 +21,9 @@ import type { UnionToIntersection } from 'hono/utils/types';
 import { z } from 'zod';
 import type { AppType } from './app.ts';
 import {
+  API_ERROR_CODES,
   ApiError,
+  SOCIAL_PROVIDERS,
   combatSummarySchema,
   linkReissueResultSchema,
   linkSchema,
@@ -34,6 +36,7 @@ import {
 } from './client.ts';
 import type {
   ApiClient,
+  ApiEndEvent,
   ApiErrorCode,
   ConnectionListener,
   ConnectionState,
@@ -77,6 +80,8 @@ const authUserSchema = z.object({
 });
 const authResponseSchema = z.object({ user: authUserSchema });
 const authSessionSchema = authResponseSchema.nullable();
+const providersSchema = z.object({ providers: z.array(z.enum(SOCIAL_PROVIDERS)) });
+const socialSignInSchema = z.object({ url: z.string().min(1) });
 type AuthResponse = z.infer<typeof authResponseSchema>;
 
 type AppSchema =
@@ -97,23 +102,33 @@ const ERROR_CODES: Record<number, ApiErrorCode> = {
   403: 'forbidden',
   404: 'notFound',
   409: 'version',
+  410: 'linkRevoked',
   422: 'invalid',
 };
 
-const errorBodySchema = z.object({ message: z.string().min(1) });
+const errorBodySchema = z.object({ code: z.string().optional(), message: z.string().optional() });
+
+const apiErrorCodes: ReadonlySet<string> = new Set(API_ERROR_CODES);
+
+const isApiErrorCode = (code: string | undefined): code is ApiErrorCode =>
+  code !== undefined && apiErrorCodes.has(code);
 
 async function errorOf(response: RawResponse): Promise<ApiError> {
   const text = await response.text().catch(() => '');
   let message = response.statusText || String(response.status);
+  let bodyCode: string | undefined;
   try {
     const parsed = errorBodySchema.safeParse(JSON.parse(text));
-    if (parsed.success) message = parsed.data.message;
+    if (parsed.success) {
+      message = parsed.data.message || message;
+      bodyCode = parsed.data.code;
+    }
   } catch {
     message = text || message;
   }
   return new ApiError({
     status: response.status,
-    code: ERROR_CODES[response.status] ?? 'invalid',
+    code: isApiErrorCode(bodyCode) ? bodyCode : (ERROR_CODES[response.status] ?? 'invalid'),
     message,
   });
 }
@@ -232,10 +247,14 @@ export function createHonoApiClient({
     const stream: Stream = { status: 'connecting' };
     const source = new eventSource(url, { withCredentials: true });
     let version = -1;
+    let title = '';
     let opened = false;
+    let closed = false;
+    let probing = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
 
     const close = () => {
+      closed = true;
       if (timer !== undefined) clearTimeout(timer);
       timer = undefined;
       source.close();
@@ -245,7 +264,30 @@ export function createHonoApiClient({
     const deliver = (document: Document) => {
       if (document.version <= version) return;
       version = document.version;
+      title = document.title;
       onDocument(document);
+    };
+
+    const end = (event: ApiEndEvent) => {
+      if (closed) return;
+      close();
+      onEnd(event);
+    };
+
+    const probe = () => {
+      if (probing) return;
+      probing = true;
+      refetch().then(
+        () => {
+          probing = false;
+        },
+        (error: unknown) => {
+          probing = false;
+          if (!(error instanceof ApiError)) return;
+          if (error.status === 410) end({ type: 'linkRevoked' });
+          else if (error.status === 404) end({ type: 'deleted', title });
+        },
+      );
     };
 
     const handleEvent = (event: MessageEventLike) => {
@@ -256,8 +298,7 @@ export function createHonoApiClient({
         deliver(parsed.data.document);
         return;
       }
-      close();
-      onEnd(parsed.data);
+      end(parsed.data);
     };
 
     source.addEventListener('open', () => {
@@ -276,6 +317,7 @@ export function createHonoApiClient({
         stream.status = 'reconnecting';
         connection.update();
       }, RECONNECTING_AFTER_MS);
+      probe();
     });
     for (const type of ['message', 'document', 'deleted', 'linkRevoked']) {
       source.addEventListener(type, handleEvent);
@@ -362,6 +404,16 @@ export function createHonoApiClient({
       session: async () => {
         const found = await json(() => client.auth['get-session'].$get(), authSessionSchema);
         return found === null ? null : sessionOf(found);
+      },
+      providers: async () =>
+        (await json(() => client['auth-providers'].$get(), providersSchema)).providers,
+      socialSignIn: async (provider, callbackUrl) => {
+        const { url } = await json(
+          () =>
+            client.auth['sign-in'].social.$post({ json: { provider, callbackURL: callbackUrl } }),
+          socialSignInSchema,
+        );
+        return { url };
       },
     },
     combats,

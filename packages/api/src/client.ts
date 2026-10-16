@@ -139,6 +139,7 @@ export const API_ERROR_CODES = [
   'invalid',
   'unauthorized',
   'network',
+  'linkRevoked',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -185,11 +186,16 @@ export interface ConnectionApi {
   subscribe(listener: ConnectionListener): Unsubscribe;
 }
 
+export const SOCIAL_PROVIDERS = ['google', 'github'] as const;
+export type SocialProvider = (typeof SOCIAL_PROVIDERS)[number];
+
 export interface AuthApi {
   signUp(input: SignUpInput): Promise<Session>;
   signIn(input: SignInInput): Promise<Session>;
   signOut(): Promise<void>;
   session(): Promise<Session | null>;
+  providers(): Promise<SocialProvider[]>;
+  socialSignIn(provider: SocialProvider, callbackUrl: string): Promise<{ url: string }>;
 }
 
 export interface CombatsApi {

@@ -5,6 +5,8 @@ import { APIError } from 'better-auth/api';
 import { Hono } from 'hono';
 import type { JSONParsed } from 'hono/utils/types';
 import type { ApiAppEnv } from '../app.ts';
+import { SOCIAL_PROVIDERS } from '../client.ts';
+import type { SocialProvider } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import * as schema from '../db/schema.ts';
 import type { ApiEnv } from '../env.ts';
@@ -137,6 +139,7 @@ type AuthEndpoint<Call extends AuthCall> = {
 export type AuthRoutes = {
   '/sign-up/email': { $post: AuthEndpoint<AuthApi['signUpEmail']> };
   '/sign-in/email': { $post: AuthEndpoint<AuthApi['signInEmail']> };
+  '/sign-in/social': { $post: AuthEndpoint<AuthApi['signInSocial']> };
   '/sign-out': { $post: AuthEndpoint<AuthApi['signOut']> };
   '/get-session': { $get: AuthEndpoint<AuthApi['getSession']> };
 };
@@ -155,3 +158,10 @@ export function createAuthApp(auth: AuthInstance) {
     auth.handler(rebase(c.req.raw, c.req.routePath)),
   );
 }
+
+export const configuredProviders = (env: ApiEnv): SocialProvider[] =>
+  SOCIAL_PROVIDERS.filter((provider) => env[provider] !== undefined);
+
+export const authProvidersApp = new Hono<ApiAppEnv>().get('/', (c) =>
+  c.json({ providers: configuredProviders(c.get('env')) }),
+);

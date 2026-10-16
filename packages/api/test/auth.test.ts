@@ -3,6 +3,8 @@ import { Hono } from 'hono';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
 import { createAuth, createAuthApp } from '../src/auth/index.ts';
 import { sessionSchema } from '../src/client.ts';
+import type { ApiEnv } from '../src/env.ts';
+import { createHonoApiClient } from '../src/hono-client.ts';
 import type { Browser, TestApp } from './helpers.ts';
 import { browse, createBrowser, createTestApp, env, signUp } from './helpers.ts';
 
@@ -334,6 +336,51 @@ describe('social sign-in', () => {
       });
     } finally {
       withGithub.close();
+    }
+  });
+});
+
+describe('GET /auth-providers', () => {
+  const google = { clientId: 'google-id', clientSecret: 'google-secret' };
+  const github = { clientId: 'github-id', clientSecret: 'github-secret' };
+
+  it.each([
+    ['none', {}, []],
+    ['google', { google }, ['google']],
+    ['github', { github }, ['github']],
+    ['both', { google, github }, ['google', 'github']],
+  ] as const)('lists %s', async (_label, overrides: Partial<ApiEnv>, providers) => {
+    const configured = createTestApp({ env: overrides });
+    try {
+      const response = await configured.app.request('/auth-providers');
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ providers });
+      const client = createHonoApiClient({
+        baseUrl: 'http://localhost',
+        fetch: ((input, init) => configured.app.request(input, init)) as typeof fetch,
+      });
+      await expect(client.auth.providers()).resolves.toEqual(providers);
+    } finally {
+      configured.close();
+    }
+  });
+});
+
+describe('auth.socialSignIn', () => {
+  it('returns the provider authorization URL without navigating', async () => {
+    const configured = createTestApp({
+      env: { google: { clientId: 'google-id', clientSecret: 'google-secret' } },
+    });
+    try {
+      const client = createHonoApiClient({
+        baseUrl: 'http://localhost',
+        fetch: ((input, init) => configured.app.request(input, init)) as typeof fetch,
+      });
+      const { url } = await client.auth.socialSignIn('google', '/combats');
+      expect(new URL(url).hostname).toBe('accounts.google.com');
+      expect(new URL(url).searchParams.get('client_id')).toBe('google-id');
+    } finally {
+      configured.close();
     }
   });
 });

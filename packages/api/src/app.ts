@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { createAuth, createAuthApp } from './auth/index.ts';
+import { authProvidersApp, createAuth, createAuthApp } from './auth/index.ts';
 import type { SessionResolver } from './auth/require-user.ts';
 import { actionsApp } from './combats/actions.ts';
 import { eventsApp } from './combats/events.ts';
@@ -32,6 +32,7 @@ export function createApiApp({ db, env, auth }: ApiAppDeps) {
       await next();
     })
     .route('/auth', createAuthApp(instance))
+    .route('/auth-providers', authProvidersApp)
     .route('/health', healthApp)
     .route('/presets', presetsApp)
     .route('/tags', tagsApp)

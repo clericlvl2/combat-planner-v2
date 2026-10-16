@@ -1,6 +1,7 @@
 import type { Action, Combat } from '@combat-planner/domain';
+import { project } from '@combat-planner/domain';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
-import type { ConnectionState } from '../src/client.ts';
+import type { ConnectionState, EndListener } from '../src/client.ts';
 import { createHonoApiClient, RECONNECTING_AFTER_MS } from '../src/hono-client.ts';
 import type { EventSourceLike, MessageEventLike } from '../src/hono-client.ts';
 
@@ -110,6 +111,32 @@ describe('createHonoApiClient error mapping', () => {
       code,
       message: `status ${status}`,
       retryable: false,
+    });
+  });
+
+  it('maps 410 to linkRevoked', async () => {
+    const { fetch } = stubFetch(410, { message: 'gone' });
+    const client = createHonoApiClient({ baseUrl, fetch });
+    await expect(client.play.get(`${combatId}.0.signature`, playerId)).rejects.toMatchObject({
+      status: 410,
+      code: 'linkRevoked',
+      message: 'gone',
+    });
+  });
+
+  it.each([
+    [409, { code: 'invalid', message: 'A tag with this name already exists' }, 'invalid'],
+    [404, { code: 'linkRevoked', message: 'This link was reissued' }, 'linkRevoked'],
+    [422, { code: 'limit', message: 'limit reached' }, 'invalid'],
+    [403, { code: 'FORBIDDEN', message: 'nope' }, 'forbidden'],
+    [410, { code: 'linkRevoked', message: 'This link was reissued' }, 'linkRevoked'],
+  ] as const)('prefers a known body code over status %i', async (status, body, code) => {
+    const { fetch } = stubFetch(status, body);
+    const client = createHonoApiClient({ baseUrl, fetch });
+    await expect(client.tags.list()).rejects.toMatchObject({
+      status,
+      code,
+      message: body.message,
     });
   });
 
@@ -261,5 +288,91 @@ describe('createHonoApiClient connection', () => {
     );
     expect(client.connection.state()).toBe('offline');
     unsubscribe();
+  });
+});
+
+describe('createHonoApiClient stream probe', () => {
+  const token = `${combatId}.0.signature`;
+
+  const streams = {
+    dm: (client: ReturnType<typeof createHonoApiClient>, onEnd: EndListener) =>
+      client.combats.subscribe(combatId, () => {}, onEnd),
+    player: (client: ReturnType<typeof createHonoApiClient>, onEnd: EndListener) =>
+      client.play.subscribe(token, playerId, () => {}, onEnd),
+  };
+
+  const documentEvent = (kind: keyof typeof streams) => {
+    const combat = { ...combatAt(1), title: 'Ущелье гоблинов' };
+    const document = kind === 'dm' ? combat : project(combat, { kind: 'player', playerId });
+    return JSON.stringify({ type: 'document', version: 1, document });
+  };
+
+  describe.each(['dm', 'player'] as const)('%s stream', (kind) => {
+    it('ends with linkRevoked when the probe answers 410', async () => {
+      const { fetch, seen } = stubFetch(410, { code: 'linkRevoked', message: 'reissued' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      streams[kind](client, ended);
+      const source = StubEventSource.instances[0]!;
+      source.emit('open');
+      source.emit('error');
+      await vi.waitFor(() => expect(ended).toHaveBeenCalledWith({ type: 'linkRevoked' }));
+      expect(seen).toHaveLength(1);
+      expect(seen[0]?.url.pathname).toBe(
+        kind === 'dm' ? `/api/combats/${combatId}` : `/api/play/${combatId}`,
+      );
+      expect(source.closed).toBe(true);
+      expect(client.connection.state()).toBe('offline');
+    });
+
+    it('ends with deleted and the last title when the probe answers 404', async () => {
+      const { fetch } = stubFetch(404, { code: 'notFound', message: 'Combat not found' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      streams[kind](client, ended);
+      const source = StubEventSource.instances[0]!;
+      source.emit('open');
+      source.emit('message', documentEvent(kind));
+      source.emit('error');
+      await vi.waitFor(() =>
+        expect(ended).toHaveBeenCalledWith({ type: 'deleted', title: 'Ущелье гоблинов' }),
+      );
+      expect(ended).toHaveBeenCalledTimes(1);
+      expect(source.closed).toBe(true);
+    });
+
+    it('ends with deleted and an empty title when no document arrived', async () => {
+      const { fetch } = stubFetch(404, { code: 'notFound', message: 'Combat not found' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      streams[kind](client, ended);
+      StubEventSource.instances[0]!.emit('error');
+      await vi.waitFor(() => expect(ended).toHaveBeenCalledWith({ type: 'deleted', title: '' }));
+    });
+
+    it('keeps the browser reconnect on any other probe result', async () => {
+      const { fetch, seen } = stubFetch(500, { message: 'boom' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      streams[kind](client, ended);
+      const source = StubEventSource.instances[0]!;
+      source.emit('open');
+      source.emit('error');
+      await vi.waitFor(() => expect(seen).toHaveLength(1));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(ended).not.toHaveBeenCalled();
+      expect(source.closed).toBe(false);
+    });
+
+    it('does not end a stream that was closed before the probe answered', async () => {
+      const { fetch } = stubFetch(410, { code: 'linkRevoked', message: 'reissued' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      const unsubscribe = streams[kind](client, ended);
+      StubEventSource.instances[0]!.emit('error');
+      unsubscribe();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(ended).not.toHaveBeenCalled();
+    });
   });
 });
