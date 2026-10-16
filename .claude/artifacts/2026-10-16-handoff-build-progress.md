@@ -80,7 +80,7 @@
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
-| 3-server-actions | merged 985e015, gate ok `.claude/run/3-server-actions/summary.log` (test passed on retry, cache flake), guard running | combats routes, actions route, link |
+| 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
@@ -195,6 +195,14 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 3-server-actions, P3 отложено (все семь): копия боя хранится с `version 0`
+  против `1` у создания (routes.ts:116, источник — `copyCombat`); `loadLog`
+  читает весь лог на каждый undo; `ApiAppEnv.userId` не опционален; `PATCH {}`
+  бампает версию; 403 игрока доказан на уровне `dispatch` — `3-server-live`
+  добавляет тест маршрута `POST /play/:id/actions`; `hono-client.ts` импортирует
+  `hono/hono-base` и `hono/utils/types`; `requireUser` навешен трижды под
+  `/combats`.
 
 - fix-2.1, P2 (документарно): в `.claude/artifacts/reports/fix-2.1.md` закрытия
   P2 NumberField и RoleBlock без file:line — закрытия подтверждены в guard-файле.
