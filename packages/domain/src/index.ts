@@ -121,6 +121,7 @@ export type {
 export { healthSegments, healthStatus } from './healthStatus.ts';
 export type { HealthSegments } from './healthStatus.ts';
 export { skipsTurn, turnOrder } from './sort.ts';
+export { project } from './project.ts';
 export { copyTitle, duplicateName, normalizeTag } from './names.ts';
 export { DOMAIN_ERROR_CODES, DomainError } from './errors.ts';
 export type { DomainErrorCode } from './errors.ts';
@@ -134,6 +135,7 @@ export {
   rolledInitiative,
 } from './reduce.ts';
 export type { Applied, ApplyResult, NextTurnBlockReason, NextTurnTarget, Patch } from './reduce.ts';
-export { applyUndo } from './undo.ts';
+export { applyUndo, undoTarget } from './undo.ts';
+export type { LogEntry, UndoableEntry, Undone } from './undo.ts';
 export { PLAYER_ACTION_TYPES, authorize, isPlayerAction } from './authorize.ts';
 export type { PlayerActionType } from './authorize.ts';
