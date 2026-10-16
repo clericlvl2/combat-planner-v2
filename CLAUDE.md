@@ -148,12 +148,106 @@ hand-back; the hand-back message is the path only.
 
 ## Commands
 
-Set by phase 0.
+Every shell first runs `source ~/.nvm/nvm.sh && nvm use` (Node 24 from `.nvmrc`).
+All commands run from the worktree root.
+
+- Install: `pnpm install --frozen-lockfile`.
+- `pre-commit`: `pnpm check && pnpm test`. `pnpm check` is `vp check && tsc -b`:
+  format check, Oxlint, type check through tsgolint, then `tsc -b` over the
+  project references. `pnpm exec vp check --fix` formats and applies lint fixes.
+  `pnpm test` is `vp test --project unit --project storybook`: the unit tests and
+  every story with its `play` in headless Chromium. One unit only:
+  `pnpm exec vp test --project unit <path>` or
+  `pnpm exec vp test --project storybook <path>`.
+- `gate`: `pnpm install --frozen-lockfile && pnpm check && pnpm test &&
+  pnpm storybook:build && pnpm build`, then `node scripts/check-<name>.mjs` for
+  every `scripts/check-*.mjs` and `bash scripts/check-commit.sh master..agent/<batch>`.
+- `phase-gate`: `gate`, then `pnpm e2e` (`playwright test --pass-with-no-tests`).
+- `pnpm screenshots:update`: `scripts/screenshots-update.sh` runs
+  `vp test --project visual --update` in `mcr.microsoft.com/playwright:v<playwright
+  version>-noble` with the label `combat-planner=agent`, then writes
+  `packages/ui/__screenshots__/.docker-<tag>`. It is the only command that writes
+  baselines; `pnpm test` does not run the `visual` project.
+- `pnpm dev`: web on 5173 (`vp dev`, `/api` proxied to 3000) and server on 3000
+  (`node --watch src/main.ts`).
+- `pnpm storybook`: Storybook on 6006, config `packages/ui/.storybook`.
+- `pnpm status`: `scripts/status.sh`, branches, agent ports, labelled containers;
+  exits 0 when Docker is unreachable.
 
 ## Versions
 
-Set by phase 0.
+- Node 24 (`.nvmrc`, `engines.node >=24.11.0`); pnpm 10.34.7 (`packageManager`).
+- Vite+ `vite-plus` 1.3.0, one binary `vp` for dev, build, check, test. `vite` is
+  overridden to `npm:@voidzero-dev/vite-plus-core@1.3.0` and `vitest` to 5.0.5 in
+  `pnpm-workspace.yaml`; `better-auth>vitest: '-'` drops better-auth's optional
+  `vitest` peer, which otherwise installs a second Vite. Packages that run Vite
+  (`apps/web`) list the same `vite` alias and `vite-plus`.
+- Decision `vp test`: kept. `vp test` runs the projects `unit` (Node), `storybook`
+  and `visual` (browser, `vite-plus/test/browser-playwright`, Chromium) on the
+  first attempt; `vitest --project` is not used. Test code imports from
+  `vite-plus/test` and `vite-plus/test/browser`.
+- Decision CSF: CSF factories with `@storybook/addon-vitest`, no `setupFiles`.
+  `packages/ui/.storybook/preview.tsx` exports `definePreview(...)`; stories import
+  it as `#.storybook/preview` (`imports` in `packages/ui/package.json`) and use
+  `preview.meta({...})` and `meta.story({...})`; `play` asserts with `expect`
+  from `storybook/test`.
+- Decision visual: browser Vitest `toMatchScreenshot`; the Storybook `index.json`
+  runner is not used. `packages/ui/test/visual.test.tsx` loads every
+  `src/**/*.stories.tsx`, runs each story with `story.run({ canvasElement })`
+  (render and `play`) and screenshots the canvas at viewport 390×844. Baseline
+  path `packages/ui/__screenshots__/<Name>/<ExportName>.png` through
+  `browser.expect.toMatchScreenshot.resolveScreenshotPath` in `vite.config.ts`.
+  Two runs on the same Chromium produce byte-identical PNGs.
+- Decision Playwright image: `playwright` and `@playwright/test` 1.64.1 exact;
+  image `mcr.microsoft.com/playwright:v1.64.1-noble`, tag derived from the
+  installed `playwright` version. On this machine the Docker socket is not
+  accessible, so the committed `Hello` baseline comes from the local Playwright
+  Chromium and has no `.docker-*` marker.
+- Decision `@storybook/addon-mcp`: installed, 10.6.2, registered in `main.ts`.
+- Decision `storybook-addon-remix-react-router`: installed, 7.0.0 (peer
+  `react-router ^7.0.2 || ^8.0.0`, `storybook ^10.0.0`), registered in `main.ts`.
+- Decision Mantine: 9.7.2. `@mantine/core/styles.layer.css` is imported in
+  `packages/ui/.storybook/preview.tsx` and `apps/web/src/main.tsx`;
+  `postcss.config.cjs` at the root runs `postcss-preset-mantine` 1.18.0 and
+  `postcss-simple-vars` 7.0.1 with the `mantine-breakpoint-*` variables.
+- Storybook 10.6.2 with `@storybook/react-vite`, `@storybook/addon-docs`,
+  `@storybook/addon-vitest`.
+- TypeScript 5.9.3 for `tsc -b` (TypeScript 5 per the plan). `vp check` type-checks
+  with tsgolint on TypeScript Go 7; it does not match `.storybook` through an
+  `include` directory entry, so `packages/ui/tsconfig.json` lists
+  `.storybook/main.ts` and `.storybook/preview.tsx` by file.
+- `tsconfig.base.json`: `composite`, `emitDeclarationOnly` into `.tsbuild/`,
+  `moduleResolution: bundler`, `allowImportingTsExtensions`,
+  `verbatimModuleSyntax`, `erasableSyntaxOnly`, `noUncheckedIndexedAccess`.
+  Relative imports carry `.ts`/`.tsx`. Internal packages export `./src/index.ts`.
+- `apps/server` runs TypeScript through Node type stripping, no build step.
+- React 19.3.1; React Router 7.18.4 (data mode; 8.x is not used); TanStack Query
+  5.104.3; Hono 4.13.13 with `@hono/node-server` 2.1.5; Zod 4.6.7; Drizzle ORM
+  0.45.4 with `better-sqlite3` 13.0.3; Better Auth 1.7.10.
+- Format: Oxfmt through `vp`, `singleQuote: true`, `printWidth: 100`.
 
 ## Dependencies
 
-Set by phase 0. Only packages outside this list are "needed" in a report.
+Workspace root, dev: `@playwright/test`, `@storybook/addon-docs`,
+`@storybook/addon-mcp`, `@storybook/addon-vitest`, `@storybook/react-vite`,
+`@types/node`, `@vitejs/plugin-react`, `@vitest/browser-playwright`, `playwright`,
+`postcss`, `postcss-preset-mantine`, `postcss-simple-vars`, `storybook`,
+`storybook-addon-remix-react-router`, `typescript`, `vite` (alias of
+`@voidzero-dev/vite-plus-core`), `vite-plus`, `vitest`.
+
+- `packages/domain`: `ulid`, `zod`.
+- `packages/api`: `@hono/zod-validator`, `better-auth`, `drizzle-orm`, `hono`,
+  `zod`; dev `@types/node`, `drizzle-kit`.
+- `packages/ui`: `@fontsource/noto-sans-jp`, `@fontsource/rubik`,
+  `@fontsource/unbounded`, `@mantine/core`, `@mantine/hooks`,
+  `@tabler/icons-react`, `@tanstack/react-query`, `i18next`, `react`,
+  `react-dom`, `react-i18next`, `react-qr-code`, `react-router`, `ulid`; dev
+  `@types/react`, `@types/react-dom`.
+- `apps/web`: `@mantine/core`, `@mantine/hooks`, `@tanstack/react-query`,
+  `i18next`, `react`, `react-dom`, `react-i18next`, `react-router`; dev
+  `@types/react`, `@types/react-dom`, `@vitejs/plugin-react`, `vite`, `vite-plus`.
+- `apps/server`: `@hono/node-server`, `better-auth`, `better-sqlite3`,
+  `drizzle-orm`, `hono`; dev `@types/better-sqlite3`, `@types/node`.
+
+Internal `@combat-planner/*` packages are linked with `workspace:*`. Only packages
+outside this list are "needed" in a report.
