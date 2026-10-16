@@ -1,0 +1,22 @@
+{
+  "goblins": "Гоблины",
+  "orcs": "Орки",
+  "ferry": "Паром",
+  "addTag": "Добавить тег",
+  "active": "Идёт",
+  "setup": "Подготовка",
+  "namedNpcs": "Именные NPC",
+  "remove": "Убрать {{label}}",
+  "charmed": "очарован",
+  "confused": "сбит с толку",
+  "dazed": "ошеломлён",
+  "fear": "страх",
+  "helpless": "беспомощен",
+  "hindered": "замедлен",
+  "shocked": "шокирован",
+  "stuck": "обездвижен",
+  "stunned": "оглушён",
+  "vulnerable": "уязвим",
+  "weakened": "ослаблен",
+  "staggered": "шатается"
+}

@@ -1,0 +1,22 @@
+{
+  "goblins": "Trasgos",
+  "orcs": "Orcos",
+  "ferry": "Transbordador",
+  "addTag": "Añadir etiqueta",
+  "active": "Activo",
+  "setup": "Preparación",
+  "namedNpcs": "PNJ con nombre",
+  "remove": "Quitar {{label}}",
+  "charmed": "hechizado",
+  "confused": "confundido",
+  "dazed": "aturdido",
+  "fear": "asustado",
+  "helpless": "indefenso",
+  "hindered": "obstaculizado",
+  "shocked": "conmocionado",
+  "stuck": "atrapado",
+  "stunned": "paralizado",
+  "vulnerable": "desprotegido",
+  "weakened": "debilitado",
+  "staggered": "tambaleante"
+}

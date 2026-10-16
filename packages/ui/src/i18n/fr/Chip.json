@@ -1,0 +1,22 @@
+{
+  "goblins": "Gobelins",
+  "orcs": "Orques",
+  "ferry": "Bac",
+  "addTag": "Ajouter une étiquette",
+  "active": "Actif",
+  "setup": "Préparation",
+  "namedNpcs": "PNJ nommés",
+  "remove": "Retirer {{label}}",
+  "charmed": "charmé",
+  "confused": "confus",
+  "dazed": "hébété",
+  "fear": "effrayé",
+  "helpless": "impuissant",
+  "hindered": "entravé",
+  "shocked": "choqué",
+  "stuck": "coincé",
+  "stunned": "étourdi",
+  "vulnerable": "vulnérable",
+  "weakened": "affaibli",
+  "staggered": "chancelant"
+}

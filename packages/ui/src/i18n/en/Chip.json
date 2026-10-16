@@ -1,0 +1,22 @@
+{
+  "goblins": "Goblins",
+  "orcs": "Orcs",
+  "ferry": "Ferry",
+  "addTag": "Add tag",
+  "active": "Active",
+  "setup": "Setup",
+  "namedNpcs": "Named NPCs",
+  "remove": "Remove {{label}}",
+  "charmed": "charmed",
+  "confused": "confused",
+  "dazed": "dazed",
+  "fear": "fear",
+  "helpless": "helpless",
+  "hindered": "hindered",
+  "shocked": "shocked",
+  "stuck": "stuck",
+  "stunned": "stunned",
+  "vulnerable": "vulnerable",
+  "weakened": "weakened",
+  "staggered": "staggered"
+}

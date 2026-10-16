@@ -1,0 +1,22 @@
+{
+  "goblins": "Kobolde",
+  "orcs": "Orks",
+  "ferry": "Fähre",
+  "addTag": "Tag hinzufügen",
+  "active": "Aktiv",
+  "setup": "Vorbereitung",
+  "namedNpcs": "Benannte NSC",
+  "remove": "{{label}} entfernen",
+  "charmed": "bezaubert",
+  "confused": "verwirrt",
+  "dazed": "benommen",
+  "fear": "verängstigt",
+  "helpless": "hilflos",
+  "hindered": "behindert",
+  "shocked": "geschockt",
+  "stuck": "festgesetzt",
+  "stunned": "betäubt",
+  "vulnerable": "verwundbar",
+  "weakened": "geschwächt",
+  "staggered": "taumelnd"
+}

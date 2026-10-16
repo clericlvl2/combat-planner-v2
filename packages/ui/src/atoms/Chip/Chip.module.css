@@ -1,0 +1,133 @@
+.root {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+  height: 36px;
+  padding: 0 12px;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-full);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-small);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  vertical-align: top;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:is(button) {
+    cursor: pointer;
+  }
+
+  &[data-size='M'] {
+    height: 28px;
+  }
+
+  &[data-size='S'] {
+    height: 20px;
+    padding: 0 8px;
+    border-width: 1px;
+    font-size: var(--mantine-font-size-meta);
+    font-weight: 700;
+  }
+
+  &[data-removable] {
+    padding-right: 10px;
+
+    &[data-size='S'] {
+      padding-right: 6px;
+    }
+  }
+
+  &[data-variant='tag'][data-selected] {
+    border-color: var(--cp-color-ink);
+    background: var(--cp-color-ink);
+    color: var(--cp-color-surface);
+  }
+
+  &[data-variant='add'] {
+    border-style: dashed;
+    border-color: var(--cp-color-muted);
+  }
+
+  &[data-variant='condition'],
+  &[data-variant='status'],
+  &[data-variant='meta'] {
+    border: none;
+  }
+
+  &[data-variant='condition'] {
+    background: var(--chip-fill);
+    color: var(--chip-text);
+  }
+
+  &[data-variant='status'] {
+    background: var(--cp-color-soft);
+    color: var(--cp-color-secondary);
+    font-weight: 700;
+
+    &[data-selected] {
+      background: var(--cp-color-accent);
+      color: var(--cp-color-ink);
+    }
+  }
+
+  &[data-variant='meta'] {
+    background: var(--cp-color-soft);
+  }
+
+  &:is(button):active:not(:disabled),
+  &[data-pressed] {
+    background: var(--cp-color-soft);
+
+    &[data-variant='tag'][data-selected] {
+      background: var(--cp-color-ink-pressed);
+    }
+  }
+
+  &:disabled,
+  &[data-disabled] {
+    border-color: var(--cp-color-disabled);
+    background: var(--cp-color-disabled);
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+
+    & .count {
+      color: var(--cp-color-muted);
+    }
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.icon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+}
+
+.label {
+  white-space: nowrap;
+}
+
+.count {
+  font-weight: 500;
+  color: var(--cp-color-secondary);
+
+  [data-variant='tag'][data-selected] & {
+    color: var(--cp-color-surface);
+  }
+}

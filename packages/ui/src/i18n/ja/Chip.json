@@ -1,0 +1,22 @@
+{
+  "goblins": "ゴブリン",
+  "orcs": "オーク",
+  "ferry": "渡し船",
+  "addTag": "タグを追加",
+  "active": "進行中",
+  "setup": "準備中",
+  "namedNpcs": "名前付きNPC",
+  "remove": "{{label}}を外す",
+  "charmed": "魅了",
+  "confused": "混乱",
+  "dazed": "朦朧",
+  "fear": "恐怖",
+  "helpless": "無力",
+  "hindered": "妨害",
+  "shocked": "感電",
+  "stuck": "拘束",
+  "stunned": "気絶",
+  "vulnerable": "脆弱",
+  "weakened": "弱体",
+  "staggered": "よろめき"
+}
