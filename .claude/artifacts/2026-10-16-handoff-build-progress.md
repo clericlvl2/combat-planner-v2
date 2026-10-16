@@ -16,7 +16,7 @@
 |------|-----|-------|-----|
 | −1 | рендеры хэндоффа, errata | оркестратор + chrome-rider | phase--1 |
 | 0 | тулчейн, спайк, скрипты, CLAUDE.md Commands | 0-toolchain | phase-0 |
-| 0.5 | тема, PhoneFrame, ThemeAudit, эталонный Button, check-скрипты | 0.5-reference | |
+| 0.5 | тема, PhoneFrame, ThemeAudit, эталонный Button, check-скрипты | 0.5-reference | phase-0.5 |
 | 1 | domain, контракт ApiClient | 1-domain-core, 1-domain-rest, 1-api-contract | |
 | 2.1 | атомы | 2.1-atoms-a…d, fix-2.1 | |
 | 2.2 | молекулы | 2.2-molecules-a…e, fix-2.2 | |
@@ -42,7 +42,7 @@
 |-------|--------|---------|
 | -1-renders | guarded — | renders, errata |
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
-| 0.5-reference | merged 98cd2a5, guard running | theme, PhoneFrame, ThemeAudit, Button, check scripts |
+| 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | running worker-bee 2026-10-16T17:27:46+03:00 | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
@@ -125,5 +125,13 @@
   комментарием `check-comments.mjs`.
 - 0-toolchain, P3: гейт пачки шёл под Node 22 (скрипт оркестратора вызвал
   `nvm use` до входа в worktree); phase-gate перезапущен под Node 24.
+
+- 0.5-reference, P3, в `fix-2.1`: селектор pressed у Button
+  `&:active:not(:disabled)` вместо литерала CLAUDE.md; `PhoneFrame` не резервирует
+  44 px под статус-бар для историй без заголовка (полноширинная кнопка
+  закрывает «9:41»); лишний проп `type` у Button; `ThemeAudit` `columns: 2`
+  меняет визуальный порядок групп; `.sampleUse` скрыт, но рендерится; stale
+  baseline `Hello` — удалить `Hello` целиком; `Button` не экспортирован из
+  `index.ts` (экспорты собирает `fix-2.4`).
 
 ## Падения гейта
