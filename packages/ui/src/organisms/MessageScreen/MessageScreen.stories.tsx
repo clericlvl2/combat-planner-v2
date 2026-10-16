@@ -69,9 +69,10 @@ export const LinkRevoked = meta.story({
   name: 'Link revoked',
   args: { kind: 'linkRevoked' },
   play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }));
-    await expect(args.onAction).toHaveBeenCalledOnce();
-    await expect(args.onAction).toHaveBeenCalledWith();
+    const button = canvas.getByRole('button', { name: 'Try again' });
+    await expect(button).toBeVisible();
+    await expect(button).not.toHaveFocus();
+    await expect(args.onAction).not.toHaveBeenCalled();
   },
 });
 
@@ -117,7 +118,32 @@ export const De = meta.story({
   play: async ({ args, canvas }) => {
     const button = canvas.getByRole('button', { name: 'Erneut versuchen' });
     await expect(button.getBoundingClientRect().height).toBe(58);
-    await userEvent.click(button);
+    await expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
+    await expect(button).not.toHaveFocus();
+    await expect(args.onAction).not.toHaveBeenCalled();
+  },
+});
+
+export const ExtraTapAction = meta.story({
+  name: 'Tap on the action calls onAction',
+  args: { kind: 'linkRevoked' },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }));
+    await expect(args.onAction).toHaveBeenCalledOnce();
+    await expect(args.onAction).toHaveBeenCalledWith();
+  },
+});
+
+export const ExtraTapActionDe = meta.story({
+  name: 'Tap on the de action calls onAction',
+  args: {
+    kind: 'offline',
+    title: 'Keine Verbindung zum Server',
+    body: 'Prüfe die Verbindung und versuche es erneut.',
+    actionLabel: 'Erneut versuchen',
+  },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Erneut versuchen' }));
     await expect(args.onAction).toHaveBeenCalledOnce();
   },
 });

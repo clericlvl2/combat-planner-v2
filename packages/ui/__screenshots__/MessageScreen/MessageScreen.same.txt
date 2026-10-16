@@ -1,1 +1,2 @@
 CombatDeleted ExtraLabelWithoutHandler
+Anatomy LinkRevoked
