@@ -41,6 +41,12 @@ export const health = {
   empty: '#E6DDCC',
 } as const;
 
+export const healthTints = {
+  full: '#E3F1E6',
+  wounded: '#F8ECD2',
+  bloodied: '#FBE3D8',
+} as const;
+
 export const hpActions = {
   damage: '#B4232A',
   heal: '#2E7A43',
@@ -102,6 +108,7 @@ export const palette = {
   base,
   roles,
   health,
+  healthTints,
   hpActions,
   interaction,
   conditions,
@@ -156,7 +163,14 @@ function kebab(name: string): string {
 
 export function paletteVariables(): Record<string, string> {
   const variables: Record<string, string> = {};
-  const groups = { color: base, role: roles, health, hp: hpActions, state: interaction };
+  const groups = {
+    color: base,
+    role: roles,
+    health,
+    'health-tint': healthTints,
+    hp: hpActions,
+    state: interaction,
+  };
   for (const [prefix, group] of Object.entries(groups)) {
     for (const [name, value] of Object.entries(group)) {
       variables[`--cp-${prefix}-${kebab(name)}`] = value;
