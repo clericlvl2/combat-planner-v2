@@ -1,7 +1,7 @@
 import { healthSegments, healthStatus } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
-import { base, health, hpActions } from '../../theme.ts';
+import { base, health, healthTints, hpActions } from '../../theme.ts';
 import { HpBox } from './HpBox.tsx';
 import type { HpBoxProps } from './HpBox.tsx';
 
@@ -140,12 +140,20 @@ export const VariantsPlayerFull = meta.story({
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByText('Full')).toBeVisible();
     await expect(canvasElement.querySelectorAll('[data-segment]')).toHaveLength(0);
+    await expect(getComputedStyle(boxOf(canvasElement)).backgroundColor).toBe(
+      rgb(healthTints.full),
+    );
   },
 });
 
 export const VariantsPlayerWounded = meta.story({
   name: 'Player · Wounded',
   args: { viewer: 'player', hp: 24, maxHp: 40 },
+  play: async ({ canvasElement }) => {
+    await expect(getComputedStyle(boxOf(canvasElement)).backgroundColor).toBe(
+      rgb(healthTints.wounded),
+    );
+  },
 });
 
 export const OwnBloodied = meta.story({
@@ -154,6 +162,9 @@ export const OwnBloodied = meta.story({
   play: async ({ canvasElement }) => {
     const numbers = boxOf(canvasElement).firstElementChild;
     await expect(numbers && getComputedStyle(numbers).borderBottomStyle).toBe('dashed');
+    await expect(getComputedStyle(boxOf(canvasElement)).backgroundColor).toBe(
+      rgb(healthTints.bloodied),
+    );
   },
 });
 
@@ -336,10 +347,14 @@ export const ExtraKeyboard = meta.story({
 
 export const ExtraReadOnly = meta.story({
   name: 'Read-only enemy for a player',
-  args: { viewer: 'player', status: 'wounded', hp: undefined, maxHp: undefined },
-  play: async ({ canvas, canvasElement }) => {
+  args: { viewer: 'player', status: 'wounded', hp: undefined, maxHp: undefined, onClick: fn() },
+  render: (args) => (
+    <HpBoxCell {...args} onClick={args.viewer === 'dm' ? args.onClick : undefined} />
+  ),
+  play: async ({ args, canvas, canvasElement }) => {
     await expect(canvas.queryByRole('button')).toBeNull();
     await userEvent.click(boxOf(canvasElement));
+    await expect(args.onClick).not.toHaveBeenCalled();
     await expect(canvas.getByText('Wounded')).toBeVisible();
   },
 });

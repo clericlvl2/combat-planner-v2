@@ -1,6 +1,6 @@
 .root {
   --hp-box-status: var(--cp-health-full);
-  --hp-box-tint: #e3f1e6;
+  --hp-box-tint: var(--cp-health-tint-full);
 
   box-sizing: border-box;
   display: flex;
@@ -26,12 +26,12 @@
 
   &[data-status='wounded'] {
     --hp-box-status: var(--cp-health-wounded);
-    --hp-box-tint: #f8ecd2;
+    --hp-box-tint: var(--cp-health-tint-wounded);
   }
 
   &[data-status='bloodied'] {
     --hp-box-status: var(--cp-health-bloodied);
-    --hp-box-tint: #fbe3d8;
+    --hp-box-tint: var(--cp-health-tint-bloodied);
   }
 
   &[data-status='dead'] {
