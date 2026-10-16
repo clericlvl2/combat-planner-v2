@@ -17,8 +17,10 @@
   display: flex;
   align-items: flex-end;
   justify-content: stretch;
+  --cp-sheet-status-bar: var(--cp-layout-status-bar, 0px);
+
   width: auto;
-  padding: calc(12px + var(--cp-layout-status-bar, 0px)) 12px 12px;
+  padding: calc(12px + var(--cp-sheet-status-bar)) 12px 12px;
   pointer-events: none;
 }
 
@@ -39,6 +41,10 @@
   color: var(--cp-color-ink);
   box-shadow: none;
   pointer-events: all;
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .header {
@@ -63,11 +69,11 @@
   font-weight: 700;
   line-height: var(--mantine-line-height-snug);
   overflow-wrap: anywhere;
-  outline: none;
 }
 
 .subtitle {
   margin: 0;
+  padding: 0;
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   line-height: var(--mantine-line-height-body);
