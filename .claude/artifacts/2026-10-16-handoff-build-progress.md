@@ -29,7 +29,7 @@
 
 ## Текущий шаг
 
-Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита целиком (`fix-2.1` ab729f2, guard идёт). Идёт фаза 2.2: молекулы по две
+Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Идёт фаза 2.2: молекулы по две
 параллельно, вторая очередь — `3-server-actions` (рестарт после отключения питания). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
 Интеграция: `.claude/run/gate.sh <batch> <worktree> <range>` в фоне, затем
 `.claude/run/merge.sh <batch>` (rebase на master, где с момента гейта менялись
@@ -51,7 +51,7 @@
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
-| fix-2.1 | merged ab729f2, gate ok `.claude/run/fix-2.1/summary.log`, guard running | |
+| fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
 | 2.2-molecules-a | running worker-bee 2026-10-16T20:10+03:00 | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | running worker-bee 2026-10-16T20:16+03:00 | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
@@ -195,6 +195,14 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-2.1, P2 (документарно): в `.claude/artifacts/reports/fix-2.1.md` закрытия
+  P2 NumberField и RoleBlock без file:line — закрытия подтверждены в guard-файле.
+  P3 → `fix-2.2`: mousedown по иконке SearchField не фокусирует инпут
+  (SearchField.tsx:47, нужен `event.target === inputRef.current` как в
+  NumberField/TextField). P3 для брифов 2.2+: TextField по умолчанию
+  `maxLength = LIMITS.unitName` (40) — поля заголовка передают `maxLength`
+  явно.
 
 - fix-1-api-contract, P3: имя типа `Link` в `@combat-planner/api` может
   столкнуться с `Link` роутера; `LinkReissueResult` `{ token, version }` против
