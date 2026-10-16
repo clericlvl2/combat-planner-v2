@@ -14,6 +14,8 @@ export type {
 export { combatsApp } from './combats/routes.ts';
 export { eventsApp } from './combats/events.ts';
 export { linkApp } from './link/routes.ts';
+export { playApp } from './play/routes.ts';
+export { dmLanguage, recordPlayer } from './play/store.ts';
 export { signLink, verifyLink } from './link/token.ts';
 export type { LinkClaims } from './link/token.ts';
 export { broadcast, broadcastDocument, subscribe, subscriberCount } from './live/registry.ts';

@@ -1,5 +1,4 @@
 import type {
-  Action,
   Combat,
   CombatId,
   PlayerCombat,
@@ -44,7 +43,6 @@ import type {
   DocumentListener,
   EndListener,
   LinkToken,
-  PlayView,
   PresetCreateInput,
   PresetPatch,
   Session,
@@ -53,7 +51,6 @@ import type {
   SignUpInput,
   TagCreateInput,
   Unsubscribe,
-  VersionResult,
 } from './client.ts';
 
 export const RECONNECTING_AFTER_MS = 10_000;
@@ -88,7 +85,6 @@ type JsonEndpoint<Input, Output> = {
 
 type NoInput = Record<never, never>;
 type IdParam = { param: { id: string } };
-type TokenQuery = { query: { t: string } };
 
 const authUserSchema = z.object({
   id: z.string().min(1),
@@ -109,10 +105,6 @@ type PlannedRoutes = {
   };
   '/auth/sign-out': { $post: JsonEndpoint<NoInput, { success: boolean }> };
   '/auth/get-session': { $get: JsonEndpoint<NoInput, AuthResponse | null> };
-  '/play/:id': { $get: JsonEndpoint<IdParam & TokenQuery, PlayView> };
-  '/play/:id/actions': {
-    $post: JsonEndpoint<IdParam & TokenQuery & { json: Action }, VersionResult>;
-  };
   '/presets': {
     $get: JsonEndpoint<NoInput, Preset[]>;
     $post: JsonEndpoint<{ json: PresetCreateInput }, Preset>;

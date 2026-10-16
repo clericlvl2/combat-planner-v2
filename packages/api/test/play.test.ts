@@ -1,0 +1,381 @@
+import type { Action, Combat, PlayerCombat, PlayerUnit } from '@combat-planner/domain';
+import { playerCombatSchema, project } from '@combat-planner/domain';
+import { and, eq } from 'drizzle-orm';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vite-plus/test';
+import { linkSchema, linkReissueResultSchema, playViewSchema } from '../src/client.ts';
+import { players, user } from '../src/db/schema.ts';
+import { signLink } from '../src/link/token.ts';
+import { subscriberCount } from '../src/live/registry.ts';
+import type { TestApp } from './helpers.ts';
+import {
+  COMBAT_ID,
+  DM,
+  ENEMY_ID,
+  HERO_ID,
+  PLAYER_ID,
+  addUnitAction,
+  call,
+  combatInput,
+  createTestApp,
+  env,
+  fetchCombat,
+  ulidAt,
+  withUser,
+} from './helpers.ts';
+import { openSse } from './sse.ts';
+
+const SECOND_HERO = ulidAt(900);
+const SECOND_PLAYER = ulidAt(901);
+const ALLY_ID = ulidAt(902);
+const DISABLED_ID = ulidAt(903);
+const UNKNOWN_COMBAT = ulidAt(904);
+
+const EVERY_COLUMN = [
+  'id',
+  'name',
+  'role',
+  'healthStatus',
+  'healthSegments',
+  'conditions',
+  'position',
+  'initiative',
+];
+const FRIENDLY_COLUMNS = [...EVERY_COLUMN, 'claimedBy', 'hp', 'tempHp', 'maxHp', 'ac', 'pd', 'md'];
+const OWN_COLUMNS = [...FRIENDLY_COLUMNS, 'note', 'hpHistory'];
+
+const visibleKeys = (unit: PlayerUnit, playerId: string): string[] => {
+  if (unit.claimedBy === playerId) return OWN_COLUMNS;
+  if (unit.role === 'enemy') return EVERY_COLUMN;
+  return FRIENDLY_COLUMNS;
+};
+
+const assertVisibility = (document: PlayerCombat, source: Combat, playerId: string) => {
+  expect(Object.keys(document).sort()).toEqual(
+    Object.keys(source)
+      .filter((key) => key !== 'linkGeneration')
+      .sort(),
+  );
+  const disabled = source.units.filter((unit) => unit.disabled).map((unit) => unit.id);
+  expect(disabled.length).toBeGreaterThan(0);
+  const visible = source.units.filter((unit) => !unit.disabled).map((unit) => unit.id);
+  expect(document.units.map((unit) => unit.id).sort()).toEqual(visible.sort());
+  for (const unit of document.units) {
+    expect(disabled).not.toContain(unit.id);
+    const allowed = visibleKeys(unit, playerId);
+    for (const key of Object.keys(unit)) expect(allowed).toContain(key);
+    expect(Object.keys(unit).sort()).toEqual([...allowed].sort());
+  }
+  const roles = new Set(document.units.map((unit) => visibleKeys(unit, playerId)));
+  expect(roles.size).toBe(3);
+};
+
+let opened: TestApp;
+let dm: ReturnType<typeof withUser>;
+let token: string;
+let actionIndex = 0;
+const nextActionId = () => ulidAt(100 + actionIndex++);
+const secret = env.linkSecret;
+
+const playerHeaders = (playerId: string | undefined): Record<string, string> =>
+  playerId === undefined ? {} : { 'X-Player-Id': playerId };
+
+const getPlay = (t: string, playerId: string | undefined, combatId = COMBAT_ID) =>
+  opened.app.request(`/play/${combatId}?t=${encodeURIComponent(t)}`, {
+    headers: playerHeaders(playerId),
+  });
+
+const postAction = (t: string, playerId: string | undefined, action: unknown) =>
+  opened.app.request(`/play/${COMBAT_ID}/actions?t=${encodeURIComponent(t)}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...playerHeaders(playerId) },
+    body: JSON.stringify(action),
+  });
+
+const openEvents = (t: string, playerId: string, combatId = COMBAT_ID) =>
+  opened.app.request(`/play/${combatId}/events?${new URLSearchParams({ t, playerId }).toString()}`);
+
+const playerRows = () =>
+  opened.db
+    .select({ playerId: players.playerId, displayName: players.displayName })
+    .from(players)
+    .where(eq(players.combatId, COMBAT_ID))
+    .all();
+
+const tamper = (t: string): string => `${t.slice(0, -1)}${t.endsWith('A') ? 'B' : 'A'}`;
+
+type ActionBody<A> = A extends Action ? Omit<A, 'id' | 'version'> : never;
+
+const dmAction = async (action: ActionBody<Action>) => {
+  const combat = await fetchCombat(dm);
+  const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/actions`, {
+    ...action,
+    id: nextActionId(),
+    version: combat.version,
+  });
+  expect(response.status).toBe(200);
+  return fetchCombat(dm);
+};
+
+const settled = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
+
+beforeAll(async () => {
+  opened = createTestApp();
+  dm = withUser(opened.app, DM);
+  opened.db.update(user).set({ language: 'ru' }).where(eq(user.id, DM)).run();
+  expect((await call(dm, 'POST', '/combats', combatInput())).status).toBe(200);
+  const actions = [
+    addUnitAction(nextActionId(), 1, HERO_ID, 'Ada', 'hero'),
+    addUnitAction(nextActionId(), 2, SECOND_HERO, 'Bram', 'hero'),
+    addUnitAction(nextActionId(), 3, ALLY_ID, 'Cleric', 'ally'),
+    addUnitAction(nextActionId(), 4, ENEMY_ID, 'Goblin', 'enemy'),
+    addUnitAction(nextActionId(), 5, DISABLED_ID, 'Hidden ogre', 'enemy'),
+  ];
+  for (const action of actions) {
+    expect((await call(dm, 'POST', `/combats/${COMBAT_ID}/actions`, action)).status).toBe(200);
+  }
+  await dmAction({ type: 'setDisabled', unitId: DISABLED_ID, disabled: true });
+  const link = linkSchema.parse(await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json());
+  token = link.token;
+});
+
+afterAll(() => {
+  opened.close();
+});
+
+afterEach(() => {
+  expect(subscriberCount(COMBAT_ID)).toBe(0);
+});
+
+describe('GET /play/:id', () => {
+  it('answers the projection, the player id and the DM language for a valid token', async () => {
+    const response = await getPlay(token, PLAYER_ID);
+    expect(response.status).toBe(200);
+    const view = playViewSchema.parse(await response.json());
+    const combat = await fetchCombat(dm);
+    expect(view).toEqual({
+      combatId: COMBAT_ID,
+      playerId: PLAYER_ID,
+      language: 'ru',
+      combat: project(combat, { kind: 'player', playerId: PLAYER_ID }),
+    });
+    expect(view.combat).not.toHaveProperty('linkGeneration');
+    expect(playerRows()).toEqual([]);
+  });
+
+  it('answers 400 without a ULID in X-Player-Id', async () => {
+    expect((await getPlay(token, undefined)).status).toBe(400);
+    expect((await getPlay(token, 'not-a-ulid')).status).toBe(400);
+  });
+
+  it('answers 404 for a tampered token', async () => {
+    const response = await getPlay(tamper(token), PLAYER_ID);
+    expect(response.status).toBe(404);
+    expect(await response.json()).toMatchObject({ code: 'notFound' });
+  });
+
+  it('answers 404 for a token of another combat and for a combat that is gone', async () => {
+    const foreign = signLink({ combatId: UNKNOWN_COMBAT, generation: 0 }, secret);
+    expect((await getPlay(foreign, PLAYER_ID)).status).toBe(404);
+    expect((await getPlay(foreign, PLAYER_ID, UNKNOWN_COMBAT)).status).toBe(404);
+    expect((await getPlay(token, PLAYER_ID, UNKNOWN_COMBAT)).status).toBe(404);
+  });
+
+  it('answers 400 without a token', async () => {
+    expect((await opened.app.request(`/play/${COMBAT_ID}`)).status).toBe(400);
+  });
+
+  it('answers 410 linkRevoked for a generation that is not the current one', async () => {
+    const other = signLink({ combatId: COMBAT_ID, generation: 7 }, secret);
+    const response = await getPlay(other, PLAYER_ID);
+    expect(response.status).toBe(410);
+    expect(await response.json()).toMatchObject({ code: 'linkRevoked' });
+  });
+});
+
+describe('POST /play/:id/actions', () => {
+  it('claims a hero, answers the version and records the display name', async () => {
+    const before = await fetchCombat(dm);
+    const response = await postAction(token, PLAYER_ID, {
+      id: nextActionId(),
+      version: before.version,
+      type: 'claimUnit',
+      unitId: HERO_ID,
+      displayName: 'Ada',
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ version: before.version + 1 });
+    const after = await fetchCombat(dm);
+    expect(after.units.find((unit) => unit.id === HERO_ID)?.claimedBy).toBe(PLAYER_ID);
+    expect(playerRows()).toEqual([{ playerId: PLAYER_ID, displayName: 'Ada' }]);
+    const second = await postAction(token, SECOND_PLAYER, {
+      id: nextActionId(),
+      version: after.version,
+      type: 'claimUnit',
+      unitId: SECOND_HERO,
+      displayName: 'Bram',
+    });
+    expect(second.status).toBe(200);
+    expect(playerRows()).toEqual([
+      { playerId: PLAYER_ID, displayName: 'Ada' },
+      { playerId: SECOND_PLAYER, displayName: 'Bram' },
+    ]);
+  });
+
+  it('GET upserts the player row when the document already knows the name', async () => {
+    opened.db
+      .delete(players)
+      .where(and(eq(players.combatId, COMBAT_ID), eq(players.playerId, PLAYER_ID)))
+      .run();
+    expect(playerRows()).toEqual([{ playerId: SECOND_PLAYER, displayName: 'Bram' }]);
+    expect((await getPlay(token, PLAYER_ID)).status).toBe(200);
+    expect(playerRows()).toEqual([
+      { playerId: PLAYER_ID, displayName: 'Ada' },
+      { playerId: SECOND_PLAYER, displayName: 'Bram' },
+    ]);
+  });
+
+  it('applies an action on the own hero', async () => {
+    const before = await fetchCombat(dm);
+    const response = await postAction(token, PLAYER_ID, {
+      id: nextActionId(),
+      version: before.version,
+      type: 'damage',
+      unitId: HERO_ID,
+      amount: 4,
+    });
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ version: before.version + 1 });
+    expect((await fetchCombat(dm)).units.find((unit) => unit.id === HERO_ID)?.hp).toBe(16);
+  });
+
+  it('answers 403 forbidden on a hero of another player and on an enemy', async () => {
+    const combat = await fetchCombat(dm);
+    for (const unitId of [SECOND_HERO, ENEMY_ID]) {
+      const response = await postAction(token, PLAYER_ID, {
+        id: nextActionId(),
+        version: combat.version,
+        type: 'damage',
+        unitId,
+        amount: 1,
+      });
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ code: 'forbidden' });
+    }
+    expect((await fetchCombat(dm)).version).toBe(combat.version);
+  });
+
+  it('answers 403 forbidden for a DM-only action', async () => {
+    const combat = await fetchCombat(dm);
+    const response = await postAction(token, PLAYER_ID, {
+      id: nextActionId(),
+      version: combat.version,
+      type: 'nextTurn',
+    });
+    expect(response.status).toBe(403);
+  });
+
+  it('answers 409 version for a stale version', async () => {
+    const combat = await fetchCombat(dm);
+    const response = await postAction(token, PLAYER_ID, {
+      id: nextActionId(),
+      version: combat.version - 1,
+      type: 'heal',
+      unitId: HERO_ID,
+      amount: 1,
+    });
+    expect(response.status).toBe(409);
+    expect(await response.json()).toMatchObject({ code: 'version' });
+  });
+
+  it('answers 404 for a tampered token, 400 without a player id and for a malformed action', async () => {
+    const combat = await fetchCombat(dm);
+    const action = {
+      id: nextActionId(),
+      version: combat.version,
+      type: 'heal',
+      unitId: HERO_ID,
+      amount: 1,
+    };
+    expect((await postAction(tamper(token), PLAYER_ID, action)).status).toBe(404);
+    expect((await postAction(token, undefined, action)).status).toBe(400);
+    expect((await postAction(token, PLAYER_ID, { ...action, amount: 'lots' })).status).toBe(400);
+    expect((await fetchCombat(dm)).version).toBe(combat.version);
+  });
+});
+
+describe('GET /play/:id/events', () => {
+  it('answers 400 for a missing or malformed playerId and token', async () => {
+    const base = `/play/${COMBAT_ID}/events`;
+    expect((await opened.app.request(`${base}?t=${encodeURIComponent(token)}`)).status).toBe(400);
+    expect((await opened.app.request(`${base}?playerId=${PLAYER_ID}`)).status).toBe(400);
+    expect((await openEvents(token, 'nope')).status).toBe(400);
+  });
+
+  it('answers 404 for a tampered token', async () => {
+    expect((await openEvents(tamper(token), PLAYER_ID)).status).toBe(404);
+  });
+
+  it('streams the player projection without hidden fields and relays dispatches', async () => {
+    const combat = await fetchCombat(dm);
+    const stream = openSse(await openEvents(token, PLAYER_ID));
+    const initial = await stream.event();
+    expect(initial.id).toBe(String(combat.version));
+    expect(initial.event.type).toBe('document');
+    const document = playerCombatSchema.parse((initial.event as { document: unknown }).document);
+    expect(document).toEqual(project(combat, { kind: 'player', playerId: PLAYER_ID }));
+    assertVisibility(document, combat, PLAYER_ID);
+    expect(subscriberCount(COMBAT_ID)).toBe(1);
+    const damaged = await dmAction({ type: 'damage', unitId: ENEMY_ID, amount: 6 });
+    const relayed = await stream.event();
+    expect(relayed.id).toBe(String(damaged.version));
+    const relayedDocument = playerCombatSchema.parse(
+      (relayed.event as { document: unknown }).document,
+    );
+    assertVisibility(relayedDocument, damaged, PLAYER_ID);
+    expect(relayedDocument.units.find((unit) => unit.id === ENEMY_ID)).toMatchObject({
+      healthStatus: 'wounded',
+    });
+    await stream.cancel();
+    await settled();
+  });
+
+  it('ends with linkRevoked when the link is reissued, and the old token answers 410 afterwards', async () => {
+    const stream = openSse(await openEvents(token, PLAYER_ID));
+    await stream.event();
+    const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/link/reissue`);
+    expect(response.status).toBe(200);
+    const reissued = linkReissueResultSchema.parse(await response.json());
+    expect(await stream.event()).toEqual({ id: undefined, event: { type: 'linkRevoked' } });
+    expect(await stream.closed()).toBe(true);
+    expect(subscriberCount(COMBAT_ID)).toBe(0);
+    for (const stale of [
+      await getPlay(token, PLAYER_ID),
+      await postAction(token, PLAYER_ID, {
+        id: nextActionId(),
+        version: reissued.version,
+        type: 'heal',
+        unitId: HERO_ID,
+        amount: 1,
+      }),
+      await openEvents(token, PLAYER_ID),
+    ]) {
+      expect(stale.status).toBe(410);
+      expect(await stale.json()).toMatchObject({ code: 'linkRevoked' });
+    }
+    token = reissued.token;
+    expect((await getPlay(token, PLAYER_ID)).status).toBe(200);
+  });
+
+  it('ends with deleted carrying the title when the combat is removed', async () => {
+    const combat = await fetchCombat(dm);
+    const stream = openSse(await openEvents(token, PLAYER_ID));
+    await stream.event();
+    expect((await call(dm, 'DELETE', `/combats/${COMBAT_ID}`)).status).toBe(204);
+    expect(await stream.event()).toEqual({
+      id: undefined,
+      event: { type: 'deleted', title: combat.title },
+    });
+    expect(await stream.closed()).toBe(true);
+    expect((await getPlay(token, PLAYER_ID)).status).toBe(404);
+  });
+});
