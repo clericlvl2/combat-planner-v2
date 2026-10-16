@@ -54,7 +54,7 @@
 | fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
 | 2.2-molecules-a | guarded `.claude/artifacts/guard/2.2-molecules-a.md` | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
-| 2.2-molecules-c | rebased (conflict in `allow-same.txt` resolved by the agent), report `.claude/artifacts/reports/2.2-molecules-c.md`, gate running | HpBox, HistoryRow, DefenseLine |
+| 2.2-molecules-c | rebased onto d937d52, report `.claude/artifacts/reports/2.2-molecules-c.md`, re-gate running (first gate ok, master gained 2.2-molecules-d meanwhile) | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | merged dc0b402, gate ok `.claude/run/2.2-molecules-d/summary.log`, guard running | NoteField, InitiativePopover |
 | 2.2-molecules-e | running worker-bee 2026-10-16T20:46+03:00 | Toast, EmptyState |
 | fix-2.2 | todo | |
