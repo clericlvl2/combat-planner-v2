@@ -66,7 +66,7 @@
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
-| 2.3-organisms-g | rebased, report `.claude/artifacts/reports/2.3-organisms-g.md`, gate running | ConditionPicker, TagSheet |
+| 2.3-organisms-g | merged 4d7a825, gate ok `.claude/run/2.3-organisms-g/summary.log`, guard running | ConditionPicker, TagSheet |
 | 2.3-organisms-h | todo | SortSheet, ShareSheet |
 | 2.3-organisms-i | todo | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
