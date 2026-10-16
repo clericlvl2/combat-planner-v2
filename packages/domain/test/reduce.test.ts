@@ -116,9 +116,9 @@ describe('apply', () => {
     expect(JSON.stringify(combat)).toBe(snapshot);
   });
 
-  it('delegates undo to applyUndo, which this batch stubs with DomainError invalid', () => {
+  it('delegates undo to applyUndo, which answers DomainError blocked on an empty log', () => {
     const combat = setup([makeUnit()]);
-    expect(codeOf(combat, { type: 'undo' })).toBe('invalid');
+    expect(codeOf(combat, { type: 'undo' })).toBe('blocked');
   });
 });
 

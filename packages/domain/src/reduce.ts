@@ -18,6 +18,7 @@ import type {
   Viewer,
 } from './types.ts';
 import { applyUndo } from './undo.ts';
+import type { LogEntry, Undone } from './undo.ts';
 
 export interface Patch {
   actionId: ActionId;
@@ -30,7 +31,7 @@ export interface Applied {
   patch: Patch | null;
 }
 
-export type ApplyResult = Applied | DomainError;
+export type ApplyResult = Applied | Undone | DomainError;
 
 export const NEXT_TURN_BLOCK_REASONS = [
   'notActive',
@@ -474,7 +475,13 @@ const diff = (before: Combat, after: Combat, actionId: ActionId): Patch => {
   return { actionId, fields, units };
 };
 
-export const apply = (combat: Combat, action: Action, author: Viewer, now: string): ApplyResult => {
+export const apply = (
+  combat: Combat,
+  action: Action,
+  author: Viewer,
+  now: string,
+  log: readonly LogEntry[] = [],
+): ApplyResult => {
   const allowed = authorize(combat, action, author);
   if (allowed !== true) return allowed;
   if (action.version !== combat.version) {
@@ -483,7 +490,7 @@ export const apply = (combat: Combat, action: Action, author: Viewer, now: strin
       `Action version ${action.version} does not match combat version ${combat.version}`,
     );
   }
-  if (action.type === 'undo') return applyUndo(combat, action, now);
+  if (action.type === 'undo') return applyUndo(combat, action, now, log);
   const next = step(combat, action, author, now);
   if (next instanceof DomainError) return next;
   return {
