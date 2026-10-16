@@ -1,0 +1,229 @@
+.tabs {
+  flex: none;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--mantine-radius-sheet);
+  background: var(--cp-color-soft);
+
+  & button[role='radio'] {
+    height: 40px;
+    border: none;
+    border-radius: 20px;
+    background: transparent;
+
+    &[data-selected] {
+      background: var(--cp-color-ink);
+    }
+  }
+}
+
+.name {
+  flex: none;
+
+  & [data-field]:not([data-error]):has(textarea:not(:placeholder-shown)) {
+    border-color: var(--cp-color-ink);
+  }
+}
+
+.field {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.caption {
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  color: var(--cp-color-secondary);
+}
+
+.roles button[role='radio'] {
+  height: 48px;
+}
+
+.steppers {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+}
+
+.stepper:not([data-empty]) input[role='spinbutton'] {
+  border-color: var(--cp-color-ink);
+  background: var(--cp-color-ink);
+  color: var(--cp-color-surface);
+}
+
+.stepper[data-empty] input[role='spinbutton']:not(:focus) {
+  color: var(--cp-color-muted);
+}
+
+.tools {
+  display: flex;
+  flex: none;
+  gap: 8px;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+}
+
+.chips {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.library {
+  position: relative;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  height: 336px;
+  overflow: hidden;
+}
+
+.list {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-field);
+}
+
+.preset {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 12px 8px 8px;
+  border: none;
+  border-bottom: 2px solid var(--cp-color-border);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active,
+  &[data-pressed] {
+    background: var(--cp-color-soft);
+  }
+
+  &[data-selected] {
+    background: var(--cp-color-highlight);
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: -2px;
+  }
+}
+
+.badge {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0 2px;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-field);
+  color: var(--cp-color-surface);
+  font-size: var(--mantine-font-size-micro);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  text-align: center;
+  overflow-wrap: anywhere;
+
+  &[data-role='hero'] {
+    background: var(--cp-role-hero);
+  }
+
+  &[data-role='enemy'] {
+    background: var(--cp-role-enemy);
+  }
+
+  &[data-role='ally'] {
+    background: var(--cp-role-ally);
+  }
+}
+
+.presetText {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.presetName {
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  overflow-wrap: anywhere;
+}
+
+.presetStats {
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-snug);
+  color: var(--cp-color-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.check {
+  flex: none;
+}
+
+.fade {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+  left: 2px;
+  height: 48px;
+  border-radius: 0 0 10px 10px;
+  background: linear-gradient(transparent, var(--cp-color-surface));
+  pointer-events: none;
+}
+
+.empty {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 24px 8px;
+  border: 2px dashed var(--cp-color-border);
+  border-radius: var(--mantine-radius-field);
+  font-family: var(--cp-font-ui);
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.emptyBody {
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-body);
+  color: var(--cp-color-secondary);
+}

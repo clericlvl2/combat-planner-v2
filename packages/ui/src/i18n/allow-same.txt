@@ -8,3 +8,4 @@ HistoryRow.absorbed
 Drawer.title
 SortSheet.alphabetical
 CombatHeader.menu
+UnitForm.defaultName
