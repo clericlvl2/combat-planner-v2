@@ -42,8 +42,7 @@ const part = (canvasElement: HTMLElement, name: string) => {
 };
 
 const colorsOf = (canvasElement: HTMLElement) => {
-  const chip = part(canvasElement, 'kind').firstElementChild;
-  if (!chip) throw new Error('kind chip not rendered');
+  const chip = part(canvasElement, 'kind');
   const kind = getComputedStyle(chip);
   return {
     fill: kind.backgroundColor,
@@ -60,6 +59,8 @@ export const Anatomy = meta.story({
   play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByText('Round 2')).toBeVisible();
     await expect(part(canvasElement, 'kind')).toHaveTextContent('Damage');
+    await expect(part(canvasElement, 'kind').tagName).toBe('SPAN');
+    await expect(part(canvasElement, 'kind')).not.toHaveAttribute('data-condition');
     await expect(part(canvasElement, 'amount').textContent).toBe('−8 (5 temp)');
     await expect(part(canvasElement, 'result').textContent).toBe('23/40');
     const row = canvasElement.querySelector<HTMLElement>('[data-kind]');

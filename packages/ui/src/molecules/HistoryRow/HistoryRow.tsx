@@ -63,20 +63,20 @@ export function HistoryRow({ entry, hp, maxHp, className, style, ...rest }: Hist
       className={className ? `${classes.root} ${className}` : classes.root}
       style={colors ? ({ '--history-amount': colors.amount, ...style } as CSSProperties) : style}
       data-kind={entry?.kind}
-      data-wide-when={wideWhenLocales.has(i18n.language) || undefined}
+      data-wide-when={wideWhenLocales.has(i18n.resolvedLanguage ?? '') || undefined}
     >
       <span className={classes.when}>{when}</span>
       <span className={classes.change}>
         {entry && colors ? (
-          <span className={classes.kind} data-part="kind">
-            <Chip
-              variant="condition"
-              size="S"
-              style={{ '--chip-fill': colors.fill, '--chip-text': colors.text } as CSSProperties}
-            >
-              {t(entry.kind)}
-            </Chip>
-          </span>
+          <Chip
+            variant="meta"
+            size="S"
+            className={classes.kind}
+            data-part="kind"
+            style={{ '--chip-fill': colors.fill, '--chip-text': colors.text } as CSSProperties}
+          >
+            {t(entry.kind)}
+          </Chip>
         ) : null}
         {amountText ? (
           <span className={classes.amount} data-part="amount">
