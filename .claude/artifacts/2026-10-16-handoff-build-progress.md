@@ -52,7 +52,7 @@
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
-| 2.1-atoms-d | rebased, report `.claude/artifacts/reports/2.1-atoms-d.md`, gate running | EscalationDie, RoleBlock |
+| 2.1-atoms-d | merged c17d5ff, guard running | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
@@ -234,6 +234,10 @@
   `&[data-pressed]` перекрывает заливки condition/status/meta.
 
 ## Падения гейта
+
+- 2.1-atoms-d, шаг `visual`: 1 из 359 — `Hello > Default`, известный stale
+  baseline (390×57 против 390×88), уходит с удалением `Hello` в `fix-2.1`.
+  Остальные 358, включая все EscalationDie и RoleBlock, прошли; гейт принят.
 
 - 1-domain-core, `pnpm test`: три stories-файла упали на импорте «Vitest failed
   to find the current suite» после rebase (кэш оптимизации Vite в
