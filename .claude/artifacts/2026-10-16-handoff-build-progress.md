@@ -66,11 +66,11 @@
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | rebased (conflict in `allow-same.txt` resolved by the agent), report `.claude/artifacts/reports/2.3-organisms-e.md`, gate running | CombatHeader, CombatCard |
-| 2.3-organisms-f | running worker-bee 2026-10-17T05:30+03:00 | PresetCard, HpHistory |
+| 2.3-organisms-f | reported `.claude/artifacts/reports/2.3-organisms-f.md`, waits for the 2.3-organisms-e integration | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | rework 1 → `fix-2.3-organisms-i`, guard `.claude/artifacts/guard/2.3-organisms-i.md` (P1 PlayerRow shows enemy fields by data, not by role) |
-| fix-2.3-organisms-i | todo, brief ready, worktree created, next builder slot (agent of 2.3-organisms-i) | MessageScreen, PlayerRow |
+| fix-2.3-organisms-i | running worker-bee (agent of 2.3-organisms-i) 2026-10-17T06:25+03:00 | MessageScreen, PlayerRow |
 | 2.3-UnitRow | running worker-bee 2026-10-17T05:50+03:00 | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
@@ -93,6 +93,19 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-f, решения оркестратора 2026-10-17: строка тегов PresetCard —
+  две строки с многоточием (страница и рендер переносят, бриф просил
+  многоточие) — принято; PresetCard владеет меню ⋯ через CardActions, пропсы
+  `preset`, `tags` (имена), `menuOpened`, `onMenuClose`, `onDuplicate`,
+  `onDelete` — приняты; HpHistory — union по `variant` (inline `expanded`/
+  `onToggle`, sheet `opened`/`unitName`), хост передаёт историю в обратном
+  порядке — принято; доступное имя заголовка со счётчиком — принято.
+  Владельцу: vision называет лист HP History «заголовок — имя юнита», страница
+  и рендер — «HP History» с подзаголовком «<имя> · <N изм.>»; построено по
+  странице. → `fix-2.3`: `check-stories.mjs` даёт уникальное имя экспорта
+  каждой ячейке (ячейки «日本語, inline» и «Русский, inline» HpHistory
+  сходятся в `EdgeCasesInline`).
 
 - 2.3-organisms-e, решения оркестратора 2026-10-17: меню CombatHeader по
   странице с Add unit (в Active другого входа нет, vision разрешает добавлять
@@ -353,6 +366,12 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-f: кольцо фокуса на первом пункте Menu (PresetCard «⋯ open»)
+  и на × Sheet (HpHistory «× closes»); строки «Start» в длинной истории
+  показывают текущий максимум `/40` вместо `/45` (в `HpHistoryEntry` нет
+  максимума на момент записи, известный P3 из 2.2-molecules-c); ячейки листа
+  — нижний лист в PhoneFrame со скримом.
 
 - 2.3-organisms-e: открытые меню и выбор грани с фокус-кольцом; ja-заголовок
   CombatCard в одну строку при 366.
