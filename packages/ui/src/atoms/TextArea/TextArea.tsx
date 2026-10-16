@@ -1,3 +1,4 @@
+import { LIMITS } from '@combat-planner/domain';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useId } from 'react';
 import type { ChangeEvent, ComponentPropsWithoutRef, CSSProperties } from 'react';
@@ -25,8 +26,8 @@ export function TextArea({
   value,
   onChange,
   placeholder,
-  maxLength,
-  counter = maxLength !== undefined,
+  maxLength = LIMITS.combatDescription,
+  counter = true,
   rows = 3,
   error,
   disabled = false,
