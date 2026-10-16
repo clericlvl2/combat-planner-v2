@@ -1,0 +1,9 @@
+{
+  "noCombatsTitle": "Aún no hay combates",
+  "noCombatsBody": "Crea un combate, añade unidades y comparte el enlace con tus jugadores.",
+  "noResultsTitle": "No se encontró nada",
+  "noResultsBody": "Ningún combate coincide con «{{query}}».",
+  "noUnitsTitle": "Aún no hay unidades",
+  "noUnitsBody": "Añade héroes, enemigos y aliados. Podrás empezar cuando haya una unidad.",
+  "addUnit": "Añadir unidad"
+}

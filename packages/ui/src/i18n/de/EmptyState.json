@@ -1,0 +1,9 @@
+{
+  "noCombatsTitle": "Noch keine Kämpfe",
+  "noCombatsBody": "Erstelle einen Kampf, füge Einheiten hinzu und teile den Link.",
+  "noResultsTitle": "Nichts gefunden",
+  "noResultsBody": "Kein Kampf passt zu „{{query}}“.",
+  "noUnitsTitle": "Noch keine Einheiten",
+  "noUnitsBody": "Füge Helden, Gegner und Verbündete hinzu. Du kannst starten, sobald es eine Einheit gibt.",
+  "addUnit": "Einheit hinzufügen"
+}

@@ -1,0 +1,9 @@
+{
+  "noCombatsTitle": "まだ戦闘がありません",
+  "noCombatsBody": "戦闘を作成し、ユニットを追加して、プレイヤーにリンクを共有しましょう。",
+  "noResultsTitle": "見つかりません",
+  "noResultsBody": "「{{query}}」に一致する戦闘はありません。",
+  "noUnitsTitle": "まだユニットがいません",
+  "noUnitsBody": "ヒーロー、敵、味方を追加してください。ユニットが1体いれば開始できます。",
+  "addUnit": "ユニットを追加"
+}

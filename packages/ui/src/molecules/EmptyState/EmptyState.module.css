@@ -1,0 +1,45 @@
+.root {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 24px;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  text-align: center;
+}
+
+.tile {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: var(--cp-color-soft);
+  color: var(--cp-color-ink);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-heading);
+  font-weight: 700;
+  line-height: var(--mantine-line-height-snug);
+  text-wrap: pretty;
+}
+
+.body {
+  max-width: 280px;
+  margin: 0;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-body);
+  line-height: var(--mantine-line-height-body);
+  text-wrap: pretty;
+}
+
+.action {
+  padding-top: 6px;
+}

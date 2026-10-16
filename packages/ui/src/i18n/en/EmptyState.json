@@ -1,0 +1,9 @@
+{
+  "noCombatsTitle": "No combats yet",
+  "noCombatsBody": "Create a combat, add units and share the link with your players.",
+  "noResultsTitle": "Nothing found",
+  "noResultsBody": "No combat matches “{{query}}”.",
+  "noUnitsTitle": "No units yet",
+  "noUnitsBody": "Add heroes, enemies and allies. You can start once there is one unit.",
+  "addUnit": "Add unit"
+}
