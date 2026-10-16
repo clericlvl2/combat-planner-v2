@@ -5,3 +5,4 @@ HistoryRow.temp
 HistoryRow.max
 HistoryRow.tempAmount
 HistoryRow.absorbed
+Drawer.title

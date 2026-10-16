@@ -1,0 +1,112 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--cp-color-ink) 50%, transparent);
+}
+
+.panel {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 300px;
+  padding: 56px 12px 28px;
+  overflow-y: auto;
+  border-right: 2px solid var(--cp-color-ink);
+  border-radius: 0 var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0;
+  background: var(--cp-color-background);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.title {
+  margin: 0;
+  padding: 0 12px 16px;
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-number);
+  font-weight: 700;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 52px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--mantine-radius-card);
+  background: transparent;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-body);
+  font-weight: 500;
+  text-align: start;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-current] {
+    background: var(--cp-color-accent);
+    font-weight: 700;
+  }
+
+  &:active,
+  &[data-pressed] {
+    background: var(--cp-color-soft);
+
+    &[data-current] {
+      background: var(--cp-color-accent);
+    }
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: -2px;
+  }
+}
+
+.icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.email {
+  margin-top: auto;
+  padding: 0 12px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-body);
+  overflow-wrap: anywhere;
+}
