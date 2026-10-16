@@ -46,12 +46,12 @@
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | guarded `.claude/artifacts/guard/1-domain-rest.md` | project, undo, index, tests |
 | 1-api-contract | rework 1 → fix-1-api-contract, guard `.claude/artifacts/guard/1-api-contract.md` (2 P1) | ApiClient |
-| fix-1-api-contract | running worker-bee 2026-10-16T18:33:01+03:00 | ApiClient |
+| fix-1-api-contract | rebased, report `.claude/artifacts/reports/fix-1-api-contract.md`, gate running | ApiClient |
 | fix-1-domain-core | guarded `.claude/artifacts/guard/fix-1-domain-core.md` | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | running worker-bee 2026-10-16T18:23:39+03:00 | Swatch, Chip, StatSquare |
-| 2.1-atoms-d | todo | EscalationDie, RoleBlock |
+| 2.1-atoms-d | running worker-bee 2026-10-16T18:35:18+03:00 | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
