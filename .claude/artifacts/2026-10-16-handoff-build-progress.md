@@ -520,6 +520,11 @@
 
 ## Падения гейта
 
+- 2.3-organisms-c, `pnpm test`: CardActions.stories.tsx не импортировался
+  («Failed to fetch dynamically imported module» setup-file addon-vitest —
+  переоптимизация Vite после новой зависимости). Повтор прошёл: 65 файлов,
+  1152 теста.
+
 - 3-server-actions, `pnpm test`: 12 stories-файлов упали на импорте «Vitest failed
   to find the current suite» после rebase (тот же кэш Vite, что у 1-domain-core).
   Повтор прошёл: 36 файлов, 683 теста.
