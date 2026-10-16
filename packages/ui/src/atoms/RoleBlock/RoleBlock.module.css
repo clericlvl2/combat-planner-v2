@@ -1,0 +1,107 @@
+.root {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 62px;
+  min-height: 80px;
+  padding: 8px 2px;
+  border: none;
+  border-radius: 14px 0 0 14px;
+  background: var(--cp-role-enemy);
+  color: var(--cp-color-surface);
+  font-family: var(--cp-font-ui);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:is(button) {
+    cursor: pointer;
+  }
+
+  &[data-role='hero'] {
+    background: var(--cp-role-hero);
+  }
+
+  &[data-role='ally'] {
+    background: var(--cp-role-ally);
+  }
+
+  &[data-inactive][data-role] {
+    background: var(--cp-role-inactive);
+  }
+
+  &[data-role]:focus-visible,
+  &[data-role][data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-role][data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: -3px;
+  }
+}
+
+.notch {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 0;
+  height: 0;
+  margin-top: -9px;
+  border-top: 9px solid transparent;
+  border-bottom: 9px solid transparent;
+  border-left: 9px solid var(--cp-color-accent);
+}
+
+.value {
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-heading);
+  font-weight: 700;
+  line-height: var(--mantine-line-height-snug);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &[data-editable] {
+    border-bottom: 2px dashed var(--cp-color-surface);
+  }
+}
+
+.die {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--cp-color-surface) 22%, transparent);
+}
+
+.label {
+  max-width: 100%;
+  font-size: var(--mantine-font-size-micro);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-tight);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.chip {
+  box-sizing: border-box;
+  max-width: 56px;
+  margin-top: 2px;
+  padding: 4px 6px;
+  overflow: hidden;
+  border-radius: var(--mantine-radius-full);
+  background: var(--cp-color-surface);
+  color: var(--cp-role-hero);
+  font-size: var(--mantine-font-size-micro);
+  font-weight: 700;
+  line-height: var(--mantine-line-height-tight);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -1,0 +1,8 @@
+{
+  "hero": "Héros",
+  "enemy": "Ennemi",
+  "ally": "Allié",
+  "hp": "PV",
+  "you": "Vous",
+  "noInitiative": "Pas d'initiative"
+}
