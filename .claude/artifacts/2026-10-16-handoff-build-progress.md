@@ -29,8 +29,9 @@
 
 ## Текущий шаг
 
-Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Фаза 2.2: пять пачек молекул слиты и проверены, идёт `fix-2.2`; параллельно
-фаза 3 (`3-server-live` на гейте, `3-server-rest` строится). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
+Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Фазы 2.1 и 2.2 закрыты (`fix-2.2` проверен). Идёт фаза 2.3 (организмы, брифы
+готовы) параллельно с фазой 3 (`3-server-rest`, затем `fix-3`). С 2026-10-17
+вместо Fable 5.1 — Opus 5.5 (план, «Решения владельца»). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
 Интеграция: `.claude/run/gate.sh <batch> <worktree> <range>` в фоне, затем
 `.claude/run/merge.sh <batch>` (rebase на master, где с момента гейта менялись
 только `.claude/**`, ff-merge, удаление worktree и ветки).
@@ -57,7 +58,7 @@
 | 2.2-molecules-c | guarded `.claude/artifacts/guard/2.2-molecules-c.md` | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
-| fix-2.2 | merged 9bc5b56, gate ok `.claude/run/fix-2.2/summary.log`, guard running | |
+| fix-2.2 | guarded `.claude/artifacts/guard/fix-2.2.md` | |
 | 2.3-organisms-a | running worker-bee 2026-10-17T00:35+03:00 | Sheet, Dialog |
 | 2.3-organisms-b | todo | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
@@ -287,6 +288,11 @@
 
 ## Замечания guard-bee P2–P3, отложены
 
+- fix-2.2, P3 → `fix-2.3`: `inputMode` Stepper по `min < 0`, не по `signed`
+  (Stepper.tsx:121; InitiativePopover с min −9 стал `numeric`); `ExtraReadOnly`
+  HpBox — шпион не доходит до компонента; `ExtraEmpty` Stepper без шага − от
+  `null`.
+
 - 3-server-live → пачка `fix-3` (после `3-server-rest`): P2 утечка подписки и
   интервала при раннем abort (sse.ts:53, `if (signal.aborted)`); P3 `ended` до
   записи финального события (sse.ts:44-46); P3 `finish` при исключении в
@@ -317,8 +323,7 @@
 
 - 2.2-molecules-a, P3 → `fix-2.2`: Segmented с `value` вне опций делает все
   сегменты `tabIndex=-1` (Segmented.tsx:47-51, нужен guard
-  `selectedIndex >= 0`). P3 отложено: Stepper шлёт `onChange` на каждый
-  промежуточный ввод (решение для UnitForm — live, как NumberField);
+  `selectedIndex >= 0`). Stepper коммитит на blur/Enter (закрыто в `fix-2.2`);
   `RadioList.alphabetical` `A–Z` в de/es/fr через allow-same — владельцу;
   RadioList-истории берут `localeNames` из `storybook/withLocale.tsx` — экран
   Settings (2.4) получает свой источник имён локалей.
