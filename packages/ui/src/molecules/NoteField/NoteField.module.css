@@ -1,0 +1,103 @@
+.field {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  margin: 0;
+  padding: 8px 12px;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-field);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  text-align: left;
+  cursor: text;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-editing] {
+    border-color: var(--cp-color-ink);
+  }
+
+  &[data-readonly] {
+    cursor: default;
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.label {
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.text {
+  color: var(--cp-color-ink);
+  font-size: var(--mantine-font-size-small);
+  font-weight: 400;
+  line-height: var(--mantine-line-height-body);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+
+  &[data-empty] {
+    color: var(--cp-color-muted);
+  }
+}
+
+.field .editor {
+  gap: 0;
+
+  & > div::after,
+  & textarea {
+    min-height: 0;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    font-size: var(--mantine-font-size-small);
+    line-height: var(--mantine-line-height-body);
+    text-wrap: pretty;
+  }
+
+  & textarea {
+    background: transparent;
+    caret-color: var(--cp-color-ink);
+  }
+}
+
+.line {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  min-width: 0;
+  color: var(--cp-color-secondary);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-body);
+}
+
+.lineIcon {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+}
+
+.lineText {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
