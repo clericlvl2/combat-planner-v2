@@ -63,7 +63,7 @@
 | fix-2.3-organisms-a | merged 42544a4, gate ok `.claude/run/fix-2.3-organisms-a/summary.log` (re-gated after 2.3-organisms-g), guard running | Sheet, Dialog |
 | 2.3-organisms-b | rework 1 → `fix-2.3-organisms-b`, guard `.claude/artifacts/guard/2.3-organisms-b.md` (P1 Drawer Shift+Tab, P1 Menu focus with motion on) |
 | fix-2.3-organisms-b | running worker-bee (agent of 2.3-organisms-b) 2026-10-17T03:40+03:00 | Menu, Drawer |
-| 2.3-organisms-c | rebased, report `.claude/artifacts/reports/2.3-organisms-c.md`, gate running | PageHeader, PlayerHeader |
+| 2.3-organisms-c | merged e8039a8, gate ok `.claude/run/2.3-organisms-c/summary.log`, guard running | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
