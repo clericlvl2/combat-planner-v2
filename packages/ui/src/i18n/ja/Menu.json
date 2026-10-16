@@ -1,0 +1,18 @@
+{
+  "menuLabel": "操作",
+  "addUnit": "ユニットを追加",
+  "undo": "元に戻す",
+  "undoHint": "{{n}} ダメージ",
+  "share": "共有",
+  "restart": "戦闘をやり直す",
+  "clear": "戦闘をクリア",
+  "duplicate": "複製",
+  "disable": "無効にする",
+  "saveAsPreset": "プリセットとして保存",
+  "releaseClaim": "担当を解除",
+  "remove": "削除",
+  "changeHero": "ヒーローを変更",
+  "delete": "削除",
+  "round": "ラウンド",
+  "roundHint": "{{min}}–{{max}}。ラウンドを変えても手番は移りません。"
+}

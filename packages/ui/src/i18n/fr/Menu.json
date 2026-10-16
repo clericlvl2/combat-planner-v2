@@ -1,0 +1,18 @@
+{
+  "menuLabel": "Menu d’actions",
+  "addUnit": "Ajouter une unité",
+  "undo": "Annuler",
+  "undoHint": "{{n}} dégâts",
+  "share": "Partager",
+  "restart": "Relancer le combat",
+  "clear": "Vider le combat",
+  "duplicate": "Dupliquer",
+  "disable": "Désactiver",
+  "saveAsPreset": "Enregistrer comme modèle",
+  "releaseClaim": "Libérer la réservation",
+  "remove": "Retirer",
+  "changeHero": "Changer de héros",
+  "delete": "Supprimer",
+  "round": "Tour",
+  "roundHint": "{{min}}–{{max}}. Changer le tour ne change pas l’unité active."
+}

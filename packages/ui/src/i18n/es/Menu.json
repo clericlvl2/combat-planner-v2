@@ -1,0 +1,18 @@
+{
+  "menuLabel": "Acciones",
+  "addUnit": "Añadir unidad",
+  "undo": "Deshacer",
+  "undoHint": "{{n}} de daño",
+  "share": "Compartir",
+  "restart": "Reiniciar combate",
+  "clear": "Vaciar combate",
+  "duplicate": "Duplicar",
+  "disable": "Desactivar",
+  "saveAsPreset": "Guardar como plantilla",
+  "releaseClaim": "Liberar reclamo",
+  "remove": "Quitar",
+  "changeHero": "Cambiar héroe",
+  "delete": "Eliminar",
+  "round": "Ronda",
+  "roundHint": "{{min}}–{{max}}. Cambiar la ronda no mueve el turno."
+}

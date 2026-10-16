@@ -1,0 +1,18 @@
+{
+  "menuLabel": "Actions",
+  "addUnit": "Add unit",
+  "undo": "Undo",
+  "undoHint": "{{n}} damage",
+  "share": "Share",
+  "restart": "Restart combat",
+  "clear": "Clear combat",
+  "duplicate": "Duplicate",
+  "disable": "Disable",
+  "saveAsPreset": "Save as preset",
+  "releaseClaim": "Release claim",
+  "remove": "Remove",
+  "changeHero": "Change hero",
+  "delete": "Delete",
+  "round": "Round",
+  "roundHint": "{{min}}–{{max}}. Changing the round doesn’t move the turn."
+}

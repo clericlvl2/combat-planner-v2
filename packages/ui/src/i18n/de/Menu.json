@@ -1,0 +1,18 @@
+{
+  "menuLabel": "Aktionen",
+  "addUnit": "Einheit hinzufügen",
+  "undo": "Rückgängig",
+  "undoHint": "{{n}} Schaden",
+  "share": "Teilen",
+  "restart": "Kampf neu starten",
+  "clear": "Kampf leeren",
+  "duplicate": "Duplizieren",
+  "disable": "Deaktivieren",
+  "saveAsPreset": "Als Vorlage speichern",
+  "releaseClaim": "Anspruch freigeben",
+  "remove": "Entfernen",
+  "changeHero": "Held wechseln",
+  "delete": "Löschen",
+  "round": "Runde",
+  "roundHint": "{{min}}–{{max}}. Eine Rundenänderung verschiebt den Zug nicht."
+}
