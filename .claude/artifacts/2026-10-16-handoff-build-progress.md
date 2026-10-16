@@ -66,10 +66,10 @@
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | running worker-bee 2026-10-17T05:00+03:00 | CombatHeader, CombatCard |
-| 2.3-organisms-f | todo | PresetCard, HpHistory |
+| 2.3-organisms-f | running worker-bee 2026-10-17T05:30+03:00 | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
-| 2.3-organisms-i | running worker-bee 2026-10-17T04:35+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b on master) | MessageScreen, PlayerRow |
+| 2.3-organisms-i | rebased, report `.claude/artifacts/reports/2.3-organisms-i.md`, gate running | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
@@ -92,6 +92,16 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-i, решения оркестратора 2026-10-17: фон своего героя белый по
+  скрипту и рендеру (vision и SPEC говорят «light blue») — принято, правка
+  vision между фазами; CardActions (Edit, ⋯ с Release claim) под заметкой
+  своего ряда по vision — принято; дополнительные пропсы PlayerRow приняты;
+  истории MessageScreen по странице, системные экраны 2.4 по vision (Link
+  expired без действия, Combat deleted с названием) — принято. → `fix-2.3`:
+  PlayerRow держит один экземпляр NoteField при сворачивании (или NoteField
+  сохраняет черновик при размонтировании); RoleBlock получает высоту ряда без
+  обхода `min-height` в PlayerRow.
 
 - 2.3-organisms-h, решения оркестратора 2026-10-17: выбор в SortSheet
   применяется и закрывает лист (бриф и флоу экранов CL-F1.3→F1.4,
@@ -333,6 +343,9 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-i: ряд PlayerRow 342 в историях (в списке 366); CardActions под
+  заметкой своего ряда; MessageScreen на весь экран с отступами скрипта.
 
 - 2.3-organisms-h: настоящий QR вместо пунктирной заглушки; зазоры ShareSheet
   12 (Sheet) вместо 16; Reissue — Button secondary с цветом `--cp-role-enemy`;
