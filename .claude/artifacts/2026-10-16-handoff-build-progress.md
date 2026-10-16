@@ -70,7 +70,7 @@
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | rework 1 → `fix-2.3-organisms-i`, guard `.claude/artifacts/guard/2.3-organisms-i.md` (P1 PlayerRow shows enemy fields by data, not by role) |
-| fix-2.3-organisms-i | running worker-bee (agent of 2.3-organisms-i) 2026-10-17T06:15+03:00 | MessageScreen, PlayerRow |
+| fix-2.3-organisms-i | todo, brief ready, worktree created, next builder slot (agent of 2.3-organisms-i) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | running worker-bee 2026-10-17T05:50+03:00 | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
