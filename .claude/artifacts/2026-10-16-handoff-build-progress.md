@@ -45,7 +45,7 @@
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | guarded `.claude/artifacts/guard/1-domain-rest.md` | project, undo, index, tests |
-| 1-api-contract | rebased, report `.claude/artifacts/reports/1-api-contract.md`, gate running | ApiClient |
+| 1-api-contract | merged 5395d7a, guard running | ApiClient |
 | fix-1-domain-core | running worker-bee 2026-10-16T18:28:18+03:00 | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | merged 50993bf, guard running | SearchField, NumberField, Checkbox, Radio |
