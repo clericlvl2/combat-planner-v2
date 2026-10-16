@@ -12,6 +12,9 @@ export type {
   DispatchStatus,
 } from './combats/dispatch.ts';
 export { combatsApp } from './combats/routes.ts';
+export { linkApp } from './link/routes.ts';
+export { signLink, verifyLink } from './link/token.ts';
+export type { LinkClaims } from './link/token.ts';
 export { broadcast, broadcastDocument, subscribe, subscriberCount } from './live/registry.ts';
 export type { Audience, Subscriber } from './live/registry.ts';
 export { openDatabase } from './db/index.ts';

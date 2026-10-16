@@ -5,6 +5,7 @@ import { combatsApp } from './combats/routes.ts';
 import type { AppDatabase } from './db/index.ts';
 import type { ApiEnv } from './env.ts';
 import { healthApp } from './health.ts';
+import { linkApp } from './link/routes.ts';
 
 export interface ApiAppDeps {
   db: AppDatabase;
@@ -24,7 +25,8 @@ export function createApiApp({ db, env, auth }: ApiAppDeps) {
     })
     .route('/health', healthApp)
     .route('/combats', combatsApp)
-    .route('/combats', actionsApp);
+    .route('/combats', actionsApp)
+    .route('/combats', linkApp);
 }
 
 export type AppType = ReturnType<typeof createApiApp>;

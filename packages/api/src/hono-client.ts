@@ -43,8 +43,6 @@ import type {
   ConnectionState,
   DocumentListener,
   EndListener,
-  Link,
-  LinkReissueResult,
   LinkToken,
   PlayView,
   PresetCreateInput,
@@ -111,8 +109,6 @@ type PlannedRoutes = {
   };
   '/auth/sign-out': { $post: JsonEndpoint<NoInput, { success: boolean }> };
   '/auth/get-session': { $get: JsonEndpoint<NoInput, AuthResponse | null> };
-  '/combats/:id/link': { $get: JsonEndpoint<IdParam, Link> };
-  '/combats/:id/link/reissue': { $post: JsonEndpoint<IdParam, LinkReissueResult> };
   '/play/:id': { $get: JsonEndpoint<IdParam & TokenQuery, PlayView> };
   '/play/:id/actions': {
     $post: JsonEndpoint<IdParam & TokenQuery & { json: Action }, VersionResult>;
