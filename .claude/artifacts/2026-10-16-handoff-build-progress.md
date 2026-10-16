@@ -48,7 +48,7 @@
 | 1-api-contract | todo | ApiClient |
 | fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rebased, report `.claude/artifacts/reports/2.1-atoms-a.md`, gate running | IconButton, ToolButton, TextField, TextArea |
-| 2.1-atoms-b | todo | SearchField, NumberField, Checkbox, Radio |
+| 2.1-atoms-b | running worker-bee 2026-10-16T18:08:06+03:00 | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | todo | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | todo | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
