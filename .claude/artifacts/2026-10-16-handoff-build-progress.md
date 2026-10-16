@@ -71,7 +71,7 @@
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | rework 1 → `fix-2.3-organisms-i`, guard `.claude/artifacts/guard/2.3-organisms-i.md` (P1 PlayerRow shows enemy fields by data, not by role) |
 | fix-2.3-organisms-i | reported `.claude/artifacts/reports/fix-2.3-organisms-i.md`, rebased on d0d0419, gate running | MessageScreen, PlayerRow |
-| 2.3-UnitRow | running worker-bee 2026-10-17T05:50+03:00 | UnitRow |
+| 2.3-UnitRow | reported `.claude/artifacts/reports/2.3-UnitRow.md`, waits for the fix-2.3-organisms-i integration | UnitRow |
 | 2.3-UnitForm | running worker-bee 2026-10-17T06:40+03:00 | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
 | fix-2.3 | todo | |
@@ -93,6 +93,16 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-UnitRow, решения оркестратора 2026-10-17: вариант для NumpadSheet —
+  пропсы `readOnly` и `flash` (таймер 2 с у экрана) — принято; UnitRow сам
+  компонует InitiativePopover (inline) и Menu через CardActions, отдельные
+  колбэки действий, ConditionPicker и HP history у экрана — принято; языковые
+  истории переключают всю локаль — принято. → `fix-2.3`: пункт Release claim
+  в ⋯ виден всегда (ячейка страницы), но `disabled` при `claimedBy === null`
+  (vision: DM снимает захват, у незахваченного юнита снимать нечего);
+  `--cp-state-tap-marker` совпадает с заливкой активного ряда
+  `--cp-color-accent` — маркер нажатия выбирает цвет, видимый на активном ряду.
 
 - 2.3-organisms-f, решения оркестратора 2026-10-17: строка тегов PresetCard —
   две строки с многоточием (страница и рендер переносят, бриф просил
@@ -366,6 +376,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-UnitRow: языковые истории переводят роль, DefenseLine и чипы (страница
+  переводит только HP), ja-строка защит переносится; кольцо фокуса на
+  Duplicate в «⋯ open» и на последнем элементе в части интерактивных историй.
 
 - 2.3-organisms-f: кольцо фокуса на первом пункте Menu (PresetCard «⋯ open»)
   и на × Sheet (HpHistory «× closes»); строки «Start» в длинной истории
