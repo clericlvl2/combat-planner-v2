@@ -80,7 +80,7 @@
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
-| 3-server-actions | rebased, report `.claude/artifacts/reports/3-server-actions.md`, gate running (restarted 1 after power loss) | combats routes, actions route, link |
+| 3-server-actions | merged 985e015, gate ok `.claude/run/3-server-actions/summary.log` (test passed on retry, cache flake), guard running | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
@@ -278,6 +278,10 @@
   --frozen-lockfile` в основном checkout для guard-bee.
 
 ## Падения гейта
+
+- 3-server-actions, `pnpm test`: 12 stories-файлов упали на импорте «Vitest failed
+  to find the current suite» после rebase (тот же кэш Vite, что у 1-domain-core).
+  Повтор прошёл: 36 файлов, 683 теста.
 
 - 2.1-atoms-d, шаг `visual`: 1 из 359 — `Hello > Default`, известный stale
   baseline (390×57 против 390×88), уходит с удалением `Hello` в `fix-2.1`.
