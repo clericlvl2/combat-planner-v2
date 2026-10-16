@@ -30,20 +30,27 @@ export const streamCombatEvents = (
   return streamSSE(
     c,
     (stream) =>
-      new Promise<void>((resolve) => {
-        let ended = false;
-        const finish = () => {
-          if (ended) return;
-          ended = true;
+      new Promise<void>((resolve, reject) => {
+        let accepting = true;
+        const stop = () => {
+          if (!accepting) return;
+          accepting = false;
           clearInterval(heartbeat);
           signal.removeEventListener('abort', finish);
           unsubscribe();
+        };
+        const finish = () => {
+          stop();
           resolve();
         };
         const send = (event: ApiEvent) => {
-          if (ended) return;
-          const written = stream.writeSSE(toMessage(event));
-          if (event.type !== 'document') void written.then(finish);
+          if (!accepting) return;
+          if (event.type === 'document') {
+            void stream.writeSSE(toMessage(event));
+            return;
+          }
+          stop();
+          void stream.writeSSE(toMessage(event)).then(finish);
         };
         const unsubscribe = subscribe(combatId, { viewer, send });
         const heartbeat = setInterval(() => {
@@ -51,13 +58,22 @@ export const streamCombatEvents = (
         }, HEARTBEAT_MS);
         stream.onAbort(finish);
         signal.addEventListener('abort', finish);
-        const combat = load();
-        if (!combat) {
+        if (signal.aborted) {
           finish();
           return;
         }
-        if (lastEventId === String(combat.version)) return;
-        send({ type: 'document', version: combat.version, document: project(combat, viewer) });
+        try {
+          const combat = load();
+          if (!combat) {
+            finish();
+            return;
+          }
+          if (lastEventId === String(combat.version)) return;
+          send({ type: 'document', version: combat.version, document: project(combat, viewer) });
+        } catch (error) {
+          stop();
+          reject(error);
+        }
       }),
   );
 };

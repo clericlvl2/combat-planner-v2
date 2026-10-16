@@ -1,7 +1,17 @@
-import type { Action } from '@combat-planner/domain';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
+import type { Action, Combat, Viewer } from '@combat-planner/domain';
+import { Hono } from 'hono';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vite-plus/test';
 import { subscriberCount } from '../src/live/registry.ts';
-import { HEARTBEAT_MS } from '../src/live/sse.ts';
+import { HEARTBEAT_MS, streamCombatEvents } from '../src/live/sse.ts';
 import type { TestApp } from './helpers.ts';
 import {
   COMBAT_ID,
@@ -9,6 +19,7 @@ import {
   ENEMY_ID,
   HERO_ID,
   OTHER_DM,
+  PLAYER_ID,
   addUnitAction,
   call,
   combatInput,
@@ -45,6 +56,16 @@ const dispatchDamage = async (unitId: string, amount: number) => {
 
 const settled = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
+const PENDING = 'pending';
+
+const pendingAfterTick = <T>(read: Promise<T>) =>
+  Promise.race([read, settled().then(() => PENDING)]);
+
+const streamWith = (viewer: Viewer, load: () => Combat | undefined) =>
+  new Hono()
+    .get('/', (c) => streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load }))
+    .request('/');
+
 beforeAll(async () => {
   opened = createTestApp();
   dm = withUser(opened.app, DM);
@@ -63,8 +84,15 @@ afterAll(() => {
   opened.close();
 });
 
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+});
+
 afterEach(() => {
+  const intervals = vi.getTimerCount();
   vi.useRealTimers();
+  vi.restoreAllMocks();
+  expect(intervals).toBe(0);
   expect(subscriberCount(COMBAT_ID)).toBe(0);
 });
 
@@ -121,13 +149,14 @@ describe('GET /combats/:id/events', () => {
     await settled();
   });
 
-  it('writes a comment heartbeat every 15 s', async () => {
-    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+  it('writes a comment heartbeat every 15 s and nothing before', async () => {
     const stream = openSse(await open());
     await stream.event();
+    const first = stream.next();
     await vi.advanceTimersByTimeAsync(HEARTBEAT_MS - 1);
+    expect(await pendingAfterTick(first)).toBe(PENDING);
     await vi.advanceTimersByTimeAsync(1);
-    expect(await stream.comment()).toBe('');
+    expect(await first).toEqual({ comment: true, data: '' });
     await vi.advanceTimersByTimeAsync(HEARTBEAT_MS);
     expect(await stream.comment()).toBe('');
     await stream.cancel();
@@ -142,6 +171,15 @@ describe('GET /combats/:id/events', () => {
     controller.abort();
     await settled();
     expect(subscriberCount(COMBAT_ID)).toBe(0);
+    expect(await stream.closed()).toBe(true);
+  });
+
+  it('unsubscribes and clears the heartbeat at once when the request signal is already aborted', async () => {
+    const controller = new AbortController();
+    controller.abort();
+    const stream = openSse(await open({ signal: controller.signal }));
+    expect(subscriberCount(COMBAT_ID)).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
     expect(await stream.closed()).toBe(true);
   });
 
@@ -165,5 +203,38 @@ describe('GET /combats/:id/events', () => {
     });
     expect(await stream.closed()).toBe(true);
     expect(subscriberCount(COMBAT_ID)).toBe(0);
+  });
+});
+
+describe('streamCombatEvents', () => {
+  it('unsubscribes and clears the heartbeat when load() throws', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const failure = new Error('load failed');
+    const stream = openSse(
+      await streamWith({ kind: 'dm' }, () => {
+        throw failure;
+      }),
+    );
+    expect(subscriberCount(COMBAT_ID)).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(await stream.closed()).toBe(true);
+    expect(logged).toHaveBeenCalledWith(failure);
+  });
+
+  it('unsubscribes and clears the heartbeat when project() throws', async () => {
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    const failure = new Error('project failed');
+    const combat = await fetchCombat(dm);
+    const broken: Combat = {
+      ...combat,
+      get units(): Combat['units'] {
+        throw failure;
+      },
+    };
+    const stream = openSse(await streamWith({ kind: 'player', playerId: PLAYER_ID }, () => broken));
+    expect(subscriberCount(COMBAT_ID)).toBe(0);
+    expect(vi.getTimerCount()).toBe(0);
+    expect(await stream.closed()).toBe(true);
+    expect(logged).toHaveBeenCalledWith(failure);
   });
 });

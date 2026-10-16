@@ -1,11 +1,20 @@
 import type { Action, Combat, PlayerCombat, PlayerUnit } from '@combat-planner/domain';
 import { playerCombatSchema, project } from '@combat-planner/domain';
 import { and, eq } from 'drizzle-orm';
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vite-plus/test';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vite-plus/test';
 import { linkSchema, linkReissueResultSchema, playViewSchema } from '../src/client.ts';
 import { players, user } from '../src/db/schema.ts';
 import { signLink } from '../src/link/token.ts';
-import { subscriberCount } from '../src/live/registry.ts';
+import { broadcast, broadcastDocument, subscriberCount } from '../src/live/registry.ts';
 import type { TestApp } from './helpers.ts';
 import {
   COMBAT_ID,
@@ -142,7 +151,14 @@ afterAll(() => {
   opened.close();
 });
 
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+});
+
 afterEach(() => {
+  const intervals = vi.getTimerCount();
+  vi.useRealTimers();
+  expect(intervals).toBe(0);
   expect(subscriberCount(COMBAT_ID)).toBe(0);
 });
 
@@ -337,6 +353,17 @@ describe('GET /play/:id/events', () => {
     });
     await stream.cancel();
     await settled();
+  });
+
+  it('stops accepting events once linkRevoked is sent, so a later broadcast is not delivered', async () => {
+    const combat = await fetchCombat(dm);
+    const stream = openSse(await openEvents(token, PLAYER_ID));
+    await stream.event();
+    broadcast(COMBAT_ID, { type: 'linkRevoked' }, 'player');
+    expect(subscriberCount(COMBAT_ID)).toBe(0);
+    broadcastDocument(COMBAT_ID, combat, 'player');
+    expect(await stream.event()).toEqual({ id: undefined, event: { type: 'linkRevoked' } });
+    expect(await stream.closed()).toBe(true);
   });
 
   it('ends with linkRevoked when the link is reissued, and the old token answers 410 afterwards', async () => {
