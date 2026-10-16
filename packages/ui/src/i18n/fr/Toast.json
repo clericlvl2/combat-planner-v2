@@ -10,5 +10,6 @@
   "duplicated": "{{title}} (copie) créé",
   "deleted": "{{title}} supprimé",
   "combatChanged": "Le combat a changé. Réessayez.",
-  "reconnecting": "Reconnexion…"
+  "reconnecting": "Reconnexion…",
+  "presetDuplicated": "{{name}} créé"
 }
