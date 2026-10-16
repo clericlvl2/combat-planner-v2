@@ -1,0 +1,9 @@
+{
+  "type": "Typ",
+  "hero": "Held",
+  "enemy": "Feind",
+  "ally": "Verbündeter",
+  "source": "Einheitenquelle",
+  "new": "Neu",
+  "library": "Aus Bibliothek"
+}

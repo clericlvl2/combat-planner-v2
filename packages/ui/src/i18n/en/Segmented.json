@@ -1,0 +1,9 @@
+{
+  "type": "Type",
+  "hero": "Hero",
+  "enemy": "Enemy",
+  "ally": "Ally",
+  "source": "Unit source",
+  "new": "New",
+  "library": "From Library"
+}

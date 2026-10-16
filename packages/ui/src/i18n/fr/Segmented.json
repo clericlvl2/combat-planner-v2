@@ -1,0 +1,9 @@
+{
+  "type": "Catégorie",
+  "hero": "Héros",
+  "enemy": "Ennemi",
+  "ally": "Allié",
+  "source": "Source de l’unité",
+  "new": "Nouveau",
+  "library": "Bibliothèque"
+}
