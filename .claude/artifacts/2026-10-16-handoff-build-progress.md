@@ -52,7 +52,7 @@
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
-| 2.1-atoms-d | running worker-bee 2026-10-16T18:35:18+03:00 | EscalationDie, RoleBlock |
+| 2.1-atoms-d | rebased, report `.claude/artifacts/reports/2.1-atoms-d.md`, gate running | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
@@ -91,6 +91,13 @@
 
 ## Вопросы владельцу
 
+- 2.1-atoms-d, решения оркестратора 2026-10-16: у страницы RoleBlock нет
+  Flow (бриф ошибался) — play в cell-историях принят; `radius` и `size` не
+  добавлены; «You» как отдельный белый чип по странице (vision говорит «You»
+  в блоке) — принято, `mine` проп; dead/disabled одна заливка, кнопка активна;
+  `top: null` — иконка кубика; de «Alliierter» вместо «Verbündeter» (не
+  влезает в 62 px) — владельцу на подтверждение; активная засечка на левом
+  крае блока, не страницы.
 - 2.1-atoms-c, решения оркестратора 2026-10-16: цвет боя 8 = `#8C8578` (так на
   девяти страницах против одной), `fix-2.1` меняет `combatColors[7]` и переносит
   восемь цветов в `theme.ts`; имена цветов Swatch и `disabled` у Swatch/Chip
@@ -141,6 +148,9 @@
 
 ## Отличия от рендеров
 
+- 2.1-atoms-d: без карточки-подложки галереи; засечка RoleBlock на крае
+  блока (в прототипе нет `position: relative`); focus-кольца RoleBlock
+  (снаружи, offset 2) и EscalationDie не показаны в рендере.
 - 2.1-atoms-c: подложка ячеек — фон канваса, не белая плитка страницы; Extra
   истории с кликом/табом показывают hover/focus; Swatch цвет 8 `#6E685F` по
   странице Swatch (меняется на `#8C8578` в `fix-2.1`).
