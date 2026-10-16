@@ -80,7 +80,7 @@
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
-| 3-server-actions | restarted 1, worker-bee 2026-10-16T20:04+03:00 (power loss after three commits, REPORT.md not final) | combats routes, actions route, link |
+| 3-server-actions | rebased, report `.claude/artifacts/reports/3-server-actions.md`, gate running (restarted 1 after power loss) | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
@@ -89,6 +89,16 @@
 
 ## Вопросы владельцу
 
+- 3-server-actions, решения оркестратора 2026-10-16 по 11 вопросам отчёта: все
+  приняты и становятся контрактом для `3-server-live/rest`: `ulid` добавлен в
+  зависимости `packages/api` (CLAUDE.md Dependencies не обновлён — раздел
+  заморожен, владельцу дописать); reissue — `releaseUnit` на каждый захват от
+  DM, версия `before + claims + 1`; replay отвечает `{ version: action.version + 1 }`
+  без записи и broadcast; `verifyLink(token, secret, current?)`;
+  `dispatch(db, { combatId, ownerId?, viewer, action, now })`; registry
+  `subscribe/broadcast/broadcastDocument/subscriberCount` с audience `dm|player`;
+  `requireUser` через контекстный `userId` или `c.get('auth')`; `POST /combats`
+  с чужим id → 422 `invalid`, лимит 100 → 422 `limit`; `DELETE` → 204.
 - fix-2.1, решения оркестратора 2026-10-16: удаление `Hello` из
   `apps/web/src/App.tsx` принято (вне allowed paths, но без этого не собирается);
   коммит `PhoneFrame` с baseline `Button/ExtraPhoneFrame` падал на
