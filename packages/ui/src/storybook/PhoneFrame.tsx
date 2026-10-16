@@ -1,18 +1,30 @@
 import type { Decorator } from '@storybook/react-vite';
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import { layout } from '../layout.ts';
 import classes from './PhoneFrame.module.css';
 
 export interface PhoneFrameProps {
   children: ReactNode;
+  overlay?: boolean;
 }
 
-export function PhoneFrame({ children }: PhoneFrameProps) {
+export interface PhoneFrameParameter {
+  overlay?: boolean;
+}
+
+const phoneStyle = {
+  width: layout.phone.width,
+  height: layout.phone.height,
+  '--cp-layout-status-bar': `${layout.statusBar}px`,
+} as CSSProperties;
+
+export function PhoneFrame({ children, overlay = false }: PhoneFrameProps) {
   return (
     <div
       className={classes.phone}
       data-phone-frame=""
-      style={{ width: layout.phone.width, height: layout.phone.height }}
+      data-overlay={overlay || undefined}
+      style={phoneStyle}
     >
       <div className={classes.statusBar} style={{ height: layout.statusBar }} aria-hidden="true">
         9:41
@@ -34,9 +46,16 @@ export function StoryCanvas({ children }: StoryCanvasProps) {
   );
 }
 
-export const withPhoneFrame: Decorator = (Story, { parameters }) =>
-  parameters.phoneFrame === true ? (
-    <PhoneFrame>
+function phoneFrameOf(value: unknown): PhoneFrameParameter | null {
+  if (value === true) return {};
+  if (typeof value === 'object' && value !== null) return value as PhoneFrameParameter;
+  return null;
+}
+
+export const withPhoneFrame: Decorator = (Story, { parameters }) => {
+  const phoneFrame = phoneFrameOf(parameters.phoneFrame);
+  return phoneFrame ? (
+    <PhoneFrame overlay={phoneFrame.overlay === true}>
       <Story />
     </PhoneFrame>
   ) : (
@@ -44,3 +63,4 @@ export const withPhoneFrame: Decorator = (Story, { parameters }) =>
       <Story />
     </StoryCanvas>
   );
+};

@@ -40,8 +40,14 @@
 
 .screen {
   position: relative;
+  box-sizing: border-box;
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
+  padding-top: var(--cp-layout-status-bar);
+
+  .phone[data-overlay] > & {
+    padding-top: 0;
+  }
 }
