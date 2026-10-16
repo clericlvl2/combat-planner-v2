@@ -956,7 +956,16 @@ describe('copyCombat', () => {
       players: {},
       createdAt: LATER,
       updatedAt: LATER,
-      units: [{ ...source, initiative: null, hp: 10, tempHp: 0, claimedBy: null }],
+      units: [{ ...source, initiative: null, hp: 10, tempHp: 0, claimedBy: null, disabled: true }],
     });
+  });
+
+  it('keeps each unit disabled or enabled as in the original', () => {
+    const units = [
+      makeUnit({ id: id(1), disabled: true }),
+      makeUnit({ id: id(2), disabled: false }),
+    ];
+    const copy = copyCombat(active(units), id(600), LATER);
+    expect(copy.units.map((unit) => unit.disabled)).toEqual([true, false]);
   });
 });
