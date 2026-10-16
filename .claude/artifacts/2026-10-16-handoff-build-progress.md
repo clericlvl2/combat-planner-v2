@@ -55,7 +55,7 @@
 | 2.2-molecules-a | guarded `.claude/artifacts/guard/2.2-molecules-a.md` | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | rebased (conflict in `allow-same.txt` resolved by the agent), report `.claude/artifacts/reports/2.2-molecules-c.md`, gate running | HpBox, HistoryRow, DefenseLine |
-| 2.2-molecules-d | rebased, report `.claude/artifacts/reports/2.2-molecules-d.md`, gate running | NoteField, InitiativePopover |
+| 2.2-molecules-d | merged dc0b402, gate ok `.claude/run/2.2-molecules-d/summary.log`, guard running | NoteField, InitiativePopover |
 | 2.2-molecules-e | running worker-bee 2026-10-16T20:46+03:00 | Toast, EmptyState |
 | fix-2.2 | todo | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
