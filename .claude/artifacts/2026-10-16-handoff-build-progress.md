@@ -46,7 +46,7 @@
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | guarded `.claude/artifacts/guard/1-domain-rest.md` | project, undo, index, tests |
 | 1-api-contract | rework 1 → fix-1-api-contract, guard `.claude/artifacts/guard/1-api-contract.md` (2 P1) | ApiClient |
-| fix-1-api-contract | rebased, report `.claude/artifacts/reports/fix-1-api-contract.md`, gate running | ApiClient |
+| fix-1-api-contract | merged 5d06366, guard running | ApiClient |
 | fix-1-domain-core | guarded `.claude/artifacts/guard/fix-1-domain-core.md` | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
