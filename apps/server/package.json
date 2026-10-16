@@ -1,0 +1,22 @@
+{
+  "name": "@combat-planner/server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/main.ts",
+    "start": "node src/main.ts"
+  },
+  "dependencies": {
+    "@combat-planner/api": "workspace:*",
+    "@combat-planner/domain": "workspace:*",
+    "@hono/node-server": "^2.1.5",
+    "better-auth": "^1.7.10",
+    "better-sqlite3": "^13.0.3",
+    "drizzle-orm": "^0.45.4",
+    "hono": "^4.13.13"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^9.6.0",
+    "@types/node": "^24.19.2"
+  }
+}

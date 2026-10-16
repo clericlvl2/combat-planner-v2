@@ -17,3 +17,7 @@ docs/archive/inventory/*.png
 .claude/run/
 REPORT.md
 .claude/settings.local.json
+.tsbuild/
+*.tsbuildinfo
+.vitest/
+storybook-static/
