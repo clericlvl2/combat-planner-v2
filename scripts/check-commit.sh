@@ -45,7 +45,7 @@ for commit in $commits; do
     case "$file" in
       docs/* | .claude/*) fail "$short" "$subject" "path outside agent scope: $file" ;;
       CLAUDE.md)
-        [ "$unit" = "CLAUDE.md commands" ] || [ "$unit" = "check scripts" ] || fail "$short" "$subject" "path outside agent scope: $file"
+        [ "$unit" = "CLAUDE.md commands" ] || [ "$unit" = "check scripts" ] || [ "$unit" = "tests" ] || fail "$short" "$subject" "path outside agent scope: $file"
         ;;
     esac
   done <<<"$files"

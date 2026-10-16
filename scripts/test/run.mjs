@@ -18,11 +18,14 @@ import zlib from 'node:zlib';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(testDir, '../..');
-const checkScripts = ['check-stories', 'check-i18n', 'check-screenshots'];
+const checkScripts = ['check-stories', 'check-i18n', 'check-screenshots', 'check-domain-tests'];
 const copiedTrees = [
   'packages/ui/src',
   'packages/ui/__screenshots__',
   'packages/ui/test',
+  'packages/domain/test',
+  'docs/vision.md',
+  '.claude/plans/2026-10-16-build-combat-planner-v2.md',
   'vite.config.ts',
 ];
 

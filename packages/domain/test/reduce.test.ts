@@ -322,6 +322,24 @@ describe('Transitions', () => {
     expect(next.round).toBe(2);
   });
 
+  it('Clear, with confirm | any', () => {
+    const units = [makeUnit({ id: id(1), initiative: 1 })];
+    expect(go(setup(units), { type: 'clear' })).toMatchObject({ status: 'setup', units: [] });
+    expect(go(active(units), { type: 'clear' })).toMatchObject({ status: 'setup', units: [] });
+  });
+
+  it('Remove last unit, with confirm | active', () => {
+    const next = go(one(), { type: 'removeUnit', unitId: id(1) });
+    expect(next).toMatchObject({ status: 'setup', units: [], activeUnitId: null });
+  });
+
+  it('Remove active unit, with confirm | active', () => {
+    const combat = setup([makeUnit({ id: id(1) }), makeUnit({ id: id(2) })]);
+    const next = go(combat, { type: 'removeUnit', unitId: id(1) });
+    expect(next).toMatchObject({ status: 'setup', activeUnitId: null });
+    expect(next.units.map((item) => item.id)).toEqual([id(2)]);
+  });
+
   it('Remove active unit, with confirm | when there is none, the turn is unset and Next turn is blocked', () => {
     const units = [
       makeUnit({ id: id(1), initiative: 20 }),

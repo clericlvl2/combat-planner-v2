@@ -1,0 +1,11 @@
+{
+  "script": "check-domain-tests",
+  "expect": "no test named \"Temp HP absorbs damage first.\"",
+  "ops": [
+    {
+      "replace": "packages/domain/test/reduce.test.ts",
+      "search": "it('Temp HP absorbs damage first.'",
+      "with": "it('Temp HP absorbs damage first'"
+    }
+  ]
+}

@@ -154,7 +154,8 @@ All commands run from the worktree root.
 - Install: `pnpm install --frozen-lockfile`.
 - `pre-commit`: `pnpm check && pnpm test`. `pnpm check` is `vp check && tsc -b &&
   node scripts/check-stories.mjs && node scripts/check-i18n.mjs &&
-  node scripts/check-screenshots.mjs && node scripts/check-comments.mjs`: format
+  node scripts/check-screenshots.mjs && node scripts/check-comments.mjs &&
+  node scripts/check-domain-tests.mjs`: format
   check, Oxlint, type check through tsgolint, `tsc -b` over the project
   references, then the check scripts of Checks. Without a
   `packages/ui/__screenshots__/.docker-*` marker `check-screenshots` fails unless

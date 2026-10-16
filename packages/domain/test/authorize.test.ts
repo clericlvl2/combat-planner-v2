@@ -274,6 +274,10 @@ describe('Unit actions, Player on own Hero', () => {
     expect(ACTION_TYPES).not.toContain('expandRow');
   });
 
+  it('Expand / collapse row | ✓, own row only', () => {
+    expect(ACTION_TYPES.some((type) => /expand|collapse/i.test(type))).toBe(false);
+  });
+
   it('Release claim', () => {
     const next = ok(run(table(), { type: 'releaseUnit', unitId: id(1) }, PLAYER)).combat;
     expect(u(next, 1).claimedBy).toBeNull();
