@@ -1,2 +1,3 @@
 Anatomy CombatMenu
-ExtraEscape ExtraKeyboard ExtraOutsideTap ExtraSelect
+ExtraEscape ExtraSelect ExtraTapInsidePanel
+ExtraEscapeOnSource ExtraKeyboard ExtraMotionOn ExtraTab

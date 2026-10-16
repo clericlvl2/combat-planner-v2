@@ -1,7 +1,15 @@
 import { Popover, UnstyledButton } from '@mantine/core';
 import type { Icon } from '@tabler/icons-react';
-import { cloneElement, Fragment, useEffect, useRef } from 'react';
-import type { HTMLAttributes, KeyboardEvent, ReactElement, ReactNode } from 'react';
+import { useMergedRef } from '@mantine/hooks';
+import { cloneElement, Fragment, useCallback, useEffect, useRef } from 'react';
+import type {
+  HTMLAttributes,
+  KeyboardEvent,
+  MouseEvent,
+  ReactElement,
+  ReactNode,
+  Ref,
+} from 'react';
 import classes from './Menu.module.css';
 
 export type MenuItemTone = 'ink' | 'danger';
@@ -16,12 +24,17 @@ export interface MenuItem {
   divider?: boolean;
 }
 
+export interface MenuTargetProps {
+  ref?: Ref<HTMLElement>;
+  'data-open'?: string;
+}
+
 export interface MenuProps {
   items: readonly MenuItem[];
   onSelect: (id: string) => void;
   onClose: () => void;
   opened: boolean;
-  target?: ReactElement<Record<string, unknown>>;
+  target?: ReactElement<MenuTargetProps>;
   width?: number;
   'aria-label'?: string;
 }
@@ -67,6 +80,22 @@ function enabledItems(panel: HTMLElement | null): HTMLElement[] {
   return panel ? [...panel.querySelectorAll<HTMLElement>(ITEM_SELECTOR)] : [];
 }
 
+function sourceButtonOf(root: HTMLElement | null): HTMLElement | null {
+  if (!root || root.matches('button')) return root;
+  return root.querySelector<HTMLElement>('[aria-haspopup]') ?? root;
+}
+
+function focusFirstItem(panel: HTMLElement, framesLeft: number) {
+  const first = enabledItems(panel)[0];
+  if (!first || !panel.isConnected) return;
+  first.focus({ preventScroll: true });
+  if (document.activeElement !== first && framesLeft > 0) {
+    requestAnimationFrame(() => focusFirstItem(panel, framesLeft - 1));
+  }
+}
+
+const FOCUS_FRAMES = 30;
+
 export function Menu({
   items,
   onSelect,
@@ -77,32 +106,59 @@ export function Menu({
   'aria-label': ariaLabel,
 }: MenuProps) {
   const inline = target === undefined;
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const sourceRef = useRef<HTMLElement | null>(null);
+  const targetRef = useMergedRef(target?.props.ref, sourceRef);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
+  const closeAndReturnFocus = useCallback(() => {
+    onCloseRef.current();
+    sourceButtonOf(sourceRef.current)?.focus();
+  }, []);
+
+  const setPanel = useCallback(
+    (node: HTMLDivElement | null) => {
+      panelRef.current = node;
+      if (node && !inline) focusFirstItem(node, FOCUS_FRAMES);
+    },
+    [inline],
+  );
+
   useEffect(() => {
-    if (!opened || !inline) return;
+    if (!opened) return;
     const handlePointerDown = (event: PointerEvent) => {
-      const panelNode = panelRef.current;
-      if (panelNode && event.target instanceof Node && !panelNode.contains(event.target)) {
-        onCloseRef.current();
-      }
+      if (!(event.target instanceof Node)) return;
+      if (panelRef.current?.contains(event.target)) return;
+      if (sourceButtonOf(sourceRef.current)?.contains(event.target)) return;
+      onCloseRef.current();
     };
-    document.addEventListener('pointerdown', handlePointerDown);
-    return () => document.removeEventListener('pointerdown', handlePointerDown);
-  }, [opened, inline]);
-
-  useEffect(() => {
-    if (!opened || inline) return;
-    enabledItems(panelRef.current)[0]?.focus();
-  }, [opened, inline]);
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape') {
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      const active = document.activeElement;
+      const inPanel = panelRef.current?.contains(active) === true;
+      const onSource = sourceRef.current?.contains(active) === true;
+      if (!inPanel && !onSource) return;
       event.preventDefault();
       event.stopPropagation();
-      onClose();
+      closeAndReturnFocus();
+    };
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown, true);
+    };
+  }, [opened, closeAndReturnFocus]);
+
+  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === 'Tab') {
+      if (inline) {
+        onClose();
+        return;
+      }
+      event.preventDefault();
+      closeAndReturnFocus();
       return;
     }
     const enabled = enabledItems(panelRef.current);
@@ -119,20 +175,28 @@ export function Menu({
     enabled[next]?.focus();
   };
 
+  const handleMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (!(event.target instanceof Element)) return;
+    if (event.target.closest(ITEM_SELECTOR)) return;
+    event.preventDefault();
+  };
+
   const handleSelect = (id: string) => {
     onSelect(id);
-    onClose();
+    closeAndReturnFocus();
   };
 
   const panel = (
     <div
-      ref={panelRef}
+      ref={setPanel}
       role="menu"
       aria-label={ariaLabel}
       aria-orientation="vertical"
+      tabIndex={-1}
       className={classes.menu}
       style={{ width }}
       onKeyDown={handleKeyDown}
+      onMouseDown={handleMouseDown}
     >
       {items.map((item) => {
         const ItemIcon = item.icon;
@@ -167,16 +231,15 @@ export function Menu({
   return (
     <Popover
       opened={opened}
-      onDismiss={onClose}
       position="bottom-end"
       offset={8}
       withRoles={false}
       withinPortal={false}
       closeOnEscape={false}
-      returnFocus
+      closeOnClickOutside={false}
     >
       <Popover.Target>
-        {cloneElement(target, { 'data-open': opened ? '' : undefined })}
+        {cloneElement(target, { ref: targetRef, 'data-open': opened ? '' : undefined })}
       </Popover.Target>
       <Popover.Dropdown className={classes.dropdown}>{panel}</Popover.Dropdown>
     </Popover>
