@@ -39,7 +39,7 @@
 | Пачка | Статус | Единицы |
 |-------|--------|---------|
 | -1-renders | guarded — | renders, errata |
-| 0-toolchain | running worker-bee 2026-10-16T17:03:37+03:00 | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
+| 0-toolchain | merged f49f584, guard running | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | todo | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
