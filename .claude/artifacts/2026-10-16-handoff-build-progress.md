@@ -81,7 +81,7 @@
 | 2.4-PlayerView | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | SignIn, SignUp, Settings, Account, About |
-| 2.4-SystemScreens | running worker-bee 2026-10-17T09:00+03:00 | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
+| 2.4-SystemScreens | reported `.claude/artifacts/reports/2.4-SystemScreens.md`, gate running | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
@@ -93,6 +93,14 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-SystemScreens, решения оркестратора 2026-10-17: ru «Бой «{{title}}»
+  удалён», es/fr/ja переводы заголовка и fr «Aller aux affrontements» —
+  приняты (владельцу на проверку вместе с прочими переводами). → `fix-2.4`:
+  `MessageScreen` получает `actionVariant` (`primary` | `secondary`), экраны
+  AP-F5 (NotFound, CombatNotFound, UnexpectedError) — `primary` по рендеру
+  `AppPages-AP-F5.png`; истории `Default` не кликают (кольцо фокуса в
+  baseline), клик — в Extra-историях.
 
 - 2.4-api-hooks, решения оркестратора 2026-10-17: подпуть
   `@combat-planner/api/client` (корневой `index.ts` тянет сервер с
