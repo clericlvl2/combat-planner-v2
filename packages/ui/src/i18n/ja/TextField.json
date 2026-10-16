@@ -6,5 +6,7 @@
   "enterTitle": "タイトルを入力してください",
   "enterName": "名前を入力してください",
   "upTo": "{{max}} 文字まで",
-  "titleValue": "渡し場の待ち伏せ"
+  "titleValue": "渡し場の待ち伏せ",
+  "email": "メールアドレス",
+  "password": "パスワード"
 }

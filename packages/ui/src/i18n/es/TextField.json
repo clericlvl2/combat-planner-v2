@@ -6,5 +6,7 @@
   "enterTitle": "Introduce un título",
   "enterName": "Introduce un nombre",
   "upTo": "Hasta {{max}} caracteres",
-  "titleValue": "Emboscada en el transbordador"
+  "titleValue": "Emboscada en el transbordador",
+  "email": "Correo electrónico",
+  "password": "Contraseña"
 }

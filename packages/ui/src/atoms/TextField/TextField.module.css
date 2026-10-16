@@ -42,7 +42,41 @@
 }
 
 .control {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: var(--field-height);
+  padding: 0 12px;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-field);
+  background: var(--cp-color-surface);
+  cursor: text;
+
+  &:has(.input:focus, .input[data-focus]) {
+    border-color: var(--cp-color-ink);
+  }
+
+  &[data-error] {
+    border-color: var(--cp-role-enemy);
+  }
+
+  &[data-disabled] {
+    border-color: var(--cp-color-border);
+    background: var(--cp-color-soft);
+    cursor: not-allowed;
+  }
+
+  &:has(.input[data-tap]) {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.grow {
   display: grid;
+  flex: 1;
+  min-width: 0;
 
   &::after {
     content: attr(data-replica) ' ';
@@ -53,27 +87,30 @@
   &::after,
   & > .input {
     grid-area: 1 / 1 / 2 / 2;
-    box-sizing: border-box;
-    min-width: 0;
-    min-height: var(--field-height);
-    margin: 0;
-    padding: calc((var(--field-height) - 4px - 1.45em) / 2) 12px;
-    border: 2px solid var(--cp-color-border);
-    border-radius: var(--mantine-radius-field);
-    font-family: inherit;
-    font-size: var(--field-font-size);
-    font-weight: 500;
-    line-height: var(--mantine-line-height-body);
-    overflow-wrap: anywhere;
   }
+}
+
+.grow::after,
+.input {
+  box-sizing: border-box;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-family: inherit;
+  font-size: var(--field-font-size);
+  font-weight: 500;
+  line-height: var(--mantine-line-height-body);
+  overflow-wrap: anywhere;
 }
 
 .input {
   display: block;
+  flex: 1;
   width: 100%;
   overflow: hidden;
   resize: none;
-  background: var(--cp-color-surface);
+  background: transparent;
   color: var(--cp-color-ink);
   outline: none;
   appearance: none;
@@ -83,25 +120,9 @@
     opacity: 1;
   }
 
-  &:focus,
-  &[data-focus] {
-    border-color: var(--cp-color-ink);
-  }
-
-  &[data-error] {
-    border-color: var(--cp-role-enemy);
-  }
-
   &:disabled {
-    border-color: var(--cp-color-border);
-    background: var(--cp-color-soft);
     color: var(--cp-color-muted);
     cursor: not-allowed;
-  }
-
-  &[data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
   }
 }
 

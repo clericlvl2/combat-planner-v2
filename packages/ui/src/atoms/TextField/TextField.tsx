@@ -1,13 +1,16 @@
+import { LIMITS } from '@combat-planner/domain';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { useId } from 'react';
-import type { ChangeEvent, ComponentPropsWithoutRef, KeyboardEvent } from 'react';
+import { useId, useRef } from 'react';
+import type { ChangeEvent, HTMLAttributes, KeyboardEvent, MouseEvent } from 'react';
 import classes from './TextField.module.css';
 
 export type TextFieldSize = 'S' | 'M' | 'L';
 
+export type TextFieldType = 'email' | 'password';
+
 export interface TextFieldProps extends Omit<
-  ComponentPropsWithoutRef<'textarea'>,
-  'value' | 'defaultValue' | 'onChange' | 'children' | 'rows' | 'disabled' | 'maxLength'
+  HTMLAttributes<HTMLElement>,
+  'defaultValue' | 'onChange' | 'children'
 > {
   label?: string;
   value: string;
@@ -18,6 +21,11 @@ export interface TextFieldProps extends Omit<
   error?: string;
   disabled?: boolean;
   size?: TextFieldSize;
+  type?: TextFieldType;
+  name?: string;
+  autoComplete?: string;
+  required?: boolean;
+  readOnly?: boolean;
 }
 
 const lineBreaks = /\r\n|\r|\n/g;
@@ -27,8 +35,9 @@ export function TextField({
   value,
   onChange,
   placeholder,
-  maxLength,
-  counter = maxLength !== undefined,
+  type,
+  maxLength = type ? undefined : LIMITS.unitName,
+  counter = maxLength !== undefined && type === undefined,
   error,
   disabled = false,
   size = 'M',
@@ -38,6 +47,7 @@ export function TextField({
   ...rest
 }: TextFieldProps) {
   const generatedId = useId();
+  const inputRef = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
   const inputId = id ?? generatedId;
   const counterId = `${inputId}-counter`;
   const errorId = `${inputId}-error`;
@@ -47,13 +57,34 @@ export function TextField({
     .filter(Boolean)
     .join(' ');
 
-  const handleChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     onChange?.(event.target.value.replace(lineBreaks, ' '));
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key === 'Enter' && !event.nativeEvent.isComposing) event.preventDefault();
     onKeyDown?.(event);
+  };
+
+  const handleFrameMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.target === inputRef.current || disabled) return;
+    event.preventDefault();
+    inputRef.current?.focus();
+  };
+
+  const shared = {
+    ...rest,
+    ref: inputRef,
+    id: inputId,
+    className: classes.input,
+    value,
+    placeholder,
+    maxLength,
+    disabled,
+    'aria-invalid': error ? true : undefined,
+    'aria-describedby': describedBy || undefined,
+    'data-error': error ? true : undefined,
+    onChange: handleChange,
   };
 
   return (
@@ -74,23 +105,20 @@ export function TextField({
           ) : null}
         </div>
       ) : null}
-      <div className={classes.control} data-replica={value || placeholder || ''}>
-        <textarea
-          {...rest}
-          id={inputId}
-          className={classes.input}
-          rows={1}
-          value={value}
-          placeholder={placeholder}
-          maxLength={maxLength}
-          disabled={disabled}
-          aria-multiline="false"
-          aria-invalid={error ? true : undefined}
-          aria-describedby={describedBy || undefined}
-          data-error={error ? true : undefined}
-          onChange={handleChange}
-          onKeyDown={handleKeyDown}
-        />
+      <div
+        className={classes.control}
+        data-field=""
+        data-error={error ? true : undefined}
+        data-disabled={disabled || undefined}
+        onMouseDown={handleFrameMouseDown}
+      >
+        {type ? (
+          <input {...shared} type={type} onKeyDown={onKeyDown} />
+        ) : (
+          <div className={classes.grow} data-replica={value || placeholder || ''}>
+            <textarea {...shared} rows={1} onKeyDown={handleKeyDown} />
+          </div>
+        )}
       </div>
       {error ? (
         <span id={errorId} className={classes.error}>

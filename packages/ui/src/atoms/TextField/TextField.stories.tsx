@@ -130,7 +130,9 @@ export const NameRuFilled = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByText('40/40')).toBeVisible();
     const field = canvas.getByRole('textbox', { name: 'Name' });
-    await expect(field.getBoundingClientRect().height).toBeGreaterThan(48);
+    const frame = field.closest('[data-field]');
+    await expect(frame?.getBoundingClientRect().height).toBeGreaterThan(48);
+    await expect(field.scrollHeight).toBeLessThanOrEqual(field.clientHeight);
   },
 });
 
@@ -221,10 +223,53 @@ export const ExtraSizes = meta.story({
   ),
   play: async ({ canvas }) => {
     const fields = canvas.getAllByRole('textbox', { name: 'Title' });
-    const heights = fields.map((field) => field.getBoundingClientRect().height);
+    const heights = fields.map(
+      (field) => field.closest('[data-field]')?.getBoundingClientRect().height,
+    );
     const fonts = fields.map((field) => getComputedStyle(field).fontSize);
     await expect(heights).toEqual([40, 48, 56]);
     await expect(fonts).toEqual(['14px', '16px', '18px']);
+  },
+});
+
+export const ExtraSignIn = meta.story({
+  name: 'Email and password stay on one line',
+  args: { onChange: fn() },
+  render: (args) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <TextFieldCell {...args} type="email" labelKey="email" />
+      <TextFieldCell {...args} type="password" labelKey="password" />
+    </div>
+  ),
+  play: async ({ args, canvas, canvasElement }) => {
+    const email = canvas.getByRole('textbox', { name: 'Email' });
+    await expect(email.tagName).toBe('INPUT');
+    await expect(email).toHaveAttribute('type', 'email');
+    await expect(email).not.toHaveAttribute('maxlength');
+    await userEvent.type(email, 'dm@example.com');
+    await expect(email).toHaveValue('dm@example.com');
+    const password = canvasElement.querySelector<HTMLInputElement>('input[type="password"]');
+    await expect(password?.labels?.[0]?.textContent).toBe('Password');
+    if (password) await userEvent.type(password, 'secret{Enter}');
+    await expect(password).toHaveValue('secret');
+    await expect(args.onChange).toHaveBeenLastCalledWith('secret');
+    const heights = [email, password].map(
+      (field) => field?.closest('[data-field]')?.getBoundingClientRect().height,
+    );
+    await expect(heights).toEqual([48, 48]);
+    await expect(canvas.queryByText(/^\d+\/\d+$/)).toBeNull();
+  },
+});
+
+export const ExtraFrameClick = meta.story({
+  name: 'Clicking the frame focuses the field',
+  args: { ...title, onChange: fn() },
+  play: async ({ canvas }) => {
+    const field = canvas.getByRole('textbox', { name: 'Title' });
+    const frame = field.closest<HTMLElement>('[data-field]');
+    if (frame)
+      await userEvent.pointer({ keys: '[MouseLeft]', target: frame, coords: { x: 4, y: 4 } });
+    await expect(field).toHaveFocus();
   },
 });
 

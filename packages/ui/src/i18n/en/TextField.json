@@ -6,5 +6,7 @@
   "enterTitle": "Enter a title",
   "enterName": "Enter a name",
   "upTo": "Up to {{max}} characters",
-  "titleValue": "Ambush at the Ferry"
+  "titleValue": "Ambush at the Ferry",
+  "email": "Email",
+  "password": "Password"
 }

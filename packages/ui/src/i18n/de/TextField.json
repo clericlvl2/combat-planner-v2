@@ -6,5 +6,7 @@
   "enterTitle": "Titel eingeben",
   "enterName": "Namen eingeben",
   "upTo": "Bis zu {{max}} Zeichen",
-  "titleValue": "Hinterhalt an der Fähre"
+  "titleValue": "Hinterhalt an der Fähre",
+  "email": "E-Mail",
+  "password": "Passwort"
 }
