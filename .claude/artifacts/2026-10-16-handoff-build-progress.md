@@ -75,7 +75,7 @@
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
 | fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
-| 2.4-api-hooks | merged c68a4dd..7132ceb (gate `.claude/run/2.4-api-hooks/` green), guard-bee running | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
+| 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
 | 2.4-CombatList | todo, brief ready, next builder slot (after fix-2.3 merge) | CombatList |
 | 2.4-PlayerView | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | Heroes, TurnOrder |
@@ -520,6 +520,22 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.4-api-hooks → `fix-2.4`: P2 поток SSE на не-200 закрывается браузером
+  навсегда (hono-client.ts:312-320, :286-288): 401 на пробе — конец сессии,
+  `onEnd`-событие или ошибка `unauthorized` ведёт на вход; прочие статусы —
+  клиент сам переоткрывает EventSource с задержкой, `reconnecting` до успеха.
+  P2 смена аккаунта: sign-out, sign-in и удаление аккаунта очищают
+  `QueryClient` целиком (`queryClient.clear()`), `useCombat` не отдаёт
+  документ после неудачного рефетча чужой сессии (account.ts:27-33,
+  :51-54; useCombat.ts:72). P3: `combats.open` при каждом входе на экран боя
+  (lastPlayedAt, combat.ts:89-90); Retry в тосте возвращает результат
+  повторного вызова вызывающему (навигация после create и socialSignIn,
+  mutations.ts:26-28); сброс `ended` при смене `id`/`viewer`/`token`; один
+  наблюдатель соединения на `ApiProvider`; `settings.update` инвалидирует
+  сессию; тест «first connect» offline → connected; `SocialProvider` из
+  `@combat-planner/api/client`; экранная история выше 844 проверяет
+  full-height снимок.
 
 - 2.3-NumpadSheet → `fix-2.3` (единица NumpadSheet): Set Temp с суммой 0
   очищает temp HP (правило страницы NP-4; решение оркестратора: 0 — набранная
