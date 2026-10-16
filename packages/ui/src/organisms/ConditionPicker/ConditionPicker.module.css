@@ -1,0 +1,19 @@
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(var(--condition-rows), auto);
+  grid-auto-flow: column;
+  gap: 0 4px;
+}
+
+.row {
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 8px;
+  border-radius: var(--mantine-radius-field);
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: -3px;
+  }
+}
