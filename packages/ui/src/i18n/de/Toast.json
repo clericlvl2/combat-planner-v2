@@ -1,0 +1,12 @@
+{
+  "dismiss": "Schließen",
+  "show": "Hinweis zeigen",
+  "presetSaved": "{{name}} in der Bibliothek gespeichert",
+  "unitCap": "Dieser Kampf hat bereits {{limit}} Einheiten",
+  "linkCopied": "Link kopiert",
+  "serverUnreachable": "Server nicht erreichbar. Nichts wurde geändert.",
+  "retry": "Wiederholen",
+  "undoneDamage": "Rückgängig: {{amount}} Schaden an {{name}}",
+  "duplicated": "{{title}} (Kopie) erstellt",
+  "deleted": "{{title}} gelöscht"
+}

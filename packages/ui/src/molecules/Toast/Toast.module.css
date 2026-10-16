@@ -1,0 +1,124 @@
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.root {
+  position: absolute;
+  right: var(--toast-inset);
+  bottom: var(--toast-bottom);
+  left: var(--toast-inset);
+  z-index: 200;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 8px 8px 8px 12px;
+  border-radius: var(--mantine-radius-card);
+  background: var(--cp-color-ink);
+  color: var(--cp-color-surface);
+  font-family: var(--cp-font-ui);
+  animation: enter var(--toast-exit) ease-out;
+  transition:
+    opacity var(--toast-exit) ease-in,
+    transform var(--toast-exit) ease-in;
+
+  &[data-motion='off'] {
+    animation: none;
+    transition: none;
+  }
+
+  &[data-leaving] {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.tone {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
+  background: var(--cp-color-soft);
+  color: var(--cp-color-ink);
+
+  .root[data-tone='success'] & {
+    background: var(--cp-health-full);
+    color: var(--cp-color-surface);
+  }
+
+  .root[data-tone='warning'] & {
+    background: var(--cp-color-accent);
+    color: var(--cp-color-ink);
+  }
+
+  .root[data-tone='error'] & {
+    background: var(--cp-role-enemy);
+    color: var(--cp-color-surface);
+  }
+}
+
+.message {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--mantine-font-size-body);
+  line-height: var(--mantine-line-height-body);
+  text-wrap: pretty;
+}
+
+.action {
+  display: flex;
+  flex: none;
+  align-items: center;
+  height: 40px;
+  padding: 0 12px;
+  border-radius: 20px;
+  color: var(--cp-color-accent);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-small);
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active,
+  &[data-pressed] {
+    background: var(--cp-color-ink-pressed);
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+}
+
+.close {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  color: var(--cp-color-surface);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active,
+  &[data-pressed] {
+    background: var(--cp-color-ink-pressed);
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+}

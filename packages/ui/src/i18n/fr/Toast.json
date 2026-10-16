@@ -1,0 +1,12 @@
+{
+  "dismiss": "Fermer",
+  "show": "Afficher la notification",
+  "presetSaved": "{{name}} enregistré dans la Bibliothèque",
+  "unitCap": "Ce combat compte déjà {{limit}} unités",
+  "linkCopied": "Lien copié",
+  "serverUnreachable": "Impossible de joindre le serveur. Rien n’a changé.",
+  "retry": "Réessayer",
+  "undoneDamage": "Annulé : {{amount}} dégâts à {{name}}",
+  "duplicated": "{{title}} (copie) créé",
+  "deleted": "{{title}} supprimé"
+}

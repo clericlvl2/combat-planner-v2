@@ -1,0 +1,12 @@
+{
+  "dismiss": "閉じる",
+  "show": "通知を表示",
+  "presetSaved": "{{name}} をライブラリに保存しました",
+  "unitCap": "この戦闘にはすでに {{limit}} ユニットいます",
+  "linkCopied": "リンクをコピーしました",
+  "serverUnreachable": "サーバーに接続できません。変更はありません。",
+  "retry": "再試行",
+  "undoneDamage": "取り消し：{{name}} への {{amount}} ダメージ",
+  "duplicated": "{{title}}（コピー）を作成しました",
+  "deleted": "{{title}} を削除しました"
+}

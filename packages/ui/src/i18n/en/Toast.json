@@ -1,0 +1,12 @@
+{
+  "dismiss": "Dismiss",
+  "show": "Show toast",
+  "presetSaved": "{{name}} saved to Library",
+  "unitCap": "This combat already has {{limit}} units",
+  "linkCopied": "Link copied",
+  "serverUnreachable": "Couldn’t reach the server. Nothing changed.",
+  "retry": "Retry",
+  "undoneDamage": "Undid: {{amount}} damage to {{name}}",
+  "duplicated": "{{title}} (copy) created",
+  "deleted": "{{title}} deleted"
+}
