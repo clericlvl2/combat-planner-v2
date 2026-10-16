@@ -60,9 +60,9 @@
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
 | fix-2.2 | guarded `.claude/artifacts/guard/fix-2.2.md` | |
 | 2.3-organisms-a | rework 1 → `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` (P1 Sheet focus escapes on Shift+Tab) |
-| fix-2.3-organisms-a | running worker-bee (agent of 2.3-organisms-a) 2026-10-17T02:15+03:00 | Sheet, Dialog |
+| fix-2.3-organisms-a | rebased, report `.claude/artifacts/reports/fix-2.3-organisms-a.md`, gate running | Sheet, Dialog |
 | 2.3-organisms-b | merged 1f1ab7d, gate ok `.claude/run/2.3-organisms-b/summary.log` (re-gated after 2.3-organisms-d), guard running | Menu, Drawer |
-| 2.3-organisms-c | todo | PageHeader, PlayerHeader |
+| 2.3-organisms-c | running worker-bee 2026-10-17T03:10+03:00 | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
@@ -91,6 +91,10 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- fix-2.3-organisms-a, решение оркестратора 2026-10-17: ключи `_few`/`_many`
+  в en/de/es/fr/ja повторяют `_other`, потому что `check-i18n` требует
+  одинаковых ключей во всех локалях — принято.
 
 - 2.3-organisms-g, решения оркестратора 2026-10-17: `fix-2.3` меняет CheckList
   по решению владельца — Create только когда ни одна опция не содержит запрос
