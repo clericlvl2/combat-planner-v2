@@ -54,9 +54,9 @@
 | fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
 | 2.2-molecules-a | guarded `.claude/artifacts/guard/2.2-molecules-a.md` | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
-| 2.2-molecules-c | merged ca1cc6c, gate ok `.claude/run/2.2-molecules-c/summary.log` (re-gated after 2.2-molecules-d), guard running | HpBox, HistoryRow, DefenseLine |
+| 2.2-molecules-c | guarded `.claude/artifacts/guard/2.2-molecules-c.md` | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
-| 2.2-molecules-e | rebased, report `.claude/artifacts/reports/2.2-molecules-e.md`, gate running | Toast, EmptyState |
+| 2.2-molecules-e | merged d7329f5, gate ok `.claude/run/2.2-molecules-e/summary.log`, guard running | Toast, EmptyState |
 | fix-2.2 | todo | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
 | 2.3-organisms-b | todo | Menu, Drawer |
@@ -81,8 +81,8 @@
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
-| 3-server-live | running worker-bee 2026-10-16T20:50+03:00 | events route, play routes |
-| 3-server-rest | running worker-bee 2026-10-16T21:25+03:00 | auth, presets, tags, settings, account |
+| 3-server-live | running worker-bee 2026-10-16T20:50+03:00, resumed 23:21 after API rate limit (events route committed) | events route, play routes |
+| 3-server-rest | running worker-bee 2026-10-16T21:25+03:00, resumed 23:21 after API rate limit | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
@@ -257,6 +257,13 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.2-molecules-c, P3 → `fix-2.2`: HistoryRow Chip `variant="condition"` без
+  `condition` даёт `data-condition="fear"` на каждом чипе (HistoryRow.tsx:72-76);
+  `i18n.language` вместо `resolvedLanguage` (HistoryRow.tsx:66); `ExtraReadOnly`
+  HpBox без `fn()`-шпиона. P3 владельцу: `/max` старых строк истории показывает
+  текущий max (`HpHistoryEntry` без max); `HistoryRow.temp/.max/...` в
+  allow-same для de.
 
 - 2.2-molecules-d, P3 → `fix-2.2`: InitiativePopover `{...rest}` перед
   `onKeyDown` (InitiativePopover.tsx:80-85); `IconNote` с `aria-label` без
