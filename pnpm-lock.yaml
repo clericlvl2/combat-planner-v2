@@ -5,8 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 overrides:
-  vite@*: npm:@voidzero-dev/vite-plus-core@1.3.0
-  vitest@*: 5.0.5
+  vite: npm:@voidzero-dev/vite-plus-core@1.3.0
+  vitest: 5.0.5
+  better-auth>vitest: '-'
 
 importers:
 
@@ -65,7 +66,7 @@ importers:
         version: 1.3.0(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/ui@5.0.5(vitest@5.0.5))(esbuild@0.28.2)(playwright@1.64.1)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)
       vitest:
         specifier: 5.0.5
-        version: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+        version: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
 
   apps/server:
     dependencies:
@@ -80,7 +81,7 @@ importers:
         version: 2.1.5(hono@4.13.13)
       better-auth:
         specifier: ^1.7.10
-        version: 1.7.10(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
+        version: 1.7.10(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)))
       better-sqlite3:
         specifier: ^13.0.3
         version: 13.0.3
@@ -143,6 +144,12 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.1.2
         version: 6.1.2(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vite:
+        specifier: npm:@voidzero-dev/vite-plus-core@1.3.0
+        version: '@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)'
+      vite-plus:
+        specifier: 1.3.0
+        version: 1.3.0(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/ui@5.0.5(vitest@5.0.5))(esbuild@0.28.2)(playwright@1.64.1)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)
 
   packages/api:
     dependencies:
@@ -154,7 +161,7 @@ importers:
         version: 0.9.1(hono@4.13.13)(zod@4.6.7)
       better-auth:
         specifier: ^1.7.10
-        version: 1.7.10(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5)
+        version: 1.7.10(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)))
       drizzle-orm:
         specifier: ^0.45.4
         version: 0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6)
@@ -165,6 +172,9 @@ importers:
         specifier: ^4.6.7
         version: 4.6.7
     devDependencies:
+      '@types/node':
+        specifier: ^24.19.2
+        version: 24.19.2
       drizzle-kit:
         specifier: ^0.31.11
         version: 0.31.11
@@ -2037,7 +2047,7 @@ packages:
       react-dom: ^18.0.0 || ^19.0.0
       solid-js: ^1.0.0
       svelte: ^4.0.0 || ^5.0.0
-      vitest: 5.0.5
+      vitest: '*'
       vue: ^3.0.0
     peerDependenciesMeta:
       '@lynx-js/react':
@@ -4018,7 +4028,7 @@ snapshots:
     optionalDependencies:
       '@vitest/browser': 5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(vitest@5.0.5)
       '@vitest/browser-playwright': 5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5)
-      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
     transitivePeerDependencies:
       - react
 
@@ -4211,7 +4221,7 @@ snapshots:
       '@vitest/mocker': 5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
       playwright: 1.64.1
       tinyrainbow: 3.2.0
-      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -4223,7 +4233,7 @@ snapshots:
       '@testing-library/dom': 10.4.2
       '@testing-library/user-event': 14.6.8(@testing-library/dom@10.4.2)
       '@vitest/browser': 5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(vitest@5.0.5)
-      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
     transitivePeerDependencies:
       - bufferutil
       - msw
@@ -4240,7 +4250,7 @@ snapshots:
       pngjs: 7.0.0
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
       ws: 8.22.0
     transitivePeerDependencies:
       - bufferutil
@@ -4294,7 +4304,7 @@ snapshots:
       pathe: 2.0.3
       sirv: 3.0.2
       tinyrainbow: 3.2.0
-      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -4417,7 +4427,7 @@ snapshots:
 
   baseline-browser-mapping@2.11.29: {}
 
-  better-auth@1.7.10(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5):
+  better-auth@1.7.10(drizzle-kit@0.31.11)(drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6))(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(vitest@5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))):
     dependencies:
       '@better-auth/core': 1.7.10(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.2(zod@4.6.7))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5)
       '@better-auth/drizzle-adapter': 1.7.10(@better-auth/core@1.7.10(@better-auth/utils@0.5.0)(@better-fetch/fetch@1.3.2)(better-call@1.4.2(zod@4.6.7))(jose@6.2.12)(kysely@0.29.6)(nanostores@1.5.5))(@better-auth/utils@0.5.0)(drizzle-orm@0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6))
@@ -4441,7 +4451,7 @@ snapshots:
       drizzle-orm: 0.45.4(@types/better-sqlite3@9.6.0)(better-sqlite3@13.0.3)(kysely@0.29.6)
       react: 19.3.1
       react-dom: 19.3.1(react@19.3.1)
-      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
     transitivePeerDependencies:
       - '@opentelemetry/api'
 
@@ -5321,7 +5331,7 @@ snapshots:
       oxlint: 1.88.0(oxlint-tsgolint@7.0.2004)(vite-plus@1.3.0(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/ui@5.0.5(vitest@5.0.5))(esbuild@0.28.2)(playwright@1.64.1)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
       oxlint-tsgolint: 7.0.2004
       vite: '@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)'
-      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
+      vitest: 5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))
     optionalDependencies:
       '@vitest/browser-playwright': 5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5)
       '@voidzero-dev/vite-plus-darwin-arm64': 1.3.0
@@ -5368,7 +5378,7 @@ snapshots:
       - vue-tsc
       - yaml
 
-  vitest@5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5)(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5)(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)):
+  vitest@5.0.5(@types/node@24.19.2)(@vitest/browser-playwright@5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))(playwright@1.64.1)(vitest@5.0.5))(@vitest/browser-preview@5.0.5)(@vitest/ui@5.0.5(vitest@5.0.5))(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.0.5(@voidzero-dev/vite-plus-core@1.3.0(@types/node@24.19.2)(esbuild@0.28.2)(sugarss@5.0.2(postcss@8.5.30))(tsx@4.23.15)(typescript@5.9.3))

@@ -1,4 +1,3 @@
-/// <reference types="vite-plus/client" />
 import '@mantine/core/styles.layer.css';
 import { MantineProvider } from '@mantine/core';
 import addonDocs from '@storybook/addon-docs';
