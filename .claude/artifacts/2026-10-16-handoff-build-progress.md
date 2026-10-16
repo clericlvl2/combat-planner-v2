@@ -73,7 +73,7 @@
 | fix-2.3-organisms-i | guarded `.claude/artifacts/guard/fix-2.3-organisms-i.md` (P3 ×1 report hashes, no action) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
-| 2.3-NumpadSheet | running worker-bee 2026-10-17T07:35+03:00 | NumpadSheet |
+| 2.3-NumpadSheet | reported `.claude/artifacts/reports/2.3-NumpadSheet.md`, rebase conflict in `allow-same.txt` back to the agent | NumpadSheet |
 | fix-2.3 | brief drafted, waits for the 2.3-NumpadSheet guard | |
 | 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
@@ -93,6 +93,19 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-NumpadSheet, решения оркестратора 2026-10-17: After считается через
+  `apply` домена на синтетическом бою из одного юнита — принято до `fix-2.4`
+  (домен экспортирует чистую функцию HP, если `fix-2.4` касается domain);
+  превью After по умолчанию Damage, далее действие под указателем или в
+  фокусе — принято; историю разворачивает экран 2.4 (как для HpHistory) —
+  принято; `onApply` + `onClose`, `useHpFlash()`/`hpFlashDuration` для
+  вспышки ряда на экране — принято; прокрутка тела листа при раскрытии
+  истории — принято. → `fix-2.3`: `check-stories.mjs` читает раскладку
+  `rows` (NumpadSheet.dc.html) и коды флоу вида `NP-1` (сейчас все истории
+  `Extra*`), NumpadSheet переименовывает экспорты и baselines; `Sheet`
+  получает слот заголовка `header?: ReactNode`, NumpadSheet строится на Sheet
+  вместо своей копии Modal.
 
 - 2.3-UnitForm, решения оркестратора 2026-10-17: пустое имя в режиме Add →
   `<Type> N` (vision и страница), имя из пробелов или пустое в Edit блокирует
@@ -392,6 +405,11 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-NumpadSheet: шаги флоу, совпадающие с ячейками, без отдельных историй,
+  `ExtraNp<N>` проигрывает флоу до шага 4; подписи BEFORE/AFTER — заметки
+  страницы, не рендерятся; длинная история прокручивает тело листа на 844 px
+  вместо роста карточки; отрицательное HP через U+2212.
 
 - 2.3-UnitForm: TagSheet полноэкранный со своим скримом (рендер — внутри
   карточки формы); строки Stepper 48 без зазора (галерея 52 + 4); `0` вместо
