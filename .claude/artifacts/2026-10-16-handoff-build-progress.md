@@ -84,12 +84,20 @@
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
 | fix-3 | todo, after `3-server-rest` guard | sse leak, final events, client stream errors |
-| 3-server-rest | restarted 1, worker-bee Opus 5.5 xhigh 2026-10-17T00:10+03:00 (Fable limit; `auth` committed, presets uncommitted) | auth, presets, tags, settings, account |
+| 3-server-rest | reported `.claude/artifacts/reports/3-server-rest.md`, rebase conflict in `hono-client.ts` back to the agent | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 3-server-rest, решения оркестратора 2026-10-17: все 8 вопросов приняты как
+  контракт. Q1 → бриф `2.4-api-hooks`: `errorOf` в `hono-client.ts`
+  предпочитает известный `code` из тела ответа статусу (дубликат тега 409
+  `invalid` не должен стать `version`). Q2: неиспользуемые теги сервер хранит,
+  UI (Library, TagSheet в режиме filter) показывает только теги с пресетами.
+  Субагенты не могут писать `REPORT.md` (харнесс блокирует запись отчётных
+  файлов): отчёт приходит текстом, оркестратор сохраняет его сам.
 
 - 3-server-live guard, P2 вне scope, безопасность, владельцу: проекция игрока
   отдаёт сырые `playerId` (`claimedBy`, ключи `players`;
