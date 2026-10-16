@@ -1,0 +1,107 @@
+.root {
+  --stepper-height: 48px;
+  --stepper-key: 44px;
+  --stepper-field: 64px;
+
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  min-height: var(--stepper-height);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+
+  &[data-size='S'] {
+    --stepper-height: 40px;
+    --stepper-key: 36px;
+    --stepper-field: 56px;
+  }
+
+  &[data-size='L'] {
+    --stepper-height: 56px;
+    --stepper-key: 52px;
+    --stepper-field: 72px;
+  }
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.key {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--stepper-key);
+  height: var(--stepper-key);
+  padding: 0;
+  border: none;
+  border-radius: var(--mantine-radius-field);
+  background: var(--cp-color-soft);
+  color: var(--cp-color-ink);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active:not(:disabled),
+  &[data-pressed] {
+    background: var(--cp-color-disabled);
+  }
+
+  &:disabled {
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.field {
+  box-sizing: border-box;
+  flex: none;
+  width: var(--stepper-field);
+  height: var(--stepper-key);
+  margin: 0;
+  padding: 0;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-field);
+  outline: none;
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-number);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  text-align: center;
+  appearance: none;
+
+  &:focus,
+  .root[data-focus] & {
+    border-color: var(--cp-color-ink);
+  }
+
+  &:disabled {
+    color: var(--cp-color-muted);
+    opacity: 1;
+    cursor: not-allowed;
+  }
+}
