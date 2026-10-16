@@ -8,7 +8,6 @@ import type {
   PresetId,
   Tag,
   TagId,
-  Viewer,
 } from '@combat-planner/domain';
 import {
   LIMITS,
@@ -83,6 +82,14 @@ export type CombatPatch = z.infer<typeof combatPatchSchema>;
 
 export const linkTokenSchema = z.string().min(1);
 export type LinkToken = z.infer<typeof linkTokenSchema>;
+
+export const linkGenerationSchema = z.number().int().nonnegative();
+
+export const linkSchema = z.object({
+  token: linkTokenSchema,
+  generation: linkGenerationSchema,
+});
+export type Link = z.infer<typeof linkSchema>;
 
 export const linkReissueResultSchema = z.object({
   token: linkTokenSchema,
@@ -171,6 +178,12 @@ export type ApiEndEvent = Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' }>
 export type Unsubscribe = () => void;
 export type DocumentListener<Document extends Combat | PlayerCombat> = (document: Document) => void;
 export type EndListener = (event: ApiEndEvent) => void;
+export type ConnectionListener = (state: ConnectionState) => void;
+
+export interface ConnectionApi {
+  state(): ConnectionState;
+  subscribe(listener: ConnectionListener): Unsubscribe;
+}
 
 export interface AuthApi {
   signUp(input: SignUpInput): Promise<Session>;
@@ -188,15 +201,11 @@ export interface CombatsApi {
   open(id: CombatId): Promise<Combat>;
   get(id: CombatId): Promise<Combat>;
   dispatch(id: CombatId, action: Action): Promise<VersionResult>;
-  subscribe(
-    id: CombatId,
-    viewer: Viewer,
-    onDocument: DocumentListener<Combat | PlayerCombat>,
-    onEnd: EndListener,
-  ): Unsubscribe;
+  subscribe(id: CombatId, onDocument: DocumentListener<Combat>, onEnd: EndListener): Unsubscribe;
 }
 
 export interface LinkApi {
+  get(id: CombatId): Promise<Link>;
   reissue(id: CombatId): Promise<LinkReissueResult>;
 }
 
@@ -237,6 +246,7 @@ export interface AccountApi {
 }
 
 export interface ApiClient {
+  connection: ConnectionApi;
   auth: AuthApi;
   combats: CombatsApi;
   link: LinkApi;

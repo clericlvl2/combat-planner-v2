@@ -6,6 +6,8 @@ import type {
   CombatCreateInput,
   CombatSummary,
   CombatsApi,
+  ConnectionListener,
+  ConnectionState,
   Session,
   Settings,
   VersionResult,
@@ -52,6 +54,8 @@ function createMemoryClient() {
   const tags = new Map<string, Tag>();
   const dispatched = new Map<string, VersionResult>();
   let settings: Settings = { language: session.language };
+  const connectionState: ConnectionState = 'connected';
+  const connectionListeners = new Set<ConnectionListener>();
 
   const combat = (id: string): Combat => {
     const found = combats.get(id);
@@ -100,13 +104,22 @@ function createMemoryClient() {
       dispatched.set(action.id, result);
       return result;
     },
-    subscribe: (id, _viewer, onDocument) => {
+    subscribe: (id, onDocument) => {
       onDocument(combat(id));
       return () => {};
     },
   };
 
   return {
+    connection: {
+      state: () => connectionState,
+      subscribe: (listener) => {
+        connectionListeners.add(listener);
+        return () => {
+          connectionListeners.delete(listener);
+        };
+      },
+    },
     auth: {
       signUp: async () => session,
       signIn: async () => session,
@@ -115,6 +128,10 @@ function createMemoryClient() {
     },
     combats: combatsApi,
     link: {
+      get: async (id) => ({
+        token: `${id}:${combat(id).linkGeneration}`,
+        generation: combat(id).linkGeneration,
+      }),
       reissue: async (id) => {
         const reissued = {
           ...combat(id),
@@ -229,6 +246,26 @@ describe('ApiClient contract', () => {
     const second = await client.combats.dispatch(created.id, action);
     expect(second).toEqual(first);
     expect((await client.combats.get(created.id)).version).toBe(first.version);
+  });
+
+  it('link.get returns the token that reissue seeded', async () => {
+    const created = await client.combats.create({
+      id: '01ARZ3NDEKTSV4RRFFQ69G5FB0',
+      title: 'Dragon lair',
+      description: '',
+      color: 3,
+    });
+    expect(await client.link.get(created.id)).toEqual({ token: `${created.id}:0`, generation: 0 });
+    const reissued = await client.link.reissue(created.id);
+    expect(await client.link.get(created.id)).toEqual({ token: reissued.token, generation: 1 });
+  });
+
+  it('connection.subscribe returns an unsubscribe function', () => {
+    const listener: ConnectionListener = () => {};
+    const unsubscribe = client.connection.subscribe(listener);
+    expect(typeof unsubscribe).toBe('function');
+    expect(client.connection.state()).toBe('connected');
+    unsubscribe();
   });
 
   it('rejects a missing combat with a notFound ApiError', async () => {
