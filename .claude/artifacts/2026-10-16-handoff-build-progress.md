@@ -15,7 +15,7 @@
 | Фаза | Что | Пачки | Тег |
 |------|-----|-------|-----|
 | −1 | рендеры хэндоффа, errata | оркестратор + chrome-rider | phase--1 |
-| 0 | тулчейн, спайк, скрипты, CLAUDE.md Commands | 0-toolchain | |
+| 0 | тулчейн, спайк, скрипты, CLAUDE.md Commands | 0-toolchain | phase-0 |
 | 0.5 | тема, PhoneFrame, ThemeAudit, эталонный Button, check-скрипты | 0.5-reference | |
 | 1 | domain, контракт ApiClient | 1-domain-core, 1-domain-rest, 1-api-contract | |
 | 2.1 | атомы | 2.1-atoms-a…d, fix-2.1 | |
@@ -39,7 +39,7 @@
 | Пачка | Статус | Единицы |
 |-------|--------|---------|
 | -1-renders | guarded — | renders, errata |
-| 0-toolchain | merged f49f584, guard running | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
+| 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | todo | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
@@ -95,5 +95,17 @@
 ## Отличия от рендеров
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 0-toolchain, P3: `check-commit.sh` исключает `pnpm-lock.yaml` и
+  `**/__screenshots__/**` из лимита 1500 строк; CLAUDE.md Checks об этом не
+  говорит. Решение оркестратора 2026-10-16: исключение остаётся.
+- 0-toolchain, P3: `check-commit.sh` принимает `CLAUDE.md` только в единице
+  `CLAUDE.md commands`; бриф `0.5-reference` велит расширить на `check scripts`.
+- 0-toolchain, P3: проверка имени единицы — `grep -qF` по плану и брифам,
+  подстрока прозы проходит.
+- 0-toolchain, P3, гипотеза: JsxText, начинающийся с `//`, будет сочтён
+  комментарием `check-comments.mjs`.
+- 0-toolchain, P3: гейт пачки шёл под Node 22 (скрипт оркестратора вызвал
+  `nvm use` до входа в worktree); phase-gate перезапущен под Node 24.
 
 ## Падения гейта
