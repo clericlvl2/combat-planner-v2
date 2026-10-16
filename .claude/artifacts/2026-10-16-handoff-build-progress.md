@@ -69,8 +69,8 @@
 | 2.3-organisms-f | guarded `.claude/artifacts/guard/2.3-organisms-f.md` (P3 ×4 → `fix-2.3`) | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
-| 2.3-organisms-i | rework 1 → `fix-2.3-organisms-i`, guard `.claude/artifacts/guard/2.3-organisms-i.md` (P1 PlayerRow shows enemy fields by data, not by role) |
-| fix-2.3-organisms-i | merged 8514075..21703a1 (gate `.claude/run/fix-2.3-organisms-i/` green), guard-bee running | MessageScreen, PlayerRow |
+| 2.3-organisms-i | guarded after rework 1 (`fix-2.3-organisms-i` guarded), guard `.claude/artifacts/guard/2.3-organisms-i.md` |
+| fix-2.3-organisms-i | guarded `.claude/artifacts/guard/fix-2.3-organisms-i.md` (P3 ×1 report hashes, no action) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | merged f22b0fa..b59bc66 (gate `.claude/run/2.3-UnitRow/` green), guard-bee running | UnitRow |
 | 2.3-UnitForm | running worker-bee 2026-10-17T06:40+03:00 | UnitForm |
 | 2.3-NumpadSheet | todo, unblocked (UnitRow merged), next builder slot | NumpadSheet |
@@ -457,6 +457,16 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-2.3-organisms-i, вне scope, гипотеза → бриф `fix-2.4` на решение
+  оркестратора: `project.ts:35-38` отдаёт HP, защиты и заметку захватившему
+  игроку до проверки `enemy`; в валидных состояниях утечки нет (захват только
+  у героев, смена роли снимает захват), PlayerRow — второй рубеж. Порядок
+  проверок в `project` поменять, если `fix-2.4` касается domain.
+- Оркестратор: `merge.sh` удаляет ветку и worktree до guard-bee (CLAUDE.md
+  Integration, шаг 6 — после чистого guard). fix-пачка после P0–P1 создаётся
+  с нового worktree от `master`, так что удаление раньше ничего не теряет;
+  порядок остаётся.
 
 - 2.3-organisms-f → `fix-2.3`: P3 обход `min-height` RoleBlock есть и в
   PresetCard (PresetCard.module.css:23-27) — пункт RoleBlock в `fix-2.3`
