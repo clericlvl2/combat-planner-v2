@@ -53,7 +53,7 @@
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
 | fix-2.1 | merged ab729f2, gate ok `.claude/run/fix-2.1/summary.log`, guard running | |
 | 2.2-molecules-a | running worker-bee 2026-10-16T20:10+03:00 | Stepper, Segmented, RadioList |
-| 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
+| 2.2-molecules-b | running worker-bee 2026-10-16T20:16+03:00 | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | todo | NoteField, InitiativePopover |
 | 2.2-molecules-e | todo | Toast, EmptyState |
