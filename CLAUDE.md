@@ -95,7 +95,11 @@ Scripts in `scripts/`, each exits non-zero with the offending path:
 - `check-commit.sh <range>`: subject format, unit name present in the plan or
   brief, path scope, size cap.
 - `status.sh`: per `agent/*` branch: ahead/behind `master`, merged or not,
-  worktree dirty, `REPORT.md` present, newest file mtime, gate log present.
+  worktree dirty, `REPORT.md` present, newest file mtime, gate log present;
+  listeners on the agent ports; labelled Docker containers.
+- `kill-leftovers.sh`: stops listeners on the agent ports and the labelled
+  containers. Wired to the `SubagentStop` and `Stop` hooks in
+  `.claude/settings.json`.
 
 ## Integration, orchestrator only
 
@@ -124,11 +128,26 @@ Scripts in `scripts/`, each exits non-zero with the offending path:
 - Internal packages are imported from source through workspace links and TS
   project references. Nothing is packed.
 
+## Processes
+
+- Everything an agent starts that outlives a command — dev server, Storybook,
+  `serve`, a Docker container, a browser — is stopped before the hand-back.
+- Agent ports: web 5173, server 3000, Storybook 6006, browser 9222. A process the
+  owner runs by hand uses other ports.
+- Docker containers started by agents carry the label `combat-planner=agent`.
+- `scripts/status.sh` prints listeners on the agent ports and `docker ps` filtered
+  by that label; the orchestrator runs it before every dispatch and before every
+  integration and stops what it finds.
+- `scripts/kill-leftovers.sh` stops listeners on the agent ports and the labelled
+  containers; `.claude/settings.json` runs it on the `SubagentStop` and `Stop`
+  hooks.
+
 ## REPORT.md
 
 Sections, in this order: Commits (hash, subject); Checks run (command, result);
-Questions; Differences from the renders; Dependencies needed; Left undone. Nothing
-else. Written before the hand-back; the hand-back message is the path only.
+Questions; Differences from the renders; Dependencies needed; Left undone;
+Processes left running, allowed value `none`. Nothing else. Written before the
+hand-back; the hand-back message is the path only.
 
 ## Commands
 

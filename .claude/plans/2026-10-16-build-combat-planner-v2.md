@@ -119,7 +119,8 @@ errata закоммичена. Коммит `docs(design): handoff renders and e
 одним тестом или историей; `apps/web` с proxy `/api`; `apps/server` Hono с
 маршрутами `/api/health` и `/api/events` (SSE, тик раз в секунду), статика из
 `apps/web/dist`; все зависимости из раздела Stack vision.md плюс тестовые;
-`scripts/check-comments.mjs`, `scripts/check-commit.sh`, `scripts/status.sh`;
+`scripts/check-comments.mjs`, `scripts/check-commit.sh`, `scripts/status.sh`,
+`scripts/kill-leftovers.sh` и хуки `SubagentStop` и `Stop` в `.claude/settings.json`;
 `.gitignore`.
 
 Единицы (коммиты): `workspace`, `vitest projects`, `storybook`, `skeletons`,
