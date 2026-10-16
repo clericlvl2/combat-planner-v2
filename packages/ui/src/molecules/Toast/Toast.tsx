@@ -75,10 +75,10 @@ export function Toast({
       : duration;
 
   useEffect(() => {
-    if (delay === null) return;
+    if (delay === null || motion === 'off') return;
     const timer = setTimeout(hide, delay);
     return () => clearTimeout(timer);
-  }, [delay, hide]);
+  }, [delay, hide, motion]);
 
   const style = {
     '--toast-inset': px(layout.toast.inset),
