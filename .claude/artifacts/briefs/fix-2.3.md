@@ -33,16 +33,19 @@ and the extra paths named in the unit.
    pass on the first run after `rm -rf node_modules/.vite`.
 2. `check-stories` (`fix(toolchain): check-stories`):
    `scripts/check-stories.mjs` reads cells from a page script that returns
-   `items` (UnitForm.dc.html) as well as `groups`, and gives every cell a
+   `items` (UnitForm.dc.html) or `rows` (NumpadSheet.dc.html) as well as
+   `groups`, accepts flow codes of the form `NP-1` next to `CL-F1.3`, and
+   gives every cell a
    unique export name (a numeric suffix when two cells collide, e.g. the
    «日本語, inline» / «Русский, inline» cells of HpHistory.dc.html). New
-   fixtures `scripts/test/stories-items-page/` and
-   `scripts/test/stories-name-collision/`; `node scripts/test/run.mjs` passes.
-   The same commit renames the stories and baselines the new names require in
-   `organisms/UnitForm` (drop the `Extra` prefix from cell stories) and
+   fixtures `scripts/test/stories-items-page/`, `scripts/test/stories-rows-page/`
+   and `scripts/test/stories-name-collision/`; `node scripts/test/run.mjs`
+   passes. The same commit renames the stories and baselines the new names
+   require in `organisms/UnitForm` and `organisms/NumpadSheet` (drop the
+   `Extra` prefix from cell and flow stories) and
    `organisms/HpHistory` (ja and ru cells get their own exports; the ja
    stories stop asserting the absence of Russian text). Only stories files,
-   `.same.txt` and PNG renames in those two folders.
+   `.same.txt` and PNG renames in those three folders.
 3. `Stepper`: signed `0` renders `+0` (Stepper.tsx:32); `inputMode` follows
    `min < 0`, not `signed` (Stepper.tsx:121); a disabled key at a bound uses
    the page fill (`minBg #FAF6EE`, UnitForm.dc.html:169, check
@@ -67,7 +70,8 @@ and the extra paths named in the unit.
 12. `Menu`: reopening during the exit transition focuses the first item again;
     inside a Sheet the items carry `data-mantine-stop-propagation` and Escape
     closes only the menu; the «Player menu» story uses the `heroes` key.
-13. `Sheet`: with `motion: 'on'` the initial focus lands on the section, not
+13. `Sheet`: a header slot `header?: ReactNode` replaces the string title
+    when given (NumpadSheet's role square, name, ×); with `motion: 'on'` the initial focus lands on the section, not
     the first tabbable (Sheet.tsx:34-38; story opening from closed with motion
     on); story-only `opener` keys removed.
 14. `Dialog`: scroll lock through Mantine `RemoveScroll` (shared with Drawer);
@@ -116,6 +120,9 @@ and the extra paths named in the unit.
     cancel keep the sheet open for the baseline (the submit is a separate
     `Extra` story); an empty name in Edit draws the `#E2D8C6` border without
     `:placeholder-shown`; dead `data-long` removed.
+28. `NumpadSheet`: built on `Sheet` with the `header` slot (unit 13) instead
+    of its own Mantine `Modal` copy; baselines stay byte-identical or are
+    regenerated with the difference named in the report.
 
 ## Allowed paths
 
@@ -135,10 +142,11 @@ Each unit's component folder `packages/ui/src/<level>/<Name>/**`, its six
 1. `COMBAT_PLANNER_NO_DOCKER=1 pnpm check`, `pnpm test`, `pnpm storybook:build`,
    `node scripts/test/run.mjs` exit 0; `pnpm exec vp test --project visual`
    passes without `--update` on the first run.
-2. Every item of units 3–27 is closed with file and line in `REPORT.md`; every
+2. Every item of units 3–28 is closed with file and line in `REPORT.md`; every
    behaviour item has a `play` that fails on the old code (named in the
    report).
-3. `check-stories` derives the UnitForm cells and unique names; its two new
+3. `check-stories` derives the UnitForm and NumpadSheet cells, `NP-<n>` flow
+   codes and unique names; its three new
    fixtures fail on the old script and pass on the new one.
 4. Six i18n files per touched namespace with identical keys; `check-i18n`
    passes.
