@@ -245,7 +245,7 @@ const scrollSheetToTop = async (canvasElement: HTMLElement) => {
   body.scrollTop = 0;
 };
 
-export const ExtraAnatomy = meta.story({
+export const Anatomy = meta.story({
   name: 'Anatomy',
   play: async ({ canvas, canvasElement }) => {
     await typeAmount(canvas, '12');
@@ -256,7 +256,7 @@ export const ExtraAnatomy = meta.story({
   },
 });
 
-export const ExtraCollapsed = meta.story({
+export const Collapsed = meta.story({
   name: 'Collapsed',
   play: async ({ args, canvas }) => {
     const dialog = await sheetOf(canvas);
@@ -276,7 +276,7 @@ export const ExtraCollapsed = meta.story({
   },
 });
 
-export const ExtraOpenNoChangesYet = meta.story({
+export const OpenNoChangesYet = meta.story({
   name: 'Open, no changes yet',
   args: { history: 'none' },
   play: async ({ canvas }) => {
@@ -285,7 +285,7 @@ export const ExtraOpenNoChangesYet = meta.story({
   },
 });
 
-export const ExtraOpenAFewChanges = meta.story({
+export const OpenAFewChanges = meta.story({
   name: 'Open, a few changes',
   args: { who: 'vashti', history: 'short' },
   play: async ({ canvas }) => {
@@ -294,7 +294,7 @@ export const ExtraOpenAFewChanges = meta.story({
   },
 });
 
-export const ExtraOpenEveryKind = meta.story({
+export const OpenEveryKind = meta.story({
   name: 'Open, every kind',
   play: async ({ canvas }) => {
     await expandHistory(canvas, 'HP History');
@@ -302,7 +302,7 @@ export const ExtraOpenEveryKind = meta.story({
   },
 });
 
-export const ExtraOpenLongScrollsInsideTheSheet = meta.story({
+export const OpenLongScrollsInsideTheSheet = meta.story({
   name: 'Open, long: scrolls inside the sheet',
   args: { history: 'long' },
   play: async ({ canvas }) => {
@@ -312,7 +312,7 @@ export const ExtraOpenLongScrollsInsideTheSheet = meta.story({
   },
 });
 
-export const ExtraPlayerTyped7 = meta.story({
+export const PlayerTyped7 = meta.story({
   name: 'Player, typed 7',
   args: { who: 'vashti', viewer: 'player' },
   play: async ({ canvas, canvasElement }) => {
@@ -323,7 +323,7 @@ export const ExtraPlayerTyped7 = meta.story({
   },
 });
 
-export const ExtraPlayerPressedDamage = meta.story({
+export const PlayerPressedDamage = meta.story({
   name: 'Player, pressed Damage',
   args: { who: 'vashti', viewer: 'player', tap: 'damage' },
   play: async ({ canvas, canvasElement }) => {
@@ -333,7 +333,7 @@ export const ExtraPlayerPressedDamage = meta.story({
   },
 });
 
-export const ExtraOpened287320 = meta.story({
+export const Opened287320 = meta.story({
   name: 'Opened, 287/320',
   args: { who: 'dragon' },
   play: async ({ canvas, canvasElement }) => {
@@ -343,7 +343,7 @@ export const ExtraOpened287320 = meta.story({
   },
 });
 
-export const ExtraDamage120167320 = meta.story({
+export const Damage120167320 = meta.story({
   name: 'Damage 120 → 167/320',
   args: { who: 'dragon' },
   play: async ({ canvas, canvasElement }) => {
@@ -353,7 +353,7 @@ export const ExtraDamage120167320 = meta.story({
   },
 });
 
-export const ExtraDamage400113320 = meta.story({
+export const Damage400113320 = meta.story({
   name: 'Damage 400 → −113/320',
   args: { who: 'dragon' },
   play: async ({ canvas, canvasElement }) => {
@@ -363,7 +363,7 @@ export const ExtraDamage400113320 = meta.story({
   },
 });
 
-export const ExtraSetMax999 = meta.story({
+export const SetMax999 = meta.story({
   name: 'Set Max 999',
   args: { who: 'dragon' },
   play: async ({ canvas, canvasElement }) => {
@@ -385,7 +385,7 @@ const openLocale = async (
   return canvas.getByRole('button', { name: action });
 };
 
-export const ExtraDeutsch = meta.story({
+export const Deutsch = meta.story({
   name: 'Deutsch',
   globals: { locale: 'de' },
   play: async (context) => {
@@ -394,7 +394,7 @@ export const ExtraDeutsch = meta.story({
   },
 });
 
-export const ExtraEspanol = meta.story({
+export const EspaOl = meta.story({
   name: 'Español',
   globals: { locale: 'es' },
   play: async (context) => {
@@ -403,7 +403,7 @@ export const ExtraEspanol = meta.story({
   },
 });
 
-export const ExtraFrancais = meta.story({
+export const FranAis = meta.story({
   name: 'Français',
   globals: { locale: 'fr' },
   play: async (context) => {
@@ -412,7 +412,7 @@ export const ExtraFrancais = meta.story({
   },
 });
 
-export const ExtraJapanese = meta.story({
+export const EdgeCasesLanguages = meta.story({
   name: '日本語',
   globals: { locale: 'ja' },
   play: async (context) => {
@@ -421,7 +421,7 @@ export const ExtraJapanese = meta.story({
   },
 });
 
-export const ExtraRussian = meta.story({
+export const EdgeCasesLanguages2 = meta.story({
   name: 'Русский',
   globals: { locale: 'ru' },
   play: async (context) => {
@@ -576,7 +576,7 @@ export const ExtraNp1Pressed = meta.story({
   },
 });
 
-export const ExtraNp1 = meta.story({
+export const NP1 = meta.story({
   name: 'NP-1 · Damage',
   args: np1.args,
   play: async ({ args, canvas, canvasElement }) => {
@@ -613,7 +613,7 @@ export const ExtraNp2Pressed = meta.story({
   },
 });
 
-export const ExtraNp2 = meta.story({
+export const NP2 = meta.story({
   name: 'NP-2 · Damage with temp',
   args: np2.args,
   play: async ({ args, canvas, canvasElement }) => {
@@ -650,7 +650,7 @@ export const ExtraNp3Pressed = meta.story({
   },
 });
 
-export const ExtraNp3 = meta.story({
+export const NP3 = meta.story({
   name: 'NP-3 · Heal',
   args: np3.args,
   play: async ({ args, canvas, canvasElement }) => {
@@ -677,7 +677,7 @@ export const ExtraNp4Pressed = meta.story({
   },
 });
 
-export const ExtraNp4 = meta.story({
+export const NP4 = meta.story({
   name: 'NP-4 · Set Temp',
   args: np4.args,
   play: async ({ args, canvas, canvasElement }) => {
@@ -704,7 +704,7 @@ export const ExtraNp5Pressed = meta.story({
   },
 });
 
-export const ExtraNp5 = meta.story({
+export const NP5 = meta.story({
   name: 'NP-5 · Set Max',
   args: np5.args,
   play: async ({ args, canvas, canvasElement }) => {

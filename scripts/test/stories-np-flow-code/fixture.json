@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "missing flow story: NP1 for NP-1",
+  "ops": [
+    {
+      "replace": "packages/ui/src/organisms/NumpadSheet/NumpadSheet.stories.tsx",
+      "search": "export const NP1 = ",
+      "with": "const NP1 = "
+    }
+  ]
+}

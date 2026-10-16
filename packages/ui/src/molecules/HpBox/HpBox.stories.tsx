@@ -212,7 +212,7 @@ export const EdgeCasesThreeDigits112320Temp = meta.story({
   },
 });
 
-export const EdgeCasesThreeDigits999999 = meta.story({
+export const EdgeCasesThreeDigits9999992 = meta.story({
   name: '−999/999',
   args: { viewer: 'dm', hp: -999, maxHp: 999 },
   play: async ({ canvas, canvasElement }) => {
@@ -221,7 +221,7 @@ export const EdgeCasesThreeDigits999999 = meta.story({
   },
 });
 
-export const ExtraThreeDigitsFull999 = meta.story({
+export const EdgeCasesThreeDigits999999 = meta.story({
   name: '999/999',
   args: { viewer: 'dm', hp: 999, maxHp: 999 },
   play: async ({ canvasElement }) => {

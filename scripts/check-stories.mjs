@@ -9,7 +9,8 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const uiSrcDir = path.join(rootDir, 'packages/ui/src');
 const handoffDir = path.join(rootDir, 'docs/design/handoff');
 const nonAscii = /[^\p{ASCII}]/u;
-const flowCode = /^[A-Z]+-F\d+(?:\.\d+)*$/;
+const flowCode = /^[A-Z]+-(?:F\d+(?:\.\d+)*|\d+)$/;
+const flowTitle = /^Flows?\b/;
 
 const violations = [];
 const relative = (absolutePath) => path.relative(rootDir, absolutePath).split(path.sep).join('/');
@@ -59,7 +60,7 @@ function pageCells(groups) {
   let inFlow = false;
   for (const group of groups ?? []) {
     const title = typeof group.title === 'string' ? group.title : '';
-    if (/^Flow\b/.test(title) || group.id === 'flow') inFlow = true;
+    if (flowTitle.test(title) || group.id === 'flow') inFlow = true;
     else if (title) inFlow = false;
     if (inFlow || !title) continue;
     const edge = title.startsWith('Edge cases');
@@ -93,26 +94,71 @@ function pageCells(groups) {
       cell.name = exportName(`${cell.group} ${cell.label}`);
     }
   }
+  const taken = new Map();
+  for (const cell of cells) {
+    const seen = (taken.get(cell.name) ?? 0) + 1;
+    taken.set(cell.name, seen);
+    if (seen > 1) cell.name = `${cell.name}${seen}`;
+  }
   return cells;
+}
+
+function groupsOfItems(items) {
+  const groups = [];
+  for (const item of items) {
+    if (item?.isHeading && typeof item.heading === 'string') {
+      groups.push({ title: item.heading, cells: [] });
+    } else if (item?.isCard && typeof item.label === 'string' && groups.length > 0) {
+      groups.at(-1).cells.push({ ...item, caption: item.label });
+    }
+  }
+  return groups;
+}
+
+function groupsOfRows(rows) {
+  const groups = [];
+  const codes = [];
+  for (const row of rows) {
+    if (row?.hasFlow) {
+      if (typeof row.code === 'string') codes.push(row.code);
+      continue;
+    }
+    for (const item of Array.isArray(row?.items) ? row.items : []) {
+      if (item?.isHead && typeof item.headTitle === 'string') {
+        groups.push({ title: item.headTitle, cells: [] });
+      } else if (item?.isCard && typeof item.label === 'string' && groups.length > 0) {
+        groups.at(-1).cells.push({ ...item, caption: item.label });
+      }
+    }
+  }
+  return { groups, codes };
+}
+
+function pageLayout(values) {
+  if (Array.isArray(values?.groups)) return { groups: values.groups, codes: [] };
+  if (Array.isArray(values?.items)) return { groups: groupsOfItems(values.items), codes: [] };
+  if (Array.isArray(values?.rows)) return groupsOfRows(values.rows);
+  return { groups: [], codes: [] };
 }
 
 function readPage(pagePath) {
   const html = readFileSync(pagePath, 'utf8');
   const script = pageScript(html);
-  const flows = [...script.matchAll(/\bS\('([^']+)'/g)]
+  const screenFlows = [...script.matchAll(/\bS\('([^']+)'/g)]
     .map((match) => match[1])
     .filter((code) => flowCode.test(code));
-  let groups = [];
+  let layout = { groups: [], codes: [] };
   try {
-    groups = renderPage(script)?.groups ?? [];
+    layout = pageLayout(renderPage(script));
   } catch (error) {
-    if (flows.length === 0) fail(pagePath, 'page script', String(error));
+    if (screenFlows.length === 0) fail(pagePath, 'page script', String(error));
   }
-  const cells = flows.length > 0 ? [] : pageCells(groups);
+  const { groups } = layout;
+  const flows = [...screenFlows, ...layout.codes.filter((code) => flowCode.test(code))];
+  const cells = screenFlows.length > 0 ? [] : pageCells(groups);
   const hasFlow =
     flows.length > 0 ||
-    (Array.isArray(groups) &&
-      groups.some((group) => group.id === 'flow' || /^Flow\b/.test(String(group.title ?? ''))));
+    groups.some((group) => group.id === 'flow' || flowTitle.test(String(group.title ?? '')));
   return { cells, flows: [...new Set(flows)], hasFlow };
 }
 

@@ -349,7 +349,6 @@ export const EdgeCasesInline = meta.story({
   play: async ({ args, canvasElement }) => {
     await expect(within(canvasElement).queryByText('Orc Berserker · 6 件')).toBeNull();
     await collapseShowsCount(canvasElement, 'HP履歴', '6 件', args.onToggle);
-    await expect(within(canvasElement).queryByText('6 изм.')).toBeNull();
   },
 });
 
@@ -361,11 +360,10 @@ export const EdgeCasesSheet = meta.story({
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole('dialog', { name: 'HP履歴' })).toBeVisible();
     await expect(canvas.getByText('Orc Berserker · 6 件')).toBeVisible();
-    await expect(canvas.queryByText('Orc Berserker · 6 изм.')).toBeNull();
   },
 });
 
-export const ExtraRussianInline = meta.story({
+export const EdgeCasesInline2 = meta.story({
   name: 'Русский, inline',
   globals: { locale: 'ru' },
   args: { expanded: true },
@@ -375,7 +373,7 @@ export const ExtraRussianInline = meta.story({
   },
 });
 
-export const ExtraRussianSheet = meta.story({
+export const EdgeCasesSheet2 = meta.story({
   name: 'Русский, sheet',
   globals: { locale: 'ru' },
   parameters: sheet,

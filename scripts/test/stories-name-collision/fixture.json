@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "missing cell story: EdgeCasesInline2 for \"Edge cases\" cell \"Русский, inline\"",
+  "ops": [
+    {
+      "replace": "packages/ui/src/organisms/HpHistory/HpHistory.stories.tsx",
+      "search": "export const EdgeCasesInline2 = ",
+      "with": "const EdgeCasesInline2 = "
+    }
+  ]
+}

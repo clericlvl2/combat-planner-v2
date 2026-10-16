@@ -172,12 +172,12 @@ const typeNumber = async (canvas: Canvas, label: string, text: string) => {
   return field;
 };
 
-export const ExtraAnatomy = meta.story({
+export const Anatomy = meta.story({
   name: 'Anatomy',
   args: { value: orcShaman },
 });
 
-export const ExtraNewEmpty = meta.story({
+export const NewEmpty = meta.story({
   name: 'New, empty',
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'Add unit' })).toBeVisible();
@@ -191,12 +191,12 @@ export const ExtraNewEmpty = meta.story({
   },
 });
 
-export const ExtraNewFilled = meta.story({
+export const NewFilled = meta.story({
   name: 'New, filled',
   args: { value: orcShaman },
 });
 
-export const ExtraFromLibrary = meta.story({
+export const FromLibrary = meta.story({
   name: 'From Library',
   play: async ({ canvas }) => {
     await openLibrary(canvas);
@@ -205,7 +205,7 @@ export const ExtraFromLibrary = meta.story({
   },
 });
 
-export const ExtraLibraryTagsSheet = meta.story({
+export const LibraryTagsSheet = meta.story({
   name: 'Library, Tags sheet',
   play: async ({ canvas }) => {
     await openLibrary(canvas);
@@ -216,7 +216,7 @@ export const ExtraLibraryTagsSheet = meta.story({
   },
 });
 
-export const ExtraLibraryFilteredPicked = meta.story({
+export const LibraryFilteredPicked = meta.story({
   name: 'Library, filtered, picked',
   play: async ({ canvas, args }) => {
     await openLibrary(canvas);
@@ -234,7 +234,7 @@ export const ExtraLibraryFilteredPicked = meta.story({
   },
 });
 
-export const ExtraEdit = meta.story({
+export const Edit = meta.story({
   name: 'Edit',
   args: { mode: 'edit', value: vashti },
   play: async ({ canvas }) => {
@@ -244,7 +244,7 @@ export const ExtraEdit = meta.story({
   },
 });
 
-export const ExtraLibrarySearchGob = meta.story({
+export const LibrarySearchGob = meta.story({
   name: 'Library, search “gob”',
   play: async ({ canvas }) => {
     await openLibrary(canvas);
@@ -252,10 +252,11 @@ export const ExtraLibrarySearchGob = meta.story({
     const list = presetList(canvas);
     await expect(list.getAllByRole('button')).toHaveLength(1);
     await expect(list.getByText('Goblin Archer')).toBeVisible();
+    await expect(canvas.queryByText('No preset matches “gob”.')).toBeNull();
   },
 });
 
-export const ExtraLibraryNothingFound = meta.story({
+export const LibraryNothingFound = meta.story({
   name: 'Library, nothing found',
   play: async ({ canvas }) => {
     await openLibrary(canvas);
@@ -267,7 +268,7 @@ export const ExtraLibraryNothingFound = meta.story({
   },
 });
 
-export const ExtraMinimumValues = meta.story({
+export const MinimumValues = meta.story({
   name: 'Minimum values',
   args: { mode: 'edit', value: { ...vashti, maxHp: LIMITS.maxHp.min, tempHp: 0 } },
   play: async ({ canvas }) => {
@@ -278,7 +279,7 @@ export const ExtraMinimumValues = meta.story({
   },
 });
 
-export const ExtraEdgeCases40CharacterNameRu = meta.story({
+export const EdgeCases40CharacterNameRu = meta.story({
   name: '40-character name, ru',
   args: {
     mode: 'edit',

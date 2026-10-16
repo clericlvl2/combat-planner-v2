@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "missing cell story: NewEmpty for \"Variants: create\" cell \"New, empty\"",
+  "ops": [
+    {
+      "replace": "packages/ui/src/organisms/UnitForm/UnitForm.stories.tsx",
+      "search": "export const NewEmpty = ",
+      "with": "const NewEmpty = "
+    }
+  ]
+}
