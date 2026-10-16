@@ -3,4 +3,5 @@ export const queryKeys = {
   combats: ['combats'] as const,
   presets: ['presets'] as const,
   tags: ['tags'] as const,
+  settings: ['settings'] as const,
 };
