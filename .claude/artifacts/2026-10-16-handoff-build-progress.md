@@ -52,9 +52,9 @@
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
 | fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
-| 2.2-molecules-a | running worker-bee 2026-10-16T20:10+03:00 | Stepper, Segmented, RadioList |
+| 2.2-molecules-a | rebased, report `.claude/artifacts/reports/2.2-molecules-a.md`, gate running | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | running worker-bee 2026-10-16T20:16+03:00 | CheckList, SwatchRow, CardActions |
-| 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
+| 2.2-molecules-c | running worker-bee 2026-10-16T20:22+03:00 | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | todo | NoteField, InitiativePopover |
 | 2.2-molecules-e | todo | Toast, EmptyState |
 | fix-2.2 | todo | |
@@ -88,6 +88,12 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.2-molecules-a, решения оркестратора 2026-10-16: тон роли Segmented по
+  значению (`hero/enemy/ally`), не по английской подписи — принято, строки
+  `Role · de/ru/fr` зелёные (страница красит ink из-за скрипта); знак `+`/U+2212
+  в Stepper при `min < 0` без пропа — принято как в NumberField; `disabled?` и
+  `sub` у опций RadioList приняты.
 
 - 3-server-actions, решения оркестратора 2026-10-16 по 11 вопросам отчёта: все
   приняты и становятся контрактом для `3-server-live/rest`: `ulid` добавлен в
@@ -170,6 +176,9 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.2-molecules-a: Segmented `Role · de/ru/fr` — выбранный Ally зелёный, не ink;
+  `ExtraOptionDisabled` заканчивается с фокус-кольцом на Enemy.
 
 - fix-2.1: ThemeAudit одной колонкой, свотчи 12 px по 4 в ряд (conditions по
   3), длинные имена токенов с многоточием; TextField `type="email"/"password"`
