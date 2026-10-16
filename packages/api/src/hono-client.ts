@@ -111,7 +111,6 @@ type PlannedRoutes = {
   };
   '/auth/sign-out': { $post: JsonEndpoint<NoInput, { success: boolean }> };
   '/auth/get-session': { $get: JsonEndpoint<NoInput, AuthResponse | null> };
-  '/combats/:id/actions': { $post: JsonEndpoint<IdParam & { json: Action }, VersionResult> };
   '/combats/:id/link': { $get: JsonEndpoint<IdParam, Link> };
   '/combats/:id/link/reissue': { $post: JsonEndpoint<IdParam, LinkReissueResult> };
   '/play/:id': { $get: JsonEndpoint<IdParam & TokenQuery, PlayView> };

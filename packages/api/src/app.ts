@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import type { SessionResolver } from './auth/require-user.ts';
+import { actionsApp } from './combats/actions.ts';
 import { combatsApp } from './combats/routes.ts';
 import type { AppDatabase } from './db/index.ts';
 import type { ApiEnv } from './env.ts';
@@ -22,7 +23,8 @@ export function createApiApp({ db, env, auth }: ApiAppDeps) {
       await next();
     })
     .route('/health', healthApp)
-    .route('/combats', combatsApp);
+    .route('/combats', combatsApp)
+    .route('/combats', actionsApp);
 }
 
 export type AppType = ReturnType<typeof createApiApp>;
