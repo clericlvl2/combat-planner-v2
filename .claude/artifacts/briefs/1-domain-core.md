@@ -84,11 +84,10 @@ in `packages/domain/src/index.ts`, and its tests in
    (`version`, `forbidden`, `blocked`, `limit`, `notFound`, `invalid`) and
    `message`. Rules: every owner decision bullet about escalation, Set Temp, Heal
    cap, Set Max, Duplicate, copy, tag, Save as preset, player claims; vision
-   Transitions, Undo (`undo` action validated here but applied in
-   `1-domain-rest`; `apply` returns `DomainError` `invalid` for `undo` until then
-   — no: `apply` delegates `undo` to a function `applyUndo` exported from a stub
-   `undo.ts` that throws `notImplemented`; `1-domain-rest` replaces the stub),
-   HP calculator, Unit Rules, HP history (an entry per damage, heal, temp, max
+   Transitions, Undo (`apply` delegates the `undo` action to `applyUndo` from
+   `packages/domain/src/undo.ts`; this batch ships `undo.ts` as a stub whose
+   `applyUndo` returns `DomainError` `invalid`, and batch `1-domain-rest`
+   replaces it), HP calculator, Unit Rules, HP history (an entry per damage, heal, temp, max
    with `result` and the round when active), Conditions. `version` mismatch →
    `DomainError` `version`. `nextTurnBlockReason(combat) → string | null` with
    the reasons the Active screen shows on a blocked Next turn.
