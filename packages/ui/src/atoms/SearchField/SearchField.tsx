@@ -17,6 +17,7 @@ export interface SearchFieldProps extends Omit<
   onChange: (value: string) => void;
   onClear?: () => void;
   placeholder?: string;
+  maxLength?: number;
   disabled?: boolean;
   size?: SearchFieldSize;
 }
@@ -26,6 +27,7 @@ export function SearchField({
   onChange,
   onClear,
   placeholder,
+  maxLength,
   disabled = false,
   size = 'M',
   className,
@@ -67,6 +69,7 @@ export function SearchField({
         value={value}
         placeholder={shownPlaceholder}
         aria-label={accessibleName}
+        maxLength={maxLength}
         disabled={disabled}
         onChange={(event) => onChange(event.currentTarget.value)}
       />

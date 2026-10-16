@@ -126,6 +126,19 @@ export const ExtraTyping = meta.story({
   },
 });
 
+export const ExtraMaxLength = meta.story({
+  name: 'Typing stops at maxLength',
+  args: { value: '', placeholderKey: 'searchCombats', maxLength: 4, onChange: fn() },
+  play: async ({ args, canvas }) => {
+    const input = canvas.getByRole('searchbox', { name: 'Search combats' });
+    await expect(input).toHaveAttribute('maxlength', '4');
+    await userEvent.type(input, 'ferry');
+    await expect(args.onChange).toHaveBeenCalledTimes(4);
+    await expect(args.onChange).toHaveBeenLastCalledWith('ferr');
+    await expect(input).toHaveValue('ferr');
+  },
+});
+
 export const ExtraClear = meta.story({
   name: 'Clear',
   args: { value: 'ferry', placeholderKey: 'searchCombats', onChange: fn(), onClear: fn() },
