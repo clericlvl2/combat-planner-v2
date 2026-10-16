@@ -81,7 +81,7 @@
 | 2.4-PlayerView | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | SignIn, SignUp, Settings, Account, About |
-| 2.4-SystemScreens | reported `.claude/artifacts/reports/2.4-SystemScreens.md`, gate running | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
+| 2.4-SystemScreens | merged 50102c6..912eea0 (gate `.claude/run/2.4-SystemScreens/` green), guard-bee running | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
