@@ -29,7 +29,7 @@ const EMPTY = '—';
 function format(value: number | null, signed: boolean): string {
   if (value === null) return EMPTY;
   if (value < 0) return `${MINUS}${Math.abs(value)}`;
-  if (signed && value > 0) return `+${value}`;
+  if (signed) return `+${value}`;
   return String(value);
 }
 
@@ -118,7 +118,7 @@ export function Stepper({
         className={classes.field}
         type="text"
         role="spinbutton"
-        inputMode={signed ? 'text' : 'numeric'}
+        inputMode={min < 0 ? 'text' : 'numeric'}
         autoComplete="off"
         aria-label={label ? undefined : t('value')}
         aria-valuemin={min}

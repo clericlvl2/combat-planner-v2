@@ -200,6 +200,7 @@ export const ExtraClampAtBounds = meta.story({
     await expect(args.onChange).toHaveBeenLastCalledWith(99);
     await expect(increase).toBeDisabled();
     const field = canvas.getByRole('spinbutton', { name: 'Value' });
+    await expect(field).toHaveAttribute('inputmode', 'numeric');
     await userEvent.clear(field);
     await userEvent.type(field, '0');
     await userEvent.tab();
@@ -220,6 +221,7 @@ export const ExtraKeyboard = meta.story({
   args: { labelKey: 'initBonus', range: LIMITS.initiativeBonus, value: 0 },
   play: async ({ args, canvas }) => {
     const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
+    await expect(field).toHaveValue('+0');
     await userEvent.click(field);
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith(-1);
@@ -240,6 +242,7 @@ export const ExtraUnsigned = meta.story({
   play: async ({ args, canvas }) => {
     const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
     await expect(field).toHaveValue('15');
+    await expect(field).toHaveAttribute('inputmode', 'text');
     await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
     await expect(args.onChange).toHaveBeenLastCalledWith(16);
     await expect(field).toHaveValue('16');
@@ -262,6 +265,19 @@ export const ExtraEmpty = meta.story({
     await expect(args.onChange).toHaveBeenLastCalledWith(1);
     await expect(field).toHaveValue('1');
     await expect(field).toHaveAttribute('aria-valuenow', '1');
+  },
+});
+
+export const ExtraEmptyDecrease = meta.story({
+  name: 'Empty value steps down',
+  args: { labelKey: 'initBonus', range: LIMITS.initiative, value: null, signed: false },
+  play: async ({ args, canvas }) => {
+    const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
+    await expect(field).toHaveValue('—');
+    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
+    await expect(args.onChange).toHaveBeenLastCalledWith(-1);
+    await expect(field).toHaveValue('−1');
+    await expect(field).toHaveAttribute('aria-valuenow', '-1');
   },
 });
 
