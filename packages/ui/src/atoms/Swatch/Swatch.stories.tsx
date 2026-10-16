@@ -90,6 +90,10 @@ export const Colour7 = meta.story({
 export const Colour8 = meta.story({
   name: 'Colour 8',
   args: { color: 7 },
+  play: async ({ canvas }) => {
+    const swatch = canvas.getByRole('button', { name: 'Grey' });
+    await expect(swatch.style.getPropertyValue('--swatch-fill')).toBe('#8C8578');
+  },
 });
 
 export const Selected = meta.story({

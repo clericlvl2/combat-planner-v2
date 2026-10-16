@@ -1,20 +1,15 @@
+import { LIMITS } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
 import { IconCheck } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
+import { combatColors } from '../../theme.ts';
 import classes from './Swatch.module.css';
 
-export const combatColors = [
-  '#B4232A',
-  '#A85400',
-  '#8A6A00',
-  '#2E7A43',
-  '#0E5E63',
-  '#1E5FA8',
-  '#5C4026',
-  '#6E685F',
-] as const;
+type UpTo<N extends number, Acc extends number[] = []> = Acc['length'] extends N
+  ? Acc[number] | N
+  : UpTo<N, [...Acc, Acc['length']]>;
 
-export type CombatColor = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
+export type CombatColor = UpTo<(typeof LIMITS.color)['max']>;
 
 export type SwatchSize = 'S' | 'M' | 'L';
 
