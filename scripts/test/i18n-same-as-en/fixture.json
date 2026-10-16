@@ -1,0 +1,11 @@
+{
+  "script": "check-i18n",
+  "expect": "same as en",
+  "ops": [
+    {
+      "replace": "packages/ui/src/i18n/fr/Button.json",
+      "search": "\"Nouveau combat\"",
+      "with": "\"New combat\""
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "script": "check-screenshots",
+  "expect": "missing marker",
+  "ops": [
+    {
+      "remove": "packages/ui/__screenshots__/.docker-*"
+    }
+  ],
+  "unsetEnv": ["COMBAT_PLANNER_NO_DOCKER"]
+}

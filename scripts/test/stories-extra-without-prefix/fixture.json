@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "extra story without the Extra prefix",
+  "ops": [
+    {
+      "replace": "packages/ui/src/atoms/Button/Button.stories.tsx",
+      "search": "export const ExtraClick = ",
+      "with": "export const Click = "
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "script": "check-i18n",
+  "expect": "key mismatch",
+  "ops": [
+    {
+      "replace": "packages/ui/src/i18n/de/Button.json",
+      "search": "\"clear\":",
+      "with": "\"clean\":"
+    }
+  ]
+}

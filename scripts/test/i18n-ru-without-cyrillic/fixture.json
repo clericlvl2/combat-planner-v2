@@ -1,0 +1,11 @@
+{
+  "script": "check-i18n",
+  "expect": "ru without Cyrillic",
+  "ops": [
+    {
+      "replace": "packages/ui/src/i18n/ru/Button.json",
+      "search": "\"Отмена\"",
+      "with": "\"Otmena\""
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "sole toBeDefined()",
+  "ops": [
+    {
+      "replace": "packages/ui/src/atoms/Button/Button.stories.tsx",
+      "search": "await expect(args.onClick).toHaveBeenCalledOnce();",
+      "with": "await expect(args.onClick).toBeDefined();"
+    }
+  ]
+}

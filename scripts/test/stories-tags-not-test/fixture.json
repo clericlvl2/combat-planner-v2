@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "tags: ['!test']",
+  "ops": [
+    {
+      "replace": "packages/ui/src/atoms/Button/Button.stories.tsx",
+      "search": "  name: 'Click',",
+      "with": "  name: 'Click',\n  tags: ['!test'],"
+    }
+  ]
+}

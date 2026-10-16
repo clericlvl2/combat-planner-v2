@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "missing cell story",
+  "ops": [
+    {
+      "replace": "packages/ui/src/atoms/Button/Button.stories.tsx",
+      "search": "export const GhostSFocus = ",
+      "with": "const GhostSFocus = "
+    }
+  ]
+}

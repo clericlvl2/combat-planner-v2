@@ -1,0 +1,11 @@
+{
+  "script": "check-i18n",
+  "expect": "empty value",
+  "ops": [
+    {
+      "replace": "packages/ui/src/i18n/es/Button.json",
+      "search": "\"Guardar\"",
+      "with": "\"\""
+    }
+  ]
+}

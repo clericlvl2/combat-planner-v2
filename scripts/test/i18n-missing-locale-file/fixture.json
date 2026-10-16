@@ -1,0 +1,9 @@
+{
+  "script": "check-i18n",
+  "expect": "missing locale file",
+  "ops": [
+    {
+      "remove": "packages/ui/src/i18n/fr/Button.json"
+    }
+  ]
+}

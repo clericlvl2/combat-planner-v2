@@ -1,0 +1,11 @@
+{
+  "script": "check-i18n",
+  "expect": "ja without CJK",
+  "ops": [
+    {
+      "replace": "packages/ui/src/i18n/ja/Button.json",
+      "search": "\"保存\"",
+      "with": "\"Hozon\""
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": ".only",
+  "ops": [
+    {
+      "replace": "packages/ui/src/atoms/Button/Button.stories.tsx",
+      "search": "export const ExtraClick = meta.story({",
+      "with": "export const ExtraClick = meta.story.only({"
+    }
+  ]
+}

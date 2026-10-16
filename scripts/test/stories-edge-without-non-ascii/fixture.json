@@ -1,0 +1,11 @@
+{
+  "script": "check-stories",
+  "expect": "edge story without a non-ASCII literal",
+  "ops": [
+    {
+      "replace": "packages/ui/src/atoms/Button/Button.stories.tsx",
+      "search": "label: 'Начать бой'",
+      "with": "labelKey: 'startCombat'"
+    }
+  ]
+}

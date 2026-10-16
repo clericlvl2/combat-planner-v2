@@ -1,0 +1,11 @@
+{
+  "script": "check-screenshots",
+  "expect": "byte-identical baselines",
+  "ops": [
+    {
+      "replace": "packages/ui/__screenshots__/Button/Button.same.txt",
+      "search": "Anatomy PrimaryLIconDefault",
+      "with": "Anatomy"
+    }
+  ]
+}

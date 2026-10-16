@@ -152,9 +152,15 @@ Every shell first runs `source ~/.nvm/nvm.sh && nvm use` (Node 24 from `.nvmrc`)
 All commands run from the worktree root.
 
 - Install: `pnpm install --frozen-lockfile`.
-- `pre-commit`: `pnpm check && pnpm test`. `pnpm check` is `vp check && tsc -b`:
-  format check, Oxlint, type check through tsgolint, then `tsc -b` over the
-  project references. `pnpm exec vp check --fix` formats and applies lint fixes.
+- `pre-commit`: `pnpm check && pnpm test`. `pnpm check` is `vp check && tsc -b &&
+  node scripts/check-stories.mjs && node scripts/check-i18n.mjs &&
+  node scripts/check-screenshots.mjs && node scripts/check-comments.mjs`: format
+  check, Oxlint, type check through tsgolint, `tsc -b` over the project
+  references, then the check scripts of Checks. Without a
+  `packages/ui/__screenshots__/.docker-*` marker `check-screenshots` fails unless
+  `COMBAT_PLANNER_NO_DOCKER=1` is set. `node scripts/test/run.mjs` proves each
+  check script fails on its fixtures in `scripts/test/<rule>/` and passes on the
+  clean tree. `pnpm exec vp check --fix` formats and applies lint fixes.
   `pnpm test` is `vp test --project unit --project storybook`: the unit tests and
   every story with its `play` in headless Chromium. One unit only:
   `pnpm exec vp test --project unit <path>` or
