@@ -44,7 +44,7 @@
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
-| 1-domain-rest | merged f39f257, guard running | project, undo, index, tests |
+| 1-domain-rest | guarded `.claude/artifacts/guard/1-domain-rest.md` | project, undo, index, tests |
 | 1-api-contract | running worker-bee 2026-10-16T18:23:39+03:00 | ApiClient |
 | fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
@@ -177,6 +177,11 @@
 - 1-domain-rest, P-уровень guard ещё не выставлен; вопрос 3 отчёта →
   `fix-1-domain-core`: `project` обнуляет `activeUnitId`, если активный юнит
   скрыт от игрока.
+
+- 1-domain-rest, P3 → `fix-1-domain-core`: документ игрока не несёт
+  `linkGeneration` (schemas.ts:166-169, project.ts:47); имя теста
+  undo.test.ts:254 «with its claim» не соответствует телу. P3 отложено:
+  `check-domain-tests.mjs` принимает `it('<name>')` с любым телом.
 
 ## Падения гейта
 
