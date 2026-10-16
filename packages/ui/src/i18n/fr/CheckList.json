@@ -1,0 +1,9 @@
+{
+  "create": "Créer « {{query}} »",
+  "noMatch": "Aucune étiquette ne correspond",
+  "orcs": "Orques",
+  "ferry": "Bac",
+  "goblins": "Gobelins",
+  "undead": "Morts-vivants",
+  "mooks": "Sbires"
+}

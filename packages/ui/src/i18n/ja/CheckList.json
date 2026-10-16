@@ -1,0 +1,9 @@
+{
+  "create": "「{{query}}」を作成",
+  "noMatch": "一致するタグはありません",
+  "orcs": "オーク",
+  "ferry": "渡し船",
+  "goblins": "ゴブリン",
+  "undead": "アンデッド",
+  "mooks": "雑魚"
+}

@@ -1,0 +1,9 @@
+{
+  "create": "Crear «{{query}}»",
+  "noMatch": "Ninguna etiqueta coincide",
+  "orcs": "Orcos",
+  "ferry": "Transbordador",
+  "goblins": "Trasgos",
+  "undead": "No muertos",
+  "mooks": "Esbirros"
+}

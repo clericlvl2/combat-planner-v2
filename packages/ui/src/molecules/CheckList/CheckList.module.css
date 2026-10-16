@@ -1,0 +1,118 @@
+.root {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  --check-list-row: 48px;
+  --check-list-text: var(--mantine-font-size-body);
+
+  &[data-size='S'] {
+    --check-list-row: 40px;
+    --check-list-text: var(--mantine-font-size-small);
+  }
+
+  &[data-size='L'] {
+    --check-list-row: 56px;
+    --check-list-text: var(--mantine-font-size-number);
+  }
+}
+
+.root[data-size] .row {
+  display: flex;
+  width: 100%;
+  min-height: var(--check-list-row);
+  padding: 0 8px;
+  border-radius: var(--mantine-radius-field);
+  font-size: var(--check-list-text);
+  font-weight: 500;
+
+  & > span:last-child {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &:has(input:checked) {
+    font-weight: 700;
+  }
+
+  &[data-active] {
+    background: var(--cp-color-highlight);
+  }
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+}
+
+.count {
+  flex: none;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  font-weight: 500;
+}
+
+.create {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: var(--check-list-row);
+  padding: 0 8px;
+  border: none;
+  border-radius: var(--mantine-radius-field);
+  background: transparent;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  font-size: var(--check-list-text);
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: left;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-active] {
+    background: var(--cp-color-highlight);
+  }
+
+  &:active,
+  &[data-pressed] {
+    background: var(--cp-color-soft);
+  }
+
+  &:disabled {
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: -2px;
+  }
+}
+
+.createIcon {
+  display: flex;
+  flex: none;
+  justify-content: center;
+  width: 22px;
+}
+
+.createLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.empty {
+  padding: 8px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-body);
+}

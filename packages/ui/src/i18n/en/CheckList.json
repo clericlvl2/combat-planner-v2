@@ -1,0 +1,9 @@
+{
+  "create": "Create “{{query}}”",
+  "noMatch": "No tags match",
+  "orcs": "Orcs",
+  "ferry": "Ferry",
+  "goblins": "Goblins",
+  "undead": "Undead",
+  "mooks": "Mooks"
+}
