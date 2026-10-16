@@ -29,10 +29,12 @@
 
 ## Текущий шаг
 
-Фаза −1 завершена. Пачка `0-toolchain` запущена 2026-10-16T17:03:37+03:00: бриф
-`.claude/artifacts/briefs/0-toolchain.md`, worktree
-`../combat-planner-v2.wt/0-toolchain`, Opus 5.5, high. Следующий шаг: hand-back,
-интеграция, тег `phase-0`.
+Фаза 0 закрыта тегом `phase-0`. Пачка `0.5-reference` запущена 2026-10-16T17:26:07+03:00: бриф
+`.claude/artifacts/briefs/0.5-reference.md`, worktree
+`../combat-planner-v2.wt/0.5-reference`, Opus 5.5, high. Гейт на этой машине
+идёт с `COMBAT_PLANNER_NO_DOCKER=1` (маркер `.docker-*` не проверяется), пока
+владелец не даст доступ к Docker. Следующий шаг: hand-back, интеграция, тег
+`phase-0.5`, затем фаза 1 (две пачки параллельно).
 
 ## Пачки
 
@@ -40,7 +42,7 @@
 |-------|--------|---------|
 | -1-renders | guarded — | renders, errata |
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
-| 0.5-reference | todo | theme, PhoneFrame, ThemeAudit, Button, check scripts |
+| 0.5-reference | running worker-bee 2026-10-16T17:26:07+03:00 | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
