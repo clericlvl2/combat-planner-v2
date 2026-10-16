@@ -11,11 +11,12 @@ export interface StepperProps extends Omit<
   ComponentPropsWithoutRef<'div'>,
   'children' | 'onChange'
 > {
-  value: number;
+  value: number | null;
   onChange: (value: number) => void;
   min: number;
   max: number;
   step?: number;
+  signed?: boolean;
   label?: string;
   size?: StepperSize;
   disabled?: boolean;
@@ -23,7 +24,10 @@ export interface StepperProps extends Omit<
 
 const MINUS = '−';
 
-function format(value: number, signed: boolean): string {
+const EMPTY = '—';
+
+function format(value: number | null, signed: boolean): string {
+  if (value === null) return EMPTY;
   if (value < 0) return `${MINUS}${Math.abs(value)}`;
   if (signed && value > 0) return `+${value}`;
   return String(value);
@@ -41,6 +45,7 @@ export function Stepper({
   min,
   max,
   step = 1,
+  signed = min < 0,
   label,
   size = 'M',
   disabled = false,
@@ -49,11 +54,11 @@ export function Stepper({
 }: StepperProps) {
   const { t } = useTranslation('Stepper');
   const inputId = useId();
-  const signed = min < 0;
   const [draft, setDraft] = useState<string | null>(null);
   const clamp = (next: number) => Math.min(max, Math.max(min, next));
-  const atMin = disabled || value <= min;
-  const atMax = disabled || value >= max;
+  const base = value ?? 0;
+  const atMin = disabled || (value !== null && value <= min);
+  const atMax = disabled || (value !== null && value >= max);
 
   const commit = (next: number) => {
     const clamped = clamp(next);
@@ -61,10 +66,9 @@ export function Stepper({
   };
 
   const handleText = (text: string) => {
-    if (!/^[-+−]?\d*$/.test(text)) return;
-    setDraft(text);
-    const typed = parse(text);
-    if (typed !== null && typed >= min && typed <= max && typed !== value) onChange(typed);
+    const typed = text.replace(EMPTY, '');
+    if (!/^[-+−]?\d*$/.test(typed)) return;
+    setDraft(typed);
   };
 
   const handleBlur = () => {
@@ -83,7 +87,7 @@ export function Stepper({
     if (event.key !== 'ArrowUp' && event.key !== 'ArrowDown') return;
     event.preventDefault();
     setDraft(null);
-    commit(value + (event.key === 'ArrowUp' ? step : -step));
+    commit(base + (event.key === 'ArrowUp' ? step : -step));
   };
 
   return (
@@ -105,7 +109,7 @@ export function Stepper({
         aria-label={t('decrease')}
         aria-controls={inputId}
         disabled={atMin}
-        onClick={() => commit(value - step)}
+        onClick={() => commit(base - step)}
       >
         <IconMinus size={20} stroke={2} aria-hidden="true" />
       </UnstyledButton>
@@ -119,7 +123,7 @@ export function Stepper({
         aria-label={label ? undefined : t('value')}
         aria-valuemin={min}
         aria-valuemax={max}
-        aria-valuenow={value}
+        aria-valuenow={value ?? undefined}
         value={draft ?? format(value, signed)}
         disabled={disabled}
         onChange={(event) => handleText(event.currentTarget.value)}
@@ -133,7 +137,7 @@ export function Stepper({
         aria-label={t('increase')}
         aria-controls={inputId}
         disabled={atMax}
-        onClick={() => commit(value + step)}
+        onClick={() => commit(base + step)}
       >
         <IconPlus size={20} stroke={2} aria-hidden="true" />
       </UnstyledButton>

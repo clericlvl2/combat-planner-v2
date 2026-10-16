@@ -208,6 +208,7 @@ export const ExtraClampAtBounds = meta.story({
     await expect(canvas.getByRole('button', { name: 'Decrease' })).toBeDisabled();
     await userEvent.clear(field);
     await userEvent.type(field, '250');
+    await expect(args.onChange).toHaveBeenCalledTimes(2);
     await userEvent.tab();
     await expect(args.onChange).toHaveBeenLastCalledWith(99);
     await expect(field).toHaveValue('99');
@@ -230,6 +231,37 @@ export const ExtraKeyboard = meta.story({
     await userEvent.type(field, '-7{Enter}');
     await expect(args.onChange).toHaveBeenLastCalledWith(-7);
     await expect(field).toHaveValue('−7');
+  },
+});
+
+export const ExtraUnsigned = meta.story({
+  name: 'Unsigned positive values',
+  args: { labelKey: 'initBonus', range: LIMITS.initiative, value: 15, signed: false },
+  play: async ({ args, canvas }) => {
+    const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
+    await expect(field).toHaveValue('15');
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await expect(args.onChange).toHaveBeenLastCalledWith(16);
+    await expect(field).toHaveValue('16');
+    await userEvent.clear(field);
+    await userEvent.type(field, '-3{Enter}');
+    await expect(args.onChange).toHaveBeenLastCalledWith(-3);
+    await expect(field).toHaveValue('−3');
+  },
+});
+
+export const ExtraEmpty = meta.story({
+  name: 'Empty value',
+  args: { labelKey: 'initBonus', range: LIMITS.initiative, value: null, signed: false },
+  play: async ({ args, canvas }) => {
+    const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
+    await expect(field).toHaveValue('—');
+    await expect(field).not.toHaveAttribute('aria-valuenow');
+    await expect(canvas.getByRole('button', { name: 'Decrease' })).toBeEnabled();
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await expect(args.onChange).toHaveBeenLastCalledWith(1);
+    await expect(field).toHaveValue('1');
+    await expect(field).toHaveAttribute('aria-valuenow', '1');
   },
 });
 
