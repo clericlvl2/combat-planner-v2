@@ -121,3 +121,4 @@ export type {
 export { healthSegments, healthStatus } from './healthStatus.ts';
 export type { HealthSegments } from './healthStatus.ts';
 export { skipsTurn, turnOrder } from './sort.ts';
+export { copyTitle, duplicateName, normalizeTag } from './names.ts';
