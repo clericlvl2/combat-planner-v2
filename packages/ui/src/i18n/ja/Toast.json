@@ -11,5 +11,6 @@
   "deleted": "{{title}} を削除しました",
   "combatChanged": "戦闘が変更されました。もう一度お試しください。",
   "reconnecting": "再接続中…",
-  "presetDuplicated": "{{name}} を作成しました"
+  "presetDuplicated": "{{name}} を作成しました",
+  "accountDeleted": "アカウントを削除しました"
 }

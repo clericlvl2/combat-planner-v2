@@ -4,4 +4,6 @@ export const queryKeys = {
   presets: ['presets'] as const,
   tags: ['tags'] as const,
   settings: ['settings'] as const,
+  session: ['session'] as const,
+  providers: ['providers'] as const,
 };

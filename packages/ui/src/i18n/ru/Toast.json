@@ -11,5 +11,6 @@
   "deleted": "{{title}} удалён",
   "combatChanged": "Бой изменился. Попробуйте ещё раз.",
   "reconnecting": "Переподключение…",
-  "presetDuplicated": "{{name}} создан"
+  "presetDuplicated": "{{name}} создан",
+  "accountDeleted": "Ваш аккаунт удалён"
 }

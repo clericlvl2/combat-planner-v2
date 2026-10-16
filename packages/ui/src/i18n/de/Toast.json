@@ -11,5 +11,6 @@
   "deleted": "{{title}} gelöscht",
   "combatChanged": "Der Kampf wurde geändert. Versuche es erneut.",
   "reconnecting": "Verbindung wird wiederhergestellt…",
-  "presetDuplicated": "{{name}} erstellt"
+  "presetDuplicated": "{{name}} erstellt",
+  "accountDeleted": "Dein Konto wurde gelöscht"
 }

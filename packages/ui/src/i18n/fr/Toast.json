@@ -11,5 +11,6 @@
   "deleted": "{{title}} supprimé",
   "combatChanged": "Le combat a changé. Réessayez.",
   "reconnecting": "Reconnexion…",
-  "presetDuplicated": "{{name}} créé"
+  "presetDuplicated": "{{name}} créé",
+  "accountDeleted": "Votre compte a été supprimé"
 }
