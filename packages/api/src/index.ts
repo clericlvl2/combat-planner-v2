@@ -1,5 +1,12 @@
 export { createApiApp } from './app.ts';
 export type { AppType } from './app.ts';
+export { RECONNECTING_AFTER_MS, createHonoApiClient } from './hono-client.ts';
+export type {
+  EventSourceConstructor,
+  EventSourceLike,
+  HonoApiClientOptions,
+  MessageEventLike,
+} from './hono-client.ts';
 export {
   API_ERROR_CODES,
   CONNECTION_STATES,
