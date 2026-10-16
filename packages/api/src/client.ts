@@ -1,0 +1,248 @@
+import type {
+  Action,
+  Combat,
+  CombatId,
+  PlayerCombat,
+  PlayerId,
+  Preset,
+  PresetId,
+  Tag,
+  TagId,
+  Viewer,
+} from '@combat-planner/domain';
+import {
+  LIMITS,
+  colorSchema,
+  combatDescriptionSchema,
+  combatSchema,
+  combatStatusSchema,
+  combatTitleSchema,
+  displayNameSchema,
+  isoDateSchema,
+  playerCombatSchema,
+  presetSchema,
+  tagNameSchema,
+  ulidSchema,
+} from '@combat-planner/domain';
+import { z } from 'zod';
+
+export const LOCALES = ['en', 'de', 'es', 'fr', 'ja', 'ru'] as const;
+export const localeSchema = z.enum(LOCALES);
+export type Locale = z.infer<typeof localeSchema>;
+
+export const versionSchema = z.number().int().nonnegative();
+export const versionResultSchema = z.object({ version: versionSchema });
+export type VersionResult = z.infer<typeof versionResultSchema>;
+
+export const emailSchema = z.email();
+export const passwordSchema = z.string().min(8);
+
+export const sessionSchema = z.object({
+  userId: z.string().min(1),
+  email: emailSchema,
+  displayName: displayNameSchema,
+  language: localeSchema,
+});
+export type Session = z.infer<typeof sessionSchema>;
+
+export const signUpInputSchema = z.object({
+  email: emailSchema,
+  password: passwordSchema,
+  displayName: displayNameSchema,
+});
+export type SignUpInput = z.infer<typeof signUpInputSchema>;
+
+export const signInInputSchema = z.object({
+  email: emailSchema,
+  password: z.string().min(1),
+});
+export type SignInInput = z.infer<typeof signInInputSchema>;
+
+export const combatSummarySchema = z.object({
+  id: ulidSchema,
+  title: combatTitleSchema,
+  description: combatDescriptionSchema,
+  color: colorSchema,
+  status: combatStatusSchema,
+  unitCount: z.number().int().min(0).max(LIMITS.unitsPerCombat),
+  lastPlayedAt: isoDateSchema.nullable(),
+  updatedAt: isoDateSchema,
+});
+export type CombatSummary = z.infer<typeof combatSummarySchema>;
+
+export const combatCreateInputSchema = z.object({
+  id: ulidSchema,
+  title: combatTitleSchema,
+  description: combatDescriptionSchema,
+  color: colorSchema,
+});
+export type CombatCreateInput = z.infer<typeof combatCreateInputSchema>;
+
+export const combatPatchSchema = combatCreateInputSchema.omit({ id: true }).partial();
+export type CombatPatch = z.infer<typeof combatPatchSchema>;
+
+export const linkTokenSchema = z.string().min(1);
+export type LinkToken = z.infer<typeof linkTokenSchema>;
+
+export const linkReissueResultSchema = z.object({
+  token: linkTokenSchema,
+  version: versionSchema,
+});
+export type LinkReissueResult = z.infer<typeof linkReissueResultSchema>;
+
+export const playerIdentitySchema = z.object({
+  playerId: ulidSchema,
+  displayName: displayNameSchema,
+});
+export type PlayerIdentity = z.infer<typeof playerIdentitySchema>;
+
+export const playViewSchema = z.object({
+  combatId: ulidSchema,
+  playerId: ulidSchema,
+  language: localeSchema,
+  combat: playerCombatSchema,
+});
+export type PlayView = z.infer<typeof playViewSchema>;
+
+export const presetCreateInputSchema = presetSchema.omit({ createdAt: true, updatedAt: true });
+export type PresetCreateInput = z.infer<typeof presetCreateInputSchema>;
+
+export const presetPatchSchema = presetCreateInputSchema.omit({ id: true }).partial();
+export type PresetPatch = z.infer<typeof presetPatchSchema>;
+
+export const tagCreateInputSchema = z.object({
+  id: ulidSchema,
+  name: tagNameSchema,
+});
+export type TagCreateInput = z.infer<typeof tagCreateInputSchema>;
+
+export const settingsSchema = z.object({ language: localeSchema });
+export type Settings = z.infer<typeof settingsSchema>;
+
+export const accountPatchSchema = z.object({ displayName: displayNameSchema });
+export type AccountPatch = z.infer<typeof accountPatchSchema>;
+
+export const CONNECTION_STATES = ['connected', 'reconnecting', 'offline'] as const;
+export type ConnectionState = (typeof CONNECTION_STATES)[number];
+
+export const API_ERROR_CODES = [
+  'version',
+  'forbidden',
+  'notFound',
+  'invalid',
+  'unauthorized',
+  'network',
+] as const;
+export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
+
+export interface ApiErrorInit {
+  status: number;
+  code: ApiErrorCode;
+  message?: string;
+  retryable?: boolean;
+}
+
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code: ApiErrorCode;
+  readonly retryable: boolean;
+
+  constructor({ status, code, message = code, retryable = code === 'network' }: ApiErrorInit) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.code = code;
+    this.retryable = retryable;
+  }
+}
+
+export const apiEventSchema = z.discriminatedUnion('type', [
+  z.object({
+    type: z.literal('document'),
+    version: versionSchema,
+    document: z.union([combatSchema, playerCombatSchema]),
+  }),
+  z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
+  z.object({ type: z.literal('linkRevoked') }),
+]);
+export type ApiEvent = z.infer<typeof apiEventSchema>;
+export type ApiEndEvent = Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' }>;
+
+export type Unsubscribe = () => void;
+export type DocumentListener<Document extends Combat | PlayerCombat> = (document: Document) => void;
+export type EndListener = (event: ApiEndEvent) => void;
+
+export interface AuthApi {
+  signUp(input: SignUpInput): Promise<Session>;
+  signIn(input: SignInInput): Promise<Session>;
+  signOut(): Promise<void>;
+  session(): Promise<Session | null>;
+}
+
+export interface CombatsApi {
+  list(): Promise<CombatSummary[]>;
+  create(input: CombatCreateInput): Promise<Combat>;
+  update(id: CombatId, patch: CombatPatch): Promise<VersionResult>;
+  remove(id: CombatId): Promise<void>;
+  duplicate(id: CombatId, newId: CombatId): Promise<Combat>;
+  open(id: CombatId): Promise<Combat>;
+  get(id: CombatId): Promise<Combat>;
+  dispatch(id: CombatId, action: Action): Promise<VersionResult>;
+  subscribe(
+    id: CombatId,
+    viewer: Viewer,
+    onDocument: DocumentListener<Combat | PlayerCombat>,
+    onEnd: EndListener,
+  ): Unsubscribe;
+}
+
+export interface LinkApi {
+  reissue(id: CombatId): Promise<LinkReissueResult>;
+}
+
+export interface PlayApi {
+  get(token: LinkToken, playerId: PlayerId): Promise<PlayView>;
+  dispatch(token: LinkToken, playerId: PlayerId, action: Action): Promise<VersionResult>;
+  subscribe(
+    token: LinkToken,
+    playerId: PlayerId,
+    onDocument: DocumentListener<PlayerCombat>,
+    onEnd: EndListener,
+  ): Unsubscribe;
+}
+
+export interface PresetsApi {
+  list(): Promise<Preset[]>;
+  create(input: PresetCreateInput): Promise<Preset>;
+  update(id: PresetId, patch: PresetPatch): Promise<Preset>;
+  remove(id: PresetId): Promise<void>;
+  duplicate(id: PresetId, newId: PresetId): Promise<Preset>;
+}
+
+export interface TagsApi {
+  list(): Promise<Tag[]>;
+  create(input: TagCreateInput): Promise<Tag>;
+  rename(id: TagId, name: Tag['name']): Promise<Tag>;
+  remove(id: TagId): Promise<void>;
+}
+
+export interface SettingsApi {
+  get(): Promise<Settings>;
+  update(patch: Settings): Promise<Settings>;
+}
+
+export interface AccountApi {
+  update(patch: AccountPatch): Promise<Session>;
+  remove(): Promise<void>;
+}
+
+export interface ApiClient {
+  auth: AuthApi;
+  combats: CombatsApi;
+  link: LinkApi;
+  play: PlayApi;
+  presets: PresetsApi;
+  tags: TagsApi;
+  settings: SettingsApi;
+  account: AccountApi;
+}
