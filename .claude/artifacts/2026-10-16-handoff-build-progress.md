@@ -68,7 +68,7 @@
 | 2.3-organisms-e | running worker-bee 2026-10-17T05:00+03:00 | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
-| 2.3-organisms-h | rebased, report `.claude/artifacts/reports/2.3-organisms-h.md`, gate running | SortSheet, ShareSheet |
+| 2.3-organisms-h | merged 93f653d, gate ok `.claude/run/2.3-organisms-h/summary.log` (test and visual passed on retry, import flake), guard running | SortSheet, ShareSheet |
 | 2.3-organisms-i | running worker-bee 2026-10-17T04:35+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b on master) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
@@ -573,6 +573,11 @@
   --frozen-lockfile` в основном checkout для guard-bee.
 
 ## Падения гейта
+
+- 2.3-organisms-h: `pnpm test` (импорт stories) и `visual` («Failed to fetch
+  dynamically imported module» visual.test.tsx — Vite оптимизировал
+  `react-qr-code` посреди прогона) упали на импорте; оба повтора прошли (1184
+  и 777 тестов). `gate.sh` теперь повторяет и `visual` один раз.
 
 - 2.3-organisms-c, `pnpm test`: CardActions.stories.tsx не импортировался
   («Failed to fetch dynamically imported module» setup-file addon-vitest —
