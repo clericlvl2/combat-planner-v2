@@ -10,6 +10,7 @@ import {
   presetFromUnit,
   presetSchema,
   rolledInitiative,
+  unitSchema,
 } from '../src/index.ts';
 import type { Action, Applied, ApplyResult, Combat, Unit, Viewer } from '../src/index.ts';
 import { DM, LATER, NOW, PLAYER_ID, id, makeCombat, makeUnit } from './fixtures.ts';
@@ -764,6 +765,17 @@ describe('Rules', () => {
     expect(u(stays, 1)).toMatchObject({ maxHp: 6, hp: 3 });
     const minimum = go(combat, { type: 'setMaxHp', unitId: id(1), amount: 1 });
     expect(u(minimum, 1)).toMatchObject({ maxHp: 1, hp: 1 });
+  });
+
+  it('Set Max raises a current HP below the new negative floor to −max', () => {
+    const combat = one({ hp: -8, maxHp: 10 });
+    const floored = go(combat, { type: 'setMaxHp', unitId: id(1), amount: 4 });
+    expect(u(floored, 1)).toMatchObject({ maxHp: 4, hp: -4 });
+    expect(hist(floored)[0]).toMatchObject({ kind: 'max', amount: 4, previous: 10, result: -4 });
+    expect(unitSchema.safeParse(u(floored, 1)).success).toBe(true);
+    const edited = go(combat, { type: 'editUnit', unitId: id(1), ...form, maxHp: 4 });
+    expect(u(edited, 1)).toMatchObject({ maxHp: 4, hp: -4 });
+    expect(unitSchema.safeParse(u(edited, 1)).success).toBe(true);
   });
 
   it('Set Temp заменяет temp HP. Heal не поднимает HP выше Max. Set Max обрезает HP.', () => {

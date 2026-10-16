@@ -164,7 +164,7 @@ const setTempHpOf = (unit: Unit, amount: number, context: HistoryContext): Unit 
   withEntry({ ...unit, tempHp: amount }, 'temp', amount, 0, unit.tempHp, context);
 
 const setMaxHpOf = (unit: Unit, amount: number, context: HistoryContext): Unit => {
-  const hp = Math.min(unit.hp, amount);
+  const hp = Math.max(Math.min(unit.hp, amount), -amount);
   return withEntry({ ...unit, maxHp: amount, hp }, 'max', amount, 0, unit.maxHp, context);
 };
 
