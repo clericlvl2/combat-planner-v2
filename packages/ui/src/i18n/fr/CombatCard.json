@@ -1,0 +1,20 @@
+{
+  "active": "Actif",
+  "setup": "Préparation",
+  "round": "Tour {{round}}",
+  "units_one": "{{count}} unité",
+  "units_few": "{{count}} unités",
+  "units_many": "{{count}} unités",
+  "units_other": "{{count}} unités",
+  "today": "Aujourd’hui",
+  "yesterday": "Hier",
+  "daysAgo_one": "il y a {{count}} jour",
+  "daysAgo_few": "il y a {{count}} jours",
+  "daysAgo_many": "il y a {{count}} jours",
+  "daysAgo_other": "il y a {{count}} jours",
+  "neverPlayed": "Jamais joué",
+  "details": "Détails de {{title}}",
+  "menuLabel": "Actions pour {{title}}",
+  "duplicate": "Dupliquer",
+  "delete": "Supprimer"
+}

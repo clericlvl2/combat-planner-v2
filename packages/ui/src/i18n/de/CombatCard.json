@@ -1,0 +1,20 @@
+{
+  "active": "Aktiv",
+  "setup": "Vorbereitung",
+  "round": "Runde {{round}}",
+  "units_one": "{{count}} Einheit",
+  "units_few": "{{count}} Einheiten",
+  "units_many": "{{count}} Einheiten",
+  "units_other": "{{count}} Einheiten",
+  "today": "Heute",
+  "yesterday": "Gestern",
+  "daysAgo_one": "vor {{count}} Tag",
+  "daysAgo_few": "vor {{count}} Tagen",
+  "daysAgo_many": "vor {{count}} Tagen",
+  "daysAgo_other": "vor {{count}} Tagen",
+  "neverPlayed": "Nie gespielt",
+  "details": "Details zu {{title}}",
+  "menuLabel": "Aktionen für {{title}}",
+  "duplicate": "Duplizieren",
+  "delete": "Löschen"
+}

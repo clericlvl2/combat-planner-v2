@@ -1,0 +1,20 @@
+{
+  "active": "Идёт",
+  "setup": "Подготовка",
+  "round": "Раунд {{round}}",
+  "units_one": "{{count}} юнит",
+  "units_few": "{{count}} юнита",
+  "units_many": "{{count}} юнитов",
+  "units_other": "{{count}} юнита",
+  "today": "Сегодня",
+  "yesterday": "Вчера",
+  "daysAgo_one": "{{count}} день назад",
+  "daysAgo_few": "{{count}} дня назад",
+  "daysAgo_many": "{{count}} дней назад",
+  "daysAgo_other": "{{count}} дня назад",
+  "neverPlayed": "Ещё не играли",
+  "details": "Подробнее о «{{title}}»",
+  "menuLabel": "Действия с «{{title}}»",
+  "duplicate": "Дублировать",
+  "delete": "Удалить"
+}

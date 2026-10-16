@@ -1,0 +1,20 @@
+{
+  "active": "進行中",
+  "setup": "準備中",
+  "round": "ラウンド {{round}}",
+  "units_one": "{{count}}ユニット",
+  "units_few": "{{count}}ユニット",
+  "units_many": "{{count}}ユニット",
+  "units_other": "{{count}}ユニット",
+  "today": "今日",
+  "yesterday": "昨日",
+  "daysAgo_one": "{{count}}日前",
+  "daysAgo_few": "{{count}}日前",
+  "daysAgo_many": "{{count}}日前",
+  "daysAgo_other": "{{count}}日前",
+  "neverPlayed": "未プレイ",
+  "details": "{{title}}の詳細",
+  "menuLabel": "{{title}}の操作",
+  "duplicate": "複製",
+  "delete": "削除"
+}

@@ -1,0 +1,20 @@
+{
+  "active": "Active",
+  "setup": "Setup",
+  "round": "Round {{round}}",
+  "units_one": "{{count}} unit",
+  "units_few": "{{count}} units",
+  "units_many": "{{count}} units",
+  "units_other": "{{count}} units",
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "daysAgo_one": "{{count}} day ago",
+  "daysAgo_few": "{{count}} days ago",
+  "daysAgo_many": "{{count}} days ago",
+  "daysAgo_other": "{{count}} days ago",
+  "neverPlayed": "Never played",
+  "details": "Details for {{title}}",
+  "menuLabel": "Actions for {{title}}",
+  "duplicate": "Duplicate",
+  "delete": "Delete"
+}

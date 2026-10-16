@@ -1,0 +1,20 @@
+{
+  "active": "Activo",
+  "setup": "Preparación",
+  "round": "Ronda {{round}}",
+  "units_one": "{{count}} unidad",
+  "units_few": "{{count}} unidades",
+  "units_many": "{{count}} unidades",
+  "units_other": "{{count}} unidades",
+  "today": "Hoy",
+  "yesterday": "Ayer",
+  "daysAgo_one": "hace {{count}} día",
+  "daysAgo_few": "hace {{count}} días",
+  "daysAgo_many": "hace {{count}} días",
+  "daysAgo_other": "hace {{count}} días",
+  "neverPlayed": "Nunca jugado",
+  "details": "Detalles de {{title}}",
+  "menuLabel": "Acciones de {{title}}",
+  "duplicate": "Duplicar",
+  "delete": "Eliminar"
+}
