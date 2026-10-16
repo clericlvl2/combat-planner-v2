@@ -45,8 +45,8 @@
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | guarded `.claude/artifacts/guard/1-domain-rest.md` | project, undo, index, tests |
-| 1-api-contract | running worker-bee 2026-10-16T18:23:39+03:00 | ApiClient |
-| fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
+| 1-api-contract | rebased, report `.claude/artifacts/reports/1-api-contract.md`, gate running | ApiClient |
+| fix-1-domain-core | running worker-bee 2026-10-16T18:28:18+03:00 | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | merged 50993bf, guard running | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | running worker-bee 2026-10-16T18:23:39+03:00 | Swatch, Chip, StatSquare |
@@ -89,6 +89,11 @@
 
 ## Вопросы владельцу
 
+- 1-api-contract, решения оркестратора 2026-10-16 по 7 вопросам отчёта: все
+  приняты: `play.*` несут `playerId` рядом с токеном; `play.dispatch` есть;
+  `Locale` определён в `packages/api` (`LOCALES`, `localeSchema`), фаза 2.4
+  переводит `ui` на него; `retryable` = `code === 'network'`; счётчики тегов
+  считает клиент.
 - 2.1-atoms-b, решения оркестратора 2026-10-16: NumberField без `size`
   (страница без Sizes); знак только при `min < 0`; `LIMITS` подключает
   `fix-2.1`; клампинг на blur для положительных ниже `min` принят; Checkbox и
