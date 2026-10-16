@@ -70,7 +70,7 @@ export const hpHistoryEntrySchema = z.object({
   kind: hpHistoryKindSchema,
   amount: amountSchema,
   absorbed: amountSchema,
-  previous: z.number().int().nullable(),
+  previous: z.number().int(),
   result: hpSchema,
   round: roundSchema.nullable(),
   at: isoDateSchema,
