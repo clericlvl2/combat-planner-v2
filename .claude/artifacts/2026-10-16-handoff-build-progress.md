@@ -22,7 +22,7 @@
 | 2.2 | молекулы | 2.2-molecules-a…e, fix-2.2 | |
 | 2.3 | организмы | 2.3-organisms-a…i, 2.3-UnitRow, 2.3-UnitForm, 2.3-NumpadSheet, fix-2.3 | |
 | 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4 | |
-| 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest | |
+| 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
 | 4 | web | 4-web | |
 | 5 | e2e | 5-e2e | |
 | 6 | docker | 6-docker | |
@@ -85,7 +85,7 @@
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
-| fix-3 | merged b6f2a91, gate ok `.claude/run/fix-3/summary.log`, guard running | live, auth |
+| fix-3 | guarded `.claude/artifacts/guard/fix-3.md` | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
@@ -380,6 +380,11 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-3, P3 отложено: тест «`project()` throws» строит фикстуру из удалённого
+  боя (events.test.ts:227); ветка суррогатов `clampDisplayName` без теста.
+  Фаза 3 закрыта тегом `phase-3` на b6f2a91 (гейт `fix-3` прошёл ровно на этом
+  дереве и служит фазовым гейтом).
 
 - 2.3-organisms-c → `fix-2.3`: пункт меню игрока — иконка страницы
   `IconSwitchHorizontal` с подписью «Heroes» (решение оркестратора: иконка по
