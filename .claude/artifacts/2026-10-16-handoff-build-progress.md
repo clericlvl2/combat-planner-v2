@@ -75,7 +75,7 @@
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
 | fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
-| 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
+| 2.4-api-hooks | reported `.claude/artifacts/reports/2.4-api-hooks.md`, gate running | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
 | 2.4-CombatList | todo | CombatList |
 | 2.4-PlayerView | todo | Heroes, TurnOrder |
@@ -93,6 +93,23 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-api-hooks, решения оркестратора 2026-10-17: подпуть
+  `@combat-planner/api/client` (корневой `index.ts` тянет сервер с
+  `node:crypto`) и правка заглушки в `client.test.ts` — приняты; бриф `4-web`
+  добавляет браузерный экспорт `./hono-client`; `useCombat` с перегрузками
+  (DM без токена, игрок с `playerId` и токеном), результат `{ combat,
+  language, status, error, ended, dispatch }` — принято; `Scenario.players`,
+  `Scenario.accounts`, `emptyScenario` с входом `dm@example.com` — приняты;
+  стек тостов в сторе по `QueryClient`, Toast на экране с `duration` и
+  `onHide` — принято; мутации показывают тост и отклоняются с `ApiError`,
+  `useCombat.dispatch` не отклоняется — принято. → `fix-2.4`:
+  `useConnection` не ждёт ещё 10 с — реальный клиент уже сообщает
+  `reconnecting` через 10 с (`RECONNECTING_AFTER_MS`), тост показывается сразу
+  на `reconnecting` (итог 10 с по vision), `FakeApiClient.setConnection`
+  моделирует состояние клиента; текст `Toast.presetSaved` по vision —
+  «<name> added to Library»; экспорт хуков, `ApiProvider`, `FakeApiClient`,
+  `scenarios` из `packages/ui/src/index.ts`.
 
 - 2.3-NumpadSheet, решения оркестратора 2026-10-17: After считается через
   `apply` домена на синтетическом бою из одного юнита — принято до `fix-2.4`
