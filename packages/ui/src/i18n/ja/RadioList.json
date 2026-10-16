@@ -1,0 +1,10 @@
+{
+  "sortCombats": "戦闘の並べ替え",
+  "language": "言語",
+  "newestFirst": "新しい順",
+  "newestFirstSub": "作成日順",
+  "lastPlayed": "最近プレイ",
+  "lastPlayedSub": "最後のセッション順",
+  "alphabetical": "あいうえお順",
+  "alphabeticalSub": "タイトル順"
+}
