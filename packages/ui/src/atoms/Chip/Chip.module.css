@@ -80,12 +80,15 @@
     background: var(--cp-color-soft);
   }
 
-  &:is(button):active:not(:disabled),
-  &[data-pressed] {
-    background: var(--cp-color-soft);
+  &[data-variant='tag'],
+  &[data-variant='add'] {
+    &:is(button):active:not(:disabled),
+    &[data-pressed]:not(:disabled, [data-disabled]) {
+      background: var(--cp-color-soft);
 
-    &[data-variant='tag'][data-selected] {
-      background: var(--cp-color-ink-pressed);
+      &[data-selected] {
+        background: var(--cp-color-ink-pressed);
+      }
     }
   }
 

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Chip.json';
-import { conditionNames, conditions } from '../../theme.ts';
+import { base, conditionNames, conditions } from '../../theme.ts';
 import { Chip } from './Chip.tsx';
 import type { ChipProps } from './Chip.tsx';
 
@@ -314,6 +314,41 @@ export const ExtraKeyboard = meta.story({
     await expect(args.onClick).toHaveBeenCalledTimes(1);
     await userEvent.keyboard('[Space]');
     await expect(args.onClick).toHaveBeenCalledTimes(2);
+  },
+});
+
+export const ExtraToggleKeyboard = meta.story({
+  name: 'Keyboard: Enter and Space toggle a tag',
+  args: tag(),
+  play: async ({ args, canvas }) => {
+    const chip = canvas.getByRole('button', { name: 'Goblins' });
+    await userEvent.tab();
+    await expect(chip).toHaveFocus();
+    await expect(chip).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.keyboard('{Enter}');
+    await expect(chip).toHaveAttribute('aria-pressed', 'true');
+    await userEvent.keyboard('[Space]');
+    await expect(chip).toHaveAttribute('aria-pressed', 'false');
+    await expect(args.onClick).toHaveBeenCalledTimes(2);
+  },
+});
+
+export const ExtraPressedFills = meta.story({
+  name: 'Pressed keeps condition, status and meta fills',
+  render: () => (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <ChipCell {...staggered} data-pressed="" />
+      <ChipCell {...statusActive} data-pressed="" />
+      <ChipCell {...metaChip} data-pressed="" />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const fills = ['staggered', 'Active', 'Named NPCs'].map(
+      (text) =>
+        getComputedStyle(canvas.getByText(text).closest('[data-variant]') as Element)
+          .backgroundColor,
+    );
+    await expect(fills).toEqual([rgb(conditions.staggered.fill), rgb(base.accent), rgb(base.soft)]);
   },
 });
 
