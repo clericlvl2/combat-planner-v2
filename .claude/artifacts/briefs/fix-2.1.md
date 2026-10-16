@@ -102,4 +102,10 @@ and ThemeAudit, `packages/ui/src/i18n/allow-same.txt`,
 
 ## Appendix: 2.1-atoms-d findings
 
-(filled by the orchestrator after the `2.1-atoms-d` guard)
+- `fix(ui): RoleBlock`: `ActiveTurn` asserts the visible text `15` and `Hero`;
+  `DMEditable`, `Tap`, `Preset320HP`, `Preset999HP` assert the block fill
+  `roles.enemy`; `Tap` compares the ring to `interaction.tapMarker`; the prop
+  `role: UnitRole` is renamed `unitRole` so the ARIA `role` attribute passes
+  through (stories and the `data-role` attribute follow); baselines unchanged
+  unless pixels change.
+- `EscalationDie`: nothing to fix.

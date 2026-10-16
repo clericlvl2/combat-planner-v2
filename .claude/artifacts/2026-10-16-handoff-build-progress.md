@@ -52,8 +52,8 @@
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
-| 2.1-atoms-d | merged c17d5ff, guard running | EscalationDie, RoleBlock |
-| fix-2.1 | todo | |
+| 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
+| fix-2.1 | running worker-bee 2026-10-16T18:52:07+03:00 | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
@@ -232,6 +232,11 @@
   гейт запускает `vp test --project visual` (baselines локального Chromium).
   P3 → `fix-2.1`: Enter/Space на toggle-теге Chip не проверены;
   `&[data-pressed]` перекрывает заливки condition/status/meta.
+
+- 2.1-atoms-d → `fix-2.1`: P2 play RoleBlock `ActiveTurn` без проверки текста,
+  `DMEditable`/`Tap`/`Preset320HP`/`Preset999HP` без проверки заливки; P3 `Tap`
+  сравнивает с `base.accent` вместо `interaction.tapMarker`; P3 проп `role`
+  затеняет ARIA `role` → `unitRole`.
 
 ## Падения гейта
 
