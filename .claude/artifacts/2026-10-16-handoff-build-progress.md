@@ -68,7 +68,7 @@
 | 2.3-organisms-e | running worker-bee 2026-10-17T05:00+03:00 | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
-| 2.3-organisms-h | merged 93f653d, gate ok `.claude/run/2.3-organisms-h/summary.log` (test and visual passed on retry, import flake), guard running | SortSheet, ShareSheet |
+| 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | running worker-bee 2026-10-17T04:35+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b on master) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
@@ -398,6 +398,15 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-organisms-h: P3 → `fix-2.3`: `onCopy` ShareSheet возвращает
+  `Promise<boolean> | void`, «Copied» только при успехе. P3 → бриф
+  `2.4-CombatScreen`: `onReissue` открывает Dialog «Revoke the link?», перевыпуск
+  только по подтверждению (тест). P3 владельцу: CLAUDE.md:59 требует трейлер
+  `Claude Fable 5.1`, а с 2026-10-17 агенты работают на Opus 5.5 и подписывают
+  коммиты `Claude Opus 5.5` (смешанные трейлеры в истории; `check-commit.sh`
+  трейлер не проверяет). Раздел Commits CLAUDE.md заморожен — правка за
+  владельцем.
 
 - fix-3, P3 отложено: тест «`project()` throws» строит фикстуру из удалённого
   боя (events.test.ts:227); ветка суррогатов `clampDisplayName` без теста.
