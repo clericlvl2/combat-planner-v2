@@ -54,6 +54,11 @@
     }
   }
 
+  &[data-open] {
+    border-color: var(--cp-color-ink);
+    background: var(--cp-color-accent);
+  }
+
   &:disabled,
   &[data-disabled] {
     color: var(--cp-color-muted);

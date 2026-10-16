@@ -174,6 +174,18 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
+export const ExtraOpen = meta.story({
+  name: 'Open: menu source ring',
+  args: { ...outlineX, size: 'M' },
+  render: (args) => <IconButtonCell {...args} data-open="" />,
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole('button', { name: 'Close' });
+    await expect(button).toHaveAttribute('data-open');
+    await expect(getComputedStyle(button).backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(getComputedStyle(button).borderTopColor).toBe('rgb(35, 31, 28)');
+  },
+});
+
 export const ExtraSizes = meta.story({
   name: 'Circle and icon sizes',
   args: plainMenu,
