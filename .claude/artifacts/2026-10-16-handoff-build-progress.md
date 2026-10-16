@@ -29,16 +29,17 @@
 
 ## Текущий шаг
 
-Фаза −1 завершена: 87 рендеров в `docs/design/renders/` (57 страниц, 30 флоу,
-1280 wide, DPR 1, 40 MB), `docs/design/handoff-errata.md`. Следующий шаг: новая
-сессия, бриф `0-toolchain`, worktree `../combat-planner-v2.wt/0-toolchain`.
+Фаза −1 завершена. Пачка `0-toolchain` запущена 2026-10-16T17:03:37+03:00: бриф
+`.claude/artifacts/briefs/0-toolchain.md`, worktree
+`../combat-planner-v2.wt/0-toolchain`, Opus 5.5, high. Следующий шаг: hand-back,
+интеграция, тег `phase-0`.
 
 ## Пачки
 
 | Пачка | Статус | Единицы |
 |-------|--------|---------|
 | -1-renders | guarded — | renders, errata |
-| 0-toolchain | todo | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
+| 0-toolchain | running worker-bee 2026-10-16T17:03:37+03:00 | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | todo | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
@@ -84,6 +85,12 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2026-10-16, оркестратор: `/var/run/docker.sock` принадлежит `root:docker`,
+  пользователь не в группе `docker`, sudo без пароля нет. `screenshots:update` и
+  `docker run` образа Playwright недоступны на этой машине; baselines фазы 0 и 0.5
+  снимаются локальным браузером без маркера `.docker-<tag>`. Нужно
+  `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
 
