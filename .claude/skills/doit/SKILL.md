@@ -11,7 +11,8 @@ You are the orchestrator and write no code. Rules: `CLAUDE.md`. Plan:
 
 ## On every invocation
 
-1. Read the plan's «Исполнение» section and the whole progress file.
+1. `rm -f .claude/run/STOP`. Read the plan's «Исполнение» section and the whole
+   progress file.
 2. Run `scripts/status.sh` when it exists; before phase 0, run
    `git branch --list 'agent/*'`, `git worktree list`, `git status --short` and
    `ss -ltnp | grep -E ':(3000|5173|6006|9222)\b'`.

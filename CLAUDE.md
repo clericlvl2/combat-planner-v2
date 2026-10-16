@@ -98,8 +98,8 @@ Scripts in `scripts/`, each exits non-zero with the offending path:
   worktree dirty, `REPORT.md` present, newest file mtime, gate log present;
   listeners on the agent ports; labelled Docker containers.
 - `kill-leftovers.sh`: stops listeners on the agent ports and the labelled
-  containers. Wired to the `SubagentStop` and `Stop` hooks in
-  `.claude/settings.json`.
+  containers. Wired to the `SubagentStop` hook in `.claude/settings.json`.
+- `keep-going.sh`: the `Stop` hook, see Session.
 
 ## Integration, orchestrator only
 
@@ -139,8 +139,15 @@ Scripts in `scripts/`, each exits non-zero with the offending path:
   by that label; the orchestrator runs it before every dispatch and before every
   integration and stops what it finds.
 - `scripts/kill-leftovers.sh` stops listeners on the agent ports and the labelled
-  containers; `.claude/settings.json` runs it on the `SubagentStop` and `Stop`
-  hooks.
+  containers; `.claude/settings.json` runs it on the `SubagentStop` hook.
+
+## Session
+
+- `scripts/keep-going.sh` runs on the `Stop` hook: while the progress file has a
+  batch not in `guarded`, the orchestrator is told to run `/doit` instead of
+  ending the turn. It gives up after 50 stops without a new commit on `master`.
+- `.claude/run/STOP` (gitignored) switches the hook off. The owner creates it to
+  pause the run; `/doit` removes it at start.
 
 ## REPORT.md
 

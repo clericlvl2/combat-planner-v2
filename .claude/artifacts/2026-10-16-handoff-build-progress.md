@@ -37,7 +37,7 @@
 
 | Пачка | Статус | Единицы |
 |-------|--------|---------|
-| -1-renders | merged | renders, errata |
+| -1-renders | guarded — | renders, errata |
 | 0-toolchain | todo | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | todo | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | todo | types, schemas, actions, health, sort, names, reduce, authorize |
