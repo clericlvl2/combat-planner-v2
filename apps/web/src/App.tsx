@@ -1,4 +1,3 @@
-import { Hello } from '@combat-planner/ui';
 import { Text } from '@mantine/core';
 import { useEffect, useState } from 'react';
 import { fetchHealth } from './health.ts';
@@ -15,7 +14,6 @@ export function App() {
 
   return (
     <>
-      <Hello name="Combat Planner" />
       <Text>API: {status}</Text>
     </>
   );
