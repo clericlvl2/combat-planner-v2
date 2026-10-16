@@ -62,7 +62,7 @@
 | 2.3-organisms-a | rebased, report `.claude/artifacts/reports/2.3-organisms-a.md`, gate running | Sheet, Dialog |
 | 2.3-organisms-b | running worker-bee 2026-10-17T01:05+03:00 | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
-| 2.3-organisms-d | todo | BottomBar, TurnBar |
+| 2.3-organisms-d | running worker-bee 2026-10-17T01:25+03:00 (ahead of c: c needs Menu from b) | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
 | 2.3-organisms-g | todo | ConditionPicker, TagSheet |
