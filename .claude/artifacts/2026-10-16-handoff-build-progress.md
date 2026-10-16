@@ -77,7 +77,7 @@
 | fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
-| 2.4-CombatList | todo, brief ready, next builder slot (after fix-2.3 merge) | CombatList |
+| 2.4-CombatList | running worker-bee 2026-10-17T10:10+03:00 (parallel with fix-2.3; baselines re-run after fix-2.3 merges) | CombatList |
 | 2.4-PlayerView | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | SignIn, SignUp, Settings, Account, About |
