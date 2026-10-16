@@ -65,7 +65,7 @@
 | fix-2.3-organisms-b | guarded `.claude/artifacts/guard/fix-2.3-organisms-b.md` (P1 ×2 closed) | Menu, Drawer |
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
-| 2.3-organisms-e | merged d5356ed..b71d879 (gate `.claude/run/2.3-organisms-e/`, visual flake passed on retry), guard-bee running | CombatHeader, CombatCard |
+| 2.3-organisms-e | guarded `.claude/artifacts/guard/2.3-organisms-e.md` (no P0–P1; P2 ×2, P3 ×5 → `fix-2.3`, Add unit → owner) | CombatHeader, CombatCard |
 | 2.3-organisms-f | merged cdcd1ed..d0d0419 (gate `.claude/run/2.3-organisms-f/` green), guard-bee running | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
@@ -75,7 +75,7 @@
 | 2.3-UnitForm | running worker-bee 2026-10-17T06:40+03:00 | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
 | fix-2.3 | todo | |
-| 2.4-api-hooks | todo | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
+| 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
 | 2.4-CombatList | todo | CombatList |
 | 2.4-PlayerView | todo | Heroes, TurnOrder |
@@ -457,6 +457,18 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-organisms-e → `fix-2.3`: P2 CombatHeader.tsx:139/155 — Enter в поле
+  раунда (Stepper `blur()`) уводит фокус в `<body>`, поповер не закрывается,
+  Escape не работает, фокус не возвращается на кнопку раунда (то же при − / +
+  на границе); история с Enter. P3: Escape в поповере раунда коммитит
+  набранное значение через blur (CombatHeader.tsx:142-143) — Escape не
+  меняет раунд, как у кубика; `escalationValues` из `LIMITS.escalation`, не
+  литерал `[0..6]`, `pipSlots` не копирует EscalationDie (CombatHeader.tsx:62-72);
+  кольцо open через `data-tap` атома, не `[data-tile]`
+  (CombatHeader.module.css:117-122); доступное имя кубика со значением
+  (CombatHeader.tsx:359). P2 владельцу: пункт Add unit в меню боя (страница и
+  рендер есть, vision.md:179, :201 нет) — уже в правках vision между фазами.
 
 - fix-2.3-organisms-b, P3 → `fix-2.3`: Menu фокусирует первый пункт и при
   повторном открытии во время выходного перехода (`opened` false → true);
