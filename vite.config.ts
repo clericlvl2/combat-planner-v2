@@ -36,7 +36,11 @@ export default defineConfig({
         test: {
           name: 'unit',
           root: rootDir,
-          include: ['packages/*/src/**/*.test.ts', 'apps/*/src/**/*.test.ts'],
+          include: [
+            'packages/*/src/**/*.test.ts',
+            'packages/*/test/**/*.test.ts',
+            'apps/*/src/**/*.test.ts',
+          ],
           environment: 'node',
         },
       },
