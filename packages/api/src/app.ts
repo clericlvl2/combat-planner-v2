@@ -9,6 +9,7 @@ import type { ApiEnv } from './env.ts';
 import { healthApp } from './health.ts';
 import { presetsApp } from './presets/routes.ts';
 import { tagsApp } from './tags/routes.ts';
+import { settingsApp } from './settings/routes.ts';
 import { linkApp } from './link/routes.ts';
 import { playApp } from './play/routes.ts';
 
@@ -33,6 +34,7 @@ export function createApiApp({ db, env, auth }: ApiAppDeps) {
     .route('/health', healthApp)
     .route('/presets', presetsApp)
     .route('/tags', tagsApp)
+    .route('/settings', settingsApp)
     .route('/combats', combatsApp)
     .route('/combats', actionsApp)
     .route('/combats', eventsApp)

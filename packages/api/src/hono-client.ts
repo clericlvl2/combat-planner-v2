@@ -42,7 +42,6 @@ import type {
   EndListener,
   LinkToken,
   Session,
-  Settings,
   SignInInput,
   SignUpInput,
   Unsubscribe,
@@ -91,10 +90,6 @@ const authSessionSchema = authResponseSchema.nullable();
 type AuthResponse = z.infer<typeof authResponseSchema>;
 
 type PlannedRoutes = {
-  '/settings': {
-    $get: JsonEndpoint<NoInput, Settings>;
-    $patch: JsonEndpoint<{ json: Settings }, Settings>;
-  };
   '/account': {
     $patch: JsonEndpoint<{ json: AccountPatch }, Session>;
     $delete: JsonEndpoint<NoInput, null>;

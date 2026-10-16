@@ -21,6 +21,7 @@ export { dmLanguage, recordPlayer } from './play/store.ts';
 export { signLink, verifyLink } from './link/token.ts';
 export { presetsApp } from './presets/routes.ts';
 export { tagsApp } from './tags/routes.ts';
+export { settingsApp } from './settings/routes.ts';
 export type { LinkClaims } from './link/token.ts';
 export { broadcast, broadcastDocument, subscribe, subscriberCount } from './live/registry.ts';
 export type { Audience, Subscriber } from './live/registry.ts';
