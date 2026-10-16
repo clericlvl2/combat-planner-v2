@@ -1,0 +1,29 @@
+.root {
+  box-sizing: border-box;
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.root .edit[data-size] {
+  flex: 1;
+  min-width: 0;
+  padding: 0 12px;
+
+  & > span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.root .more {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--mantine-radius-field);
+
+  &[data-open] {
+    border-color: var(--cp-color-ink);
+    background: var(--cp-color-accent);
+  }
+}
