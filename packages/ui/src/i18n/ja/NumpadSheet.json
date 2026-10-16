@@ -1,0 +1,21 @@
+{
+  "now": "現在",
+  "after": "変更後",
+  "amount": "数値",
+  "damage": "ダメージ",
+  "heal": "回復",
+  "setTemp": "一時HP",
+  "setMax": "最大HP",
+  "temp": "+{{amount}} 一時",
+  "full": "無傷",
+  "wounded": "負傷",
+  "bloodied": "重傷",
+  "dead": "死亡",
+  "hero": "ヒーロー",
+  "enemy": "敵",
+  "ally": "味方",
+  "keypad": "テンキー",
+  "clear": "すべて消去",
+  "delete": "1桁削除",
+  "close": "閉じる"
+}

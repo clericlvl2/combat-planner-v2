@@ -1,0 +1,21 @@
+{
+  "now": "Now",
+  "after": "After",
+  "amount": "Amount",
+  "damage": "Damage",
+  "heal": "Heal",
+  "setTemp": "Set Temp",
+  "setMax": "Set Max",
+  "temp": "+{{amount}} temp",
+  "full": "Full",
+  "wounded": "Wounded",
+  "bloodied": "Bloodied",
+  "dead": "Dead",
+  "hero": "Hero",
+  "enemy": "Enemy",
+  "ally": "Ally",
+  "keypad": "Keypad",
+  "clear": "Clear",
+  "delete": "Delete",
+  "close": "Close"
+}

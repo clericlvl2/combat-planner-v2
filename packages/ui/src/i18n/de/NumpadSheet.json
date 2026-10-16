@@ -1,0 +1,21 @@
+{
+  "now": "Jetzt",
+  "after": "Danach",
+  "amount": "Betrag",
+  "damage": "Schaden",
+  "heal": "Heilen",
+  "setTemp": "Temp setzen",
+  "setMax": "Max setzen",
+  "temp": "+{{amount}} temp",
+  "full": "Voll",
+  "wounded": "Verwundet",
+  "bloodied": "Blutend",
+  "dead": "Tot",
+  "hero": "Held",
+  "enemy": "Feind",
+  "ally": "Alliierter",
+  "keypad": "Ziffernblock",
+  "clear": "Alles löschen",
+  "delete": "Ziffer löschen",
+  "close": "Schließen"
+}
