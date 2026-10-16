@@ -1,5 +1,7 @@
 # Combat Planner — обновления к vision
 
+Внесено в `docs/vision.md`; при расхождении прав `docs/vision.md`.
+
 Дата: 16.10.2026. Основа: макет по флоу (Styleguide.dc.html).
 
 ## Решено

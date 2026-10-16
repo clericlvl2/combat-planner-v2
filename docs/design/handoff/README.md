@@ -8,7 +8,7 @@ Sections: **Combat list** → **Combat screen** (DM) · **Player view** (players
 ## About the design files
 The files in this bundle are **design references built in HTML**: static prototypes that show the intended look, states and flows. They are not production code. Recreate them in the target codebase with its own framework, component library and patterns. If there is no codebase yet, pick a suitable stack (for example React + TypeScript; the project was planned with Mantine, but no Mantine mapping exists yet).
 
-The prototypes have **no click interactions on purpose**: every state is drawn as its own static card or phone, side by side, and flows are rows of phones joined by arrows. Read behaviour from the Overview and Flow sections of each page and from `docs/VISION-UPDATES.md`.
+The prototypes have **no click interactions on purpose**: every state is drawn as its own static card or phone, side by side, and flows are rows of phones joined by arrows. Read behaviour from the Overview and Flow sections of each page; the rules in `../../vision.md` win over them.
 
 ## Fidelity
 **High-fidelity.** Colors, type, spacing, radii and component sizes are final for light theme on a 390-wide phone. Copy is final in English except where marked as a draft (see Open questions).
@@ -71,7 +71,7 @@ Tokens are applied by value in the prototypes; define them as real tokens in cod
 **Spacing:** 4 / 8 / 12 / 16 / 24 / 32. **Radius:** 2 (HP segments) · 12 (fields, keys, tiles, S buttons) · 16 (cards, popovers, menus, toasts) · 24 (sheets, dialogs) · full (chips, 58 buttons, round icons). **Borders:** 2 everywhere, 1 for list dividers. **Icons:** Tabler Icons webfont, sizes 16 / 20 / 24 / 32. **Tap marker:** 3 px #FFE7A3 outline.
 
 ## Key interaction rules
-Full list in `docs/VISION-UPDATES.md` (Russian) and in the Behaviour and Flow sections of each page. The most important:
+Full list in `../../vision.md` and in the Behaviour and Flow sections of each page. The most important:
 - **Turn order:** Start combat rolls missing initiative and sorts. Next turn passes the turn; Disabled and Dead units are skipped. When Next turn is blocked, the button shows the reason.
 - **Round and escalation:** round 1–99, editable from the header. Escalation die 0–6, set by the DM from a face picker; 0 shows a dashed empty die and "No escalation".
 - **HP calculator (NumpadSheet):** actions stay disabled until an amount is typed. Damage takes temp HP first and can push HP below 0. Heal caps at Max. Set Temp replaces temp HP. Set Max caps current HP. Max HP up to 999; HpBox fits −999/999.
@@ -96,7 +96,6 @@ Dark theme, desktop layouts, redo, Mantine mapping, password reset, offline and 
 - Small phones: the base width (375 or 320) is not decided yet. PresetCard gets tight at 320 (defense squares next to the name).
 - Label of the Last played sort: "Played" or a clock icon.
 - Draft copy (toasts, dialogs, empty states, About) and localized HP terms need review.
-- Rules proposed in flows still need confirmation (listed under Rules on each screen page and in VISION-UPDATES.md).
 
 ## Screenshots
 `screenshots/` holds 13 key screens at 1× (390 × 844, PNG), taken from the flows:
@@ -107,5 +106,5 @@ Tap markers (yellow outlines) in some shots show which control the next flow ste
 - `Styleguide.dc.html`: entry point with the sidebar. `nav.js`: page tree.
 - `Tokens.dc.html`, `Baselines.dc.html`, `Template.dc.html`: design rules.
 - All other `*.dc.html`: one component or screen each (see the component tree above).
-- `docs/VISION-UPDATES.md`: decisions that change or extend the Combat Planner v2 vision. `docs/TODO.md`: project state and decisions. `docs/CLAUDE.md`: rules used while designing.
+- `docs/PROTOTYPE-RULES.md`: rules used while designing the prototypes.
 - Fonts and icons load from Google Fonts and jsDelivr (Tabler Icons 3.19).
