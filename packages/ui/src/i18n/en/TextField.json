@@ -1,0 +1,10 @@
+{
+  "title": "Title",
+  "name": "Name",
+  "titlePlaceholder": "New combat",
+  "namePlaceholder": "Enemy 1",
+  "enterTitle": "Enter a title",
+  "enterName": "Enter a name",
+  "upTo": "Up to {{max}} characters",
+  "titleValue": "Ambush at the Ferry"
+}

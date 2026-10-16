@@ -1,0 +1,10 @@
+{
+  "title": "Título",
+  "name": "Nombre",
+  "titlePlaceholder": "Nuevo combate",
+  "namePlaceholder": "Enemigo 1",
+  "enterTitle": "Introduce un título",
+  "enterName": "Introduce un nombre",
+  "upTo": "Hasta {{max}} caracteres",
+  "titleValue": "Emboscada en el transbordador"
+}

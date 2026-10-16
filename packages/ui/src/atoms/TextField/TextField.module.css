@@ -1,0 +1,119 @@
+.root {
+  --field-height: 48px;
+  --field-font-size: var(--mantine-font-size-body);
+
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  font-family: var(--cp-font-ui);
+
+  &[data-size='S'] {
+    --field-height: 40px;
+    --field-font-size: var(--mantine-font-size-small);
+  }
+
+  &[data-size='L'] {
+    --field-height: 56px;
+    --field-font-size: var(--mantine-font-size-number);
+  }
+}
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+}
+
+.label {
+  min-width: 0;
+}
+
+.counter {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+
+  &[data-over] {
+    color: var(--cp-role-enemy);
+  }
+}
+
+.control {
+  display: grid;
+
+  &::after {
+    content: attr(data-replica) ' ';
+    visibility: hidden;
+    white-space: pre-wrap;
+  }
+
+  &::after,
+  & > .input {
+    grid-area: 1 / 1 / 2 / 2;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: var(--field-height);
+    margin: 0;
+    padding: calc((var(--field-height) - 4px - 1.45em) / 2) 12px;
+    border: 2px solid var(--cp-color-border);
+    border-radius: var(--mantine-radius-field);
+    font-family: inherit;
+    font-size: var(--field-font-size);
+    font-weight: 500;
+    line-height: var(--mantine-line-height-body);
+    overflow-wrap: anywhere;
+  }
+}
+
+.input {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  resize: none;
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  outline: none;
+  appearance: none;
+
+  &::placeholder {
+    color: var(--cp-color-muted);
+    opacity: 1;
+  }
+
+  &:focus,
+  &[data-focus] {
+    border-color: var(--cp-color-ink);
+  }
+
+  &[data-error] {
+    border-color: var(--cp-role-enemy);
+  }
+
+  &:disabled {
+    border-color: var(--cp-color-border);
+    background: var(--cp-color-soft);
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--cp-role-enemy);
+  font-size: var(--mantine-font-size-small);
+  font-weight: 600;
+}
+
+.errorIcon {
+  flex: none;
+}

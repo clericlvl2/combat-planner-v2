@@ -1,0 +1,10 @@
+{
+  "title": "Название",
+  "name": "Имя",
+  "titlePlaceholder": "Новый бой",
+  "namePlaceholder": "Враг 1",
+  "enterTitle": "Введите название",
+  "enterName": "Введите имя",
+  "upTo": "Не больше {{max}} символов",
+  "titleValue": "Засада у переправы"
+}

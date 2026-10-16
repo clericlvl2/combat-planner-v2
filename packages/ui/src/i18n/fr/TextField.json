@@ -1,0 +1,10 @@
+{
+  "title": "Titre",
+  "name": "Nom",
+  "titlePlaceholder": "Nouveau combat",
+  "namePlaceholder": "Ennemi 1",
+  "enterTitle": "Saisissez un titre",
+  "enterName": "Saisissez un nom",
+  "upTo": "Jusqu’à {{max}} caractères",
+  "titleValue": "Embuscade au bac"
+}

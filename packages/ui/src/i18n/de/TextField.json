@@ -1,0 +1,10 @@
+{
+  "title": "Titel",
+  "name": "Bezeichnung",
+  "titlePlaceholder": "Neuer Kampf",
+  "namePlaceholder": "Gegner 1",
+  "enterTitle": "Titel eingeben",
+  "enterName": "Namen eingeben",
+  "upTo": "Bis zu {{max}} Zeichen",
+  "titleValue": "Hinterhalt an der Fähre"
+}
