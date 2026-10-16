@@ -45,8 +45,9 @@
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | guarded `.claude/artifacts/guard/1-domain-rest.md` | project, undo, index, tests |
-| 1-api-contract | merged 5395d7a, guard running | ApiClient |
-| fix-1-domain-core | running worker-bee 2026-10-16T18:28:18+03:00 | setMaxHp floor, copy keeps disabled |
+| 1-api-contract | rework 1 → fix-1-api-contract, guard `.claude/artifacts/guard/1-api-contract.md` (2 P1) | ApiClient |
+| fix-1-api-contract | running worker-bee 2026-10-16T18:33:01+03:00 | ApiClient |
+| fix-1-domain-core | rebased, report `.claude/artifacts/reports/fix-1-domain-core.md`, gate running | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | running worker-bee 2026-10-16T18:23:39+03:00 | Swatch, Chip, StatSquare |
@@ -192,6 +193,14 @@
   `field-sizing: content` (нужен `size` или ширина в ch); P3 SearchField
   `placeholder=""` даёт `aria-label=""`; P3 `cursor: text` на рамке
   SearchField/NumberField без проброса клика в инпут.
+
+- 1-api-contract, P1 ×2 → `fix-1-api-contract`: нет метода чтения текущего
+  токена ссылки (`link.get`); `subscribe` не даёт `ConnectionState`
+  (`connection.state/subscribe`). P3 отложено: язык игрока только в `play.get`
+  (смена языка DM доходит на refetch); `combats.subscribe` принимал viewer
+  игрока без токена — параметр убран.
+- fix-1-domain-core, вопрос отчёта: `duplicateUnit` по-прежнему сбрасывает
+  `disabled` — принято (vision Unit → Actions молчит).
 
 ## Падения гейта
 
