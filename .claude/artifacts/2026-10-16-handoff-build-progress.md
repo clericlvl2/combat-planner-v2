@@ -50,7 +50,7 @@
 | fix-1-domain-core | guarded `.claude/artifacts/guard/fix-1-domain-core.md` | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
-| 2.1-atoms-c | running worker-bee 2026-10-16T18:23:39+03:00 | Swatch, Chip, StatSquare |
+| 2.1-atoms-c | rebased, report `.claude/artifacts/reports/2.1-atoms-c.md`, gate running | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | running worker-bee 2026-10-16T18:35:18+03:00 | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
@@ -90,6 +90,13 @@
 
 ## Вопросы владельцу
 
+- 2.1-atoms-c, решения оркестратора 2026-10-16: цвет боя 8 = `#8C8578` (так на
+  девяти страницах против одной), `fix-2.1` меняет `combatColors[7]` и переносит
+  восемь цветов в `theme.ts`; имена цветов Swatch и `disabled` у Swatch/Chip
+  приняты; серые condition-чипы в edge-ячейках приняты как в рендере; статус
+  Chip через `selected` принят; семантика Chip с `onRemove`/`onClick` принята;
+  StatSquare — сокращения защит (de RK/KV/MV, es CA/DF/DM, fr CA/DP/DM,
+  ja 防御/物防/精防, ru КБ/ФЗ/МЗ) ждут правки владельца.
 - 1-api-contract, решения оркестратора 2026-10-16 по 7 вопросам отчёта: все
   приняты: `play.*` несут `playerId` рядом с токеном; `play.dispatch` есть;
   `Locale` определён в `packages/api` (`LOCALES`, `localeSchema`), фаза 2.4
@@ -133,6 +140,9 @@
 
 ## Отличия от рендеров
 
+- 2.1-atoms-c: подложка ячеек — фон канваса, не белая плитка страницы; Extra
+  истории с кликом/табом показывают hover/focus; Swatch цвет 8 `#6E685F` по
+  странице Swatch (меняется на `#8C8578` в `fix-2.1`).
 - 2.1-atoms-b: focus-ячейки без каретки; NumberField показывает набранный 0
   чернилами (страница красит falsy значение muted, ячейки с 0 нет).
 - 2.1-atoms-a: focus-ячейки без каретки (реальный фокус делает baselines
