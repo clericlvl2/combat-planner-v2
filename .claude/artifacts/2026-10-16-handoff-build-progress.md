@@ -66,7 +66,7 @@
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | guarded `.claude/artifacts/guard/2.3-organisms-e.md` (no P0–P1; P2 ×2, P3 ×5 → `fix-2.3`, Add unit → owner) | CombatHeader, CombatCard |
-| 2.3-organisms-f | merged cdcd1ed..d0d0419 (gate `.claude/run/2.3-organisms-f/` green), guard-bee running | PresetCard, HpHistory |
+| 2.3-organisms-f | guarded `.claude/artifacts/guard/2.3-organisms-f.md` (P3 ×4 → `fix-2.3`) | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
 | 2.3-organisms-i | rework 1 → `fix-2.3-organisms-i`, guard `.claude/artifacts/guard/2.3-organisms-i.md` (P1 PlayerRow shows enemy fields by data, not by role) |
@@ -457,6 +457,15 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-organisms-f → `fix-2.3`: P3 обход `min-height` RoleBlock есть и в
+  PresetCard (PresetCard.module.css:23-27) — пункт RoleBlock в `fix-2.3`
+  чистит PlayerRow, UnitRow и PresetCard; после уникальных имён экспорта в
+  `check-stories.mjs` HpHistory переименовывает `EdgeCases*`/`ExtraRussian*`
+  и убирает проверку отсутствия русского текста в ja-историях
+  (HpHistory.stories.tsx:352,364); история «long list scrolls by keyboard»
+  нажимает клавишу и проверяет `scrollTop` (HpHistory.stories.tsx:514-533).
+  P3 трейлер Opus 5.5 против CLAUDE.md — уже в вопросах владельцу.
 
 - 2.3-organisms-e → `fix-2.3`: P2 CombatHeader.tsx:139/155 — Enter в поле
   раунда (Stepper `blur()`) уводит фокус в `<body>`, поповер не закрывается,
