@@ -122,7 +122,16 @@ and the extra paths named in the unit.
     `:placeholder-shown`; dead `data-long` removed.
 28. `NumpadSheet`: built on `Sheet` with the `header` slot (unit 13) instead
     of its own Mantine `Modal` copy; baselines stay byte-identical or are
-    regenerated with the difference named in the report.
+    regenerated with the difference named in the report. Also: Set Temp is
+    enabled at an amount of 0 and clears temp HP (page NP-4 rule,
+    NumpadSheet.dc.html:186; vision «disabled until an amount is typed» — 0
+    is typed); Damage, Heal and Set Max stay disabled at 0; the amount resets
+    on apply so a second tap during the exit transition cannot apply twice;
+    `data-tap` only marks the key, the preview follows pointer and focus;
+    the action key keeps Button's pressed colour (NumpadSheet.module.css:260-274);
+    the digit story asserts every key 0–9 appends; Space on a focused action
+    applies it; a story per flow step caption when the new `check-stories`
+    requires one.
 
 ## Allowed paths
 

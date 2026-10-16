@@ -73,8 +73,8 @@
 | fix-2.3-organisms-i | guarded `.claude/artifacts/guard/fix-2.3-organisms-i.md` (P3 ×1 report hashes, no action) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
-| 2.3-NumpadSheet | merged 270586d..0f286d6 (gate `.claude/run/2.3-NumpadSheet/` green), guard-bee running | NumpadSheet |
-| fix-2.3 | brief drafted, waits for the 2.3-NumpadSheet guard | |
+| 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
+| fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
 | 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
 | 2.4-CombatList | todo | CombatList |
@@ -495,6 +495,15 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-NumpadSheet → `fix-2.3` (единица NumpadSheet): Set Temp с суммой 0
+  очищает temp HP (правило страницы NP-4; решение оркестратора: 0 — набранная
+  сумма, Damage/Heal/Set Max при 0 неактивны); сброс суммы после применения
+  (двойной тап во время выхода); `data-tap` не закрепляет превью; цвет
+  нажатия Button у кнопок действий; проверка всех клавиш 0–9; Space на
+  действии; истории шагов флоу, если их потребует новый `check-stories`.
+  Перевод квадрата роли в языковых историях — как решение по UnitRow
+  (переключается вся локаль), принято.
 
 - 2.3-UnitForm → `fix-2.3` (finding 2 — первым, поведение): выбранный пресет
   сбрасывается при смене вкладки и фильтра, кнопка «Add <имя>» отправляет
