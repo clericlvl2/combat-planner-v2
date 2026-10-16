@@ -100,6 +100,10 @@ export const FieldEditing = meta.story({
 
 export const Line = meta.story({
   args: { value: 'Concentrating on Hex', collapsed: true },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('img', { name: 'Note' })).toBeVisible();
+    await expect(canvas.getByText('Concentrating on Hex')).toBeVisible();
+  },
 });
 
 export const FieldLong = meta.story({

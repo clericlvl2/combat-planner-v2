@@ -66,7 +66,13 @@ export function NoteField({
     if (!value) return null;
     return (
       <div {...rest} className={rootClass(classes.line)}>
-        <IconNote className={classes.lineIcon} size={16} stroke={2} aria-label={fieldLabel} />
+        <IconNote
+          className={classes.lineIcon}
+          size={16}
+          stroke={2}
+          role="img"
+          aria-label={fieldLabel}
+        />
         <span className={classes.lineText}>{value}</span>
       </div>
     );
