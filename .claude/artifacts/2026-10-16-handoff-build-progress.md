@@ -53,7 +53,7 @@
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
-| fix-2.1 | running worker-bee 2026-10-16T18:52:07+03:00 , rework of commit layout after first hand-back | |
+| fix-2.1 | rebased, report `.claude/artifacts/reports/fix-2.1.md`, gate running | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
