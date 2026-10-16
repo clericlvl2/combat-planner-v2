@@ -1,6 +1,6 @@
 import preview from '#.storybook/preview';
-import { healthSegments, healthStatus } from '@combat-planner/domain';
-import type { Condition, PlayerUnit, Role } from '@combat-planner/domain';
+import { LIMITS, project } from '@combat-planner/domain';
+import type { Combat, Condition, PlayerUnit, Role, Unit } from '@combat-planner/domain';
 import { IconUserOff } from '@tabler/icons-react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
@@ -28,31 +28,53 @@ interface UnitSeed {
 const MIKA = '01JC0000000000000000000MKA';
 const JONAS = '01JC0000000000000000000JNS';
 
-function playerUnit(seed: UnitSeed, position: number): PlayerUnit {
-  const status = healthStatus(seed.hp, seed.maxHp);
-  const visible: PlayerUnit = {
+const names: Record<string, string> = { [MIKA]: 'Mika', [JONAS]: 'Jonas' };
+
+const createdAt = '2026-10-16T18:00:00.000Z';
+
+function unitOf(seed: UnitSeed): Unit {
+  const [ac, pd, md] = seed.defenses ?? [10, 10, 10];
+  return {
     id: seed.id,
     name: seed.name,
     role: seed.role,
-    healthStatus: status,
-    healthSegments: healthSegments(status, seed.hp, seed.maxHp),
-    conditions: seed.conditions ?? [],
-    position,
+    initiativeBonus: 0,
     initiative: seed.initiative,
-  };
-  if (seed.role === 'enemy') return visible;
-  const [ac, pd, md] = seed.defenses ?? [10, 10, 10];
-  const friendly: PlayerUnit = {
-    ...visible,
-    claimedBy: seed.claimedBy ?? null,
+    maxHp: seed.maxHp,
     hp: seed.hp,
     tempHp: seed.tempHp ?? 0,
-    maxHp: seed.maxHp,
     ac,
     pd,
     md,
+    note: seed.note ?? '',
+    conditions: seed.conditions ?? [],
+    disabled: false,
+    claimedBy: seed.claimedBy ?? null,
+    hpHistory: [],
   };
-  return seed.claimedBy === MIKA ? { ...friendly, note: seed.note ?? '', hpHistory: [] } : friendly;
+}
+
+function playerUnit(seed: UnitSeed): PlayerUnit {
+  const combat: Combat = {
+    id: '01JC00000000000000000CMBT1',
+    title: 'Ambush at the Ferry',
+    description: '',
+    color: LIMITS.color.min,
+    status: 'active',
+    round: 3,
+    escalation: 2,
+    activeUnitId: null,
+    lastPlayedAt: createdAt,
+    linkGeneration: 0,
+    version: 1,
+    players: names,
+    createdAt,
+    updatedAt: createdAt,
+    units: [unitOf(seed)],
+  };
+  const [projected] = project(combat, { kind: 'player', playerId: MIKA }).units;
+  if (projected === undefined) throw new Error(`${seed.name} is not visible to the player`);
+  return projected;
 }
 
 const vashtiSeed: UnitSeed = {
@@ -68,76 +90,59 @@ const vashtiSeed: UnitSeed = {
   note: 'Concentrating on Hex',
 };
 
-const vashti = playerUnit(vashtiSeed, 2);
+const vashti = playerUnit(vashtiSeed);
 
-const aldric = playerUnit(
-  {
-    id: '01JC00000000000000000ALDRC',
-    name: 'Ser Aldric',
-    role: 'hero',
-    initiative: 19,
-    hp: 52,
-    maxHp: 52,
-    claimedBy: JONAS,
-    defenses: [18, 14, 12],
-  },
-  1,
-);
+const aldric = playerUnit({
+  id: '01JC00000000000000000ALDRC',
+  name: 'Ser Aldric',
+  role: 'hero',
+  initiative: 19,
+  hp: 52,
+  maxHp: 52,
+  claimedBy: JONAS,
+  defenses: [18, 14, 12],
+});
 
-const orc = playerUnit(
-  {
-    id: '01JC00000000000000000ORCBR',
-    name: 'Orc Berserker',
-    role: 'enemy',
-    initiative: 17,
-    hp: 14,
-    maxHp: 40,
-    conditions: ['staggered'],
-  },
-  2,
-);
+const orc = playerUnit({
+  id: '01JC00000000000000000ORCBR',
+  name: 'Orc Berserker',
+  role: 'enemy',
+  initiative: 17,
+  hp: 14,
+  maxHp: 40,
+  conditions: ['staggered'],
+});
 
-const goblin = playerUnit(
-  {
-    id: '01JC00000000000000000GOBLN',
-    name: 'Goblin Archer 1',
-    role: 'enemy',
-    initiative: 12,
-    hp: -3,
-    maxHp: 18,
-  },
-  5,
-);
+const goblin = playerUnit({
+  id: '01JC00000000000000000GOBLN',
+  name: 'Goblin Archer 1',
+  role: 'enemy',
+  initiative: 12,
+  hp: -3,
+  maxHp: 18,
+});
 
-const tomas = playerUnit(
-  {
-    id: '01JC00000000000000000TOMAS',
-    name: 'Brother Tomas of the Silver Lantern Order',
-    role: 'ally',
-    initiative: 9,
-    hp: 24,
-    maxHp: 30,
-    tempHp: 5,
-    defenses: [17, 15, 13],
-  },
-  6,
-);
+const tomas = playerUnit({
+  id: '01JC00000000000000000TOMAS',
+  name: 'Brother Tomas of the Silver Lantern Order',
+  role: 'ally',
+  initiative: 9,
+  hp: 24,
+  maxHp: 30,
+  tempHp: 5,
+  defenses: [17, 15, 13],
+});
 
-const wyrmling = playerUnit(
-  {
-    id: '01JC00000000000000000WYRML',
-    name: 'Silver Dragon Wyrmling',
-    role: 'ally',
-    initiative: 14,
-    hp: 187,
-    maxHp: 240,
-    tempHp: 120,
-    defenses: [20, 18, 17],
-  },
-  4,
-);
-
-const names: Record<string, string> = { [MIKA]: 'Mika', [JONAS]: 'Jonas' };
+const wyrmling = playerUnit({
+  id: '01JC00000000000000000WYRML',
+  name: 'Silver Dragon Wyrmling',
+  role: 'ally',
+  initiative: 14,
+  hp: 187,
+  maxHp: 240,
+  tempHp: 120,
+  defenses: [20, 18, 17],
+});
 
 const pageCellInset = layout.contentEdge * 2;
 
@@ -294,7 +299,7 @@ export const OwnEditingNote = meta.story({
 export const OwnSetupNoInitiative = meta.story({
   name: 'Own, Setup, no initiative',
   args: {
-    unit: playerUnit({ ...vashtiSeed, initiative: null }, 2),
+    unit: playerUnit({ ...vashtiSeed, initiative: null }),
     setup: true,
     'data-tap': 'initiative',
   },
@@ -369,18 +374,15 @@ export const AllyThreeDigitHP = meta.story({
 export const RuFourConditions = meta.story({
   name: 'ru, four conditions',
   args: {
-    unit: playerUnit(
-      {
-        id: '01JC00000000000000000ORCRU',
-        name: 'Орк-берсерк',
-        role: 'enemy',
-        initiative: 17,
-        hp: 14,
-        maxHp: 40,
-        conditions: ['staggered', 'dazed', 'vulnerable', 'stuck'],
-      },
-      2,
-    ),
+    unit: playerUnit({
+      id: '01JC00000000000000000ORCRU',
+      name: 'Орк-берсерк',
+      role: 'enemy',
+      initiative: 17,
+      hp: 14,
+      maxHp: 40,
+      conditions: ['staggered', 'dazed', 'vulnerable', 'stuck'],
+    }),
     mine: false,
   },
   play: async ({ canvas }) => {
@@ -569,5 +571,75 @@ export const ExtraLocaleRu = meta.story({
     await expect(canvas.getByRole('button', { name: 'История ОЗ' })).toBeVisible();
     await expect(canvas.getByRole('listitem')).toHaveTextContent('ошеломлён');
     await expect(canvas.getByText('Вы')).toBeVisible();
+  },
+});
+
+export const ExtraEnemyWithFields = meta.story({
+  name: 'Enemy carrying friendly fields stays hidden',
+  args: {
+    unit: {
+      ...orc,
+      claimedBy: MIKA,
+      hp: 14,
+      maxHp: 40,
+      tempHp: 6,
+      ac: 15,
+      pd: 13,
+      md: 11,
+      note: 'Hidden note',
+    },
+    mine: true,
+    expanded: true,
+  },
+  play: async ({ args, canvas, canvasElement }) => {
+    await expect(canvas.getByText('Orc Berserker')).toBeVisible();
+    await expect(canvas.getByText('Bloodied')).toBeVisible();
+    await expect(canvasElement.querySelector('[data-part="numbers"]')).toBeNull();
+    await expect(canvas.queryByText('14')).toBeNull();
+    await expect(canvas.queryByText('/40')).toBeNull();
+    await expect(canvas.queryByText('+6 temp')).toBeNull();
+    await expect(canvas.queryByText(/AC/)).toBeNull();
+    await expect(canvas.queryByText('Mika')).toBeNull();
+    await expect(canvas.queryByRole('img', { name: 'Claimed by' })).toBeNull();
+    await expect(canvas.queryByText('Hidden note')).toBeNull();
+    await expect(canvas.queryByText('You')).toBeNull();
+    await expect(canvas.queryByText('Conditions')).toBeNull();
+    await expect(canvas.queryByRole('button')).toBeNull();
+    await expect(canvasElement.querySelector('[data-mine]')).toBeNull();
+    await userEvent.click(canvas.getByText('Orc Berserker'));
+    await userEvent.click(canvas.getByText('Bloodied'));
+    await userEvent.click(canvas.getByText('17'));
+    await expect(args.onToggle).not.toHaveBeenCalled();
+    await expect(args.onHp).not.toHaveBeenCalled();
+    await expect(args.onInitiative).not.toHaveBeenCalled();
+    await expect(args.onNoteChange).not.toHaveBeenCalled();
+  },
+});
+
+async function expectTriggerLabelsFit(canvasElement: HTMLElement, labels: string[]) {
+  const canvas = within(canvasElement);
+  for (const label of labels) {
+    const text = within(canvas.getByRole('button', { name: label })).getByText(label);
+    await expect(text.scrollWidth).toBeLessThanOrEqual(text.clientWidth);
+  }
+}
+
+export const ExtraLocaleFr = meta.story({
+  name: 'Locale fr, trigger labels fit',
+  globals: { locale: 'fr' },
+  args: { expanded: true },
+  play: async ({ canvasElement }) => {
+    await expectTriggerLabelsFit(canvasElement, ['États', 'Historique PV']);
+    await expect(within(canvasElement).getByRole('button', { name: 'Modifier' })).toBeVisible();
+  },
+});
+
+export const ExtraLocaleEs = meta.story({
+  name: 'Locale es, trigger labels fit',
+  globals: { locale: 'es' },
+  args: { expanded: true },
+  play: async ({ canvasElement }) => {
+    await expectTriggerLabelsFit(canvasElement, ['Estados', 'Historial PG']);
+    await expect(within(canvasElement).getByRole('button', { name: 'Editar' })).toBeVisible();
   },
 });

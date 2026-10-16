@@ -41,7 +41,7 @@ const INTERACTIVE = 'button, a, input, textarea, select, [role="button"], [data-
 
 export function PlayerRow({
   unit,
-  mine = false,
+  mine: mineProp = false,
   expanded: expandedProp = false,
   claimedByName,
   active = false,
@@ -63,20 +63,22 @@ export function PlayerRow({
 }: PlayerRowProps) {
   const { t } = useTranslation('PlayerRow');
   const detailsId = useId();
+  const friendly = unit.role !== 'enemy';
+  const mine = friendly && mineProp;
   const expanded = mine && expandedProp;
   const dead = unit.healthStatus === 'dead';
   const shownActive = active && !setup;
   const conditions = setup ? [] : unit.conditions;
   const numbers =
-    unit.hp !== undefined && unit.maxHp !== undefined
+    friendly && unit.hp !== undefined && unit.maxHp !== undefined
       ? { hp: unit.hp, maxHp: unit.maxHp, tempHp: unit.tempHp ?? 0 }
       : null;
   const defenses =
-    unit.ac !== undefined && unit.pd !== undefined && unit.md !== undefined
+    friendly && unit.ac !== undefined && unit.pd !== undefined && unit.md !== undefined
       ? { ac: unit.ac, pd: unit.pd, md: unit.md }
       : null;
-  const claimName = unit.claimedBy ? claimedByName : undefined;
-  const note = unit.note ?? '';
+  const claimName = friendly && unit.claimedBy ? claimedByName : undefined;
+  const note = mine ? (unit.note ?? '') : '';
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     onClick?.(event);
