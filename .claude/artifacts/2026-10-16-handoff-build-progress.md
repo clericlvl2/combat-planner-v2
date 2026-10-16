@@ -67,7 +67,7 @@
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
-| 2.3-organisms-g | merged 4d7a825, gate ok `.claude/run/2.3-organisms-g/summary.log`, guard running | ConditionPicker, TagSheet |
+| 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | todo | SortSheet, ShareSheet |
 | 2.3-organisms-i | todo | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
@@ -351,6 +351,16 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-organisms-g → `fix-2.3`: P2 двойное tap-кольцо в baseline
+  ConditionPicker «Tap: adding weakened» (`data-tap` на `<label>` Checkbox
+  включает и кольцо метки; ConditionPicker.stories.tsx:58,
+  Checkbox.module.css:85) — подавить кольцо метки в строках пикера или другой
+  атрибут, перегенерировать baseline; P2 история TagSheet «Close and Escape…»
+  не жмёт Escape; P3 поиск TagSheet не сбрасывается при закрытии; P3 «Show
+  all» при активном фильтре без `presetCount`. P3: ячейки «Variants: trigger»
+  страницы ConditionPicker принадлежат UnitRow и PlayerRow (брифы
+  `2.3-UnitRow`, `2.3-organisms-i` дополнены до запуска).
 
 - 2.3-organisms-d, P3 → `fix-2.3`: ключ и история причины «Add a unit first»
   в `TurnBar`; `[data-disabled]` второй строки TurnBar; `onClick` обязателен
