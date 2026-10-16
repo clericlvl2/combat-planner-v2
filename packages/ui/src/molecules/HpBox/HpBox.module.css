@@ -1,0 +1,131 @@
+.root {
+  --hp-box-status: var(--cp-health-full);
+  --hp-box-tint: #e3f1e6;
+
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 96px;
+  min-height: 54px;
+  padding: 8px 6px;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-field);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:is(button) {
+    cursor: pointer;
+  }
+
+  &[data-status='wounded'] {
+    --hp-box-status: var(--cp-health-wounded);
+    --hp-box-tint: #f8ecd2;
+  }
+
+  &[data-status='bloodied'] {
+    --hp-box-status: var(--cp-health-bloodied);
+    --hp-box-tint: #fbe3d8;
+  }
+
+  &[data-status='dead'] {
+    --hp-box-status: var(--cp-health-dead);
+    --hp-box-tint: var(--cp-color-soft);
+  }
+
+  &[data-off] {
+    border-color: transparent;
+    background: transparent;
+  }
+
+  &[data-viewer='player'] {
+    border-color: transparent;
+    background: var(--hp-box-tint);
+
+    &[data-off] {
+      background: var(--cp-color-soft);
+    }
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.numbers {
+  display: flex;
+  align-items: baseline;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+
+  &[data-mine] {
+    padding-bottom: 2px;
+    border-bottom: 2px dashed var(--cp-color-ink);
+  }
+}
+
+.current {
+  font-size: var(--mantine-font-size-number);
+  font-weight: 700;
+  color: var(--cp-color-ink);
+
+  [data-off] & {
+    color: var(--cp-color-secondary);
+  }
+}
+
+.max {
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  color: var(--cp-color-secondary);
+}
+
+.segments {
+  display: flex;
+  gap: 4px;
+}
+
+.segment {
+  width: 13px;
+  height: 6px;
+  border-radius: var(--mantine-radius-segment);
+  background: var(--cp-health-empty);
+
+  &[data-filled] {
+    background: var(--hp-box-status);
+  }
+}
+
+.status {
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--hp-box-status);
+  text-align: center;
+}
+
+.temp {
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--cp-color-ink);
+  white-space: nowrap;
+
+  [data-viewer='player'] & {
+    color: var(--cp-hp-set-temp);
+  }
+}

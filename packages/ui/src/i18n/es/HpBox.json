@@ -1,0 +1,7 @@
+{
+  "full": "Completo",
+  "wounded": "Herido",
+  "bloodied": "Malherido",
+  "dead": "Muerto",
+  "temp": "+{{amount}} temp."
+}
