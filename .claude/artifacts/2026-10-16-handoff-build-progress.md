@@ -61,7 +61,7 @@
 | fix-2.2 | guarded `.claude/artifacts/guard/fix-2.2.md` | |
 | 2.3-organisms-a | rework 1 → `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` (P1 Sheet focus escapes on Shift+Tab) |
 | fix-2.3-organisms-a | running worker-bee (agent of 2.3-organisms-a) 2026-10-17T02:15+03:00 | Sheet, Dialog |
-| 2.3-organisms-b | rebased, report `.claude/artifacts/reports/2.3-organisms-b.md`, gate running | Menu, Drawer |
+| 2.3-organisms-b | merged 1f1ab7d, gate ok `.claude/run/2.3-organisms-b/summary.log` (re-gated after 2.3-organisms-d), guard running | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
 | 2.3-organisms-d | merged 16174a8, gate ok `.claude/run/2.3-organisms-d/summary.log`, guard running | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
