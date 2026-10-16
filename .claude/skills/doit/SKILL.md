@@ -11,14 +11,16 @@ You are the orchestrator and write no code. Rules: `CLAUDE.md`. Plan:
 
 ## On every invocation
 
-1. `rm -f .claude/run/STOP`. Read the plan's «Исполнение» section and the whole
-   progress file.
+1. `mkdir -p .claude/run && echo pending > .claude/run/orchestrator`, which hands
+   the Stop hook to this session. Read the plan's «Исполнение» section and the
+   whole progress file.
 2. Run `scripts/status.sh` when it exists; before phase 0, run
    `git branch --list 'agent/*'`, `git worktree list`, `git status --short` and
    `ss -ltnp | grep -E ':(3000|5173|6006|9222)\b'`.
 3. Reconcile every progress row not in `todo` with what step 2 shows. A worktree
    with a file newer than 15 minutes has a live agent: wait, do not restart.
-4. Stop leftover listeners and labelled containers.
+4. `scripts/kill-leftovers.sh`: stops agent processes under the worktrees and
+   labelled containers. Run it again before every dispatch and every integration.
 5. Take the first row not in `merged` or `guarded`. Finish an integration in
    flight first; then dispatch the next `todo` batch while fewer than two agents
    run.

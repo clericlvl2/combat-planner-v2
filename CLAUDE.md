@@ -97,9 +97,7 @@ Scripts in `scripts/`, each exits non-zero with the offending path:
 - `status.sh`: per `agent/*` branch: ahead/behind `master`, merged or not,
   worktree dirty, `REPORT.md` present, newest file mtime, gate log present;
   listeners on the agent ports; labelled Docker containers.
-- `kill-leftovers.sh`: stops listeners on the agent ports and the labelled
-  containers. Wired to the `SubagentStop` hook in `.claude/settings.json`.
-- `keep-going.sh`: the `Stop` hook, see Session.
+- `kill-leftovers.sh` and `keep-going.sh`: see Processes and Session.
 
 ## Integration, orchestrator only
 
@@ -138,16 +136,25 @@ Scripts in `scripts/`, each exits non-zero with the offending path:
 - `scripts/status.sh` prints listeners on the agent ports and `docker ps` filtered
   by that label; the orchestrator runs it before every dispatch and before every
   integration and stops what it finds.
-- `scripts/kill-leftovers.sh` stops listeners on the agent ports and the labelled
-  containers; `.claude/settings.json` runs it on the `SubagentStop` hook.
+- `scripts/kill-leftovers.sh` stops listeners on the agent ports whose working
+  directory is under `../combat-planner-v2.wt/`, and the labelled containers. The
+  orchestrator runs it before every dispatch and every integration. It is not a
+  hook.
 
 ## Session
 
-- `scripts/keep-going.sh` runs on the `Stop` hook: while the progress file has a
-  batch not in `guarded`, the orchestrator is told to run `/doit` instead of
-  ending the turn. It gives up after 50 stops without a new commit on `master`.
-- `.claude/run/STOP` (gitignored) switches the hook off. The owner creates it to
-  pause the run; `/doit` removes it at start.
+- `scripts/keep-going.sh` runs on the `Stop` hook from `.claude/settings.json`.
+  It acts only in the session that ran `/doit`: `/doit` writes `pending` into
+  `.claude/run/orchestrator`, the hook replaces it with its own session id and
+  ignores every other session. While the progress file has a batch not in
+  `guarded` and no background task is running, the hook tells the orchestrator
+  to run `/doit` instead of ending the turn. After 50 idle stops without a new
+  commit on `master` it releases the marker and posts a system message.
+- Pause: the owner deletes `.claude/run/orchestrator`. Local off-switch:
+  `"disableAllHooks": true` in `.claude/settings.local.json`; the project file
+  never sets that key.
+- Hooks run only after the workspace trust prompt is accepted for this folder.
+- `scripts/test/keep-going.test.sh` exercises the hook with fake input.
 
 ## REPORT.md
 
