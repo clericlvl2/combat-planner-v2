@@ -29,10 +29,8 @@
 
 ## Текущий шаг
 
-Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Идёт фаза 2.1:
-`2.1-atoms-a`, `2.1-atoms-b` слиты и проверены, `2.1-atoms-c` на гейте,
-`2.1-atoms-d` строится. Далее `fix-2.1` (один агент), затем молекулы 2.2 по две
-параллельно. Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
+Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита целиком (`fix-2.1` ab729f2, guard идёт). Идёт фаза 2.2: молекулы по две
+параллельно, вторая очередь — `3-server-actions` (рестарт после отключения питания). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
 Интеграция: `.claude/run/gate.sh <batch> <worktree> <range>` в фоне, затем
 `.claude/run/merge.sh <batch>` (rebase на master, где с момента гейта менялись
 только `.claude/**`, ff-merge, удаление worktree и ветки).
@@ -53,8 +51,8 @@
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
-| fix-2.1 | rebased, report `.claude/artifacts/reports/fix-2.1.md`, gate restarted 2026-10-16T20:02+03:00 (first run died at `visual`, power loss) | |
-| 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
+| fix-2.1 | merged ab729f2, gate ok `.claude/run/fix-2.1/summary.log`, guard running | |
+| 2.2-molecules-a | running worker-bee 2026-10-16T20:10+03:00 | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | todo | NoteField, InitiativePopover |
