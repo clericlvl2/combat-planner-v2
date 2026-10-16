@@ -62,7 +62,7 @@
 | 2.3-organisms-a | guarded via `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` |
 | fix-2.3-organisms-a | guarded `.claude/artifacts/guard/fix-2.3-organisms-a.md` (P1 closed) | Sheet, Dialog |
 | 2.3-organisms-b | rework 1 → `fix-2.3-organisms-b`, guard `.claude/artifacts/guard/2.3-organisms-b.md` (P1 Drawer Shift+Tab, P1 Menu focus with motion on) |
-| fix-2.3-organisms-b | rebased, report `.claude/artifacts/reports/fix-2.3-organisms-b.md`, gate running | Menu, Drawer |
+| fix-2.3-organisms-b | merged eedf22d, gate ok `.claude/run/fix-2.3-organisms-b/summary.log`, guard running | Menu, Drawer |
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
