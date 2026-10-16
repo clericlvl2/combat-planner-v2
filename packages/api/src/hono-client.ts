@@ -33,7 +33,6 @@ import {
   versionSchema,
 } from './client.ts';
 import type {
-  AccountPatch,
   ApiClient,
   ApiErrorCode,
   ConnectionListener,
@@ -70,15 +69,6 @@ export interface HonoApiClientOptions {
   eventSource?: EventSourceConstructor;
 }
 
-type JsonEndpoint<Input, Output> = {
-  input: Input;
-  output: Output;
-  outputFormat: 'json';
-  status: 200;
-};
-
-type NoInput = Record<never, never>;
-
 const authUserSchema = z.object({
   id: z.string().min(1),
   email: z.string(),
@@ -89,16 +79,9 @@ const authResponseSchema = z.object({ user: authUserSchema });
 const authSessionSchema = authResponseSchema.nullable();
 type AuthResponse = z.infer<typeof authResponseSchema>;
 
-type PlannedRoutes = {
-  '/account': {
-    $patch: JsonEndpoint<{ json: AccountPatch }, Session>;
-    $delete: JsonEndpoint<NoInput, null>;
-  };
-};
-
 type AppSchema =
   AppType extends HonoBase<infer _Env, infer S, infer _Base, infer _Current> ? S : never;
-type ClientApp = Hono<BlankEnv, UnionToIntersection<AppSchema> & PlannedRoutes>;
+type ClientApp = Hono<BlankEnv, UnionToIntersection<AppSchema>>;
 
 interface RawResponse {
   ok: boolean;
