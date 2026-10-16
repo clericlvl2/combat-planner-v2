@@ -11,6 +11,7 @@ import '@fontsource/noto-sans-jp/700.css';
 import addonDocs from '@storybook/addon-docs';
 import { definePreview } from '@storybook/react-vite';
 import { withPhoneFrame } from '../src/storybook/PhoneFrame.tsx';
+import { apiLoader, withApi } from '../src/storybook/withApi.tsx';
 import { localeGlobalType, withLocale } from '../src/storybook/withLocale.tsx';
 
 export default definePreview({
@@ -22,5 +23,6 @@ export default definePreview({
     motion: 'off',
     phoneFrame: false,
   },
-  decorators: [withPhoneFrame, withLocale],
+  loaders: [apiLoader],
+  decorators: [withPhoneFrame, withLocale, withApi],
 });
