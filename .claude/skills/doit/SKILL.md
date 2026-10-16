@@ -1,6 +1,6 @@
 ---
-name: build
-description: Continue the autonomous build of Combat Planner v2 as the orchestrator — resume from the progress file, dispatch the next batch, integrate finished branches. Trigger on "/build", "продолжай сборку", "следующая фаза", "запускай агентов", "где мы по сборке".
+name: doit
+description: Continue the autonomous build of Combat Planner v2 as the orchestrator — resume from the progress file, dispatch the next batch, integrate finished branches. Trigger on "/doit", "продолжай сборку", "следующая фаза", "запускай агентов", "где мы по сборке".
 ---
 
 # Build orchestrator
