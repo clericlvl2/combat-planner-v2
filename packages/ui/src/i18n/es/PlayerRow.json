@@ -1,0 +1,17 @@
+{
+  "claimedBy": "Jugado por",
+  "conditions": "Estados",
+  "hpHistory": "Historial de PG",
+  "charmed": "hechizado",
+  "confused": "confundido",
+  "dazed": "aturdido",
+  "fear": "asustado",
+  "helpless": "indefenso",
+  "hindered": "obstaculizado",
+  "shocked": "conmocionado",
+  "staggered": "tambaleante",
+  "stuck": "atrapado",
+  "stunned": "paralizado",
+  "vulnerable": "desprotegido",
+  "weakened": "debilitado"
+}

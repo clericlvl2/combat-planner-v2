@@ -1,0 +1,17 @@
+{
+  "claimedBy": "Gespielt von",
+  "conditions": "Zustände",
+  "hpHistory": "TP-Verlauf",
+  "charmed": "bezaubert",
+  "confused": "verwirrt",
+  "dazed": "benommen",
+  "fear": "verängstigt",
+  "helpless": "hilflos",
+  "hindered": "behindert",
+  "shocked": "geschockt",
+  "staggered": "taumelnd",
+  "stuck": "festgesetzt",
+  "stunned": "betäubt",
+  "vulnerable": "verwundbar",
+  "weakened": "geschwächt"
+}

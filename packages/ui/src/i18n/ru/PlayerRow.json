@@ -1,0 +1,17 @@
+{
+  "claimedBy": "Играет",
+  "conditions": "Состояния",
+  "hpHistory": "История ОЗ",
+  "charmed": "очарован",
+  "confused": "сбит с толку",
+  "dazed": "ошеломлён",
+  "fear": "страх",
+  "helpless": "беспомощен",
+  "hindered": "замедлен",
+  "shocked": "шокирован",
+  "staggered": "шатается",
+  "stuck": "обездвижен",
+  "stunned": "оглушён",
+  "vulnerable": "уязвим",
+  "weakened": "ослаблен"
+}
