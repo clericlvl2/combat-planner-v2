@@ -52,7 +52,7 @@
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
 | fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
-| 2.2-molecules-a | merged 770ad71, gate ok `.claude/run/2.2-molecules-a/summary.log`, guard running | Stepper, Segmented, RadioList |
+| 2.2-molecules-a | guarded `.claude/artifacts/guard/2.2-molecules-a.md` | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | merged 3ccbf2c, gate ok `.claude/run/2.2-molecules-b/summary.log`, guard running | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | running worker-bee 2026-10-16T20:22+03:00 | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | running worker-bee 2026-10-16T20:30+03:00 | NoteField, InitiativePopover |
@@ -219,6 +219,14 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.2-molecules-a, P3 → `fix-2.2`: Segmented с `value` вне опций делает все
+  сегменты `tabIndex=-1` (Segmented.tsx:47-51, нужен guard
+  `selectedIndex >= 0`). P3 отложено: Stepper шлёт `onChange` на каждый
+  промежуточный ввод (решение для UnitForm — live, как NumberField);
+  `RadioList.alphabetical` `A–Z` в de/es/fr через allow-same — владельцу;
+  RadioList-истории берут `localeNames` из `storybook/withLocale.tsx` — экран
+  Settings (2.4) получает свой источник имён локалей.
 
 - 3-server-actions, P3 отложено (все семь): копия боя хранится с `version 0`
   против `1` у создания (routes.ts:116, источник — `copyCombat`); `loadLog`
