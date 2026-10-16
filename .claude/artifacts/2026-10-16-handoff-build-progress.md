@@ -59,8 +59,8 @@
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
 | fix-2.2 | guarded `.claude/artifacts/guard/fix-2.2.md` | |
-| 2.3-organisms-a | rework 1 → `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` (P1 Sheet focus escapes on Shift+Tab) |
-| fix-2.3-organisms-a | merged 42544a4, gate ok `.claude/run/fix-2.3-organisms-a/summary.log` (re-gated after 2.3-organisms-g), guard running | Sheet, Dialog |
+| 2.3-organisms-a | guarded via `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` |
+| fix-2.3-organisms-a | guarded `.claude/artifacts/guard/fix-2.3-organisms-a.md` (P1 closed) | Sheet, Dialog |
 | 2.3-organisms-b | rework 1 → `fix-2.3-organisms-b`, guard `.claude/artifacts/guard/2.3-organisms-b.md` (P1 Drawer Shift+Tab, P1 Menu focus with motion on) |
 | fix-2.3-organisms-b | running worker-bee (agent of 2.3-organisms-b) 2026-10-17T03:40+03:00 | Menu, Drawer |
 | 2.3-organisms-c | merged e8039a8, gate ok `.claude/run/2.3-organisms-c/summary.log`, guard running | PageHeader, PlayerHeader |
@@ -373,6 +373,13 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-2.3-organisms-a → `fix-2.3`: P2 при motion on начальный фокус Sheet
+  уходит на первый tabbable, а не на секцию (Sheet.tsx:34-38; фокус из
+  `onEnterTransitionEnd` или ref-callback Content, история motion on из
+  закрытого состояния); P3 fr `_one` покрывает 0 («L'unique unité…» для
+  пустого боя, Dialog.json:8,:20); P3 блокировка прокрутки Dialog через
+  `body.style.overflow` вместо RemoveScroll.
 
 - 2.3-organisms-g → `fix-2.3`: P2 двойное tap-кольцо в baseline
   ConditionPicker «Tap: adding weakened» (`data-tap` на `<label>` Checkbox
