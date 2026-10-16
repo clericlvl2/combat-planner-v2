@@ -1,0 +1,9 @@
+{
+  "linkRevokedTitle": "Dieser Link funktioniert nicht mehr",
+  "linkRevokedBody": "Die Spielleitung hat einen neuen Link erstellt. Bitte sie, ihn noch einmal zu teilen.",
+  "combatDeletedTitle": "Dieser Kampf wurde gelöscht",
+  "combatDeletedBody": "Die Spielleitung hat ihn gelöscht. Bitte sie um einen neuen Link.",
+  "offlineTitle": "Keine Verbindung zum Server",
+  "offlineBody": "Prüfe die Verbindung und versuche es erneut.",
+  "tryAgain": "Erneut versuchen"
+}

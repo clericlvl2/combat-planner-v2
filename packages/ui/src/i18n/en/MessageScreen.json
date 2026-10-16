@@ -1,0 +1,9 @@
+{
+  "linkRevokedTitle": "This link no longer works",
+  "linkRevokedBody": "The DM issued a new link. Ask them to share it again.",
+  "combatDeletedTitle": "This combat was deleted",
+  "combatDeletedBody": "The DM deleted it. Ask them for a new link.",
+  "offlineTitle": "Can’t reach the server",
+  "offlineBody": "Check your connection and try again.",
+  "tryAgain": "Try again"
+}

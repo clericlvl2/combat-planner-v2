@@ -1,0 +1,9 @@
+{
+  "linkRevokedTitle": "Ce lien ne fonctionne plus",
+  "linkRevokedBody": "Le MJ a créé un nouveau lien. Demandez-lui de le partager à nouveau.",
+  "combatDeletedTitle": "Ce combat a été supprimé",
+  "combatDeletedBody": "Le MJ l’a supprimé. Demandez-lui un nouveau lien.",
+  "offlineTitle": "Impossible de joindre le serveur",
+  "offlineBody": "Vérifiez votre connexion et réessayez.",
+  "tryAgain": "Réessayer"
+}

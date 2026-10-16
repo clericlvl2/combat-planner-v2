@@ -1,0 +1,9 @@
+{
+  "linkRevokedTitle": "Este enlace ya no funciona",
+  "linkRevokedBody": "El DM creó un enlace nuevo. Pídele que lo comparta otra vez.",
+  "combatDeletedTitle": "Este combate se eliminó",
+  "combatDeletedBody": "El DM lo eliminó. Pídele un enlace nuevo.",
+  "offlineTitle": "No se puede conectar con el servidor",
+  "offlineBody": "Comprueba la conexión e inténtalo de nuevo.",
+  "tryAgain": "Reintentar"
+}

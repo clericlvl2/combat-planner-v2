@@ -1,0 +1,9 @@
+{
+  "linkRevokedTitle": "このリンクは無効になりました",
+  "linkRevokedBody": "DMが新しいリンクを発行しました。もう一度共有してもらってください。",
+  "combatDeletedTitle": "この戦闘は削除されました",
+  "combatDeletedBody": "DMが削除しました。新しいリンクを頼んでください。",
+  "offlineTitle": "サーバーに接続できません",
+  "offlineBody": "接続を確認して、もう一度お試しください。",
+  "tryAgain": "再試行"
+}
