@@ -81,13 +81,24 @@
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
-| 3-server-live | merged d325504, gate ok `.claude/run/3-server-live/summary.log`, guard restarted on Opus 5.5 xhigh (Fable limit) | events route, play routes |
+| 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
+| fix-3 | todo, after `3-server-rest` guard | sse leak, final events, client stream errors |
 | 3-server-rest | restarted 1, worker-bee Opus 5.5 xhigh 2026-10-17T00:10+03:00 (Fable limit; `auth` committed, presets uncommitted) | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 3-server-live guard, P2 вне scope, безопасность, владельцу: проекция игрока
+  отдаёт сырые `playerId` (`claimedBy`, ключи `players`;
+  packages/domain/src/project.ts:27,60), а `playerId` — единственный секрет
+  игрока на play-маршрутах. Любой владелец ссылки может открыть поток другого
+  игрока (его Note и HP history) и действовать за его героя через
+  `X-Player-Id`. Так устроена модель идентичности в vision (Roles → Player
+  identity). Варианты: отдавать игрокам непрозрачный публичный id вместо
+  `playerId` (правка domain `project` + сервер) или принять риск для доверенного
+  стола. До ответа сборка идёт по vision.
 
 - fix-2.2, решения оркестратора 2026-10-17: шаг Stepper от `null` с базы 0
   (+ → 1, − → −1) принят; чип HistoryRow на `variant="meta"` с
@@ -275,6 +286,15 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 3-server-live → пачка `fix-3` (после `3-server-rest`): P2 утечка подписки и
+  интервала при раннем abort (sse.ts:53, `if (signal.aborted)`); P3 `ended` до
+  записи финального события (sse.ts:44-46); P3 `finish` при исключении в
+  `load()`/`project()` (sse.ts:54); P3 тест heartbeat без проверки «нет до
+  15 с». P2 → бриф `2.4-api-hooks`: `EventSource` закрывается навсегда на
+  410/404 стрима, клиент висит в «Reconnecting…» — при `error` клиент
+  проверяет `play.get`/`combats.get` и маппит 410/404 в `onEnd`
+  (`linkRevoked`/`deleted`), и для DM-стрима тоже.
 
 - 2.2-molecules-e, P2 → `fix-2.2`: `ExtraKeyboard` Toast — Space на Dismiss
   ничего не проверяет (Toast.stories.tsx:166-169). P3 → `fix-2.2`: таймер
