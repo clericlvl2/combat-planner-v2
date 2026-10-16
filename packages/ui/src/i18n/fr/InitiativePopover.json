@@ -1,0 +1,5 @@
+{
+  "title": "Valeur d’initiative",
+  "roll": "Lancer d20 {{bonus}}",
+  "anchor": "Définir l’initiative"
+}

@@ -1,0 +1,71 @@
+.panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 240px;
+  padding: 12px;
+  border: 2px solid var(--cp-color-ink);
+  border-radius: var(--mantine-radius-card);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+}
+
+.title {
+  align-self: center;
+  font-size: var(--mantine-font-size-small);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.bonus {
+  color: var(--cp-color-secondary);
+  font-weight: 500;
+}
+
+.steps {
+  position: relative;
+  display: flex;
+  justify-content: center;
+
+  & > .stepper {
+    width: auto;
+  }
+
+  &[data-empty] input:not(:focus) {
+    color: transparent;
+  }
+
+  &:has(input:focus) > .dash {
+    display: none;
+  }
+}
+
+.dash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-number);
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.anchor {
+  display: inline-flex;
+}
+
+.dropdown {
+  padding: 0;
+  border: none;
+  border-radius: var(--mantine-radius-card);
+  background: transparent;
+  box-shadow: none;
+}
