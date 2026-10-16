@@ -1,7 +1,7 @@
 import { UnstyledButton } from '@mantine/core';
 import { IconSearch, IconX } from '@tabler/icons-react';
 import { useRef } from 'react';
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef, MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import classes from './SearchField.module.css';
 
@@ -34,6 +34,7 @@ export function SearchField({
   const { t } = useTranslation('SearchField');
   const inputRef = useRef<HTMLInputElement>(null);
   const shownPlaceholder = placeholder ?? t('search');
+  const accessibleName = placeholder || t('search');
   const clearVisible = value !== '' && !disabled;
 
   const clear = () => {
@@ -42,11 +43,18 @@ export function SearchField({
     inputRef.current?.focus();
   };
 
+  const handleFrameMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (disabled || event.target !== event.currentTarget) return;
+    event.preventDefault();
+    inputRef.current?.focus();
+  };
+
   return (
     <div
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-size={size}
+      onMouseDown={handleFrameMouseDown}
     >
       <IconSearch className={classes.icon} size={iconSize[size]} stroke={2} aria-hidden="true" />
       <input
@@ -58,7 +66,7 @@ export function SearchField({
         spellCheck={false}
         value={value}
         placeholder={shownPlaceholder}
-        aria-label={shownPlaceholder}
+        aria-label={accessibleName}
         disabled={disabled}
         onChange={(event) => onChange(event.currentTarget.value)}
       />

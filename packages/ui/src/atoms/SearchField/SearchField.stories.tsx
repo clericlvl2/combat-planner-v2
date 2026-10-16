@@ -159,6 +159,29 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
+export const ExtraEmptyPlaceholder = meta.story({
+  name: 'Empty placeholder keeps the search label',
+  args: { value: '', placeholder: '' },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole('searchbox', { name: 'Search' });
+    await expect(input).toHaveAttribute('placeholder', '');
+    await expect(input).toHaveAttribute('aria-label', 'Search');
+  },
+});
+
+export const ExtraFrameClick = meta.story({
+  name: 'Clicking the frame focuses the input',
+  args: { value: 'ferry' },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole('searchbox', { name: 'Search' });
+    const frame = input.parentElement;
+    if (frame) {
+      await userEvent.pointer({ keys: '[MouseLeft]', target: frame, coords: { x: 4, y: 4 } });
+    }
+    await expect(input).toHaveFocus();
+  },
+});
+
 export const ExtraLocaleDe = meta.story({
   name: 'Locale de',
   globals: { locale: 'de' },
