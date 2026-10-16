@@ -47,7 +47,7 @@
 | 1-domain-rest | running worker-bee 2026-10-16T17:58:22+03:00 | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
 | fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
-| 2.1-atoms-a | rebased, report `.claude/artifacts/reports/2.1-atoms-a.md`, gate running | IconButton, ToolButton, TextField, TextArea |
+| 2.1-atoms-a | merged c33e019, guard running | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | running worker-bee 2026-10-16T18:08:06+03:00 | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | todo | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | todo | EscalationDie, RoleBlock |
