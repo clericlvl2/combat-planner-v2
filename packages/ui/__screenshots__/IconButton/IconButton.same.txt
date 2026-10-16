@@ -1,0 +1,3 @@
+Anatomy ExtraLocaleDe ExtraLocaleEs ExtraLocaleFr ExtraLocaleJa ExtraLocaleRu IconButtonOutlineM OutlineXDefault
+ExtraClick OutlineXFocus
+ExtraKeyboard PlainMenuFocus

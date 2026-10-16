@@ -1,0 +1,81 @@
+.root {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-full);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-size='S'] {
+    width: 36px;
+    height: 36px;
+  }
+
+  &[data-size='L'] {
+    width: 52px;
+    height: 52px;
+  }
+
+  &[data-variant='plain'] {
+    border: none;
+    background: transparent;
+  }
+
+  &[data-variant='soft'] {
+    border: none;
+    background: var(--cp-color-soft);
+  }
+
+  &[data-variant='filled'] {
+    border: none;
+    background: var(--cp-color-ink);
+    color: var(--cp-color-surface);
+  }
+
+  &:active:not(:disabled),
+  &[data-pressed] {
+    background: var(--cp-color-soft);
+
+    &[data-variant='soft'] {
+      background: var(--cp-color-disabled);
+    }
+
+    &[data-variant='filled'] {
+      background: var(--cp-color-ink-pressed);
+    }
+  }
+
+  &:disabled,
+  &[data-disabled] {
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+
+    &[data-variant='filled'] {
+      background: var(--cp-color-disabled);
+    }
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.icon {
+  flex: none;
+}
