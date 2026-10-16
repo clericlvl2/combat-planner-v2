@@ -77,9 +77,9 @@
 | fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
 | 2.4-api-hooks | merged c68a4dd..7132ceb (gate `.claude/run/2.4-api-hooks/` green), guard-bee running | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo | CombatScreen |
-| 2.4-CombatList | todo | CombatList |
+| 2.4-CombatList | todo, brief ready, next builder slot (after fix-2.3 merge) | CombatList |
 | 2.4-PlayerView | todo | Heroes, TurnOrder |
-| 2.4-Library | todo | Library |
+| 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | todo | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | running worker-bee 2026-10-17T09:00+03:00 | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
