@@ -47,7 +47,7 @@
 | 1-domain-rest | running worker-bee 2026-10-16T17:58:22+03:00 | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
 | fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
-| 2.1-atoms-a | running worker-bee 2026-10-16T17:55:06+03:00 | IconButton, ToolButton, TextField, TextArea |
+| 2.1-atoms-a | rebased, report `.claude/artifacts/reports/2.1-atoms-a.md`, gate running | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | todo | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | todo | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | todo | EscalationDie, RoleBlock |
@@ -89,6 +89,13 @@
 
 ## Вопросы владельцу
 
+- 2.1-atoms-a, решения оркестратора 2026-10-16: `LIMITS` живёт в
+  `packages/domain`; `fix-2.1` добавляет `@combat-planner/domain` в зависимости
+  `packages/ui` и заменяет литералы 80/40/500/250 на `LIMITS`; ToolButton иконка
+  16/20/24 по рендеру; доступное имя ToolButton из контента; TextField на
+  авто-растущем `<textarea>` принят, `fix-2.1` добавляет `type?: 'email' |
+  'password'` с `<input>` для SignIn/SignUp; поля на plain-элементах приняты;
+  переводы, отличные от английского слова, приняты, владелец правит после.
 - 1-domain-core, решения оркестратора 2026-10-16 по 21 вопросу отчёта: все
   приняты как описано. Отдельно: undo получает лог пятым параметром `apply`
   (`log: LogEntry[]`), глубина 10 и остановка на claim/release — в
@@ -110,6 +117,10 @@
 
 ## Отличия от рендеров
 
+- 2.1-atoms-a: focus-ячейки без каретки (реальный фокус делает baselines
+  нестабильными); счётчики показывают реальную длину значения, не моковые числа
+  страницы; `Description · 500 · error` — реальные 512 символов, поле ~16
+  строк вместо 2 обрезанных на странице.
 - 0.5-reference, ThemeAudit: две колонки, свотчи 14 px, подписи 9–10 px, чтобы
   уместиться в 390×844; подпись строки = ключ палитры; заметки Typefaces
   сокращены; сноска Radii/Spacing опущена. HP actions содержит `#F7E4E2` из
