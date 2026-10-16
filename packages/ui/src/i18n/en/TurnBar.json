@@ -1,0 +1,7 @@
+{
+  "nextTurn": "Next turn",
+  "startCombat": "Start combat",
+  "rollsMissingInitiative": "Rolls missing initiative",
+  "everyUnitDisabled": "Every unit is disabled",
+  "lastRound": "Round {{round}} is the last"
+}

@@ -1,0 +1,7 @@
+{
+  "nextTurn": "Nächster Zug",
+  "startCombat": "Kampf beginnen",
+  "rollsMissingInitiative": "Würfelt fehlende Initiative",
+  "everyUnitDisabled": "Alle Einheiten sind deaktiviert",
+  "lastRound": "Runde {{round}} ist die letzte"
+}
