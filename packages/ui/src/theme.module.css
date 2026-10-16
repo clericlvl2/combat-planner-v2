@@ -1,0 +1,72 @@
+.focus {
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.text {
+  color: var(--cp-color-ink);
+}
+
+.title {
+  color: var(--cp-color-ink);
+}
+
+.label {
+  font-size: var(--mantine-font-size-small);
+  font-weight: 600;
+  color: var(--cp-color-ink);
+}
+
+.error {
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  color: var(--cp-role-enemy);
+}
+
+.input {
+  border: 2px solid var(--cp-color-border);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  transition: none;
+
+  &::placeholder {
+    color: var(--cp-color-muted);
+  }
+
+  &:focus,
+  &:focus-within,
+  &[data-focus] {
+    border-color: var(--cp-color-ink);
+    outline: none;
+  }
+
+  &:disabled,
+  &[data-disabled] {
+    background: var(--cp-color-disabled);
+    color: var(--cp-color-muted);
+    opacity: 1;
+  }
+}
+
+.overlaySurface {
+  border: 2px solid var(--cp-color-ink);
+  background: var(--cp-color-surface);
+  box-shadow: none;
+}
+
+:global(:root[data-motion='off']) {
+  & *,
+  & *::before,
+  & *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
