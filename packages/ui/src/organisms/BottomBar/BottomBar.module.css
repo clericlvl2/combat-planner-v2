@@ -1,0 +1,26 @@
+.root {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 98px;
+  margin-top: auto;
+  padding: 10px 28px 28px;
+  border-top: 2px solid var(--cp-color-border);
+  background: var(--cp-color-background);
+}
+
+.hint {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--cp-color-secondary);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-small);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
