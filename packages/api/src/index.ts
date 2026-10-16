@@ -1,5 +1,10 @@
 export { createApiApp } from './app.ts';
 export type { ApiAppDeps, ApiAppEnv, AppType } from './app.ts';
+export { requireUser } from './auth/require-user.ts';
+export type { ResolvedSession, SessionResolver } from './auth/require-user.ts';
+export { combatsApp } from './combats/routes.ts';
+export { broadcast, broadcastDocument, subscribe, subscriberCount } from './live/registry.ts';
+export type { Audience, Subscriber } from './live/registry.ts';
 export { openDatabase } from './db/index.ts';
 export type { AppDatabase, OpenedDatabase } from './db/index.ts';
 export { runMigrations } from './db/migrate.ts';

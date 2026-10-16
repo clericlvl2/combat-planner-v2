@@ -18,7 +18,9 @@ import {
 } from '@combat-planner/domain';
 import type { Hono } from 'hono';
 import { hc } from 'hono/client';
+import type { HonoBase } from 'hono/hono-base';
 import type { BlankEnv } from 'hono/types';
+import type { UnionToIntersection } from 'hono/utils/types';
 import { z } from 'zod';
 import type { AppType } from './app.ts';
 import {
@@ -37,9 +39,6 @@ import type {
   AccountPatch,
   ApiClient,
   ApiErrorCode,
-  CombatCreateInput,
-  CombatPatch,
-  CombatSummary,
   ConnectionListener,
   ConnectionState,
   DocumentListener,
@@ -112,17 +111,6 @@ type PlannedRoutes = {
   };
   '/auth/sign-out': { $post: JsonEndpoint<NoInput, { success: boolean }> };
   '/auth/get-session': { $get: JsonEndpoint<NoInput, AuthResponse | null> };
-  '/combats': {
-    $get: JsonEndpoint<NoInput, CombatSummary[]>;
-    $post: JsonEndpoint<{ json: CombatCreateInput }, Combat>;
-  };
-  '/combats/:id': {
-    $get: JsonEndpoint<IdParam, Combat>;
-    $patch: JsonEndpoint<IdParam & { json: CombatPatch }, VersionResult>;
-    $delete: JsonEndpoint<IdParam, null>;
-  };
-  '/combats/:id/duplicate': { $post: JsonEndpoint<IdParam & { json: { id: CombatId } }, Combat> };
-  '/combats/:id/open': { $post: JsonEndpoint<IdParam, Combat> };
   '/combats/:id/actions': { $post: JsonEndpoint<IdParam & { json: Action }, VersionResult> };
   '/combats/:id/link': { $get: JsonEndpoint<IdParam, Link> };
   '/combats/:id/link/reissue': { $post: JsonEndpoint<IdParam, LinkReissueResult> };
@@ -157,8 +145,9 @@ type PlannedRoutes = {
   };
 };
 
-type AppSchema = AppType extends Hono<infer _Env, infer S, infer _Base> ? S : never;
-type ClientApp = Hono<BlankEnv, AppSchema & PlannedRoutes>;
+type AppSchema =
+  AppType extends HonoBase<infer _Env, infer S, infer _Base, infer _Current> ? S : never;
+type ClientApp = Hono<BlankEnv, UnionToIntersection<AppSchema> & PlannedRoutes>;
 
 interface RawResponse {
   ok: boolean;
