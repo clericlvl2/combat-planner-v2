@@ -54,7 +54,7 @@
 | fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
 | 2.2-molecules-a | guarded `.claude/artifacts/guard/2.2-molecules-a.md` | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
-| 2.2-molecules-c | running worker-bee 2026-10-16T20:22+03:00 | HpBox, HistoryRow, DefenseLine |
+| 2.2-molecules-c | rebased, report `.claude/artifacts/reports/2.2-molecules-c.md`, gate running | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | rebased, report `.claude/artifacts/reports/2.2-molecules-d.md`, gate running | NoteField, InitiativePopover |
 | 2.2-molecules-e | running worker-bee 2026-10-16T20:46+03:00 | Toast, EmptyState |
 | fix-2.2 | todo | |
@@ -81,13 +81,22 @@
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
-| 3-server-live | todo | events route, play routes |
+| 3-server-live | running worker-bee 2026-10-16T20:50+03:00 | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.2-molecules-c, решения оркестратора 2026-10-16: у страницы HpBox нет Flow
+  (бриф ошибался) — play в cell-историях принят; «999/999» как
+  `ExtraThreeDigitsFull999` принято; `disabled` только вид, клик работает,
+  read-only без `onClick` — `div` — принято; HistoryRow без `now`, раунд по
+  vision — принято; цвета чипа HistoryRow из палитры conditions по странице —
+  принято; `fix-2.2`: Chip-`span` пробрасывает `...rest` (HistoryRow убирает
+  обёртку); `fix-2.2`: три тинта игрока HpBox `#E3F1E6`, `#F8ECD2`, `#FBE3D8`
+  переезжают в `theme.ts`.
 
 - 2.2-molecules-d, решения оркестратора 2026-10-16: `fix-2.2` даёт Stepper
   `signed?: boolean` (по умолчанию `min < 0`) и `value: number | null` с пустым
@@ -199,6 +208,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.2-molecules-c: ячейки на канвасе со сценой, копирующей сцену ячейки, без
+  подписей; HpBox `ExtraClick`/`ExtraKeyboard`/`ExtraDisabledStillOpens` с
+  фокус-кольцом после взаимодействия.
 
 - 2.2-molecules-d: InitiativePopover со знаком `+15` (уходит в `fix-2.2`); de/fr
   заголовки отличаются от en; NoteField «Field, editing» без каретки.
