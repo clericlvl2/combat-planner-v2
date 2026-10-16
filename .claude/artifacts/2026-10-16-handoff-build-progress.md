@@ -66,7 +66,7 @@
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
-| 2.3-organisms-g | running worker-bee 2026-10-17T01:50+03:00 (ahead of c/e/f: they need Menu from b) | ConditionPicker, TagSheet |
+| 2.3-organisms-g | rebased, report `.claude/artifacts/reports/2.3-organisms-g.md`, gate running | ConditionPicker, TagSheet |
 | 2.3-organisms-h | todo | SortSheet, ShareSheet |
 | 2.3-organisms-i | todo | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
@@ -84,13 +84,23 @@
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
-| fix-3 | todo, brief ready, waits for a builder slot | live, auth |
+| fix-3 | running worker-bee Opus 5.5 xhigh 2026-10-17T02:55+03:00 | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-g, решения оркестратора 2026-10-17: `fix-2.3` меняет CheckList
+  по решению владельца — Create только когда ни одна опция не содержит запрос
+  (без учёта регистра), TagSheet снимает обходной путь; `fix-2.3` добавляет
+  `badge?` в `CheckListOption` для метки `new` и возвращает подсветку новой
+  строки; `fix-2.3` прокидывает `maxLength` в `<input>` SearchField, TagSheet
+  снимает обрезку в `onChange`; пропсы TagSheet (`opened`, `onDone`,
+  `onClose`, `presetName`, `presetCount`) и ConditionPicker (`opened`,
+  `unitName`, `onClose`) приняты; «не срабатывает» у ConditionPicker через
+  Done/× без `onChange` принято.
 
 - 2.3-organisms-b, решения оркестратора 2026-10-17: `hint?` и `divider?` у
   пунктов Menu приняты; API Menu — источник через `target` (React-элемент),
@@ -279,6 +289,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-g: TagSheet «“mo” matches» без строки Create (решение
+  владельца); список из 8 тегов вместо 6; «Created and checked» без метки
+  `new` (уходит в `fix-2.3`); ConditionPicker с зазорами Sheet 12 вместо 8.
 
 - 2.3-organisms-b: Drawer на полную высоту PhoneFrame (ячейка страницы 640),
   скрим ink 50 %; ячейки Menu в углу PhoneFrame с отступом 12; открытое у
