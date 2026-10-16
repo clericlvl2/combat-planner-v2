@@ -69,7 +69,7 @@
 | 2.3-organisms-f | running worker-bee 2026-10-17T05:30+03:00 | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
-| 2.3-organisms-i | rebased, report `.claude/artifacts/reports/2.3-organisms-i.md`, gate running | MessageScreen, PlayerRow |
+| 2.3-organisms-i | merged c2860d6, gate ok `.claude/run/2.3-organisms-i/summary.log` (test and visual passed on retry, import flake), guard running | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
@@ -604,6 +604,11 @@
   --frozen-lockfile` в основном checkout для guard-bee.
 
 ## Падения гейта
+
+- 2.3-organisms-i: `pnpm test` (iframe не поднялся, «failed to find the
+  runner») и `visual` («Failed to fetch dynamically imported module») упали на
+  импорте; повторы прошли (1234 и 807 тестов). Падения импорта после rebase
+  стали частыми — `fix-2.3` добавляет зависимости в `optimizeDeps.include`.
 
 - 2.3-organisms-h: `pnpm test` (импорт stories) и `visual` («Failed to fetch
   dynamically imported module» visual.test.tsx — Vite оптимизировал
