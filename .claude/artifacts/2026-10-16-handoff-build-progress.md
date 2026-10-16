@@ -81,7 +81,7 @@
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
-| 3-server-live | rebased, report `.claude/artifacts/reports/3-server-live.md`, gate running | events route, play routes |
+| 3-server-live | merged d325504, gate ok `.claude/run/3-server-live/summary.log`, guard running | events route, play routes |
 | 3-server-rest | running worker-bee 2026-10-16T21:25+03:00, resumed 23:21 after API rate limit | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
