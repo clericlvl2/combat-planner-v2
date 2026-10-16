@@ -118,3 +118,5 @@ export type {
   UndoAction,
   UnitForm,
 } from './actions.ts';
+export { healthSegments, healthStatus } from './healthStatus.ts';
+export type { HealthSegments } from './healthStatus.ts';
