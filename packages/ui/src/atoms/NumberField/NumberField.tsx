@@ -1,6 +1,7 @@
+import { LIMITS } from '@combat-planner/domain';
 import { IconAlertCircle } from '@tabler/icons-react';
-import { useId, useState } from 'react';
-import type { ComponentPropsWithoutRef, KeyboardEvent } from 'react';
+import { useId, useRef, useState } from 'react';
+import type { ComponentPropsWithoutRef, CSSProperties, KeyboardEvent, MouseEvent } from 'react';
 import classes from './NumberField.module.css';
 
 export interface NumberFieldProps extends Omit<
@@ -26,8 +27,8 @@ export function NumberField({
   label,
   value,
   onChange,
-  min = 0,
-  max = 999,
+  min = LIMITS.amount.min,
+  max = LIMITS.amount.max,
   step = 1,
   inputMode = 'numeric',
   error,
@@ -36,6 +37,9 @@ export function NumberField({
   ...rest
 }: NumberFieldProps) {
   const inputId = useId();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const digits = Math.max(String(min).length, String(max).length);
+  const inputStyle = { '--number-digits': digits } as CSSProperties;
   const errorId = useId();
   const [draft, setDraft] = useState(format(value));
   const [shownValue, setShownValue] = useState(value);
@@ -80,15 +84,24 @@ export function NumberField({
     commit(clamp((value ?? 0) + delta));
   };
 
+  const handleFrameMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (disabled || event.target === inputRef.current) return;
+    event.preventDefault();
+    inputRef.current?.focus();
+  };
+
   return (
     <div {...rest} className={className ? `${classes.root} ${className}` : classes.root}>
-      <div className={classes.field}>
+      <div className={classes.field} data-field="" onMouseDown={handleFrameMouseDown}>
         <label className={classes.label} htmlFor={inputId}>
           {label}
         </label>
         <input
+          ref={inputRef}
           id={inputId}
           className={classes.input}
+          style={inputStyle}
+          size={digits}
           type="text"
           inputMode={inputMode}
           autoComplete="off"

@@ -29,7 +29,7 @@ function NumberFieldCell({
       <NumberField
         {...props}
         label={label ?? t(labelKey)}
-        error={errorKey ? t(errorKey) : undefined}
+        error={errorKey ? t(errorKey, { min: props.min, max: props.max }) : undefined}
         value={value}
         onChange={(next) => {
           setValue(next);
@@ -191,11 +191,43 @@ export const ExtraDisabled = meta.story({
 
 export const ExtraError = meta.story({
   name: 'Error',
-  args: { value: null, labelKey: 'maxHp', min: 1, errorKey: 'errorRange' },
+  args: { value: null, labelKey: 'maxHp', min: 1, max: 999, errorKey: 'errorRange' },
   play: async ({ canvas }) => {
     const input = canvas.getByRole('textbox', { name: 'Max HP' });
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await expect(input).toHaveAccessibleDescription('From 1 to 999');
+  },
+});
+
+export const ExtraFrameClick = meta.story({
+  name: 'Clicking the frame focuses the input',
+  args: { value: 12, onChange: fn() },
+  play: async ({ canvas }) => {
+    const input = canvas.getByRole('textbox', { name: 'Amount' });
+    const frame = input.closest<HTMLElement>('[data-field]');
+    if (frame) {
+      await userEvent.pointer({ keys: '[MouseLeft]', target: frame, coords: { x: 4, y: 4 } });
+    }
+    await expect(input).toHaveFocus();
+  },
+});
+
+export const ExtraDefenseWidth = meta.story({
+  name: 'Width follows the digits of max',
+  args: { value: 99, min: 0, max: 99, onChange: fn() },
+  render: (args) => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <NumberFieldCell {...args} />
+      <NumberFieldCell {...args} min={1} max={999} value={999} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const [defense, maxHp] = canvas.getAllByRole('textbox', { name: 'Amount' });
+    await expect(defense).toHaveAttribute('size', '2');
+    await expect(maxHp).toHaveAttribute('size', '3');
+    const widths = [defense, maxHp].map((input) => input?.getBoundingClientRect().width ?? 0);
+    await expect(widths[0]).toBeLessThan(widths[1] ?? 0);
+    await expect(widths[1]).toBeLessThanOrEqual(96);
   },
 });
 
@@ -238,7 +270,7 @@ export const ExtraLocaleJa = meta.story({
 export const ExtraLocaleRu = meta.story({
   name: 'Locale ru',
   globals: { locale: 'ru' },
-  args: { value: null, labelKey: 'maxHp', min: 1, errorKey: 'errorRange' },
+  args: { value: null, labelKey: 'maxHp', min: 1, max: 999, errorKey: 'errorRange' },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('От 1 до 999')).toBeVisible();
   },

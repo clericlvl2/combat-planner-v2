@@ -1,5 +1,5 @@
 {
   "amount": "Amount",
   "maxHp": "Max HP",
-  "errorRange": "From 1 to 999"
+  "errorRange": "From {{min}} to {{max}}"
 }

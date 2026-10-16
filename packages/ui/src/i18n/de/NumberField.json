@@ -1,5 +1,5 @@
 {
   "amount": "Wert",
   "maxHp": "Max. TP",
-  "errorRange": "Von 1 bis 999"
+  "errorRange": "Von {{min}} bis {{max}}"
 }

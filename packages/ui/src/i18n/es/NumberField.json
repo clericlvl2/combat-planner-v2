@@ -1,5 +1,5 @@
 {
   "amount": "Cantidad",
   "maxHp": "PG máx.",
-  "errorRange": "De 1 a 999"
+  "errorRange": "De {{min}} a {{max}}"
 }
