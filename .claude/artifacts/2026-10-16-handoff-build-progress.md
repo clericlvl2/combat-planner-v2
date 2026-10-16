@@ -56,7 +56,7 @@
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | merged ca1cc6c, gate ok `.claude/run/2.2-molecules-c/summary.log` (re-gated after 2.2-molecules-d), guard running | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
-| 2.2-molecules-e | running worker-bee 2026-10-16T20:46+03:00 | Toast, EmptyState |
+| 2.2-molecules-e | rebased, report `.claude/artifacts/reports/2.2-molecules-e.md`, gate running | Toast, EmptyState |
 | fix-2.2 | todo | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
 | 2.3-organisms-b | todo | Menu, Drawer |
@@ -82,12 +82,19 @@
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | running worker-bee 2026-10-16T20:50+03:00 | events route, play routes |
-| 3-server-rest | todo | auth, presets, tags, settings, account |
+| 3-server-rest | running worker-bee 2026-10-16T21:25+03:00 | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.2-molecules-e, решения оркестратора 2026-10-16: текст Toast 16/400 по
+  разметке и рендеру (SPEC говорит 14/500) — принято; `fix-2.2`: при
+  `motion: 'off'` таймер автоскрытия Toast не запускается (CLAUDE.md: `motion:
+  'off'` отключает таймеры), тост живёт до dismiss; позиционирование
+  `aboveBottomBar` и стек тостов в `useToasts` (2.4) приняты; `duration: null`
+  для «Reconnecting…» принят; action → `onAction` + `onHide` принято.
 
 - 2.2-molecules-c, решения оркестратора 2026-10-16: у страницы HpBox нет Flow
   (бриф ошибался) — play в cell-историях принят; «999/999» как
@@ -208,6 +215,9 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.2-molecules-e: Toast-истории внутри PhoneFrame, не на канвасе; `undone` без
+  Redo (vision, errata); EmptyState на канвасе 358 с телом до 280.
 
 - 2.2-molecules-c: ячейки на канвасе со сценой, копирующей сцену ячейки, без
   подписей; HpBox `ExtraClick`/`ExtraKeyboard`/`ExtraDisabledStillOpens` с
