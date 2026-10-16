@@ -58,7 +58,7 @@ export function Chip({
     style: conditionColors ? { ...conditionColors, ...style } : style,
     'data-variant': variant,
     'data-size': size,
-    'data-condition': variant === 'condition' ? (condition ?? 'fear') : undefined,
+    'data-condition': condition,
     'data-selected': selected || undefined,
     'data-removable': removable || undefined,
   };
@@ -76,7 +76,7 @@ export function Chip({
   );
   if (onClick === undefined && onRemove === undefined) {
     return (
-      <span {...data} data-disabled={disabled || undefined}>
+      <span {...rest} {...data} data-disabled={disabled || undefined}>
         {content}
       </span>
     );

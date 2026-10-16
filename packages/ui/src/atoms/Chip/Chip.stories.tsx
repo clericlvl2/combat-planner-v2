@@ -437,3 +437,25 @@ export const ExtraLocaleJa = meta.story({
     await expect(canvas.getByText('よろめき')).toBeVisible();
   },
 });
+
+export const ExtraStaticForwardsProps = meta.story({
+  name: 'Static chip forwards props',
+  render: () => (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <Chip variant="meta" id="chip-meta" data-part="kind" aria-describedby="chip-status">
+        Max
+      </Chip>
+      <Chip variant="status" id="chip-status" selected>
+        Active
+      </Chip>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const chip = canvasElement.querySelector<HTMLElement>('#chip-meta');
+    await expect(chip?.tagName).toBe('SPAN');
+    await expect(chip).toHaveAttribute('data-part', 'kind');
+    await expect(chip).toHaveAttribute('aria-describedby', 'chip-status');
+    await expect(chip).not.toHaveAttribute('data-condition');
+    await expect(canvasElement.querySelector('#chip-status')).not.toHaveAttribute('data-condition');
+  },
+});
