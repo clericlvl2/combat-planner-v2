@@ -43,9 +43,10 @@
 | -1-renders | guarded — | renders, errata |
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
-| 1-domain-core | merged 7e02ae7, guard running | types, schemas, actions, health, sort, names, reduce, authorize |
+| 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | running worker-bee 2026-10-16T17:58:22+03:00 | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
+| fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | running worker-bee 2026-10-16T17:55:06+03:00 | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | todo | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | todo | Swatch, Chip, StatSquare |
@@ -138,6 +139,12 @@
   меняет визуальный порядок групп; `.sampleUse` скрыт, но рендерится; stale
   baseline `Hello` — удалить `Hello` целиком; `Button` не экспортирован из
   `index.ts` (экспорты собирает `fix-2.4`).
+
+- 1-domain-core, P2 → пачка `fix-1-domain-core` после `1-domain-rest`:
+  `setMaxHpOf` оставляет HP ниже `−newMax` (reduce.ts:166, тот же путь через
+  `editUnit`); P3: `copyCombat` сбрасывает `disabled` (vision не перечисляет
+  его среди сбросов — копия сохраняет `disabled`); P3: тесты «Depth: 10 steps
+  back…» проверяют только константу — `1-domain-rest` покрывает поведение.
 
 ## Падения гейта
 
