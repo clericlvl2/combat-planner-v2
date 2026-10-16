@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite-plus';
 import { playwright } from 'vite-plus/test/browser-playwright';
@@ -37,6 +38,19 @@ export default defineConfig({
           root: rootDir,
           include: ['packages/*/src/**/*.test.ts', 'apps/*/src/**/*.test.ts'],
           environment: 'node',
+        },
+      },
+      {
+        root: uiDir,
+        plugins: [storybookTest({ configDir: path.join(uiDir, '.storybook') })],
+        test: {
+          name: 'storybook',
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright(),
+            instances: [{ browser: 'chromium' }],
+          },
         },
       },
       {
