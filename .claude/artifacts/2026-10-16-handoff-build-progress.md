@@ -29,8 +29,8 @@
 
 ## Текущий шаг
 
-Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Идёт фаза 2.2: молекулы по две
-параллельно, вторая очередь — `3-server-actions` (рестарт после отключения питания). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
+Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Фаза 2.2: пять пачек молекул слиты и проверены, идёт `fix-2.2`; параллельно
+фаза 3 (`3-server-live` на гейте, `3-server-rest` строится). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
 Интеграция: `.claude/run/gate.sh <batch> <worktree> <range>` в фоне, затем
 `.claude/run/merge.sh <batch>` (rebase на master, где с момента гейта менялись
 только `.claude/**`, ff-merge, удаление worktree и ветки).
@@ -56,8 +56,8 @@
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | guarded `.claude/artifacts/guard/2.2-molecules-c.md` | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
-| 2.2-molecules-e | merged d7329f5, gate ok `.claude/run/2.2-molecules-e/summary.log`, guard running | Toast, EmptyState |
-| fix-2.2 | todo | |
+| 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
+| fix-2.2 | running worker-bee 2026-10-16T23:40+03:00 | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
 | 2.3-organisms-b | todo | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
@@ -270,6 +270,12 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.2-molecules-e, P2 → `fix-2.2`: `ExtraKeyboard` Toast — Space на Dismiss
+  ничего не проверяет (Toast.stories.tsx:166-169). P3 → `fix-2.2`: таймер
+  автоскрытия при `motion: 'off'` (Toast.tsx:77-81). Решение оркестратора: ключ
+  `Toast.show` и тексты тостов из vision остаются в неймспейсе `Toast`; хост
+  2.4 (`useToasts`, экраны) берёт копию оттуда, не дублирует.
 
 - 2.2-molecules-c, P3 → `fix-2.2`: HistoryRow Chip `variant="condition"` без
   `condition` даёт `data-condition="fear"` на каждом чипе (HistoryRow.tsx:72-76);
