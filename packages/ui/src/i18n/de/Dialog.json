@@ -1,0 +1,23 @@
+{
+  "cancel": "Abbrechen",
+  "opener": "Kampf leeren",
+  "restartTitle": "Kampf neu starten?",
+  "restartBody": "Einheiten und Zuordnungen bleiben. Initiative, TP, temporäre TP, Zustände, Deaktivierung, TP-Verlauf, Runde und Eskalationswürfel werden zurückgesetzt.",
+  "restart": "Neu starten",
+  "clearTitle": "Kampf leeren?",
+  "clearBody": "Alle {{n}} Einheiten werden entfernt und jede Spielerzuordnung wird freigegeben.",
+  "clear": "Leeren",
+  "removeTitle": "{{name}} entfernen?",
+  "removeBody": "Die Einheit verlässt die Zugreihenfolge. Rückgängig holt sie zurück.",
+  "remove": "Entfernen",
+  "revokeTitle": "Link widerrufen?",
+  "revokeBody": "Der aktuelle Link funktioniert nicht mehr und jede Zuordnung wird freigegeben. Die Spieler brauchen den neuen Link.",
+  "revoke": "Widerrufen",
+  "deleteCombatTitle": "{{name}} löschen?",
+  "deleteCombatBody": "Der Kampf, seine {{n}} Einheiten und der Spielerlink werden gelöscht. Das lässt sich nicht rückgängig machen.",
+  "delete": "Löschen",
+  "deletePresetTitle": "{{name}} löschen?",
+  "deletePresetBody": "Die Vorlage verlässt die Bibliothek. Bereits zu Kämpfen hinzugefügte Einheiten bleiben.",
+  "deleteAccountTitle": "Dein Konto löschen?",
+  "deleteAccountBody": "Alle Kämpfe, Vorlagen und Spielerlinks werden gelöscht. Das lässt sich nicht rückgängig machen."
+}

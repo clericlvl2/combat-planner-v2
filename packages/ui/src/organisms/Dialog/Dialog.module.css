@@ -1,0 +1,83 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+}
+
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--cp-color-ink) 50%, transparent);
+}
+
+.inner {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  pointer-events: none;
+}
+
+.dialog {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  max-height: 100%;
+  padding: 16px;
+  overflow-y: auto;
+  border: 2px solid var(--cp-color-ink);
+  border-radius: var(--mantine-radius-sheet);
+  background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
+  pointer-events: all;
+}
+
+.icon {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--mantine-radius-full);
+  background: var(--cp-hp-danger-soft);
+  color: var(--cp-role-enemy);
+
+  .dialog[data-tone='ink'] & {
+    background: var(--cp-color-soft);
+    color: var(--cp-color-ink);
+  }
+}
+
+.title {
+  margin: 0;
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-number);
+  font-weight: 700;
+  line-height: var(--mantine-line-height-snug);
+  overflow-wrap: anywhere;
+}
+
+.body {
+  margin: 0;
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-body);
+  line-height: var(--mantine-line-height-body);
+  text-wrap: pretty;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 4px;
+}
+
+.action {
+  flex: 1 1 0;
+  min-width: 0;
+}

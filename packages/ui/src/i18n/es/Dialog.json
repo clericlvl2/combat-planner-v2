@@ -1,0 +1,23 @@
+{
+  "cancel": "Cancelar",
+  "opener": "Vaciar combate",
+  "restartTitle": "¿Reiniciar el combate?",
+  "restartBody": "Las unidades y las reclamaciones se mantienen. Se reinician iniciativa, PG, PG temporales, estados, desactivación, historial de PG, ronda y dado de escalada.",
+  "restart": "Reiniciar",
+  "clearTitle": "¿Vaciar el combate?",
+  "clearBody": "Se eliminan las {{n}} unidades y se liberan todas las reclamaciones de jugadores.",
+  "clear": "Vaciar",
+  "removeTitle": "¿Quitar a {{name}}?",
+  "removeBody": "La unidad sale del orden de turnos. Deshacer puede recuperarla.",
+  "remove": "Quitar",
+  "revokeTitle": "¿Revocar el enlace?",
+  "revokeBody": "El enlace actual deja de funcionar y se liberan todas las reclamaciones. Los jugadores necesitan el nuevo enlace.",
+  "revoke": "Revocar",
+  "deleteCombatTitle": "¿Eliminar {{name}}?",
+  "deleteCombatBody": "Se eliminan el combate, sus {{n}} unidades y el enlace de jugadores. No se puede deshacer.",
+  "delete": "Eliminar",
+  "deletePresetTitle": "¿Eliminar {{name}}?",
+  "deletePresetBody": "La plantilla sale de la Biblioteca. Las unidades ya añadidas a combates se mantienen.",
+  "deleteAccountTitle": "¿Eliminar tu cuenta?",
+  "deleteAccountBody": "Se eliminan todos los combates, plantillas y enlaces de jugadores. No se puede deshacer."
+}

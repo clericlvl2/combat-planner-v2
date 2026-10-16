@@ -1,0 +1,23 @@
+{
+  "cancel": "キャンセル",
+  "opener": "戦闘をクリア",
+  "restartTitle": "戦闘をやり直しますか？",
+  "restartBody": "ユニットと割り当てはそのままです。イニシアチブ、HP、一時HP、状態、無効化、HP履歴、ラウンド、エスカレーションダイスがリセットされます。",
+  "restart": "やり直す",
+  "clearTitle": "戦闘をクリアしますか？",
+  "clearBody": "{{n}}体のユニットがすべて削除され、プレイヤーの割り当てはすべて解除されます。",
+  "clear": "クリア",
+  "removeTitle": "{{name}}を削除しますか？",
+  "removeBody": "ユニットは手番順から外れます。元に戻すで復元できます。",
+  "remove": "削除",
+  "revokeTitle": "リンクを無効にしますか？",
+  "revokeBody": "現在のリンクは使えなくなり、割り当てはすべて解除されます。プレイヤーには新しいリンクが必要です。",
+  "revoke": "無効にする",
+  "deleteCombatTitle": "{{name}}を削除しますか？",
+  "deleteCombatBody": "戦闘、その{{n}}体のユニット、プレイヤー用リンクが削除されます。元に戻せません。",
+  "delete": "削除",
+  "deletePresetTitle": "{{name}}を削除しますか？",
+  "deletePresetBody": "プリセットはライブラリから削除されます。戦闘に追加済みのユニットは残ります。",
+  "deleteAccountTitle": "アカウントを削除しますか？",
+  "deleteAccountBody": "すべての戦闘、プリセット、プレイヤー用リンクが削除されます。元に戻せません。"
+}
