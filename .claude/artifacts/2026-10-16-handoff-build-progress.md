@@ -65,7 +65,7 @@
 | fix-2.3-organisms-b | guarded `.claude/artifacts/guard/fix-2.3-organisms-b.md` (P1 ×2 closed) | Menu, Drawer |
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
-| 2.3-organisms-e | rebased, report `.claude/artifacts/reports/2.3-organisms-e.md`, gate running | CombatHeader, CombatCard |
+| 2.3-organisms-e | reported `.claude/artifacts/reports/2.3-organisms-e.md`, rebase conflict in `allow-same.txt` back to the agent (gate started on the conflicted tree by mistake, stopped) | CombatHeader, CombatCard |
 | 2.3-organisms-f | running worker-bee 2026-10-17T05:30+03:00 | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | guarded `.claude/artifacts/guard/2.3-organisms-h.md` | SortSheet, ShareSheet |
