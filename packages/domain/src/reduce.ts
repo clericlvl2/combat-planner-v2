@@ -1,4 +1,5 @@
 import type { Action, ActionOf } from './actions.ts';
+import { authorize } from './authorize.ts';
 import { DomainError } from './errors.ts';
 import { copyTitle, duplicateName } from './names.ts';
 import { LIMITS } from './schemas.ts';
@@ -474,6 +475,8 @@ const diff = (before: Combat, after: Combat, actionId: ActionId): Patch => {
 };
 
 export const apply = (combat: Combat, action: Action, author: Viewer, now: string): ApplyResult => {
+  const allowed = authorize(combat, action, author);
+  if (allowed !== true) return allowed;
   if (action.version !== combat.version) {
     return new DomainError(
       'version',

@@ -135,3 +135,5 @@ export {
 } from './reduce.ts';
 export type { Applied, ApplyResult, NextTurnBlockReason, NextTurnTarget, Patch } from './reduce.ts';
 export { applyUndo } from './undo.ts';
+export { PLAYER_ACTION_TYPES, authorize, isPlayerAction } from './authorize.ts';
+export type { PlayerActionType } from './authorize.ts';
