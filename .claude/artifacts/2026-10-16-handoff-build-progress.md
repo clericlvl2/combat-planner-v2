@@ -48,7 +48,7 @@
 | 1-api-contract | merged 5395d7a, guard running | ApiClient |
 | fix-1-domain-core | running worker-bee 2026-10-16T18:28:18+03:00 | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
-| 2.1-atoms-b | merged 50993bf, guard running | SearchField, NumberField, Checkbox, Radio |
+| 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | running worker-bee 2026-10-16T18:23:39+03:00 | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | todo | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
@@ -187,6 +187,11 @@
   `linkGeneration` (schemas.ts:166-169, project.ts:47); имя теста
   undo.test.ts:254 «with its claim» не соответствует телу. P3 отложено:
   `check-domain-tests.mjs` принимает `it('<name>')` с любым телом.
+
+- 2.1-atoms-b → `fix-2.1`: P2 NumberField ширина инпута держится только на
+  `field-sizing: content` (нужен `size` или ширина в ch); P3 SearchField
+  `placeholder=""` даёт `aria-label=""`; P3 `cursor: text` на рамке
+  SearchField/NumberField без проброса клика в инпут.
 
 ## Падения гейта
 
