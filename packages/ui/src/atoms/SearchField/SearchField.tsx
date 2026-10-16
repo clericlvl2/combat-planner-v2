@@ -44,7 +44,7 @@ export function SearchField({
   };
 
   const handleFrameMouseDown = (event: MouseEvent<HTMLDivElement>) => {
-    if (disabled || event.target !== event.currentTarget) return;
+    if (disabled || event.target === inputRef.current) return;
     event.preventDefault();
     inputRef.current?.focus();
   };

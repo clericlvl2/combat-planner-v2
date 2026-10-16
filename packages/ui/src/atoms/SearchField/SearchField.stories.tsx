@@ -179,6 +179,13 @@ export const ExtraFrameClick = meta.story({
       await userEvent.pointer({ keys: '[MouseLeft]', target: frame, coords: { x: 4, y: 4 } });
     }
     await expect(input).toHaveFocus();
+    input.blur();
+    const icon = frame?.querySelector('svg');
+    if (icon) {
+      await userEvent.pointer({ keys: '[MouseLeft]', target: icon });
+    }
+    await expect(icon).not.toBeNull();
+    await expect(input).toHaveFocus();
   },
 });
 
