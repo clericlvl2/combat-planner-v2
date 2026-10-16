@@ -81,7 +81,7 @@
 | 2.4-AppPages | todo | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
-| 3-server-schema | merged 2d0cb4f, guard running | schema, migrations, client-hono, server main |
+| 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | running worker-bee 2026-10-16T19:03:14+03:00 | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
@@ -244,6 +244,11 @@
   `DMEditable`/`Tap`/`Preset320HP`/`Preset999HP` без проверки заливки; P3 `Tap`
   сравнивает с `base.accent` вместо `interaction.tapMarker`; P3 проп `role`
   затеняет ARIA `role` → `unitRole`.
+
+- 3-server-schema, P3 отложено: `JSON.parse(event.data)` в `hono-client.ts:330`
+  вне `safeParse` — битый SSE-payload бросает в слушателе (в `3-server-live` или
+  `fix-3`). Оркестратор после каждого merge запускает `pnpm install
+  --frozen-lockfile` в основном checkout для guard-bee.
 
 ## Падения гейта
 
