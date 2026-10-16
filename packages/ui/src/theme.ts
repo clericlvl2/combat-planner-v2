@@ -87,7 +87,26 @@ export const conditions: Record<ConditionName, { fill: string; text: string }> =
   staggered: { fill: '#DCE6F7', text: '#1E4E8C' },
 };
 
-export const palette = { base, roles, health, hpActions, interaction, conditions } as const;
+export const combatColors = [
+  '#B4232A',
+  '#A85400',
+  '#8A6A00',
+  '#2E7A43',
+  '#0E5E63',
+  '#1E5FA8',
+  '#5C4026',
+  '#8C8578',
+] as const;
+
+export const palette = {
+  base,
+  roles,
+  health,
+  hpActions,
+  interaction,
+  conditions,
+  combatColors,
+} as const;
 
 export const fontFamilies = {
   display: "'Unbounded', 'Noto Sans JP', sans-serif",
@@ -147,6 +166,9 @@ export function paletteVariables(): Record<string, string> {
     variables[`--cp-condition-${name}-fill`] = conditions[name].fill;
     variables[`--cp-condition-${name}-text`] = conditions[name].text;
   }
+  combatColors.forEach((value, index) => {
+    variables[`--cp-combat-${index}`] = value;
+  });
   variables['--cp-font-display'] = fontFamilies.display;
   variables['--cp-font-ui'] = fontFamilies.ui;
   return variables;

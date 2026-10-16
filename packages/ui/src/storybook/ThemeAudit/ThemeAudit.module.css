@@ -1,33 +1,27 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin: -16px;
-  padding: 8px;
+  padding: 6px;
   background: #dcd8cf;
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
 }
 
 .colors {
-  columns: 2;
-  column-gap: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .panel {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-  padding: 6px 10px;
+  gap: 2px;
+  padding: 4px 8px;
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-background);
-  break-inside: avoid;
-
-  .root > &,
-  .split > & {
-    margin-bottom: 0;
-  }
 }
 
 .panelTitle {
@@ -48,9 +42,9 @@
 
 .row {
   display: grid;
-  grid-template-columns: 14px max-content minmax(0, 1fr);
+  grid-template-columns: 12px max-content minmax(0, 1fr);
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   padding: 1px 0;
   border-bottom: 1px solid var(--cp-color-disabled);
   font-size: 9px;
@@ -62,11 +56,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
   border: 1px solid rgb(0 0 0 / 12%);
-  border-radius: 4px;
-  font-size: 6px;
+  border-radius: 3px;
+  font-size: 5px;
   font-weight: 700;
 }
 
@@ -165,12 +159,20 @@
   font-variant-numeric: tabular-nums;
 }
 
-.sampleUse {
-  display: none;
-}
-
 .split {
   display: grid;
   grid-template-columns: max-content minmax(0, 1fr);
   gap: 8px;
+}
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  column-gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.swatchesWide {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }

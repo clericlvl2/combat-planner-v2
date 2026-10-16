@@ -1,6 +1,14 @@
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
-import { base, conditionNames, conditions, health, hpActions, roles } from '../../theme.ts';
+import {
+  base,
+  combatColors,
+  conditionNames,
+  conditions,
+  health,
+  hpActions,
+  roles,
+} from '../../theme.ts';
 import { ThemeAudit } from './ThemeAudit.tsx';
 
 const meta = preview.meta({
@@ -13,6 +21,7 @@ const groupOrder = [
   'Health',
   'HP actions',
   'Conditions (fill / text)',
+  'Combat colours',
   'Typefaces',
   'Type scale',
   'Radii',
@@ -25,6 +34,7 @@ const expectedFills = [
   ...Object.values(health),
   ...Object.values(hpActions),
   ...conditionNames.map((name) => conditions[name].fill),
+  ...combatColors,
 ];
 
 export const Tokens = meta.story({
@@ -35,6 +45,10 @@ export const Tokens = meta.story({
       (swatch) => swatch.dataset.hex,
     );
     await expect(fills).toEqual(expectedFills);
+    await expect(combatColors[7]).toBe('#8C8578');
+    await expect(
+      getComputedStyle(document.documentElement).getPropertyValue('--cp-combat-7').trim(),
+    ).toBe('#8C8578');
     await expect(document.documentElement.dataset.motion).toBe('off');
     const swatch = canvasElement.querySelector('[data-hex]');
     await expect(swatch && getComputedStyle(swatch).transitionDuration).toBe('0s');

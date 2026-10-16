@@ -1,5 +1,6 @@
 import {
   base,
+  combatColors,
   conditionNames,
   conditions,
   fontFamilies,
@@ -24,9 +25,12 @@ interface Token {
 interface TokenGroup {
   title: string;
   items: Token[];
+  wide?: boolean;
 }
 
 const onDark = '#FFFFFF';
+
+const combatColorNames = ['red', 'orange', 'ochre', 'green', 'teal', 'blue', 'brown', 'grey'];
 
 const token = (
   name: string,
@@ -98,6 +102,7 @@ const tokenGroups: TokenGroup[] = [
   },
   {
     title: 'Conditions (fill / text)',
+    wide: true,
     items: conditionNames.map((name) => ({
       name,
       hex: `${conditions[name].fill} / ${conditions[name].text}`,
@@ -106,6 +111,12 @@ const tokenGroups: TokenGroup[] = [
       sample: 'Aa',
       sampleColor: conditions[name].text,
     })),
+  },
+  {
+    title: 'Combat colours',
+    items: combatColors.map((hex, index) =>
+      token(String(index), hex, combatColorNames[index] ?? '', String(index), onDark),
+    ),
   },
 ];
 
@@ -178,18 +189,18 @@ const typeScale = [
 ];
 
 const radii = [
-  { label: '2', use: 'HP segments', value: radius.segment },
-  { label: '12', use: 'fields, keys, tiles, S buttons, stat squares', value: radius.field },
-  { label: '16', use: 'cards, popovers, menus, toasts', value: radius.card },
-  { label: '24', use: 'sheets, dialogs', value: radius.sheet },
-  { label: 'full', use: 'chips, 58 buttons, round icons', value: 28 },
+  { label: '2', value: radius.segment },
+  { label: '12', value: radius.field },
+  { label: '16', value: radius.card },
+  { label: '24', value: radius.sheet },
+  { label: 'full', value: 28 },
 ];
 
 function SwatchList({ group }: { group: TokenGroup }) {
   return (
     <section className={classes.panel} aria-label={group.title}>
       <h2 className={classes.panelTitle}>{group.title}</h2>
-      <ul className={classes.list}>
+      <ul className={group.wide ? `${classes.swatches} ${classes.swatchesWide}` : classes.swatches}>
         {group.items.map((item) => (
           <li key={`${item.hex}-${item.role}`} className={classes.row}>
             <span
@@ -258,7 +269,6 @@ export function ThemeAudit() {
               <div key={item.label} className={classes.sample}>
                 <span className={classes.radiusBox} style={{ borderRadius: item.value }} />
                 <span className={classes.sampleLabel}>{item.label}</span>
-                <span className={classes.sampleUse}>{item.use}</span>
               </div>
             ))}
           </div>
