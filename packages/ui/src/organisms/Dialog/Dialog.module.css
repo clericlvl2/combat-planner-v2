@@ -35,6 +35,10 @@
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);
   pointer-events: all;
+
+  &:focus {
+    outline: none;
+  }
 }
 
 .icon {

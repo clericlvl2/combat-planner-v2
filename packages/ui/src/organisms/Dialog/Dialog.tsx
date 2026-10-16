@@ -43,6 +43,16 @@ export function Dialog({
     };
   }, [opened]);
 
+  useLayoutEffect(() => {
+    if (!opened) return;
+    const { style } = document.body;
+    const overflow = style.overflow;
+    style.overflow = 'hidden';
+    return () => {
+      style.overflow = overflow;
+    };
+  }, [opened]);
+
   if (!opened) return null;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -59,6 +69,8 @@ export function Dialog({
         <FocusTrap active>
           <div
             role="alertdialog"
+            tabIndex={-1}
+            data-mantine-stop-propagation="true"
             aria-modal="true"
             aria-labelledby={titleId}
             aria-describedby={bodyId}
@@ -76,7 +88,14 @@ export function Dialog({
             </p>
             <div className={classes.actions}>
               <div className={classes.action}>
-                <Button variant="secondary" size="M" fullWidth onClick={onCancel} data-autofocus="">
+                <Button
+                  variant="secondary"
+                  size="M"
+                  fullWidth
+                  onClick={onCancel}
+                  data-autofocus=""
+                  data-mantine-stop-propagation="true"
+                >
                   {t('cancel')}
                 </Button>
               </div>
@@ -86,6 +105,7 @@ export function Dialog({
                   size="M"
                   fullWidth
                   onClick={onConfirm}
+                  data-mantine-stop-propagation="true"
                 >
                   {confirmLabel}
                 </Button>

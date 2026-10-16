@@ -6,6 +6,7 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { Button } from '../../atoms/Button/Button.tsx';
+import { Sheet } from '../Sheet/Sheet.tsx';
 import { Dialog } from './Dialog.tsx';
 import type { DialogTone } from './Dialog.tsx';
 
@@ -33,15 +34,15 @@ interface DialogCellProps {
   ok?: string;
   opened?: boolean;
   withOpener?: boolean;
+  units?: number;
   onConfirm?: () => void;
   onCancel?: () => void;
+  onSheetClose?: () => void;
 }
 
 const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout' };
 
-const unitCount = 6;
-
-function usePresets(): Record<Preset, PresetSpec> {
+function usePresets(unitCount: number): Record<Preset, PresetSpec> {
   const { t } = useTranslation('Dialog');
   return {
     restart: {
@@ -54,7 +55,7 @@ function usePresets(): Record<Preset, PresetSpec> {
     clear: {
       icon: IconTrash,
       title: t('clearTitle'),
-      body: t('clearBody', { n: unitCount }),
+      body: t('clearBody', { count: unitCount }),
       ok: t('clear'),
       tone: 'danger',
     },
@@ -75,7 +76,7 @@ function usePresets(): Record<Preset, PresetSpec> {
     deleteCombat: {
       icon: IconTrash,
       title: t('deleteCombatTitle', { name: 'Ambush at the Ferry' }),
-      body: t('deleteCombatBody', { n: unitCount }),
+      body: t('deleteCombatBody', { count: unitCount }),
       ok: t('delete'),
       tone: 'danger',
     },
@@ -103,11 +104,12 @@ function DialogCell({
   ok,
   opened: initiallyOpened = true,
   withOpener = false,
+  units = 6,
   onConfirm,
   onCancel,
 }: DialogCellProps) {
   const { t } = useTranslation('Dialog');
-  const spec = usePresets()[preset];
+  const spec = usePresets(units)[preset];
   const [opened, setOpened] = useState(initiallyOpened);
   return (
     <div style={stage}>
@@ -138,11 +140,53 @@ function DialogCell({
   );
 }
 
+function OverSheetCell({ onConfirm, onCancel, onSheetClose }: DialogCellProps) {
+  const { t } = useTranslation('Dialog');
+  const spec = usePresets(6).clear;
+  const [sheetOpened, setSheetOpened] = useState(true);
+  const [dialogOpened, setDialogOpened] = useState(false);
+  return (
+    <div style={stage}>
+      <Sheet
+        opened={sheetOpened}
+        title={t('opener')}
+        onClose={() => {
+          setSheetOpened(false);
+          onSheetClose?.();
+        }}
+        actions={
+          <Button variant="danger" size="M" fullWidth onClick={() => setDialogOpened(true)}>
+            {spec.ok}
+          </Button>
+        }
+      >
+        <p style={{ margin: 0 }}>{spec.body}</p>
+      </Sheet>
+      <Dialog
+        opened={dialogOpened}
+        icon={spec.icon}
+        title={spec.title}
+        body={spec.body}
+        confirmLabel={spec.ok}
+        tone={spec.tone}
+        onConfirm={() => {
+          setDialogOpened(false);
+          onConfirm?.();
+        }}
+        onCancel={() => {
+          setDialogOpened(false);
+          onCancel?.();
+        }}
+      />
+    </div>
+  );
+}
+
 const meta = preview.meta({
   title: 'Organisms/Dialog',
   component: DialogCell,
   parameters: { phoneFrame: { overlay: true } },
-  args: { preset: 'clear', onConfirm: fn(), onCancel: fn() },
+  args: { preset: 'clear', onConfirm: fn(), onCancel: fn(), onSheetClose: fn() },
 });
 
 export const Anatomy = meta.story({});
@@ -287,5 +331,72 @@ export const ExtraLocaleRu = meta.story({
     await expect(canvas.getByRole('alertdialog', { name: 'Очистить бой?' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Отмена' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Очистить' })).toBeVisible();
+  },
+});
+
+export const ExtraTapTextThenEscape = meta.story({
+  name: 'Tap on the text, then Escape',
+  play: async ({ args, canvas }) => {
+    const dialog = canvas.getByRole('alertdialog', { name: 'Clear combat?' });
+    await waitFor(() => expect(canvas.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+    await userEvent.click(canvas.getByText(/All 6 units are removed/));
+    await expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    await userEvent.tab();
+    await expect(dialog).toContainElement(document.activeElement as HTMLElement);
+    await userEvent.click(canvas.getByRole('heading', { name: 'Clear combat?' }));
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onCancel).toHaveBeenCalledOnce();
+    await expect(args.onConfirm).not.toHaveBeenCalled();
+  },
+});
+
+export const ExtraOverSheet = meta.story({
+  name: 'Escape over an open Sheet closes only the Dialog',
+  render: (args) => <OverSheetCell {...args} />,
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
+    const cancel = await canvas.findByRole('button', { name: 'Cancel' });
+    await waitFor(() => expect(cancel).toHaveFocus());
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onCancel).toHaveBeenCalledOnce();
+    await expect(args.onSheetClose).not.toHaveBeenCalled();
+    await expect(canvas.queryByRole('alertdialog')).toBeNull();
+    await expect(canvas.getByRole('dialog', { name: 'Clear combat' })).toBeVisible();
+  },
+});
+
+export const ExtraScrollLock = meta.story({
+  name: 'Page scroll is locked while open',
+  args: { opened: false, withOpener: true },
+  play: async ({ canvas }) => {
+    const before = document.body.style.overflow;
+    await userEvent.click(canvas.getByRole('button', { name: 'Clear combat' }));
+    await canvas.findByRole('alertdialog');
+    await expect(getComputedStyle(document.body).overflow).toBe('hidden');
+    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
+    await expect(document.body.style.overflow).toBe(before);
+  },
+});
+
+export const ExtraOneUnit = meta.story({
+  name: 'Clear with one unit',
+  args: { units: 1 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText('The only unit is removed and every player claim is released.'),
+    ).toBeVisible();
+  },
+});
+
+export const ExtraPluralRu = meta.story({
+  name: 'Delete combat, ru plurals',
+  globals: { locale: 'ru' },
+  args: { preset: 'deleteCombat', units: 3 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText(
+        'Сражение, его 3 юнита и ссылка для игроков удаляются. Это нельзя отменить.',
+      ),
+    ).toBeVisible();
   },
 });
