@@ -1,0 +1,7 @@
+{
+  "description": "Descripción",
+  "note": "Nota",
+  "optional": "Opcional",
+  "upTo": "Hasta {{max}} caracteres",
+  "descriptionValue": "Sesión 12. Los goblins defienden el vado, el orco espera en la balsa."
+}

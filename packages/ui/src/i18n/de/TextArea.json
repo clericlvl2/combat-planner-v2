@@ -1,0 +1,7 @@
+{
+  "description": "Beschreibung",
+  "note": "Notiz",
+  "optional": "Freiwillig",
+  "upTo": "Bis zu {{max}} Zeichen",
+  "descriptionValue": "Sitzung 12. Goblins halten die Furt, der Ork wartet auf dem Floß."
+}

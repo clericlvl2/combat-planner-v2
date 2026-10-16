@@ -1,0 +1,7 @@
+{
+  "description": "Descriptif",
+  "note": "Remarque",
+  "optional": "Facultatif",
+  "upTo": "Jusqu’à {{max}} caractères",
+  "descriptionValue": "Séance 12. Les gobelins tiennent le gué, l’orque attend sur le radeau."
+}
