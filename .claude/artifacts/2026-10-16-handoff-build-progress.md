@@ -63,7 +63,7 @@
 | fix-2.3-organisms-a | guarded `.claude/artifacts/guard/fix-2.3-organisms-a.md` (P1 closed) | Sheet, Dialog |
 | 2.3-organisms-b | rework 1 → `fix-2.3-organisms-b`, guard `.claude/artifacts/guard/2.3-organisms-b.md` (P1 Drawer Shift+Tab, P1 Menu focus with motion on) |
 | fix-2.3-organisms-b | running worker-bee (agent of 2.3-organisms-b) 2026-10-17T03:40+03:00 | Menu, Drawer |
-| 2.3-organisms-c | merged e8039a8, gate ok `.claude/run/2.3-organisms-c/summary.log`, guard running | PageHeader, PlayerHeader |
+| 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
@@ -373,6 +373,14 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-organisms-c → `fix-2.3`: пункт меню игрока — иконка страницы
+  `IconSwitchHorizontal` с подписью «Heroes» (решение оркестратора: иконка по
+  странице, подпись по vision), история Menu «Player menu» переходит на ключ
+  heroes; удалить мёртвый экспорт `PlayerHeaderMenuItem`. → `4-web`:
+  `--cp-layout-status-bar` в приложении задаётся явно (`0px` или
+  `env(safe-area-inset-top)`), чтобы заголовки и Sheet не расходились
+  (заголовки по умолчанию резервируют 44, Sheet — 0).
 
 - fix-2.3-organisms-a → `fix-2.3`: P2 при motion on начальный фокус Sheet
   уходит на первый tabbable, а не на секцию (Sheet.tsx:34-38; фокус из
