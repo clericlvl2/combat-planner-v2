@@ -1,0 +1,47 @@
+.canvas {
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 16px;
+  background: var(--cp-color-background);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+}
+
+.phone {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 390px;
+  height: 844px;
+  overflow: hidden;
+  border-radius: 28px;
+  background: var(--cp-color-background);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+}
+
+.statusBar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 32px;
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.screen {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
