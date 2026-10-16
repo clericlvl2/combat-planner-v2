@@ -1,0 +1,16 @@
+{
+  "openNavigation": "Navigation öffnen",
+  "back": "Zurück",
+  "removeFilter": "Filter {{name}} entfernen",
+  "clear": "Leeren",
+  "combats": "Kämpfe",
+  "library": "Bibliothek",
+  "settings": "Einstellungen",
+  "searchCombats": "Kämpfe durchsuchen",
+  "searchPresets": "Vorlagen durchsuchen",
+  "sort": "Sortieren",
+  "tags": "Schlagwörter",
+  "lastPlayed": "Zuletzt gespielt",
+  "orcs": "Orks",
+  "done": "Fertig"
+}

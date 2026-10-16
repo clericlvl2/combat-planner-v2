@@ -1,0 +1,16 @@
+{
+  "openNavigation": "ナビゲーションを開く",
+  "back": "戻る",
+  "removeFilter": "フィルター「{{name}}」を解除",
+  "clear": "クリア",
+  "combats": "戦闘",
+  "library": "ライブラリ",
+  "settings": "設定",
+  "searchCombats": "戦闘を検索",
+  "searchPresets": "プリセットを検索",
+  "sort": "並べ替え",
+  "tags": "タグ",
+  "lastPlayed": "最後のプレイ",
+  "orcs": "オーク",
+  "done": "完了"
+}

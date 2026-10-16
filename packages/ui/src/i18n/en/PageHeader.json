@@ -1,0 +1,16 @@
+{
+  "openNavigation": "Open navigation",
+  "back": "Back",
+  "removeFilter": "Remove filter {{name}}",
+  "clear": "Clear",
+  "combats": "Combats",
+  "library": "Library",
+  "settings": "Settings",
+  "searchCombats": "Search combats",
+  "searchPresets": "Search presets",
+  "sort": "Sort",
+  "tags": "Tags",
+  "lastPlayed": "Last played",
+  "orcs": "Orcs",
+  "done": "Done"
+}

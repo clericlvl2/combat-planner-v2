@@ -1,0 +1,16 @@
+{
+  "openNavigation": "Abrir navegación",
+  "back": "Atrás",
+  "removeFilter": "Quitar filtro {{name}}",
+  "clear": "Borrar",
+  "combats": "Combates",
+  "library": "Biblioteca",
+  "settings": "Ajustes",
+  "searchCombats": "Buscar combates",
+  "searchPresets": "Buscar plantillas",
+  "sort": "Ordenar",
+  "tags": "Etiquetas",
+  "lastPlayed": "Última partida",
+  "orcs": "Orcos",
+  "done": "Listo"
+}

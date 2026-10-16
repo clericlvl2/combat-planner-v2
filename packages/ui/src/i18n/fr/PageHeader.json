@@ -1,0 +1,16 @@
+{
+  "openNavigation": "Ouvrir la navigation",
+  "back": "Retour",
+  "removeFilter": "Retirer le filtre {{name}}",
+  "clear": "Effacer",
+  "combats": "Affrontements",
+  "library": "Bibliothèque",
+  "settings": "Réglages",
+  "searchCombats": "Rechercher des combats",
+  "searchPresets": "Rechercher des modèles",
+  "sort": "Trier",
+  "tags": "Étiquettes",
+  "lastPlayed": "Dernière partie",
+  "orcs": "Orques",
+  "done": "Terminé"
+}

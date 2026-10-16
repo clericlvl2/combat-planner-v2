@@ -1,0 +1,16 @@
+{
+  "openNavigation": "Открыть навигацию",
+  "back": "Назад",
+  "removeFilter": "Убрать фильтр {{name}}",
+  "clear": "Сбросить",
+  "combats": "Бои",
+  "library": "Библиотека",
+  "settings": "Настройки",
+  "searchCombats": "Поиск боёв",
+  "searchPresets": "Поиск заготовок",
+  "sort": "Сортировка",
+  "tags": "Теги",
+  "lastPlayed": "Последняя игра",
+  "orcs": "Орки",
+  "done": "Готово"
+}

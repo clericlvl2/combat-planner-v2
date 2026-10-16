@@ -1,0 +1,56 @@
+.root {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--cp-color-border);
+  background: var(--cp-color-background);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+}
+
+.statusBar {
+  flex: none;
+  height: var(--cp-layout-status-bar, 44px);
+}
+
+.nav {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 4px 12px 0 4px;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-title);
+  font-weight: 700;
+  line-height: var(--mantine-line-height-snug);
+  overflow-wrap: anywhere;
+}
+
+.tools {
+  display: flex;
+  gap: 8px;
+  margin: 10px 12px 0;
+}
+
+.search {
+  flex: 1;
+  min-width: 0;
+}
+
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 12px 0;
+}
