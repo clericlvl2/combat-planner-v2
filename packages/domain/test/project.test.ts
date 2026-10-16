@@ -139,10 +139,28 @@ describe('project', () => {
     expect(project(combat, DM)).toBe(combat);
   });
 
-  it('keeps every combat-level field and the players map in the player document', () => {
-    const { units: _units, ...fields } = combat;
+  it('keeps every combat-level field except linkGeneration and the players map in the player document', () => {
+    const { units: _units, linkGeneration: _linkGeneration, ...fields } = combat;
     expect(doc).toMatchObject(fields);
     expect(doc.players).toEqual(combat.players);
+  });
+
+  it('never contains linkGeneration', () => {
+    const projected = project({ ...combat, linkGeneration: 5 }, PLAYER);
+    expect('linkGeneration' in projected).toBe(false);
+    expect(Object.keys(projected).sort()).toEqual(Object.keys(playerCombatSchema.shape).sort());
+    expect(playerCombatSchema.safeParse({ ...projected, linkGeneration: 5 })).toMatchObject({
+      success: true,
+      data: expect.not.objectContaining({ linkGeneration: 5 }),
+    });
+  });
+
+  it('nulls activeUnitId when the active unit is disabled', () => {
+    const hiddenActive = project({ ...combat, activeUnitId: id(5) }, PLAYER);
+    expect(hiddenActive.activeUnitId).toBeNull();
+    expect(hiddenActive.units.some((unit) => unit.id === id(5))).toBe(false);
+    expect(project({ ...combat, activeUnitId: id(5) }, DM).activeUnitId).toBe(id(5));
+    expect(doc.activeUnitId).toBe(id(2));
   });
 
   it('Turn order, round, escalation die and the active unit, filtered by the visibility table.', () => {

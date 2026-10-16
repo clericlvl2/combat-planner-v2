@@ -44,8 +44,22 @@ export function project(combat: Combat, viewer: PlayerViewer): PlayerCombat;
 export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat;
 export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat {
   if (viewer.kind === 'dm') return combat;
+  const visible = visibleUnits(combat);
+  const activeVisible = visible.some((unit) => unit.id === combat.activeUnitId);
   return {
-    ...combat,
-    units: visibleUnits(combat).map((unit, index) => playerUnit(unit, index + 1, viewer.playerId)),
+    id: combat.id,
+    title: combat.title,
+    description: combat.description,
+    color: combat.color,
+    status: combat.status,
+    round: combat.round,
+    escalation: combat.escalation,
+    activeUnitId: activeVisible ? combat.activeUnitId : null,
+    lastPlayedAt: combat.lastPlayedAt,
+    version: combat.version,
+    players: combat.players,
+    createdAt: combat.createdAt,
+    updatedAt: combat.updatedAt,
+    units: visible.map((unit, index) => playerUnit(unit, index + 1, viewer.playerId)),
   };
 }

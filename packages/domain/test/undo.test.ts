@@ -256,7 +256,7 @@ describe('applyUndo', () => {
     expect(codeOf(second, { type: 'undo' })).toBe('blocked');
   });
 
-  it('restores a removed unit at its prior position with its claim and the turn', () => {
+  it('restores a removed unit at its prior position and gives it back the turn', () => {
     const removed = dispatch(active(), { type: 'removeUnit', unitId: id(2) });
     expect(removed.combat.units.map((unit) => unit.id)).toEqual([id(1), id(3)]);
     expect(removed.combat.activeUnitId).toBe(id(1));

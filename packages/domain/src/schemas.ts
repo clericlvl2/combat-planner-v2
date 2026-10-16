@@ -163,7 +163,6 @@ export const playerUnitSchema = z.object({
   hpHistory: z.array(hpHistoryEntrySchema).optional(),
 });
 
-export const playerCombatSchema = z.object({
-  ...combatFields,
-  units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat),
-});
+export const playerCombatSchema = z
+  .object({ ...combatFields, units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat) })
+  .omit({ linkGeneration: true });
