@@ -12,3 +12,4 @@ test-results/
 data/
 .DS_Store
 docs/design/inventory/*.png
+.idea/

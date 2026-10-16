@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="./nav.js"></script>
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#DCD8CF;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="position:fixed;inset:0;display:flex">
+  <aside style="flex:none;width:260px;height:100%;box-sizing:border-box;background:#FAF6EE;border-right:2px solid #E2D8C6;display:flex;flex-direction:column">
+    <div style="flex:none;padding:20px 18px 14px;display:flex;flex-direction:column;gap:4px;border-bottom:2px solid #E2D8C6">
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;color:#5F574D">COMBAT PLANNER · V2</span>
+      <span style="font-family:'Unbounded',sans-serif;font-size:20px;font-weight:700">Styleguide</span>
+    </div>
+    <nav style="flex:1;min-height:0;overflow-y:auto;padding:6px 8px 24px;display:flex;flex-direction:column;gap:1px">
+      <sc-for list="{{ rows }}" as="r" hint-placeholder-count="16">
+        <sc-if value="{{ r.isSection }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ r.onToggle }}" aria-expanded="{{ r.expanded }}" style="border:none;background:transparent;cursor:pointer;display:flex;align-items:center;gap:8px;padding:18px 10px 6px;text-align:left" style-hover="color:#231F1C">
+            <i class="ti ti-chevron-{{ r.chev }}" style="font-size:16px;color:#5F574D"></i>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.08em;color:#5F574D">{{ r.label }}</span>
+            <span style="font-size:11px;font-weight:600;color:#8C8578">{{ r.count }}</span>
+            <span style="flex:1;height:1px;background:#E2D8C6"></span>
+          </button>
+        </sc-if>
+        <sc-if value="{{ r.isItem }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ r.onClick }}" style="min-height:34px;border:none;border-radius:10px;background:{{ r.bg }};margin-left:14px;padding:6px 10px;display:flex;align-items:center;gap:8px;text-align:left;font-size:14px;font-weight:{{ r.fw }}" style-hover="background:{{ r.hoverBg }}">
+            <span style="flex:1;min-width:0;line-height:1.3;overflow-wrap:anywhere">{{ r.label }}</span>
+            <sc-if value="{{ r.hasStatus }}" hint-placeholder-val="{{ false }}"><span title="{{ r.status }}" style="flex:none;width:8px;height:8px;border-radius:4px;background:{{ r.stDot }}"></span></sc-if>
+          </button>
+        </sc-if>
+      </sc-for>
+    </nav>
+    <div style="flex:none;padding:10px 18px 14px;border-top:2px solid #E2D8C6;display:flex;gap:14px;font-size:12px;font-weight:600;color:#5F574D">
+      <sc-for list="{{ legend }}" as="l" hint-placeholder-count="3"><span style="display:flex;align-items:center;gap:5px"><span style="width:8px;height:8px;border-radius:4px;background:{{ l.c }}"></span>{{ l.label }}</span></sc-for>
+    </div>
+  </aside>
+  <main style="flex:1;min-width:0;height:100%;display:flex;flex-direction:column">
+    <div style="flex:none;height:52px;box-sizing:border-box;padding:0 16px 0 20px;background:#FFFFFF;border-bottom:2px solid #E2D8C6;display:flex;align-items:center;justify-content:flex-end;gap:12px">
+      <a href="{{ rawHref }}" onClick="{{ openPage }}" style="flex:none;height:36px;display:flex;align-items:center;gap:6px;padding:0 12px;border-radius:18px;border:2px solid #E2D8C6;font-size:13px;font-weight:600;text-decoration:none"><i class="ti ti-arrows-maximize" style="font-size:16px"></i>Open full page</a>
+    </div>
+    <sc-if value="{{ hasSrc }}" hint-placeholder-val="{{ false }}">
+      <iframe title="{{ crumb }}" src="{{ src }}" style="flex:1;min-height:0;width:100%;border:none;background:#DCD8CF"></iframe>
+    </sc-if>
+    <sc-if value="{{ noSrc }}" hint-placeholder-val="{{ true }}">
+      <div style="flex:1;display:flex;align-items:center;justify-content:center;font-size:15px;color:#4F4A43">Pick a page on the left.</div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = (() => { let s = {}, st = {}; try { s = JSON.parse(localStorage.getItem('cp-project-view-2') || '{}'); st = JSON.parse(localStorage.getItem('cp-page-status') || '{}'); } catch (e) {} let c = {}; try { c = JSON.parse(localStorage.getItem('cp-nav-collapsed') || '{}'); } catch (e) {} return { sel: s.sel || 'CombatScreen.dc.html', st, col: c }; })();
+  toggleSec(name) { const col = { ...this.state.col, [name]: !this.state.col[name] }; this.setState({ col }, () => { try { localStorage.setItem('cp-nav-collapsed', JSON.stringify(col)); } catch (e) {} }); }
+  setStatus(href, v) { const st = { ...this.state.st, [href]: v }; this.setState({ st }, () => { try { localStorage.setItem('cp-page-status', JSON.stringify(st)); } catch (e) {} }); }
+  componentDidMount() { if (!window.CP_NAV || !window.CP_NAV[0]?.section) this._t = setInterval(() => { if (window.CP_NAV?.[0]?.section) { clearInterval(this._t); this.forceUpdate(); } }, 100); }
+  componentWillUnmount() { clearInterval(this._t); }
+  pick(href) { this.setState({ sel: href }, () => { try { localStorage.setItem('cp-project-view-2', JSON.stringify({ sel: href })); } catch (e) {} }); }
+  renderVals() {
+    const ST = { Draft: '#B8AE9C', Ready: '#5FA65A' };
+    const statusOf = it => it.status ? (this.state.st[it.href] || (it.status === 'Ready' ? 'Ready' : 'Draft')) : '';
+    const tree = (window.CP_NAV || []).filter(g => g.section);
+    const { sel } = this.state;
+    const rows = [];
+    let cur = null;
+    tree.forEach(g => {
+      const closed = !!this.state.col[g.section];
+      rows.push({ isSection: true, isItem: false, label: g.section.toUpperCase(), count: closed ? g.items.length : '', chev: closed ? 'right' : 'down', expanded: closed ? 'false' : 'true', onToggle: () => this.toggleSec(g.section) });
+      g.items.forEach(it => {
+        const on = it.href === sel;
+        if (on) cur = { ...it, section: g.section, status: statusOf(it) };
+        if (closed && !on) return;
+        const status = statusOf(it);
+        rows.push({ isSection: false, isItem: true, label: it.label, status, hasStatus: !!status, stDot: ST[status] || '#B8AE9C',
+          bg: on ? '#FFE7A3' : 'transparent', hoverBg: on ? '#FFE7A3' : '#F0E9DC', fw: on ? 700 : 500, onClick: () => this.pick(it.href) });
+      });
+    });
+    const src = cur ? encodeURI(cur.href) : '';
+    return { rows, src, hasSrc: !!src, noSrc: !src, rawHref: cur ? encodeURI(cur.href) : '#', crumb: cur ? cur.section + ' / ' + cur.label : '',
+      legend: [['Draft', ST.Draft], ['Ready', ST.Ready]].map(([label, c]) => ({ label, c })),
+      openPage: (e) => {
+        if (!cur) return;
+        e.preventDefault();
+        const [path, hash] = cur.href.split('#');
+        const u = new URL(encodeURI(path), location.href);
+        new URLSearchParams(location.search).forEach((v, k) => { if (!u.searchParams.has(k)) u.searchParams.set(k, v); });
+        if (hash) u.hash = hash;
+        location.href = u.toString();
+      },
+      hasStatusBtn: !!(cur && cur.status), ...(() => { const ready = cur && cur.status === 'Ready'; return {
+        stBtnLabel: ready ? 'Ready' : 'Mark as ready', stBtnIcon: ready ? 'circle-check-filled' : 'circle-check',
+        stBtnBg: ready ? '#DDEFD5' : '#FFFFFF', stBtnFg: ready ? '#2F6B1F' : '#231F1C', stBtnLine: ready ? '#8FCB7E' : '#E2D8C6',
+        toggleStatus: () => cur && this.setStatus(cur.href, ready ? 'Draft' : 'Ready') }; })() };
+  }
+}
+</script>
+</body>
+</html>

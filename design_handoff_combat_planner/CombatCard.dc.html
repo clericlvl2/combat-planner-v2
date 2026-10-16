@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="CombatCard" status="Draft" date="15.10.2026" desc="Combat card in the Combat list: colour dot, title, status and meta. Tap opens the combat; the chevron expands actions." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="One combat in the Combat list." where="Combat list, flows CL-F1 to CL-F6." behaviour="Tap the card opens the combat. The chevron expands the description and CardActions: Edit, and ⋯ for Duplicate and Delete." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:{{ g.cellGap }};align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};margin-bottom:{{ b.cellMb }};display:flex;flex-direction:column"><sc-if value="{{ b.isArrow }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ b.label }}" width="{{ 110 }}" height="{{ 80 }}" hint-size="110px,80px"></dc-import></sc-if>
+
+              <sc-if value="{{ b.isCombat }}" hint-placeholder-val="{{ true }}">
+                <div style="box-sizing:border-box;border-radius:16px;border:{{ b.border }};background:#FFFFFF;overflow:{{ b.cardOv }};display:flex;flex-direction:column;outline:{{ b.ring }};outline-offset:2px;margin-bottom:{{ b.caPb }}">
+                  <div style="display:flex;align-items:center;gap:12px;padding:12px 0 12px 16px;min-height:72px;box-sizing:border-box">
+                    <span style="flex:none;width:12px;height:12px;border-radius:4px;background:{{ b.dot }}"></span>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                      <span style="font-size:16px;font-weight:600;line-height:1.25;overflow-wrap:anywhere">{{ b.title }}</span>
+                      <span style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:#5F574D"><dc-import name="Chip" embedded="{{ true }}" kind="chip" variant="status" label="{{ b.state }}" hint-size="52px,20px"></dc-import>{{ b.meta }}</span>
+                    </div>
+                    <span style="flex:none;width:40px;height:44px;display:flex;align-items:center;justify-content:center;border-radius:12px;outline:{{ b.chevRing }};outline-offset:-4px"><i class="ti ti-chevron-{{ b.chev }}" style="font-size:24px;color:{{ b.chevFg }}"></i></span>
+                  </div>
+                  <sc-if value="{{ b.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:12px;padding:0 12px 12px">
+                      <sc-if value="{{ b.hasDesc }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;line-height:1.45;color:#231F1C;text-wrap:pretty">{{ b.desc }}</span></sc-if>
+                      <dc-import name="CardActions" embedded="{{ true }}" preset="card" open="{{ b.caOpen }}" tap="{{ b.caTap }}" tap-item="{{ b.caItem }}" hint-size="100%,48px"></dc-import>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;unit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{init,name,type,hp,max,temp?,cond?,claim?,d?,note?,active?,disabled?}&quot;},&quot;mine&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;setup&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;expanded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;condOpen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteEdit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteDraft&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'Active' | 'Setup'&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tag&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;open&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;name&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;type&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;hp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;max&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;temp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;ac&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;pd&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;md&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tags&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'dm' | 'player'&quot;},&quot;enemy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;k&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;v&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'card'|'chevron'|'edit'|'duplicate'|'delete'|'hp'|'init'|'cond'|'note'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6';
+    const TC = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const TAGS = ['#B4232A', '#A85400', '#8A6A00', '#2E7A43', '#0E5E63', '#1E5FA8', '#5C4026', '#8C8578'];
+    const ring = t => t ? '3px solid #FFE7A3' : 'none';
+    const K = k => ({ isPlayer: k === 'player', isCombat: k === 'combat', isPreset: k === 'preset', isHp: k === 'hp', isStat: k === 'stat' });
+
+    const combat = (o) => ({ ...K('combat'), title: o.title || '', desc: o.desc || '', hasDesc: !!o.desc, state: o.state || 'Setup', meta: o.meta || '', dot: TAGS[o.tag ?? 7], open: !!o.open,
+      border: o.open ? '2px solid ' + INK : '2px solid ' + LINE, chev: o.open ? 'up' : 'down', chevFg: o.open ? INK : '#5F574D',
+      ring: ring(o.tap === 'card'), chevRing: ring(o.tap === 'chevron'), caTap: o.tap === 'edit' || o.tap === 'more' ? o.tap : '', caOpen: !!o.menu || o.tap === 'duplicate' || o.tap === 'delete', caItem: o.tap === 'duplicate' ? 'Duplicate' : o.tap === 'delete' ? 'Delete' : '', cardOv: o.menu || o.tap === 'duplicate' || o.tap === 'delete' ? 'visible' : 'hidden', caPb: o.menu || o.tap === 'duplicate' || o.tap === 'delete' ? '150px' : '0' });
+    const MAKE = { combat 
+    };
+
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'combat'](p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cellGap: '0', cells: [b] }] };
+    }
+    const C = (k, o, w = '366px') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: '#FAF6EE', stageR: '16px', stagePad: '12px', cellMb: '0' });
+    const comb = { title: 'Ambush at the Ferry', desc: 'Session 12. Goblins hold the crossing, the orc waits on the raft.', state: 'Active', meta: 'Round 3 · 6 units', tag: 0 };
+    const orc = { name: 'Orc Berserker', type: 'Enemy', hp: 40, ac: 18, pd: 16, md: 12, tags: ['Orcs', 'Ferry'] };
+    const SPEC = [{"part":"Card","v":"Radius 16, border 2 #E2D8C6, #FFFFFF; ink border when expanded."},{"part":"Dot","v":"12, radius 4, the combat colour."},{"part":"Title","v":"Rubik 16/600, wraps."},{"part":"Status and meta","v":"Chip S status, then meta 12/600 #5F574D."},{"part":"Chevron","v":"24 in a 40×44 target."},{"part":"Actions","v":"CardActions when expanded: Edit, ⋯ with Duplicate and Delete."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1640px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Active combat.', cellGap: '24px', hasSpec: true, spec: SPEC, cells: [ANAT(C('combat', { ...comb }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Active and Setup, expanded with and without a description, chevron tapped.', cellGap: '24px', cells: [
+          C('combat', { caption: 'Active', ...comb }),
+          C('combat', { caption: 'Expanded', ...comb, open: true }),
+          C('combat', { caption: 'Expanded, no description', title: 'The Drowned Chapel', state: 'Setup', meta: '4 units', tag: 5, open: true }),
+          C('combat', { caption: 'Chevron tapped', ...comb, tap: 'chevron' }),
+          C('combat', { caption: 'Expanded, ⋯ open', ...comb, open: true, menu: true }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'Long titles wrap in ru and ja; the chevron keeps its place.', cellGap: '24px', cells: [
+          C('combat', { caption: 'Setup, long title, ru', title: 'Капитан стражи переправы: засада у моста', state: 'Setup', meta: '9 units', tag: 3 }),
+          C('combat', { caption: 'ja, 99 units', title: '黒水の渡し守と呪われし大蛇の群れ', state: 'Active', meta: 'Round 14 · 99 units', tag: 6 }) ] },
+        { id: 'flow', title: 'Flow', desc: 'The chevron expands the card; ⋯ opens the menu; Delete asks in a Dialog.', cellGap: '24px', cells: [
+          C('combat', { caption: 'Tap chevron', ...comb, tap: 'chevron' }), { isArrow: true, isCombat: false, label: 'tap chevron', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' },
+          C('combat', { caption: 'Expanded, tap ⋯', ...comb, open: true, tap: 'more' }), { isArrow: true, isCombat: false, label: 'tap ⋯', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' },
+          C('combat', { caption: 'Menu, tap Delete', ...comb, open: true, tap: 'delete' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

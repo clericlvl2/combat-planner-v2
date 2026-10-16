@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:48px 56px 80px;display:flex;flex-direction:column;gap:64px;width:max-content">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}"><dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Pages" title="Combat list" status="Draft" date="15.10.2026" desc="The DM’s list of combats: browse, sort, search, create, edit, duplicate and delete. Opened after sign-in or from the Drawer." links="{{ links }}" hint-size="1100px,230px"></dc-import></sc-if>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" k1="PURPOSE" k2="ENTRY POINTS" k3="COMPONENTS USED" what="Find a combat and manage the list." where="After sign-in, Combats in the Drawer, or back from the Combat screen." behaviour="PageHeader, CombatCard, SortSheet, Sheet, TextField, TextArea, SwatchRow, BottomBar, Dialog, Toast, EmptyState, Drawer." hint-size="960px,160px"></dc-import></sc-if>
+  <sc-for list="{{ flows }}" as="f" hint-placeholder-count="2">
+    <section id="{{ f.code }}" style="display:flex;flex-direction:column;gap:32px">
+      <sc-if value="{{ f.isSec }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ f.secTitle }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ f.secDesc }}</span></div></sc-if>
+      <sc-for list="{{ f.lines }}" as="ln" hint-placeholder-count="1">
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <sc-if value="{{ ln.main }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;width:280px"><dc-import name="Flow" embedded="{{ true }}" kind="flowHead" code="{{ f.code }}" title="{{ f.title }}" goal="{{ f.goal }}" entry="{{ f.entry }}" exit="{{ f.exit }}" rules="{{ f.rules }}" parts="{{ f.parts }}" hint-size="280px,420px"></dc-import></div>
+          </sc-if>
+          <sc-if value="{{ ln.branch }}" hint-placeholder-val="{{ false }}">
+            <div style="width:280px;flex:none;box-sizing:border-box;border:2px dashed #8C8578;border-radius:16px;padding:16px 16px;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:#5F574D">BRANCH</span><span style="font-size:16px;font-weight:600;line-height:1.45;text-wrap:pretty">{{ ln.label }}</span></div>
+          </sc-if>
+          <sc-for list="{{ ln.items }}" as="s" hint-placeholder-count="3">
+            <sc-if value="{{ s.isArrow }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ s.label }}" sub="{{ s.sub }}" branch="{{ s.branch }}" hint-size="120px,894px"></dc-import></div>
+            </sc-if>
+            <sc-if value="{{ s.isStep }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:none;width:390px"><dc-import name="Flow" embedded="{{ true }}" kind="step" code="{{ s.code }}" caption="{{ s.caption }}" note="{{ s.note }}" hint-size="390px,894px">
+                <dc-import name="PageHeader" embedded="{{ true }}" kind="header" title="Combats" search="Search combats" query="{{ s.query }}" search-tap="{{ s.searchTap }}" tools="{{ s.tools }}" nav-tap="{{ s.navTap }}" hint-size="390px,170px"></dc-import>
+                <div style="flex:1;min-height:0;overflow:hidden;padding:12px;display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ s.cards }}" as="c" hint-placeholder-count="6">
+                    <dc-import name="CombatCard" embedded="{{ true }}" kind="combat" title="{{ c.title }}" desc="{{ c.desc }}" state="{{ c.state }}" meta="{{ c.meta }}" tag="{{ c.tag }}" open="{{ c.open }}" tap="{{ c.tap }}" hint-size="100%,76px"></dc-import>
+                  </sc-for>
+                  <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ false }}">
+                    <dc-import name="EmptyState" embedded="{{ true }}" kind="empty" icon="{{ s.emptyIcon }}" title="{{ s.emptyTitle }}" body="{{ s.emptyBody }}" pad="90px 24px 0" hint-size="100%,300px"></dc-import>
+                  </sc-if>
+                </div>
+                <dc-import name="BottomBar" embedded="{{ true }}" kind="bar" label="New combat" tap="{{ s.newTap }}" hint-size="390px,98px"></dc-import>
+
+                <sc-if value="{{ s.scrim }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(35,31,28,0.5);z-index:5"></div></sc-if>
+                <sc-if value="{{ s.sheet }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6">
+                    <sc-if value="{{ s.sortSheet }}" hint-placeholder-val="{{ false }}">
+                      <dc-import name="SortSheet" embedded="{{ true }}" preset="combats" value="{{ s.sortValue }}" tap="{{ s.sortTap }}" hint-size="366px,300px"></dc-import>
+                    </sc-if>
+                    <sc-if value="{{ s.formSheet }}" hint-placeholder-val="{{ false }}">
+                    <dc-import name="Sheet" embedded="{{ true }}" kind="sheet" title="{{ s.sheetTitle }}" sub="{{ s.sheetSub }}" primary="{{ s.primary }}" primary-state="{{ s.primaryState }}" hint-size="366px,400px">
+                        <dc-import name="TextField" embedded="{{ true }}" kind="text" label="Title" counter="{{ s.titleCount }}" value="{{ s.titleVal }}" placeholder="New combat" state="{{ s.titleState }}" error="Enter a title" hint-size="100%,70px"></dc-import>
+                        <dc-import name="TextArea" embedded="{{ true }}" kind="textarea" label="Description" counter="{{ s.descCount }}" value="{{ s.descVal }}" placeholder="Optional" hint-size="100%,94px"></dc-import>
+                        <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#5F574D">Color</span><dc-import name="SwatchRow" embedded="{{ true }}" kind="swatches" value="{{ s.color }}" tap="{{ s.colorTap }}" hint-size="100%,40px"></dc-import></div>
+                    </dc-import>
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ s.dialog }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:24px;right:24px;top:240px;z-index:6"><dc-import name="Dialog" embedded="{{ true }}" kind="dialog" preset="deleteCombat" hint-size="342px,300px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.drawer }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:0;bottom:0;left:0;z-index:6"><dc-import name="Drawer" embedded="{{ true }}" kind="drawer" active="{{ s.drawerActive }}" height="844px" hint-size="300px,844px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.toast }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:110px;z-index:4"><dc-import name="Toast" embedded="{{ true }}" kind="toast" preset="{{ s.toastPreset }}" hint-size="366px,56px"></dc-import></div>
+                </sc-if>
+              </dc-import></div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </sc-for>
+      <sc-if value="{{ f.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="max-width:600px"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ f.spec }}" hint-size="540px,200px"></dc-import></div></sc-if>
+    </section>
+  </sc-for>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="rules" n="6" rules="{{ rules }}" hint-size="960px,200px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const C = [
+      { title: 'Ambush at the Ferry', desc: 'Session 12. Goblins hold the crossing, the orc waits on the raft.', state: 'Active', meta: 'Round 3 · 6 units', tag: 0 },
+      { title: 'The Drowned Chapel', desc: '', state: 'Setup', meta: '4 units', tag: 5 },
+      { title: 'Капитан стражи переправы: засада у моста', desc: 'Одноразовая встреча для новых игроков.', state: 'Setup', meta: '9 units', tag: 3 },
+      { title: 'Lich King’s Antechamber', desc: '', state: 'Active', meta: 'Round 7 · 11 units', tag: 6 },
+      { title: '黒水の渡し守', desc: '', state: 'Setup', meta: '2 units', tag: 4 },
+      { title: 'Bandits on the Old Road', desc: '', state: 'Setup', meta: '0 units', tag: 1 },
+    ].map(c => ({ ...c, open: false, tap: '' }));
+    const open = (i, tap = '') => C.map((c, j) => j === i ? { ...c, open: true, tap } : c);
+    const PLAYED = ['Yesterday', '3 days ago', 'Never played', 'Today', '2 weeks ago', 'Never played'];
+    const lastPlayed = [3, 0, 1, 4, 2, 5].map(i => ({ ...C[i], meta: C[i].meta + ' · ' + PLAYED[i] }));
+    const SORT = { icon: 'sort-descending', aria: 'Sort' };
+    const D = { query: '', searchTap: false, tools: [SORT], navTap: false, cards: C, empty: false, emptyIcon: '', emptyTitle: '', emptyBody: '', newTap: false,
+      scrim: false, sheet: false, sheetTitle: '', sheetSub: '', primary: 'Done', primaryState: 'default', sortSheet: false, sortValue: 0, sortTap: -1, formSheet: false,
+      titleVal: '', titleCount: '0/80', titleState: 'default', descVal: '', descCount: '0/500', color: 7, colorTap: -1, dialog: false, drawer: false, drawerActive: 'Combats', toast: false, toastPreset: '' };
+    const S = (code, caption, o = {}) => ({ ...D, isStep: true, isArrow: false, code, caption, note: '', ...o });
+    const A = (label, sub = '', branch = false) => ({ isArrow: true, isStep: false, label, sub, branch });
+    const F = (code, title, goal, entry, exit, rules, parts, lines) => ({ code, title, goal, entry, exit, rules, parts, lines });
+    const main = items => ({ main: true, branch: false, label: '', items });
+    const br = (label, items) => ({ main: false, branch: true, label, items });
+    const form = (title, o = {}) => ({ scrim: true, sheet: true, formSheet: true, sheetTitle: title, primary: title === 'New combat' ? 'Create' : 'Save', ...o });
+    const sort = (value, tap) => ({ scrim: true, sheet: true, sortSheet: true, sheetTitle: 'Sort combats', sortValue: value, sortTap: tap ?? -1, tools: [{ ...SORT, tap: true }] });
+    const amb = C[0];
+
+    const flows = [
+      F('CL-F1', 'Browse and sort', 'The DM finds a combat: scrolls, expands a card, changes the order, searches.', 'Combats section', 'The right combat is in view', 'Newest first by default. The sort is remembered. Search covers title and description.', 'PageHeader, CombatCard, Sheet, RadioList, EmptyState', [
+        main([
+          S('CL-F1.1', 'List, Newest first', { cards: C.map((c, i) => i === 0 ? { ...c, tap: 'chevron' } : c) }),
+          A('tap ⌄'),
+          S('CL-F1.2', 'Card expanded', { cards: open(0) }),
+          A('tap Sort'),
+          S('CL-F1.3', 'Sort sheet', { ...sort(0, 1) }),
+          A('Last played'),
+          S('CL-F1.4', 'Last played: button filled', { tools: [{ icon: 'sort-descending', label: 'Last played', active: true }], cards: lastPlayed, note: 'The row shows when the combat was last opened.' }),
+        ]),
+        br('Search and empty states', [
+          S('CL-F1.5', 'Search “ferry”', { query: 'ferry', cards: [C[0], C[2], C[4]] }),
+          A('', '', true),
+          S('CL-F1.6', 'Nothing found', { query: 'dragon', cards: [], empty: true, emptyIcon: 'search-off', emptyTitle: 'Nothing found', emptyBody: 'No combat matches “dragon”.' }),
+          A('', '', true),
+          S('CL-F1.7', 'No combats yet', { tools: [], cards: [], empty: true, emptyIcon: 'swords', emptyTitle: 'No combats yet', emptyBody: 'Create a combat, add units and share the link with your players.', newTap: true }),
+        ]),
+      ]),
+      F('CL-F2', 'Create a combat', 'The DM creates a combat and goes straight to the roster.', 'New combat', 'Empty combat screen in Setup (CS-F1.1)', 'Title required, up to 80 characters. Description up to 500. Color is one of 8.', 'BottomBar, Sheet, TextField, TextArea, Swatches', [
+        main([
+          S('CL-F2.1', 'Tap New combat', { newTap: true }),
+          A('New combat'),
+          S('CL-F2.2', 'Empty form', { ...form('New combat', { titleState: 'focus' }) }),
+          A('Create', 'no title'),
+          S('CL-F2.3', 'Error: no title', { ...form('New combat', { titleState: 'error' }) }),
+          A('type · pick color'),
+          S('CL-F2.4', 'Form filled', { ...form('New combat', { titleVal: 'Siege of Greyhold', titleCount: '17/80', titleState: 'focus', color: 5, colorTap: 5 }) }),
+          A('Create'),
+          S('CL-F2.5', 'Combat created', { cards: [{ title: 'Siege of Greyhold', desc: '', state: 'Setup', meta: '0 units', tag: 5, open: false, tap: 'card' }, ...C], note: 'The combat screen opens right away: CS-F1.1.' }),
+        ]),
+      ]),
+      F('CL-F3', 'Edit a combat', 'The DM changes the title, description or color.', 'Expanded card → Edit', 'Card updated', 'Same fields and limits as when creating.', 'CombatCard, Sheet, TextField', [
+        main([
+          S('CL-F3.1', 'Tap Edit', { cards: open(0, 'edit') }),
+          A('Edit'),
+          S('CL-F3.2', 'Edit form', { ...form('Edit combat', { titleVal: amb.title, titleCount: '19/80', titleState: 'focus', descVal: amb.desc, descCount: '64/500', color: 0 }) }),
+          A('Save'),
+          S('CL-F3.3', 'Card updated', { cards: [{ ...amb, title: 'Ambush at the Ferry, part 2', tag: 2, open: true }, ...C.slice(1)] }),
+        ]),
+      ]),
+      F('CL-F4', 'Duplicate a combat', 'The DM copies a combat with its roster to run it again.', 'Expanded card → Duplicate', 'Copy in Setup at the top', 'The copy gets “(copy)”, round 1, full HP, no claims and no link.', 'CombatCard, Toast', [
+        main([
+          S('CL-F4.1', '⋯ → Duplicate', { cards: open(0, 'duplicate') }),
+          A('Duplicate'),
+          S('CL-F4.2', 'Copy created', { cards: [{ ...amb, title: 'Ambush at the Ferry (copy)', state: 'Setup', meta: '6 units', open: false }, ...C], toast: true, toastPreset: 'duplicated' }),
+        ]),
+      ]),
+      F('CL-F5', 'Delete a combat', 'The DM deletes a combat for good.', 'Expanded card → Delete', 'Combat and its link deleted', 'No Undo, so confirmation is required. Players on the link see “This combat has ended”.', 'CombatCard, Dialog, Toast', [
+        main([
+          S('CL-F5.1', '⋯ → Delete', { cards: open(0, 'delete') }),
+          A('Delete'),
+          S('CL-F5.2', 'Confirmation', { cards: open(0), scrim: true, dialog: true }),
+          A('Delete'),
+          S('CL-F5.3', 'Combat deleted', { cards: C.slice(1), toast: true, toastPreset: 'deleted' }),
+        ]),
+      ]),
+      F('CL-F6', 'Navigation', 'The DM moves to another section.', 'Burger or right swipe', 'Chosen section open', 'The drawer is the same in every section.', 'PageHeader, Drawer', [
+        main([
+          S('CL-F6.1', 'Tap the burger', { navTap: true }),
+          A('menu'),
+          S('CL-F6.2', 'Drawer open', { scrim: true, drawer: true, note: 'Library opens LB-F1.1.' }),
+        ]),
+      ]),
+    ];
+    const only = new URLSearchParams(location.search).get('flow');
+    const ONLY = new URLSearchParams(location.search).get('flow');
+    const STEPS = flows.flatMap(f => f.lines.flatMap(l => l.items)).filter(i => i.isStep);
+    const pick = (code, caption) => ({ ...STEPS.find(i => i.code === code), caption, note: '' });
+    const SPEC = [{"part":"Header","v":"PageHeader: burger, Combats, search and sort."},{"part":"List","v":"CombatCard per combat, gap 8, padding 12."},{"part":"Bottom bar","v":"BottomBar: New combat."}];
+    const SEC = (code, secTitle, secDesc, items, o = {}) => ({ code, isSec: true, secTitle, secDesc, hasSpec: false, spec: [], title: '', lines: items.length ? [{ main: false, branch: false, label: '', items }] : [], ...o });
+    const PRE = [
+      SEC('anatomy', 'Anatomy', "The list sorted Newest first; regions listed below.", [{ ...pick("CL-F1.1", "List") }], { hasSpec: true, spec: SPEC }),
+      SEC('states', 'Key states', "No combats, the list, a search, nothing found, and a form error.", [pick("CL-F1.7", "No combats"), pick("CL-F1.1", "List"), pick("CL-F1.5", "Search"), pick("CL-F1.6", "Nothing found"), pick("CL-F2.3", "Form error")]),
+      SEC('flows', 'Flows', 'One row per flow: FlowHead, steps with arrows, branches below.', []),
+    ];
+    const NZ = fl => fl.map(f => ({ isSec: false, secTitle: '', secDesc: '', hasSpec: false, spec: [], ...f, lines: f.lines.map(ln => ({ ...ln, items: ln.items.map(i => ({ ...i })) })) }));
+    const RULES = [{"code":"CL-F4","text":"A copied combat gets “(copy)”, starts in Setup with full HP, no claims and no link."},{"code":"Open","text":"The Last played label on the sort button: “Played” or a clock icon."}];
+    return { sortOpts: ['Newest first', 'Last played', 'A–Z'], showHead: !new URLSearchParams(location.search).get('embed'), flows: [...(ONLY ? [] : PRE), ...NZ(only ? flows.filter(f => f.code === only) : flows)], showPre: !ONLY, rules: RULES, links: flows.map(f => ({ id: f.code, label: f.title })) };
+  }
+}
+</script>
+</body>
+</html>

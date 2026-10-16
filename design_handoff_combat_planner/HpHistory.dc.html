@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:24px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="HpHistory" status="Draft" date="15.10.2026" desc="The log of HP changes for one unit, inline in the HP calculator and as a sheet from an expanded unit row." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <section id="overview" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">Overview</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">What it is, where it lives, how it behaves.</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,300px));gap:16px">
+        <sc-for list="{{ docs }}" as="d" hint-placeholder-count="3"><div style="background:#FFFFFF;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:#5F574D">{{ d.k }}</span><span style="font-size:14px;line-height:1.45;text-wrap:pretty">{{ d.v }}</span></div></sc-for>
+      </div>
+    </section>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">{{ g.desc }}</span></div></sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="c" hint-placeholder-count="1">
+          <sc-if value="{{ c.isArrow }}" hint-placeholder-val="{{ false }}"><div style="flex:none;align-self:center"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ c.label }}" width="{{ 110 }}" height="{{ 120 }}" hint-size="110px,120px"></dc-import></div></sc-if>
+          <sc-if value="{{ c.isTrigger }}" hint-placeholder-val="{{ false }}">
+            <div style="flex:none;width:{{ c.w }};display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600;line-height:1.25">{{ c.caption }}</span>
+              <div style="width:170px;height:48px;box-sizing:border-box;border:2px solid #E2D8C6;border-radius:12px;background:#FFFFFF;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:14px;font-weight:600;outline:3px solid #FFE7A3;outline-offset:2px"><span>HP History</span><span style="font-size:16px">⌄</span></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ c.isCell }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative;display:flex;flex-direction:column;gap:8px;width:{{ c.w }}">
+            
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ c.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:#FFFFFF;border:2px solid {{ c.line }};border-radius:{{ c.radius }};display:flex;flex-direction:column;padding:{{ c.boxPad }}">
+              <sc-if value="{{ c.inline }}" hint-placeholder-val="{{ true }}">
+                <div style="height:44px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;outline:{{ c.headRing }};outline-offset:-3px"><span style="flex:1;font-size:14px;font-weight:600">{{ c.L.hist }}</span><sc-if value="{{ c.hasCount }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;color:#5F574D">{{ c.count }}</span></sc-if><i class="ti ti-chevron-{{ c.chev }}" style="font-size:20px"></i></div>
+              </sc-if>
+              <sc-if value="{{ c.popover }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:8px;padding-bottom:12px"><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">{{ c.L.hist }}</span><span style="font-size:14px;color:#5F574D;overflow-wrap:anywhere">{{ c.sub }}</span></span><span style="flex:none;width:44px;height:44px;box-sizing:border-box;border:2px solid #E2D8C6;border-radius:22px;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:20px"></i></span></div></sc-if>
+              <sc-if value="{{ c.open }}" hint-placeholder-val="{{ true }}">
+                <div style="position:relative;display:flex;flex-direction:column;padding:{{ c.listPad }};max-height:{{ c.maxH }};overflow:hidden">
+                  <sc-if value="{{ c.empty }}" hint-placeholder-val="{{ false }}"><div style="min-height:40px;border-top:1px solid #E2D8C6;display:flex;align-items:center;font-size:14px;color:#5F574D">{{ c.L.empty }}</div></sc-if>
+                  <sc-for list="{{ c.rows }}" as="h" hint-placeholder-count="4">
+                                        <dc-import name="HistoryRow" embedded="{{ true }}" when="{{ h.whenText }}" kind="{{ h.kind }}" kind-text="{{ h.kindText }}" delta="{{ h.deltaText }}" result="{{ h.result }}" when-col="{{ c.whenCol }}" hint-size="100%,40px"></dc-import>
+                  </sc-for>
+                  <sc-if value="{{ c.fade }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;right:0;bottom:0;height:40px;background:linear-gradient(rgba(255,255,255,0),#FFFFFF)"></span></sc-if>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+          </sc-if>
+        </sc-for>
+        <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:0 0 100%;max-width:none;box-sizing:border-box;display:grid;grid-template-columns:120px minmax(0,420px);gap:8px 16px;align-items:baseline;background:#FFFFFF;border-radius:16px;padding:16px 24px">
+            <sc-for list="{{ g.spec }}" as="s" hint-placeholder-count="7">
+              
+              <span style="font-size:14px;font-weight:700">{{ s.part }}</span>
+              <span style="font-size:14px;line-height:1.45">{{ s.v }}</span>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'inline' | 'popover'&quot;},&quot;open&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;hist&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'none' | 'short' | 'full' | 'long'&quot;},&quot;rows&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{when,kind?,delta,result}&gt;&quot;},&quot;width&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;lang&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const K = { Damage: ['#F8D7D7', '#9B1C1C', '#B4232A'], Heal: ['#DDEFD5', '#2F6B1F', '#2E7A43'], Temp: ['#DCE6F7', '#1E4E8C', '#1E4E8C'], Max: ['#E3E1DC', '#3D3A35', '#231F1C'] };
+    const H = (when, kind, delta, result) => ({ when, kind, delta, result });
+    const SETS = {
+      none: [],
+      short: [H('Round 3', 'Damage', '−7', '20/36'), H('Round 2', 'Damage', '−9', '27/36'), H('Round 1', 'Max', '32 → 36', '36/36')],
+      full: [H('Round 3', 'Damage', '−12', '14/40'), H('Round 3', 'Heal', '+3', '26/40'), H('Round 2', 'Damage', '−8 (5 temp)', '23/40'), H('Round 2', 'Temp', '+5 temp', '26/40'), H('Round 1', 'Damage', '−14', '26/40'), H('Round 1', 'Max', '45 → 40', '40/40')],
+    };
+    SETS.long = [...SETS.full, H('Start', 'Damage', '−3', '42/45'), H('Start', 'Heal', '+3', '45/45'), H('Start', 'Damage', '−6', '39/45'), H('Start', 'Max', '40 → 45', '45/45')];
+    const L10N = {
+      en: { name: 'English', dmg: 'Damage', heal: 'Heal', temp: 'Set Temp', max: 'Set Max', now: 'Now', after: 'After', amount: 'Amount', hist: 'HP History', empty: 'No changes yet', changes: 'changes', tw: 'temp', round: 'Round', r: 'R', st: { Full: 'Full', Wounded: 'Wounded', Bloodied: 'Bloodied', Dead: 'Dead' }, k: { Damage: 'Damage', Heal: 'Heal', Temp: 'Temp', Max: 'Max' }, start: 'Start' },
+      de: { name: 'Deutsch', dmg: 'Schaden', heal: 'Heilen', temp: 'Temp setzen', max: 'Max setzen', now: 'Jetzt', after: 'Danach', amount: 'Betrag', hist: 'TP-Verlauf', empty: 'Noch keine Änderungen', changes: 'Änderungen', tw: 'temp', round: 'Runde', r: 'R', st: { Full: 'Voll', Wounded: 'Verwundet', Bloodied: 'Blutend', Dead: 'Tot' }, k: { Damage: 'Schaden', Heal: 'Heilung', Temp: 'Temp', Max: 'Max' }, start: 'Start' },
+      es: { name: 'Español', dmg: 'Daño', heal: 'Curar', temp: 'Fijar temp.', max: 'Fijar máx.', now: 'Ahora', after: 'Después', amount: 'Cantidad', hist: 'Historial de PG', empty: 'Aún no hay cambios', changes: 'cambios', tw: 'temp.', round: 'Ronda', r: 'R', st: { Full: 'Completo', Wounded: 'Herido', Bloodied: 'Malherido', Dead: 'Muerto' }, k: { Damage: 'Daño', Heal: 'Curación', Temp: 'Temp.', Max: 'Máx.' }, start: 'Inicio' },
+      fr: { name: 'Français', dmg: 'Dégâts', heal: 'Soigner', temp: 'Fixer temp.', max: 'Fixer max', now: 'Avant', after: 'Après', amount: 'Montant', hist: 'Historique des PV', empty: 'Aucun changement', changes: 'changements', tw: 'temp.', round: 'Tour', r: 'T', st: { Full: 'Indemne', Wounded: 'Blessé', Bloodied: 'Ensanglanté', Dead: 'Mort' }, k: { Damage: 'Dégâts', Heal: 'Soin', Temp: 'Temp.', Max: 'Max' }, start: 'Début' },
+      ja: { name: '日本語', dmg: 'ダメージ', heal: '回復', temp: '一時HP', max: '最大HP', now: '現在', after: '変更後', amount: '数値', hist: 'HP履歴', empty: 'まだ変更はありません', changes: '件', tw: '一時', round: 'ラウンド', r: 'R', st: { Full: '無傷', Wounded: '負傷', Bloodied: '重傷', Dead: '死亡' }, k: { Damage: 'ダメージ', Heal: '回復', Temp: '一時', Max: '最大' }, start: '開始' },
+      ru: { name: 'Русский', dmg: 'Урон', heal: 'Лечение', temp: 'Врем. ХП', max: 'Макс. ХП', now: 'Сейчас', after: 'После', amount: 'Значение', hist: 'История ХП', empty: 'Изменений пока нет', changes: 'изм.', tw: 'врем.', round: 'Раунд', r: 'Р', st: { Full: 'Цел', Wounded: 'Ранен', Bloodied: 'Тяжело ранен', Dead: 'Мёртв' }, k: { Damage: 'Урон', Heal: 'Лечение', Temp: 'Врем.', Max: 'Макс.' }, start: 'Старт' },
+    };
+    const kindOf = d => !d ? '' : d.startsWith('+') ? 'Heal' : d.includes('→') ? 'Max' : 'Damage';
+    const row = h => { const kind = h.kind ?? kindOf(h.delta), k = K[kind]; return { ...h, kind, hasKind: !!k, tagBg: k ? k[0] : '', tagFg: k ? k[1] : '', color: k ? k[2] : '#231F1C' }; };
+    const cell = (o) => {
+      const L = L10N[o.lang] || L10N.en, pop = o.variant === 'popover';
+      const rows = (o.rows || SETS[o.hist || 'full']).map(row).map(h => ({ ...h, kindText: L.k[h.kind] || h.kind, deltaText: h.delta.replace(' temp', ' ' + L.tw), whenText: h.when === 'Start' ? L.start : h.when.replace('Round ', L.round + ' ') }));
+      const open = pop || !!o.open, long = rows.length > 6 && o.limit !== false;
+      return { isCell: true, isArrow: false, isTrigger: false, headRing: o.tap ? '3px solid #FFE7A3' : 'none', marks: o.marks || [], L, sub: (o.unitName || 'Orc Berserker') + ' · ' + (rows.length ? rows.length + ' ' + L.changes : L.empty), whenCol: o.lang === 'ja' || o.lang === 'ru' || o.lang === 'es' ? '84px' : '60px', caption: o.caption || '', w: o.width ? o.width + 'px' : (pop ? '366px' : '100%'), inline: !pop, popover: pop, open, rows, empty: !rows.length,
+        count: rows.length ? rows.length + ' ' + L.changes : '', hasCount: !open && rows.length > 0, chev: open ? 'up' : 'down',
+        line: pop || open ? '#231F1C' : '#E2D8C6', radius: pop ? '24px' : '12px', boxPad: pop ? '14px' : '0', listPad: pop ? '0' : '0 12px 8px',
+        maxH: long ? '248px' : 'none', fade: long };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: '100%', groups: [{ title: '', desc: '', cells: [cell(p)] }] };
+    const SPEC = [
+        { n: 1, part: 'Header', v: '44 high, padding 0 12. “HP History” 14/600; count 12/600 #5F574D when closed; chevron 20.' },
+        { n: 2, part: 'When', v: '14/400 #5F574D. Column 60 (84 for es, ja, ru). “Round 3”, “Start”.' },
+        { n: 3, part: 'Kind chip', v: 'Chip S: 20 high, 12/700, padding 0 8, full radius. Damage, Heal, Temp, Max colours.' },
+        { n: 4, part: 'Amount', v: '14/700 in the kind colour; may wrap. Damage −N (N temp), Heal +N, Temp +N temp, Max old → new.' },
+        { n: 5, part: 'Result', v: '14/400, never wraps. HP after the change, e.g. 23/40.' },
+        { n: 6, part: 'Row', v: 'Min 40 high, grid when / kind+amount / result, gap 8. Divider 1 #E2D8C6 on top.' },
+        { n: 7, part: 'Container', v: 'Inline: border 2, #E2D8C6 closed, #231F1C open, radius 12. Sheet: border 2 ink, radius 24, padding 14.' },
+];
+    const C = (caption, o) => cell({ caption, width: o.variant === 'popover' ? 366 : 334, ...o });
+    return {
+      docs: [
+        { k: 'WHAT', v: 'The log of HP changes for one unit. Newest first; one row per change: when, kind, amount, result.' },
+        { k: 'WHERE', v: 'NumpadSheet, inline at the bottom. UnitRow expanded → HP History opens it as a sheet (CS-F4.5).' },
+        { k: 'BEHAVIOUR', v: 'Tap the header opens or closes the inline list. × closes the sheet. Read only. Over 6 rows scroll with a fade.' },
+      ],
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', desc: 'Inline, open, every kind. Values are tokens.', hasSpec: true, spec: SPEC, cells: [C('', { open: true, hist: 'full' })] },
+        { title: 'Variants: inline', desc: 'Bottom of the HP calculator. Collapsed by default with the count; tap the header to open.', cells: [
+          C('Collapsed', { hist: 'full' }), C('Collapsed, no changes', { hist: 'none' }), C('Open, no changes yet', { open: true, hist: 'none' }),
+          C('Open, a few changes', { open: true, hist: 'short' }), C('Open, every kind', { open: true, hist: 'full' }), C('Open, long: scrolls', { open: true, hist: 'long' }) ] },
+        { title: 'Variants: sheet', desc: 'From HP History in an expanded UnitRow. 12 from the screen edges; unit name and count in the header.', cells: [
+          C('A few changes', { variant: 'popover', hist: 'short' }), C('Every kind', { variant: 'popover', hist: 'full' }), C('No changes yet', { variant: 'popover', hist: 'none' }) ] },
+        { title: 'Edge cases', desc: 'Three-digit values and five languages, every kind. Result is HP after the change; temp shows in the amount.', cells: [
+          C('Three-digit, inline', { open: true, rows: [H('Round 4', 'Damage', '−120 (40 temp)', '167/320'), H('Round 3', 'Heal', '+105', '287/320'), H('Round 2', 'Max', '320 → 999', '999/999'), H('Round 1', 'Damage', '−400', '−113/320')] }),
+          C('Three-digit, sheet', { variant: 'popover', rows: [H('Round 4', 'Damage', '−120 (40 temp)', '167/320'), H('Round 3', 'Heal', '+105', '287/320'), H('Round 2', 'Max', '320 → 999', '999/999'), H('Round 1', 'Damage', '−400', '−113/320')] }),
+          ...['de', 'es', 'fr', 'ja', 'ru'].flatMap(lg => [C(L10N[lg].name + ', inline', { open: true, lang: lg, hist: 'full' }), C(L10N[lg].name + ', sheet', { variant: 'popover', lang: lg, hist: 'full' })]),
+          C('All four', { open: true, rows: [H('Round 2', 'Damage', '−8 (5 temp)', '23/40'), H('Round 2', 'Heal', '+3', '26/40'), H('Round 1', 'Temp', '+5 temp', '26/40'), H('Round 1', 'Max', '45 → 40', '40/40')] }) ] },
+        { title: 'Flow', desc: 'Two ways in. Read only: changes come from the calculator.', cells: [
+          C('Inline · closed, tap header', { hist: 'short', tap: true }), { isArrow: true, isCell: false, label: 'tap header' }, C('Inline · open', { open: true, hist: 'short' }) ] },
+        { title: '', desc: '', cells: [
+          { isTrigger: true, isCell: false, isArrow: false, caption: 'Row · tap HP History', w: '200px' }, { isArrow: true, isCell: false, label: 'opens sheet' }, C('Sheet · × closes', { variant: 'popover', hist: 'short', unitName: 'Vashti the Hexer' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

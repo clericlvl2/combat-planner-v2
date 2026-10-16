@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:32px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Molecules" title="HistoryRow" status="Draft" date="15.10.2026" desc="One HP change in HpHistory: when, kind chip, amount and result. Min 40 high with a divider on top." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="One row of the HP log for a unit." where="HpHistory, inline in NumpadSheet and as a sheet from UnitRow." behaviour="Display only, newest first. The amount may wrap; the result never wraps." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="h" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ h.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ h.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ h.stageBg }};border-radius:{{ h.stageR }};padding:{{ h.stagePad }}">
+              <div style="display:grid;grid-template-columns:{{ h.whenCol }} minmax(0,1fr) auto;align-items:center;gap:8px;min-height:40px;border-top:1px solid #E2D8C6;font-size:14px;font-variant-numeric:tabular-nums">
+                <span style="color:#5F574D;white-space:nowrap">{{ h.when }}</span>
+                <span style="display:flex;align-items:center;gap:8px;min-width:0"><sc-if value="{{ h.hasKind }}" hint-placeholder-val="{{ true }}"><span style="flex:none;display:inline-flex;align-items:center;height:20px;box-sizing:border-box;font-size:12px;font-weight:700;line-height:1;border-radius:999px;padding:0 8px;background:{{ h.tagBg }};color:{{ h.tagFg }}">{{ h.kindText }}</span></sc-if><span style="min-width:0;font-weight:700;line-height:1.25;color:{{ h.color }};overflow-wrap:anywhere">{{ h.delta }}</span></span>
+                <span style="white-space:nowrap">{{ h.result }}</span>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;when&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'Damage' | 'Heal' | 'Temp' | 'Max' | ''&quot;},&quot;kindText&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;delta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;result&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;whenCol&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const K = { Damage: ['#F8D7D7', '#9B1C1C', '#B4232A'], Heal: ['#DDEFD5', '#2F6B1F', '#2E7A43'], Temp: ['#DCE6F7', '#1E4E8C', '#1E4E8C'], Max: ['#E3E1DC', '#3D3A35', '#231F1C'] };
+    const kindOf = d => !d ? '' : d.startsWith('+') ? (d.includes('temp') ? 'Temp' : 'Heal') : d.includes('→') ? 'Max' : 'Damage';
+    const mk = o => {
+      const kind = o.kind ?? kindOf(o.delta), k = K[kind];
+      return { when: o.when || '', delta: o.delta || '', result: o.result || '', whenCol: o.whenCol || '60px',
+        hasKind: !!k, kindText: o.kindText || kind, tagBg: k ? k[0] : '', tagFg: k ? k[1] : '', color: k ? k[2] : '#231F1C' };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: '100%', groups: [{ cells: [{ ...mk(p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0' }] }] };
+    const C = (caption, o) => ({ ...mk(o), caption, cellW: '334px', stageBg: '#FFFFFF', stageR: '12px', stagePad: '0 12px' });
+    const SPEC = [{"part":"When","v":"14/400 #5F574D, column 60 (84 for es, ja, ru), never wraps."},{"part":"Kind chip","v":"Chip S: 20 high, 12/700, full radius, kind colours."},{"part":"Amount","v":"14/700 in the kind colour; may wrap."},{"part":"Result","v":"14/400 tabular, never wraps."},{"part":"Row","v":"Min 40 high, gap 8, divider 1 #E2D8C6 on top."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', desc: 'Damage through temp.', hasSpec: true, spec: SPEC, cells: [ANAT(C('', { when: 'Round 2', kind: 'Damage', delta: '−8 (5 temp)', result: '23/40' }))] },
+        { title: 'Variants × states', desc: 'Damage, Heal, Temp, Max, and the start row without a kind. Display only.', cells: [
+          C('Damage', { when: 'Round 3', kind: 'Damage', delta: '−12', result: '14/40' }), C('Heal', { when: 'Round 3', kind: 'Heal', delta: '+3', result: '26/40' }),
+          C('Temp', { when: 'Round 2', kind: 'Temp', delta: '+5 temp', result: '26/40' }), C('Max', { when: 'Round 1', kind: 'Max', delta: '45 → 40', result: '40/40' }),
+          C('No kind (start)', { when: 'Start', kind: '', delta: '', result: '36/36' }) ] },
+        { title: 'Edge cases', desc: 'Three digits, below zero, and the wider when column for ru and ja.', cells: [
+          C('Damage through temp, 3 digits', { when: 'Round 4', kind: 'Damage', delta: '−120 (40 temp)', result: '167/320' }),
+          C('Below zero', { when: 'Round 1', kind: 'Damage', delta: '−400', result: '−113/320' }),
+          C('ru, column 84', { when: 'Раунд 2', kind: 'Damage', kindText: 'Урон', delta: '−8 (5 врем.)', result: '23/40', whenCol: '84px' }),
+          C('ja, column 84', { when: 'ラウンド 3', kind: 'Heal', kindText: '回復', delta: '+3', result: '26/40', whenCol: '84px' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

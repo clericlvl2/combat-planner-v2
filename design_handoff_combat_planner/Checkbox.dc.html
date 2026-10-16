@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:40px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="Checkbox" status="Draft" date="15.10.2026" desc="Multi-select mark. Square in lists (CheckList, TagSheet), round in ConditionPicker. Ink by default; the round one takes the condition colour." hint-size="1100px,200px"></dc-import>
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="A mark for picking several items at once." where="CheckList (tags filter and assign, TagSheet), ConditionPicker (round, condition colour)." behaviour="The whole row is the hit target, at least 44 high. Toggles on tap, applies at once." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <section style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span></sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-start;min-width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ b.caption }}</span></sc-if>
+            <div style="background:{{ b.stage }};border-radius:12px;padding:{{ b.stagePad }};display:flex">
+              <span style="flex:none;width:{{ b.size }};height:{{ b.size }};box-sizing:border-box;border-radius:{{ b.radius }};border:2px solid {{ b.line }};background:{{ b.bg }};display:flex;align-items:center;justify-content:center;color:#FFFFFF;outline:{{ b.ring }};outline-offset:2px"><sc-if value="{{ b.on }}" hint-placeholder-val="{{ false }}"><i class="ti ti-check" style="font-size:{{ b.icon }}"></i></sc-if></span>
+            </div>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </section>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;on&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;shape&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;square&quot;,&quot;round&quot;],&quot;default&quot;:&quot;square&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;S&quot;,&quot;M&quot;,&quot;L&quot;],&quot;default&quot;:&quot;M&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;color&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;disabled&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const SZ = { S: [18, 12], M: [22, 14], L: [26, 16] };
+    const box = (o) => { const [s, ic] = SZ[o.size || 'M'], on = !!o.on, dis = !!o.disabled, col = o.color || '#231F1C';
+      return { size: s + 'px', icon: ic + 'px', radius: o.shape === 'round' ? '50%' : '4px', on, bg: on ? (dis ? '#E6DDCC' : col) : '#FFFFFF', line: on ? (dis ? '#E6DDCC' : col) : (dis ? '#E6DDCC' : '#8C8578'), ring: o.tap ? '3px solid #FFE7A3' : 'none' }; };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, pad: '0', rootW: 'auto', groups: [{ title: '', cells: [{ ...box(p), caption: '', cellW: '0', stage: 'transparent', stagePad: '0' }] }] };
+    const C = (caption, o) => ({ ...box(o), caption, cellW: '96px', stage: '#FFFFFF', stagePad: '16px' });
+    const SPEC = [{"part":"Box","v":"M 22 (S 18, L 26), border 2. Square radius 4, round full."},{"part":"Check","v":"Icon 14 white (S 12, L 16), only when on."},{"part":"Colour","v":"Off: #FFFFFF, border #8C8578. On: ink, or the condition text colour when round. Disabled #E6DDCC."}];
+    return { gallery: true, pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', cells: [{ ...(C('Square · on', { on: true })) }], hasSpec: true, spec: SPEC },
+        { title: 'Variants × states', cells: [C('Square · off', {}), C('Square · on', { on: true }), C('Square · tap', { on: true, tap: true }), C('Square · disabled', { disabled: true }), C('Square · on, disabled', { on: true, disabled: true }), C('Round · off', { shape: 'round' }), C('Round · on, dazed', { shape: 'round', on: true, color: '#6B5600' }), C('Round · on, staggered', { shape: 'round', on: true, color: '#1E4E8C' })] },
+        { title: 'Sizes', cells: ['S', 'M', 'L'].flatMap(s => [C(s + ' · square', { size: s, on: true }), C(s + ' · round', { size: s, on: true, shape: 'round' })]) },
+        { title: 'Edge cases', cells: ['charmed', 'confused', 'dazed', 'fear', 'helpless', 'hindered', 'shocked', 'stuck', 'stunned', 'vulnerable', 'weakened', 'staggered'].map((n, i) => C(n, { shape: 'round', on: true, color: ['#8A2448', '#2F6B1F', '#6B5600', '#3D3A35', '#8A2E17', '#12506E', '#0E5E63', '#5C4026', '#8A3F00', '#9B1C1C', '#5E5214', '#1E4E8C'][i] })) },
+      ] };
+  }
+}
+</script>
+</body>
+</html>

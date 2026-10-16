@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:32px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Molecules" title="HpBox" status="Draft" date="15.10.2026" desc="HP column of a unit row: current HP over a small max, status and segments for the DM, a tinted fill for players." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="96-wide box with current HP, max, status and temp HP." where="UnitRow (DM variant), PlayerRow (player variant)." behaviour="Tap opens NumpadSheet: the DM for any unit, a player for their own hero. Players see only the status of enemies." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">{{ g.desc }}</span></div></sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;line-height:1.25">{{ b.caption }}</span></sc-if>
+            <div style="background:{{ b.stageBg }};border-radius:12px;padding:{{ b.stagePad }};display:flex">
+              <div style="width:96px;min-height:54px;box-sizing:border-box;border:{{ b.line }};border-radius:12px;background:{{ b.bg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 6px;outline:{{ b.ring }};outline-offset:2px">
+                <sc-if value="{{ b.showNum }}" hint-placeholder-val="{{ true }}"><span style="display:flex;align-items:baseline;white-space:nowrap;font-variant-numeric:tabular-nums;line-height:1;border-bottom:{{ b.numLine }};padding-bottom:{{ b.numPb }}"><span style="font-size:18px;font-weight:700;color:{{ b.numFg }}">{{ b.cur }}</span><span style="font-size:12px;font-weight:600;color:#5F574D">/{{ b.max }}</span></span></sc-if>
+                <sc-if value="{{ b.showSegs }}" hint-placeholder-val="{{ true }}"><span style="display:flex;gap:4px"><sc-for list="{{ b.segs }}" as="s" hint-placeholder-count="4"><span style="width:13px;height:6px;border-radius:2px;background:{{ s.bg }}"></span></sc-for></span></sc-if>
+                <sc-if value="{{ b.showStatus }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;line-height:1.25;text-align:center;color:{{ b.stFg }}">{{ b.status }}</span></sc-if>
+                <sc-if value="{{ b.hasTemp }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;line-height:1;white-space:nowrap;color:{{ b.tempFg }}">{{ b.tempText }}</span></sc-if>
+              </div>
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'dm' | 'player'&quot;},&quot;hp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;max&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;temp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;enemy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;mine&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;disabled&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;hidden&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;lang&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const HC = { Full: '#2E7A43', Wounded: '#855800', Bloodied: '#B33A0A', Dead: '#57534E' };
+    const TINT = { Full: '#E3F1E6', Wounded: '#F8ECD2', Bloodied: '#FBE3D8', Dead: '#F3EDE2' };
+    const STL = { de: { Full: 'Voll', Wounded: 'Verwundet', Bloodied: 'Blutend', Dead: 'Tot', t: 'temp' }, es: { Full: 'Completo', Wounded: 'Herido', Bloodied: 'Malherido', Dead: 'Muerto', t: 'temp.' }, fr: { Full: 'Indemne', Wounded: 'Blessé', Bloodied: 'Ensanglanté', Dead: 'Mort', t: 'temp.' }, ja: { Full: '無傷', Wounded: '負傷', Bloodied: '重傷', Dead: '死亡', t: '一時' }, ru: { Full: 'Цел', Wounded: 'Ранен', Bloodied: 'Тяжело ранен', Dead: 'Мёртв', t: 'врем.' } };
+    const stOf = (h, m) => h <= 0 ? 'Dead' : h >= m ? 'Full' : h * 2 >= m ? 'Wounded' : 'Bloodied';
+    const box = (o) => {
+      const hp = o.hp ?? 40, max = o.max ?? 40, s = stOf(hp, max), dm = (o.variant || 'dm') === 'dm', off = s === 'Dead' || !!o.disabled, L = STL[o.lang] || {};
+      const n = s === 'Full' ? 4 : s === 'Wounded' ? 3 : s === 'Bloodied' ? (hp * 4 >= max ? 2 : 1) : 0;
+      return { cur: hp < 0 ? '−' + Math.abs(hp) : String(hp), max, status: L[s] || s, stFg: HC[s],
+        showNum: !o.hidden && !(o.enemy && !dm), showSegs: dm, showStatus: dm ? (s !== 'Full' || !!o.hidden) : true,
+        segs: [0, 1, 2, 3].map(i => ({ bg: i < n ? HC[s] : '#E6DDCC' })),
+        line: dm ? (off || o.hidden ? '2px solid transparent' : '2px solid #E2D8C6') : '2px solid transparent',
+        bg: dm ? (off || o.hidden ? 'transparent' : '#FFFFFF') : (off ? '#F3EDE2' : TINT[s]),
+        numFg: off ? '#5F574D' : '#231F1C', numLine: o.mine && !off ? '2px dashed #231F1C' : '0', numPb: o.mine && !off ? '2px' : '0',
+        hasTemp: !!o.temp, tempText: '+' + (o.temp || 0) + ' ' + (L.t || 'temp'), tempFg: dm ? '#231F1C' : '#1E5FA8', ring: o.tap ? '3px solid #FFE7A3' : 'none' };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: 'auto', groups: [{ title: '', desc: '', cells: [{ ...box(p), caption: '', cellW: '96px', stageBg: 'transparent', stagePad: '0' }] }] };
+    const C = (caption, o) => ({ ...box(o), caption, cellW: '120px', stageBg: '#FAF6EE', stagePad: '12px' });
+    const S = (caption, o) => ({ ...box(o), caption, cellW: '120px', stageBg: '#FFFFFF', stagePad: '12px' });
+    const SPEC = [{"part":"Box","v":"96 wide, min 54 high, radius 12, padding 8 6. DM: border 2 #E2D8C6. Player: status tint."},{"part":"Current HP","v":"Rubik 18/700 tabular, “/max” 12/600 #5F574D. Fits −999/999."},{"part":"Segments","v":"4 × 13×6, radius 2, gap 4, in the status colour. DM only."},{"part":"Status","v":"12/700 from Wounded down: #855800, #B33A0A, Dead #57534E. May wrap."},{"part":"Temp","v":"“+N temp” 12/600 on one line."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', desc: 'DM, Bloodied with temp HP.', hasSpec: true, spec: SPEC, cells: [ANAT(S('', { hp: 14, max: 40, temp: 5 }))], cellW: '160px' },
+        { title: 'Variants: DM', desc: 'Border and 4 segments; status from Wounded down. Dead and disabled lose border and fill.', cells: [
+          S('Full', { hp: 40, max: 40 }), S('Wounded', { hp: 24, max: 40 }), S('Bloodied', { hp: 14, max: 40 }), S('Bloodied, low', { hp: 6, max: 40 }), S('Dead', { hp: -3, max: 18 }), S('Temp', { hp: 30, max: 30, temp: 5 }), S('Disabled', { hp: 18, max: 18, disabled: true }), S('Tap', { hp: 14, max: 40, tap: true }) ] },
+        { title: 'Variants: player', desc: 'Status-tinted fill, no border. Enemies show only the status. Own hero: dashed underline.', cells: [
+          C('Full', { variant: 'player', hp: 52, max: 52 }), C('Wounded', { variant: 'player', hp: 24, max: 40 }), C('Own, Bloodied', { variant: 'player', hp: 13, max: 36, mine: true }), C('Own, temp', { variant: 'player', hp: 20, max: 36, temp: 5, mine: true }), C('Enemy', { variant: 'player', hp: 14, max: 40, enemy: true }), C('Enemy, dead', { variant: 'player', hp: -3, max: 18, enemy: true }) ] },
+        { title: 'Edge cases: three digits', desc: 'Max HP up to 999. Every case stays on one line.', cells: [
+          S('287/320', { hp: 287, max: 320 }), S('112/320 + temp', { hp: 112, max: 320, temp: 120 }), S('999/999', { hp: 999, max: 999 }), S('−105/320', { hp: -105, max: 320 }), S('−999/999', { hp: -999, max: 999 }), C('Player 187/240', { variant: 'player', hp: 187, max: 240, temp: 120 }), C('Player own 287/320', { variant: 'player', hp: 287, max: 320, mine: true }) ] },
+        { title: 'Edge cases: languages', desc: 'Status and temp per language. ru “Тяжело ранен” and fr “Ensanglanté” wrap to two lines.', cells: [
+          ...['de', 'es', 'fr', 'ja', 'ru'].map(lg => S(lg + ' · Bloodied', { hp: 112, max: 320, temp: 5, lang: lg })), ...['fr', 'ru'].map(lg => C('Player ' + lg, { variant: 'player', hp: 112, max: 320, lang: lg })) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

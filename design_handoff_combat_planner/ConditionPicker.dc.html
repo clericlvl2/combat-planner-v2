@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:24px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="ConditionPicker" status="Draft" date="15.10.2026" desc="Sheet for marking the 12 conditions from the vision on one unit. Two A–Z columns; any combination applies at once." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Marks the 12 conditions from the vision on one unit. Any combination, no limit." where="DM: expanded UnitRow, any unit. Player: expanded own PlayerRow, own hero only." behaviour="Tap a row toggles it at once and the row chips update. Done or × closes. Rows keep a fixed A–Z order." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.triggers }}" as="t" hint-placeholder-count="0">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:600">{{ t.caption }}</span>
+          <div style="width:170px;height:48px;box-sizing:border-box;border:2px solid #E2D8C6;border-radius:12px;background:#FFFFFF;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px;outline:{{ t.ring }};outline-offset:2px">
+            <span style="display:flex;align-items:center;gap:8px"><span>Conditions</span><sc-if value="{{ t.hasCount }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 4px;box-sizing:border-box;border-radius:999px;background:#231F1C;color:#FFFFFF;font-size:12px;font-weight:700">{{ t.count }}</span></sc-if></span>
+            <i class="ti ti-chevron-down" style="font-size:20px"></i>
+          </div>
+          </div>
+        </sc-for>
+        <sc-for list="{{ g.cells }}" as="c" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ c.w }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ c.caption }}</span></sc-if>
+            <sc-if value="{{ c.isArrow }}" hint-placeholder-val="{{ false }}"><div style="align-self:center;padding-top:120px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ c.label }}" width="{{ 110 }}" height="{{ 80 }}" hint-size="110px,80px"></dc-import></div></sc-if>
+            <sc-if value="{{ c.isSheet }}" hint-placeholder-val="{{ true }}">
+            <div style="box-sizing:border-box;background:#FFFFFF;border:2px solid #231F1C;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:8px;padding-bottom:4px"><span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">Conditions</span><span style="font-size:14px;color:#5F574D;overflow-wrap:anywhere">{{ c.sub }}</span></span><span style="flex:none;width:44px;height:44px;box-sizing:border-box;border:2px solid #E2D8C6;border-radius:22px;display:flex;align-items:center;justify-content:center"><i class="ti ti-x" style="font-size:20px"></i></span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;grid-template-rows:repeat(6,auto);grid-auto-flow:column;gap:0 4px">
+            <sc-for list="{{ c.rows }}" as="r" hint-placeholder-count="12">
+              <div style="height:44px;border-radius:12px;display:flex;align-items:center;gap:12px;padding:0 8px;outline:{{ r.ring }};outline-offset:-3px">
+                <dc-import name="Checkbox" embedded="{{ true }}" shape="round" on="{{ r.on }}" color="{{ r.chipFg }}" hint-size="22px,22px"></dc-import>
+                <span style="display:inline-flex;align-items:center;height:20px;box-sizing:border-box;font-size:12px;font-weight:700;line-height:1;border-radius:999px;padding:0 8px;background:{{ r.chipBg }};color:{{ r.chipFg }}">{{ r.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <span style="margin-top:8px;height:58px;border-radius:29px;background:#231F1C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">Done</span>
+        </div>
+            </sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;selected&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;width&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;unitName&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const CC = { charmed: ['#F9DDE6', '#8A2448'], confused: ['#DDEFD5', '#2F6B1F'], dazed: ['#FFF1B8', '#6B5600'], fear: ['#E3E1DC', '#3D3A35'], helpless: ['#F6DCD5', '#8A2E17'], hindered: ['#D7EBF5', '#12506E'], shocked: ['#D5F0F0', '#0E5E63'], staggered: ['#DCE6F7', '#1E4E8C'], stuck: ['#E9DFD1', '#5C4026'], stunned: ['#FBE0C2', '#8A3F00'], vulnerable: ['#F8D7D7', '#9B1C1C'], weakened: ['#EDE6C9', '#5E5214'] };
+    const keys = Object.keys(CC).sort();
+    const mk = (sel = [], tap) => keys.map(c => { const on = sel.includes(c); return { label: c, on, chipBg: CC[c][0], chipFg: CC[c][1], markBg: on ? CC[c][1] : '#FFFFFF', markLine: on ? CC[c][1] : '#8C8578', ring: c === tap ? '3px solid #FFE7A3' : 'none' }; });
+    const sub = (name) => name;
+    const p = this.props;
+    if (p.embedded) { const s = p.selected || []; return { gallery: false, showHead: false, pad: '0', rootW: (p.width || 366) + 'px', groups: [{ title: '', desc: '', hasSpec: false, spec: [], triggers: [], cells: [{ caption: '', w: '100%', sub: sub(p.unitName || 'Vashti the Hexer', s.length), rows: mk(s, p.tap), isSheet: true, isArrow: false }] }] }; }
+    const C = (caption, s, tap, name) => ({ caption, w: '366px', sub: sub(name || 'Vashti the Hexer', s.length), rows: mk(s, tap), isSheet: true, isArrow: false });
+    const ARW = label => ({ isArrow: true, isSheet: false, label, caption: '', w: '110px' });
+    const SPEC = [{"part":"Sheet","v":"Border 2 ink, radius 24, padding 14, gap 8; 12 from the screen edges."},{"part":"Header","v":"Unbounded 18/700 “Conditions”; unit name 14 #5F574D."},{"part":"Close","v":"44 circle, border 2 #E2D8C6, × 20."},{"part":"Grid","v":"Two columns, 6 rows, A–Z down the first column."},{"part":"Row","v":"44 high, radius 12, gap 12: round Checkbox, then the chip S."},{"part":"Done","v":"Bottom action 58, radius 29, ink, Unbounded 18."}];
+    const G = (title, desc, cells, o = {}) => ({ title, desc, cells, triggers: [], hasSpec: false, spec: [], ...o });
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        G('Anatomy', 'Two conditions on.', [{ ...C('', ['dazed', 'staggered']) }], { hasSpec: true, spec: SPEC }),
+        G('Variants: trigger', 'Next to HP History in the expanded row, 48 high. Chips in the row show what is on.', [], { triggers: [{ caption: 'Default', hasCount: false, count: 0, ring: 'none' }, { caption: 'Tap', hasCount: false, count: 0, ring: '3px solid #FFE7A3' }] }),
+        G('Variants: sheet', 'Nothing selected, two selected, and the tap ring while adding one.', [C('Nothing selected', []), C('Two selected', ['dazed', 'staggered']), C('Tap: adding weakened', ['dazed', 'staggered'], 'weakened')]),
+        G('Edge cases', 'All 12 on, and a long unit name that wraps in the header.', [C('All selected', keys), C('Long unit name', ['stuck'], null, 'Brother Tomas of the Silver Lantern Order')]),
+        G('Flow', 'Toggling applies at once; Done closes.', [C('Tap weakened', ['dazed', 'staggered'], 'weakened'), ARW('tap weakened'), C('Three on', ['dazed', 'staggered', 'weakened'])]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

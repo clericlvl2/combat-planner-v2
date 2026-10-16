@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:48px 56px 80px;display:flex;flex-direction:column;gap:40px;width:max-content">
+  <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Design" title="Baselines" status="Draft" date="16.10.2026" desc="Fixed lines every screen keeps on a 390-wide phone: header heights, content edges, the bottom action rect, sheets, dialogs and toasts." hint-size="1100px,200px"></dc-import>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">Screens</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">Red dashed lines: 28 from the screen edges, where every bottom button sits. Blue: 12, the content edge.</span></div>
+    <div style="display:flex;gap:32px;align-items:flex-start">
+      <sc-for list="{{ phones }}" as="p" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:14px;font-weight:600">{{ p.title }}</span>
+          <div style="position:relative;width:390px;height:600px;background:{{ p.bg }};border-radius:28px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.12),0 12px 40px rgba(40,30,10,0.12)">
+            <sc-if value="{{ p.hasHeader }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:0;right:0;top:0;height:{{ p.headH }};box-sizing:border-box;background:#FAF6EE;border-bottom:2px solid #E2D8C6;display:flex;flex-direction:column"><span style="height:44px;display:flex;align-items:center;padding:0 32px;font-size:16px;font-weight:600">9:41</span><span style="padding:0 16px;font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ p.headLabel }}</span></div></sc-if>
+            <div style="position:absolute;left:12px;right:12px;top:{{ p.listTop }};display:flex;flex-direction:column;gap:8px">
+              <sc-for list="{{ p.rows }}" as="r" hint-placeholder-count="4"><span style="height:72px;box-sizing:border-box;border-radius:16px;background:#FFFFFF;border:2px solid #E2D8C6"></span></sc-for>
+            </div>
+            <sc-if value="{{ p.hasBar }}" hint-placeholder-val="{{ true }}"><div style="position:absolute;left:0;right:0;bottom:0;height:98px;box-sizing:border-box;border-top:2px solid #E2D8C6;background:#FAF6EE"></div></sc-if>
+            <sc-if value="{{ p.isSheet }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(35,31,28,0.5)"></div><div style="position:absolute;left:12px;right:12px;bottom:12px;height:300px;box-sizing:border-box;background:#FFFFFF;border:2px solid #231F1C;border-radius:24px;padding:14px;display:flex;flex-direction:column;justify-content:space-between"><span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">Sheet</span><span></span></div></sc-if>
+            <div style="position:absolute;left:28px;right:28px;bottom:28px;height:58px;border-radius:29px;background:#231F1C;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">{{ p.cta }}</div>
+            <span style="position:absolute;left:12px;top:0;bottom:0;border-left:1px dashed #1E5FA8"></span><span style="position:absolute;right:12px;top:0;bottom:0;border-left:1px dashed #1E5FA8"></span>
+            <span style="position:absolute;left:28px;top:0;bottom:0;border-left:1px dashed #E0362C"></span><span style="position:absolute;right:28px;top:0;bottom:0;border-left:1px dashed #E0362C"></span><span style="position:absolute;left:0;right:0;bottom:28px;border-top:1px dashed #E0362C"></span>
+            <sc-for list="{{ p.tags }}" as="t" hint-placeholder-count="3"><span style="position:absolute;left:{{ t.x }};top:{{ t.y }};font-size:11px;font-weight:700;color:{{ t.c }};background:rgba(255,255,255,0.85);padding:0 4px;border-radius:4px">{{ t.label }}</span></sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:12px">
+    <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">Values</span>
+    <div style="background:#FFFFFF;border-radius:16px;padding:8px 24px;display:grid;grid-template-columns:200px 200px minmax(0,420px);max-width:860px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:#5F574D;padding:8px 0">LINE</span><span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:#5F574D;padding:8px 0">VALUE</span><span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:#5F574D;padding:8px 0">WHERE</span>
+      <sc-for list="{{ values }}" as="v" hint-placeholder-count="12">
+        <span style="font-size:14px;font-weight:700;padding:8px 0;border-top:1px solid #E2D8C6">{{ v.k }}</span>
+        <span style="font-size:14px;font-variant-numeric:tabular-nums;padding:8px 0;border-top:1px solid #E2D8C6">{{ v.v }}</span>
+        <span style="font-size:14px;line-height:1.45;color:#5F574D;padding:8px 0;border-top:1px solid #E2D8C6">{{ v.w }}</span>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const T = (label, x, y, c = '#E0362C') => ({ label, x: x + 'px', y: y + 'px', c });
+    const rows = n => Array.from({ length: n }, (_, i) => i);
+    return {
+      phones: [
+        { title: 'List: Combat list, Library', bg: '#FAF6EE', hasHeader: true, headH: '168px', headLabel: 'Combats', listTop: '180px', rows: rows(4), hasBar: true, isSheet: false, cta: 'New combat',
+          tags: [T('header 168 with search', 230, 150, '#5F574D'), T('12', 14, 300, '#1E5FA8'), T('bar 98', 330, 506, '#5F574D'), T('28', 336, 576)] },
+        { title: 'Combat screen', bg: '#FAF6EE', hasHeader: true, headH: '126px', headLabel: 'Round 3', listTop: '138px', rows: rows(5), hasBar: true, isSheet: false, cta: 'Next turn',
+          tags: [T('header 126', 290, 108, '#5F574D'), T('12', 14, 300, '#1E5FA8'), T('bar 98', 330, 506, '#5F574D'), T('28', 336, 576)] },
+        { title: 'Sheet over a screen', bg: '#FAF6EE', hasHeader: true, headH: '126px', headLabel: 'Round 3', listTop: '138px', rows: rows(5), hasBar: false, isSheet: true, cta: 'Add unit',
+          tags: [T('12 + 2 + 14 = 28', 230, 270, '#5F574D'), T('28', 336, 576)] },
+      ],
+      values: [
+        { k: 'Phone', v: '390 × 844', w: 'Every screen and component, light theme.' },
+        { k: 'Status bar', v: '44', w: 'Top of every header.' },
+        { k: 'CombatHeader', v: '126', w: 'Combat screen. PlayerHeader: 44 + min 82.' },
+        { k: 'PageHeader', v: 'about 168 with search', w: 'Combat list, Library. 44 + nav row 48 + search 48, bottom 12.' },
+        { k: 'Content edge', v: '12', w: 'Lists, sheets and toasts, left and right.' },
+        { k: 'List gap', v: '8', w: 'Between UnitRow, PlayerRow, CombatCard, PresetCard.' },
+        { k: 'Bottom bar', v: '98, padding 12 28 28', w: 'TurnBar, BottomBar. Border-top 2 #E2D8C6.' },
+        { k: 'Bottom action', v: '58 high, 28 from the edges', w: 'Every bottom button: bars and sheets.' },
+        { k: 'Sheet', v: '12 inset, border 2, padding 14', w: 'All sheets, radius 24. 12 + 2 + 14 = 28.' },
+        { k: 'Dialog', v: '24 inset, padding 16', w: 'Centred; two M buttons, no bottom action.' },
+        { k: 'Toast', v: '12 from the sides, 110 from the bottom', w: '12 above the bottom bar; 24 on screens without a bar.' },
+        { k: 'Drawer', v: '300 wide', w: 'From the left, padding 56 12 28.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

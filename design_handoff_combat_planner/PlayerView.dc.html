@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:48px 56px 80px;display:flex;flex-direction:column;gap:64px;width:max-content">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}"><dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Pages" title="Player view" status="Draft" date="15.10.2026" desc="Players follow the combat here and control their own hero. Opened from the player link the DM shares." links="{{ links }}" hint-size="1100px,230px"></dc-import></sc-if>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" k1="PURPOSE" k2="ENTRY POINTS" k3="COMPONENTS USED" what="Join with a name, pick a hero, then follow turns and manage the own hero." where="The player link or QR code from ShareSheet. No account needed." behaviour="PlayerHeader, PlayerRow, InitiativePopover, NumpadSheet, ConditionPicker, Menu, MessageScreen, Toast." hint-size="960px,160px"></dc-import></sc-if>
+  <sc-for list="{{ flows }}" as="f" hint-placeholder-count="2">
+    <section id="{{ f.code }}" style="display:flex;flex-direction:column;gap:32px">
+      <sc-if value="{{ f.isSec }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ f.secTitle }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ f.secDesc }}</span></div></sc-if>
+      <sc-for list="{{ f.lines }}" as="ln" hint-placeholder-count="1">
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <sc-if value="{{ ln.main }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;width:280px"><dc-import name="Flow" embedded="{{ true }}" kind="flowHead" code="{{ f.code }}" title="{{ f.title }}" goal="{{ f.goal }}" entry="{{ f.entry }}" exit="{{ f.exit }}" rules="{{ f.rules }}" parts="{{ f.parts }}" hint-size="280px,420px"></dc-import></div>
+          </sc-if>
+          <sc-if value="{{ ln.branch }}" hint-placeholder-val="{{ false }}">
+            <div style="width:280px;flex:none;box-sizing:border-box;border:2px dashed #8C8578;border-radius:16px;padding:16px 16px;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:#5F574D">BRANCH</span><span style="font-size:16px;font-weight:600;line-height:1.45;text-wrap:pretty">{{ ln.label }}</span></div>
+          </sc-if>
+          <sc-for list="{{ ln.items }}" as="s" hint-placeholder-count="3">
+            <sc-if value="{{ s.isArrow }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ s.label }}" sub="{{ s.sub }}" branch="{{ s.branch }}" hint-size="120px,894px"></dc-import></div>
+            </sc-if>
+            <sc-if value="{{ s.isStep }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:none;width:390px"><dc-import name="Flow" embedded="{{ true }}" kind="step" code="{{ s.code }}" caption="{{ s.caption }}" note="{{ s.note }}" hint-size="390px,894px">
+
+                <sc-if value="{{ s.claim }}" hint-placeholder-val="{{ false }}">
+                  <dc-import name="PlayerHeader" embedded="{{ true }}" kind="playerHeader" round="{{ null }}" menu="{{ false }}" hint-size="390px,128px"></dc-import>
+                  <div style="flex:1;min-height:0;padding:16px 16px;display:flex;flex-direction:column;gap:16px">
+                    <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;line-height:1.25">Who are you playing?</span>
+                    <dc-import name="TextField" embedded="{{ true }}" kind="text" label="Your name" counter="{{ s.nameCount }}" value="{{ s.name }}" placeholder="Shown to the DM" state="{{ s.nameState }}" hint-size="100%,70px"></dc-import>
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <span style="font-size:12px;font-weight:600;color:#5F574D">Heroes in this combat</span>
+                      <sc-for list="{{ s.heroes }}" as="h" hint-placeholder-count="3">
+                        <div style="min-height:64px;box-sizing:border-box;border:2px solid {{ h.line }};border-radius:16px;background:{{ h.bg }};display:flex;align-items:center;gap:12px;padding:12px 12px;outline:{{ h.ring }};outline-offset:2px">
+                          <span style="flex:none;width:40px;height:40px;border-radius:12px;background:{{ h.iconBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center"><i class="ti ti-{{ h.icon }}" style="font-size:20px"></i></span>
+                          <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:600;color:{{ h.nameFg }};overflow-wrap:anywhere">{{ h.name }}</span><span style="font-size:14px;font-weight:{{ h.subW }};color:{{ h.subFg }}">{{ h.sub }}</span></span>
+                          <dc-import name="Radio" embedded="{{ true }}" on="{{ h.on }}" disabled="{{ h.taken }}" hint-size="22px,22px"></dc-import>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <dc-import name="BottomBar" embedded="{{ true }}" kind="bar" label="{{ s.cta }}" icon="login-2" state="{{ s.ctaState }}" tap="{{ s.ctaTap }}" hint="{{ s.ctaHint }}" hint-size="390px,98px"></dc-import>
+                </sc-if>
+
+                <sc-if value="{{ s.list }}" hint-placeholder-val="{{ true }}">
+                  <dc-import name="PlayerHeader" embedded="{{ true }}" kind="playerHeader" round="{{ s.round }}" esc="{{ s.esc }}" menu-tap="{{ s.menuOpen }}" hint-size="390px,128px"></dc-import>
+                  <div style="flex:1;min-height:0;overflow:visible;padding:8px 12px;display:flex;flex-direction:column;gap:8px;position:relative">
+                    <sc-if value="{{ s.waiting }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:#FFF4D2;border:2px solid #FFE7A3;font-size:16px;font-weight:500"><i class="ti ti-hourglass" style="font-size:20px"></i>Waiting for the DM to start the combat</div>
+                    </sc-if>
+                    <sc-for list="{{ s.rows }}" as="r" hint-placeholder-count="6">
+                      <dc-import name="PlayerRow" embedded="{{ true }}" kind="player" unit="{{ r.u }}" mine="{{ r.mine }}" setup="{{ s.setup }}" expanded="{{ r.expanded }}" cond-open="{{ r.condOpen }}" note-edit="{{ r.noteEdit }}" note-draft="{{ r.noteDraft }}" tap="{{ r.tap }}" hint-size="100%,72px"></dc-import>
+                    </sc-for>
+                    <sc-if value="{{ s.noUnits }}" hint-placeholder-val="{{ false }}">
+                      <dc-import name="EmptyState" embedded="{{ true }}" kind="empty" icon="users" title="No units yet" body="The DM is setting up the combat. This page updates by itself." pad="80px 24px 0" hint-size="100%,300px"></dc-import>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ s.msg }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:44px;flex:none;display:flex;align-items:center;padding:0 24px;font-size:16px;font-weight:600">9:41</div>
+                  <dc-import name="MessageScreen" embedded="{{ true }}" kind="message" icon="{{ s.msgIcon }}" title="{{ s.msgTitle }}" body="{{ s.msgBody }}" action="{{ s.msgAction }}" action-variant="secondary" hint-size="100%,500px"></dc-import>
+                </sc-if>
+
+                <sc-if value="{{ s.initPop }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:10px;top:{{ s.popTop }};z-index:7"><dc-import name="InitiativePopover" embedded="{{ true }}" value="{{ 15 }}" bonus="{{ 2 }}" hint-size="240px,170px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.menuOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:124px;right:8px;z-index:7"><dc-import name="Menu" embedded="{{ true }}" kind="menu" preset="player" width="{{ 240 }}" hint-size="240px,68px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.condSheet }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;inset:0;background:rgba(35,31,28,0.5);z-index:5"></div>
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6"><dc-import name="ConditionPicker" embedded="{{ true }}" selected="{{ ['dazed'] }}" tap="weakened" width="{{ 366 }}" hint-size="366px,480px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.numpad }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;inset:0;background:rgba(35,31,28,0.5);z-index:5"></div>
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6"><dc-import name="NumpadSheet" embedded="{{ true }}" who="vashti" no-max="{{ true }}" amount="{{ s.amount }}" action="{{ s.action }}" tap-action="{{ s.tapAction }}" hint-size="366px,600px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.toast }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:{{ s.toastBottom }};z-index:8"><dc-import name="Toast" embedded="{{ true }}" kind="toast" preset="{{ s.toastPreset }}" text="{{ s.toastText }}" action="{{ s.toastAction }}" icon="{{ s.toastIcon }}" dot="{{ s.toastDot }}" dot-fg="{{ s.toastDotFg }}" hint-size="366px,56px"></dc-import></div>
+                </sc-if>
+              </dc-import></div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </sc-for>
+      <sc-if value="{{ f.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="max-width:600px"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ f.spec }}" hint-size="540px,200px"></dc-import></div></sc-if>
+    </section>
+  </sc-for>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="rules" n="6" rules="{{ rules }}" hint-size="960px,200px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const ME = 'Vashti the Hexer';
+    const U = [
+      { init: 19, name: 'Ser Aldric', type: 'Hero', hp: 52, max: 52, claim: 'Jonas', d: [18, 14, 12] },
+      { init: 17, name: 'Orc Berserker', type: 'Enemy', hp: 14, max: 40, cond: ['staggered'] },
+      { init: 15, name: ME, type: 'Hero', hp: 20, max: 36, cond: ['dazed'], claim: 'Mika', d: [16, 12, 15], note: 'Hex on Orc Berserker' },
+      { init: 12, name: 'Goblin Archer 1', type: 'Enemy', hp: -3, max: 18 },
+      { init: 9, name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 24, max: 30, temp: 5, d: [17, 15, 13] },
+      { init: 7, name: '影の射手ゴブリン', type: 'Enemy', hp: 18, max: 18, cond: ['stuck'], disabled: true },
+    ];
+    const SET = U.map(u => ({ ...u, hp: u.max, cond: [], temp: 0, note: '', init: u.name === ME ? null : u.init, disabled: false }));
+    const rowsOf = (units, own = {}, activeName) => units.filter(u => !u.disabled).map(u => { const mine = u.name === ME; return { u: { ...u, active: activeName ? u.name === activeName : false }, mine, expanded: mine && !!own.expanded, condOpen: mine && !!own.condOpen, noteEdit: mine && !!own.noteEdit, noteDraft: own.noteDraft || '', tap: mine ? (own.tap || '') : '' }; });
+    const heroesOf = (sel, o = {}) => [
+      { name: 'Ser Aldric', taken: true, by: 'Jonas' },
+      { name: ME, taken: !!o.vashtiTaken, by: 'Alex' },
+      { name: 'Ilse the Bold', taken: false },
+    ].map(h => { const on = h.name === sel && !h.taken; return { name: h.name, taken: !!h.taken, on, icon: h.taken ? 'lock' : 'shield', iconBg: h.taken ? '#8C8578' : '#1E5FA8', sub: h.taken ? h.by + ' is playing' : 'Free', subFg: h.taken ? '#5F574D' : '#2E7A43', subW: h.taken ? 400 : 600, nameFg: h.taken ? '#5F574D' : '#231F1C',
+      line: on ? '#231F1C' : '#E2D8C6', bg: h.taken ? '#F3EDE2' : on ? '#FFF4D2' : '#FFFFFF', radioLine: on ? '#231F1C' : h.taken ? '#E2D8C6' : '#8C8578', ring: o.tap === h.name ? '3px solid #FFE7A3' : 'none' }; });
+    const D = { claim: false, list: false, msg: false, round: 3, esc: 2, setup: false, waiting: false, noUnits: false, rows: [], menuOpen: false, initPop: false, popTop: '372px', numpad: false, condSheet: false, condSel: [], amount: 7, action: 'damage', tapAction: false,
+      toast: false, toastPreset: '', toastText: '', toastAction: '', toastIcon: '', toastDot: '', toastDotFg: '', toastBottom: '24px',
+      name: '', nameCount: '0/40', nameState: 'default', heroes: [], cta: 'Join', ctaState: 'disabled', ctaTap: false, ctaHint: '', msgIcon: '', msgTitle: '', msgBody: '', msgAction: '' };
+    const S = (code, caption, o = {}) => ({ ...D, isStep: true, isArrow: false, code, caption, note: '', ...o });
+    const A = (label, sub = '', branch = false) => ({ isArrow: true, isStep: false, label, sub, branch });
+    const F = (code, title, goal, entry, exit, rules, parts, lines) => ({ code, title, goal, entry, exit, rules, parts, lines });
+    const main = items => ({ main: true, branch: false, label: '', items });
+    const br = (label, items) => ({ main: false, branch: true, label, items });
+    const claim = o => ({ claim: true, heroes: heroesOf(o.sel, o), ...o });
+    const list = (units, o = {}) => ({ list: true, rows: rowsOf(units, o.own, o.active), ...o });
+    const t = (text, icon, dot, dotFg, action) => ({ toast: true, toastText: text, toastIcon: icon, toastDot: dot || '#F3EDE2', toastDotFg: dotFg || '#231F1C', toastAction: action || '' });
+    const msg = (icon, title, body, action) => ({ msg: true, msgIcon: icon, msgTitle: title, msgBody: body, msgAction: action || '' });
+
+    const flows = [
+      F('PV-F1', 'Join by link', 'The player opens the link, enters a name and picks a free hero.', 'Link from the DM', 'Player is in the combat as their hero', 'One hero, one player. Name up to 40 characters, visible to the DM.', 'PlayerHeader, TextField, BottomBar, PlayerRow', [
+        main([
+          S('PV-F1.1', 'Hero list', { ...claim({ nameState: 'focus' }), ctaHint: 'Enter your name and pick a hero' }),
+          A('type name · tap hero'),
+          S('PV-F1.2', 'Name entered, hero picked', { ...claim({ sel: ME, tap: ME }), name: 'Mika', nameCount: '4/40', cta: 'Join as Vashti', ctaState: 'default', ctaTap: true }),
+          A('Join'),
+          S('PV-F1.3', 'In the combat, waiting for the DM', { ...list(SET), round: null, setup: true, waiting: true }),
+        ]),
+        br('Hero taken first', [
+          S('PV-F1.4', 'Another player took Vashti', { ...claim({ sel: ME, vashtiTaken: true }), name: 'Mika', nameCount: '4/40', cta: 'Join', ctaState: 'disabled', ...t('Alex took Vashti the Hexer a moment ago', 'lock', '#FFE7A3', '#231F1C'), toastBottom: '110px' }),
+        ]),
+      ]),
+      F('PV-F2', 'Setup: own initiative', 'While the DM sets up, the player rolls initiative for their hero.', 'Setup, own hero has no initiative', 'Initiative visible to the DM', 'd20 + hero bonus; adjust with ±. Rolling closes once the combat starts.', 'PlayerRow, Popover, Stepper', [
+        main([
+          S('PV-F2.1', 'Own row without initiative', { ...list(SET, { own: { tap: 'init' } }), round: null, setup: true, waiting: true }),
+          A('tap role block'),
+          S('PV-F2.2', 'Roll or ±', { ...list(SET, { own: { tap: 'init' } }), round: null, setup: true, waiting: true, initPop: true, popTop: '426px' }),
+          A('Roll d20 +2'),
+          S('PV-F2.3', 'Initiative 15', { ...list(SET.map(u => u.name === ME ? { ...u, init: 15 } : u)), round: null, setup: true, waiting: true }),
+        ]),
+      ]),
+      F('PV-F3', 'Combat: own hero', 'The player follows the turn order and manages their hero’s HP, conditions and note.', 'Combat started', 'Changes are visible to the DM and other players', 'The player edits only their own hero: Damage, Heal, Set Temp (no Set Max), conditions, note.', 'PlayerRow, NumpadSheet, CheckList', [
+        main([
+          S('PV-F3.1', 'Another unit’s turn', { ...list(U, { active: 'Orc Berserker' }) }),
+          A('DM’s turn'),
+          S('PV-F3.2', 'Own turn', { ...list(U, { active: ME, own: { tap: 'hp' } }) }),
+          A('tap HP'),
+          S('PV-F3.3', 'Damage 7', { ...list(U, { active: ME }), numpad: true, amount: 7, tapAction: true }),
+          A('Damage'),
+          S('PV-F3.4', 'HP 13/36, Bloodied', { ...list(U.map(u => u.name === ME ? { ...u, hp: 13 } : u), { active: ME }) }),
+        ]),
+        br('Conditions and note', [
+          S('PV-F3.5', 'Own row expanded', { ...list(U, { active: ME, own: { expanded: true, tap: 'cond' } }) }),
+          A('Conditions', '', true),
+          S('PV-F3.6', 'Condition sheet', { ...list(U, { active: ME, own: { expanded: true, condOpen: true } }), condSheet: true, condSel: ['dazed'] }),
+          A('Note', '', true),
+          S('PV-F3.7', 'Editing the note', { ...list(U, { active: ME, own: { expanded: true, noteEdit: true, noteDraft: 'Hex on Orc Berserker, 2 rounds left' } }) }),
+        ]),
+      ]),
+      F('PV-F4', 'Change hero', 'The player releases their hero and picks another.', 'Menu in the header', 'Player on another hero; the old one is free', 'Changing frees the current hero at once.', 'PlayerHeader, Menu, PlayerRow', [
+        main([
+          S('PV-F4.1', 'Menu open', { ...list(U, { active: 'Orc Berserker' }), menuOpen: true }),
+          A('Change hero'),
+          S('PV-F4.2', 'Hero picker: Vashti is free', { ...claim({ sel: 'Ilse the Bold', tap: 'Ilse the Bold' }), name: 'Mika', nameCount: '4/40', cta: 'Join as Ilse', ctaState: 'default', ctaTap: true }),
+        ]),
+      ]),
+      F('PV-F5', 'DM events', 'The DM changes the combat; the player screen reacts by itself.', 'Any combat step', 'The player understands what happened and what to do', 'The screen updates without a reload.', 'Toast, MessageScreen, PlayerView', [
+        main([
+          S('PV-F5.1', 'DM restarted the combat', { ...list(SET.map(u => u.name === ME ? { ...u, init: null } : u)), round: null, setup: true, waiting: true, ...t('The DM restarted the combat', 'refresh') }),
+          A('', '', true),
+          S('PV-F5.2', 'DM cleared the combat', { list: true, round: null, setup: true, rows: [], noUnits: true, ...t('The DM cleared the combat', 'trash') }),
+          A('', '', true),
+          S('PV-F5.3', 'Hero removed or released', { ...claim({}), name: 'Mika', nameCount: '4/40', ...t('The DM released Vashti the Hexer. Pick a hero.', 'user-off'), toastBottom: '110px' }),
+          A('', '', true),
+          S('PV-F5.4', 'Link revoked', { ...msg('link-off', 'This link no longer works', 'The DM issued a new link. Ask them to share it again.') }),
+          A('', '', true),
+          S('PV-F5.5', 'Combat deleted', { ...msg('door-exit', 'This combat has ended', 'The DM deleted Ambush at the Ferry. Thanks for playing.') }),
+          A('', '', true),
+          S('PV-F5.6', 'Request failed', { ...list(U, { active: ME }), toast: true, toastPreset: 'failed' }),
+        ]),
+      ]),
+    ];
+    const only = new URLSearchParams(location.search).get('flow');
+    const ONLY = new URLSearchParams(location.search).get('flow');
+    const STEPS = flows.flatMap(f => f.lines.flatMap(l => l.items)).filter(i => i.isStep);
+    const pick = (code, caption) => ({ ...STEPS.find(i => i.code === code), caption, note: '' });
+    const SPEC = [{"part":"Header","v":"PlayerHeader: title, round, die, menu."},{"part":"List","v":"PlayerRow per unit; the own hero is marked."}];
+    const SEC = (code, secTitle, secDesc, items, o = {}) => ({ code, isSec: true, secTitle, secDesc, hasSpec: false, spec: [], title: '', lines: items.length ? [{ main: false, branch: false, label: '', items }] : [], ...o });
+    const PRE = [
+      SEC('anatomy', 'Anatomy', "A running combat seen by a player; regions listed below.", [{ ...pick("PV-F3.1", "Combat running") }], { hasSpec: true, spec: SPEC }),
+      SEC('states', 'Key states', "Hero list, waiting for the DM, own turn, revoked link, failed request.", [pick("PV-F1.1", "Hero list"), pick("PV-F1.3", "Waiting"), pick("PV-F3.2", "Own turn"), pick("PV-F5.4", "Link revoked"), pick("PV-F5.6", "Request failed")]),
+      SEC('flows', 'Flows', 'One row per flow: FlowHead, steps with arrows, branches below.', []),
+    ];
+    const NZ = fl => fl.map(f => ({ isSec: false, secTitle: '', secDesc: '', hasSpec: false, spec: [], ...f, lines: f.lines.map(ln => ({ ...ln, items: ln.items.map(i => ({ ...i })) })) }));
+    const RULES = [{"code":"PV-F1","text":"If someone takes the hero while picking, a toast shows and Join is disabled."},{"code":"PV-F5","text":"DM events reach players as toasts; a revoked link or deleted combat gets its own screen."}];
+    return { showHead: !new URLSearchParams(location.search).get('embed'), flows: [...(ONLY ? [] : PRE), ...NZ(only ? flows.filter(f => f.code === only) : flows)], showPre: !ONLY, rules: RULES, links: flows.map(f => ({ id: f.code, label: f.title })) };
+  }
+}
+</script>
+</body>
+</html>

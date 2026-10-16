@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};height:{{ rootH }};box-sizing:border-box">
+  <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ false }}">
+    <section id="overview" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ ovTitle }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">What it is, where it lives, how it behaves.</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,300px));gap:16px">
+        <sc-for list="{{ docs }}" as="d" hint-placeholder-count="3"><div style="background:#FFFFFF;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:#5F574D">{{ d.k }}</span><span style="font-size:14px;line-height:1.45;text-wrap:pretty">{{ d.v }}</span></div></sc-for>
+      </div>
+    </section>
+  </sc-if>
+  <sc-if value="{{ isSpec }}" hint-placeholder-val="{{ false }}">
+    <div style="display:grid;grid-template-columns:120px minmax(0,420px);gap:8px 16px;align-items:baseline;background:#FFFFFF;border-radius:16px;padding:16px 24px">
+      <sc-for list="{{ spec }}" as="s" hint-placeholder-count="5">
+        <span style="font-size:14px;font-weight:700">{{ s.part }}</span>
+        <span style="font-size:14px;line-height:1.45;text-wrap:pretty">{{ s.v }}</span>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isRules }}" hint-placeholder-val="{{ false }}">
+    <section id="rules" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ rulesTitle }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">Rules this screen proposes for the vision. Decisions live in VISION-UPDATES.md.</span></div>
+      <div style="background:#FFFFFF;border-radius:16px;padding:8px 24px;display:flex;flex-direction:column;max-width:860px">
+        <sc-for list="{{ rules }}" as="r" hint-placeholder-count="3"><div style="display:flex;align-items:baseline;gap:12px;padding:8px 0;border-top:{{ r.line }}"><span style="flex:none;background:#231F1C;color:#FAF6EE;font-weight:700;font-size:12px;padding:4px 8px;border-radius:4px">{{ r.code }}</span><span style="font-size:14px;line-height:1.45;text-wrap:pretty">{{ r.text }}</span></div></sc-for>
+      </div>
+    </section>
+  </sc-if>
+  <sc-if value="{{ isSection }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ secTitle }}</span><sc-if value="{{ hasSecDesc }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ secDesc }}</span></sc-if></div>
+  </sc-if>
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FFFFFF;border-radius:20px;padding:28px 32px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#5F574D"><a href="./Styleguide.dc.html">Combat Planner</a><span>/</span><span>Design</span></div>
+      <div style="display:flex;align-items:center;gap:16px"><span style="font-family:'Unbounded',sans-serif;font-size:34px;font-weight:700">Flow</span><span style="font-size:12px;font-weight:700;border-radius:999px;padding:4px 8px;background:#F3EDE2">Draft</span></div>
+      <span style="font-size:16px;line-height:1.45;color:#231F1C;max-width:900px;text-wrap:pretty">Layout parts of this design file, not part of the app: PageHead, Overview, Spec, Rules, FlowHead, Step, Arrow, Phone. Flow rows on screen pages are built from them.</span>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5"><a href="#{{ g.id }}" style="height:32px;display:flex;align-items:center;padding:0 12px;border-radius:16px;background:#F3EDE2;font-size:14px;font-weight:600;text-decoration:none">{{ g.title }}</a></sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};overflow:hidden;display:flex;flex-direction:column">
+
+              
+
+              
+
+              
+
+              <sc-if value="{{ b.isPhone }}" hint-placeholder-val="{{ false }}">
+                <div style="width:390px;height:{{ b.h }};position:relative;overflow:hidden;background:#FAF6EE;border-radius:28px;box-shadow:0 1px 2px rgba(0,0,0,0.12),0 12px 40px rgba(40,30,10,0.12);display:flex;flex-direction:column">
+                  {{ children }}
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isStep }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:12px;width:390px">
+                  <div style="display:flex;align-items:flex-start;gap:8px;min-height:40px">
+                    <span style="flex:none;background:#231F1C;color:#FAF6EE;font-weight:700;font-size:12px;padding:4px 8px;border-radius:4px;font-variant-numeric:tabular-nums">{{ b.code }}</span>
+                    <span style="font-size:14px;font-weight:600;line-height:1.45;text-wrap:pretty">{{ b.caption2 }}</span>
+                  </div>
+                  <div style="width:390px;height:{{ b.h }};position:relative;overflow:hidden;background:#FAF6EE;border-radius:28px;box-shadow:0 1px 2px rgba(0,0,0,0.12),0 12px 40px rgba(40,30,10,0.12);display:flex;flex-direction:column">
+                    {{ children }}
+                  </div>
+                  <sc-if value="{{ b.hasNote }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;line-height:1.45;color:#5F574D;text-wrap:pretty">{{ b.note }}</span></sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isArrow }}" hint-placeholder-val="{{ false }}">
+                <div style="width:{{ b.arrowW }};height:{{ b.arrowH }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px">
+                  <span style="font-size:12px;font-weight:700;color:#231F1C;text-align:center;line-height:1.25;max-width:110px">{{ b.label }}</span>
+                  <span style="display:flex;align-items:center;width:100%"><span style="flex:1;height:2px;background:{{ b.color }}"></span><span style="width:0;height:0;border-top:7px solid transparent;border-bottom:7px solid transparent;border-left:10px solid {{ b.color }}"></span></span>
+                  <sc-if value="{{ b.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:#5F574D;text-align:center;max-width:110px">{{ b.sub }}</span></sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.isFlowHead }}" hint-placeholder-val="{{ false }}">
+                <div style="width:280px;box-sizing:border-box;background:#FFFFFF;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:12px">
+                  <span style="align-self:flex-start;background:{{ b.codeBg }};color:#FFFFFF;font-weight:700;font-size:14px;padding:4px 8px;border-radius:4px">{{ b.code }}</span>
+                  <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;line-height:1.25;text-wrap:pretty">{{ b.title }}</span>
+                  <span style="font-size:14px;line-height:1.45;color:#231F1C;text-wrap:pretty">{{ b.goal }}</span>
+                  <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;border-top:1px solid #E2D8C6">
+                    <sc-for list="{{ b.facts }}" as="f" hint-placeholder-count="3">
+                      <div style="display:flex;flex-direction:column;gap:4px;padding-top:6px"><span style="font-size:11px;font-weight:700;color:#5F574D;letter-spacing:0.05em">{{ f.k }}</span><span style="font-size:14px;line-height:1.45;text-wrap:pretty">{{ f.v }}</span></div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ b.showPageHead }}" hint-placeholder-val="{{ false }}">
+                <div style="width:1100px;max-width:100%;box-sizing:border-box;background:#FFFFFF;border-radius:20px;padding:28px 32px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#5F574D"><a href="./Styleguide.dc.html">Combat Planner</a><span>/</span><span>{{ b.section }}</span></div>
+                  <div style="display:flex;align-items:center;gap:16px"><span style="font-family:'Unbounded',sans-serif;font-size:34px;font-weight:700">{{ b.title }}</span><span style="font-size:12px;font-weight:700;border-radius:999px;padding:4px 8px;background:{{ b.stBg }};color:{{ b.stFg }}">{{ b.status }}</span><span style="font-size:14px;color:#5F574D">{{ b.date }}</span></div>
+                  <span style="font-size:16px;line-height:1.45;color:#231F1C;max-width:900px;text-wrap:pretty">{{ b.desc }}</span>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <sc-for list="{{ b.links }}" as="l" hint-placeholder-count="5"><a href="#{{ l.id }}" style="height:32px;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:16px;background:#F3EDE2;font-size:14px;font-weight:600;text-decoration:none"><span style="font-weight:700">{{ l.id }}</span>{{ l.label }}</a></sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;nav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'menu'|'back'|'close'&quot;},&quot;right&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;search&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string | false&quot;},&quot;query&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tools&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{icon,label?,count?,active?,tap?}&gt;&quot;},&quot;chips&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;round&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number | null&quot;},&quot;esc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;menu&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;menuTap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;code&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;caption&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;note&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;branch&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;goal&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;entry&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;exit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;rules&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;parts&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;links&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{id,label}&gt;&quot;},&quot;status&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;date&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;section&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const pk = this.props.kind;
+    if (pk === 'overview' || pk === 'spec' || pk === 'section' || pk === 'rules') {
+      const q = this.props;
+      return { gallery: false, pad: '0', gap: '0', rootW: 'auto', rootH: 'auto', groups: [],
+        isOverview: pk === 'overview', isSpec: pk === 'spec', isSection: pk === 'section', isRules: pk === 'rules',
+        rulesTitle: 'Rules', rules: (q.rules || []).map((r, i) => ({ ...r, line: i ? '1px solid #E2D8C6' : 'none' })),
+        
+        ovTitle: 'Overview', docs: [[q.k1 || 'WHAT', q.what], [q.k2 || 'WHERE', q.where], [q.k3 || 'BEHAVIOUR', q.behaviour]].filter(([, v]) => v).map(([k, v]) => ({ k, v })),
+        spec: (q.spec || []).map((s, i) => ({ n: i + 1, part: s.part, v: s.v })),
+        secTitle: q.title || '', secDesc: q.desc || '', hasSecDesc: !!q.desc };
+    }
+    return { ...this._rv(), rootH: 'auto', isOverview: false, isSpec: false, isSection: false, isRules: false };
+  }
+  _rv() {
+    const ring = t => t ? '3px solid #FFE7A3' : 'none';
+    const K = k => ({ isHeader: k === 'header', isPlayerHeader: k === 'playerHeader', isEmpty: k === 'empty' || k === 'message', isPhone: k === 'phone', isStep: k === 'step', isArrow: k === 'arrow', isFlowHead: k === 'flowHead', isPageHead: k === 'pageHead' });
+    const PIPS = { 0: [], 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    const ST = { Draft: ['#F3EDE2', '#5F574D'], Review: ['#FFE7A3', '#231F1C'], Ready: ['#DDEFD5', '#2F6B1F'] };
+    const AREA = { CS: '#B4232A', PV: '#1E5FA8', CL: '#2E7A43', LB: '#A85400', AP: '#5C4026' };
+    const MAKE = {
+      phone: o => ({ ...K('phone'), h: (o.height || 844) + 'px' }),
+      step: o => ({ ...K('step'), code: o.code || '', caption2: o.caption || '', note: o.note || '', hasNote: !!o.note, h: (o.height || 844) + 'px' }),
+      arrow: o => ({ ...K('arrow'), label: o.label || '', sub: o.sub || '', hasSub: !!o.sub, arrowW: (o.width || 120) + 'px', arrowH: (o.height || 894) + 'px', color: o.branch ? '#8C8578' : '#231F1C' }),
+      flowHead: o => ({ ...K('flowHead'), code: o.code || '', codeBg: AREA[(o.code || '').slice(0, 2)] || '#231F1C', title: o.title || '', goal: o.goal || '', facts: [['ENTRY', o.entry], ['EXIT', o.exit], ['RULES', o.rules], ['PARTS', o.parts]].filter(([, v]) => v).map(([k, v]) => ({ k, v })) }),
+      pageHead: o => ({ ...K('pageHead'), showPageHead: !new URLSearchParams(location.search).get('embed'), section: o.section || 'Pages', title: o.title || '', status: o.status || 'Draft', stBg: (ST[o.status || 'Draft'])[0], stFg: (ST[o.status || 'Draft'])[1], date: o.date || '', desc: o.desc || '', links: o.links || [] }),
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'header'](p), cellW: p.kind === 'step' || p.kind === 'phone' ? '390px' : '100%', stageBg: 'transparent', stageR: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: p.kind === 'step' || p.kind === 'phone' || p.kind === 'flowHead' || p.kind === 'arrow' ? 'auto' : '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, w = '390px', bg = '#FAF6EE') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: bg, stageR: '20px' });
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1720px',
+      groups: [
+        { id: 'flow', title: 'FlowHead, Step, Arrow', desc: 'Not part of the app. FlowHead is the left column of a flow row, code colored by area. Step is a step code and caption above a 390×844 phone with a note below. Arrow is a transition labelled with the action; grey means a branch.', cells: [
+          C('flowHead', { caption: 'FlowHead', code: 'CS-F3', title: 'Damage and healing', goal: 'The DM changes a unit’s HP: damage, healing, temp and max HP.', entry: 'Tap HP in UnitRow', exit: 'Sheet closed, HP updated, row flashes', rules: 'Temp HP absorbs damage first', parts: 'UnitRow, NumpadSheet, Toast' }, '280px', 'transparent'),
+          C('arrow', { caption: 'Arrow', label: 'tap HP', height: 200 }, '120px', 'transparent'),
+          C('arrow', { caption: 'Arrow · branch', label: 'Cancel', sub: 'branch', branch: true, height: 200 }, '120px', 'transparent'),
+        ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

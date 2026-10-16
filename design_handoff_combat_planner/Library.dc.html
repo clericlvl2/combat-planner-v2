@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:48px 56px 80px;display:flex;flex-direction:column;gap:64px;width:max-content">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}"><dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Pages" title="Library" status="Draft" date="15.10.2026" desc="The DM’s Library of unit presets: browse, filter by tag, sort, create, edit, duplicate and delete. Opened from the Drawer." links="{{ links }}" hint-size="1100px,230px"></dc-import></sc-if>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" k1="PURPOSE" k2="ENTRY POINTS" k3="COMPONENTS USED" what="Keep reusable units and add them to combats." where="Library in the Drawer; Save as preset on the Combat screen (LB-F6)." behaviour="PageHeader, PresetCard, TagSheet, SortSheet, Sheet, TextField, Segmented, Stepper, BottomBar, Dialog, Toast, EmptyState." hint-size="960px,160px"></dc-import></sc-if>
+  <sc-for list="{{ flows }}" as="f" hint-placeholder-count="2">
+    <section id="{{ f.code }}" style="display:flex;flex-direction:column;gap:32px">
+      <sc-if value="{{ f.isSec }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ f.secTitle }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ f.secDesc }}</span></div></sc-if>
+      <sc-for list="{{ f.lines }}" as="ln" hint-placeholder-count="1">
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <sc-if value="{{ ln.main }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;width:280px"><dc-import name="Flow" embedded="{{ true }}" kind="flowHead" code="{{ f.code }}" title="{{ f.title }}" goal="{{ f.goal }}" entry="{{ f.entry }}" exit="{{ f.exit }}" rules="{{ f.rules }}" parts="{{ f.parts }}" hint-size="280px,420px"></dc-import></div>
+          </sc-if>
+          <sc-if value="{{ ln.branch }}" hint-placeholder-val="{{ false }}">
+            <div style="width:280px;flex:none;box-sizing:border-box;border:2px dashed #8C8578;border-radius:16px;padding:16px 16px;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:#5F574D">BRANCH</span><span style="font-size:16px;font-weight:600;line-height:1.45;text-wrap:pretty">{{ ln.label }}</span></div>
+          </sc-if>
+          <sc-for list="{{ ln.items }}" as="s" hint-placeholder-count="3">
+            <sc-if value="{{ s.isArrow }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ s.label }}" sub="{{ s.sub }}" branch="{{ s.branch }}" hint-size="120px,894px"></dc-import></div>
+            </sc-if>
+            <sc-if value="{{ s.isStep }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:none;width:390px"><dc-import name="Flow" embedded="{{ true }}" kind="step" code="{{ s.code }}" caption="{{ s.caption }}" note="{{ s.note }}" hint-size="390px,894px">
+                <dc-import name="PageHeader" embedded="{{ true }}" kind="header" title="Library" search="Search presets" query="{{ s.query }}" tools="{{ s.tools }}" chips="{{ s.chips }}" hint-size="390px,170px"></dc-import>
+                <div style="flex:1;min-height:0;overflow:hidden;padding:12px;display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ s.cards }}" as="c" hint-placeholder-count="6">
+                    <dc-import name="PresetCard" embedded="{{ true }}" kind="preset" preset-name="{{ c.name }}" type="{{ c.type }}" hp="{{ c.hp }}" ac="{{ c.ac }}" pd="{{ c.pd }}" md="{{ c.md }}" tags="{{ c.tags }}" open="{{ c.open }}" tap="{{ c.tap }}" hint-size="100%,72px"></dc-import>
+                  </sc-for>
+                  <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ false }}">
+                    <dc-import name="EmptyState" embedded="{{ true }}" kind="empty" icon="{{ s.emptyIcon }}" title="{{ s.emptyTitle }}" body="{{ s.emptyBody }}" pad="90px 24px 0" hint-size="100%,300px"></dc-import>
+                  </sc-if>
+                </div>
+                <dc-import name="BottomBar" embedded="{{ true }}" kind="bar" label="New preset" tap="{{ s.newTap }}" hint-size="390px,98px"></dc-import>
+
+                <sc-if value="{{ s.scrim }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(35,31,28,0.5);z-index:5"></div></sc-if>
+                <sc-if value="{{ s.form }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6">
+                    <dc-import name="Sheet" embedded="{{ true }}" kind="sheet" title="{{ s.formTitle }}" primary="{{ s.formCta }}" hint-size="366px,640px">
+                      <dc-import name="TextField" embedded="{{ true }}" kind="text" label="Name" counter="{{ s.nameCount }}" value="{{ s.nameVal }}" placeholder="Enemy 1" state="{{ s.nameState }}" error="Enter a name" hint-size="100%,70px"></dc-import>
+                      <dc-import name="Segmented" embedded="{{ true }}" kind="segmented" tone="role" value="{{ s.roleIdx }}" hint-size="100%,44px"></dc-import>
+                      <div style="display:flex;flex-direction:column;gap:4px">
+                        <sc-for list="{{ s.nums }}" as="n" hint-placeholder-count="4"><dc-import name="Stepper" embedded="{{ true }}" kind="stepper" label="{{ n.l }}" value="{{ n.v }}" state="{{ n.st }}" hint-size="100%,48px"></dc-import></sc-for>
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:8px">
+                        <span style="font-size:12px;font-weight:600;color:#5F574D">Tags</span>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px">
+                          <sc-for list="{{ s.formTags }}" as="g" hint-placeholder-count="2"><dc-import name="Chip" embedded="{{ true }}" kind="chip" variant="tagActive" removable="{{ true }}" label="{{ g }}" hint-size="80px,36px"></dc-import></sc-for>
+                          <dc-import name="Chip" embedded="{{ true }}" kind="chip" variant="add" label="Add tag" tap="{{ s.addTap }}" hint-size="100px,36px"></dc-import>
+                        </div>
+                      </div>
+                    </dc-import>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ s.scrim2 }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(35,31,28,0.5);z-index:7"></div></sc-if>
+                <sc-if value="{{ s.tagSheet }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:8">
+                    <dc-import name="TagSheet" embedded="{{ true }}" title="{{ s.tagTitle }}" cta="{{ s.tagCta }}" query="{{ s.tagQuery }}" options="{{ s.tagOpts }}" mode="{{ s.tagMode }}" hint-size="366px,420px"></dc-import>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ s.sortSheet }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6">
+                    <dc-import name="SortSheet" embedded="{{ true }}" preset="presets" value="{{ s.sortValue }}" tap="{{ s.sortTap }}" hint-size="366px,300px"></dc-import>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ s.dialog }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:24px;right:24px;top:240px;z-index:6"><dc-import name="Dialog" embedded="{{ true }}" kind="dialog" preset="deletePreset" hint-size="342px,300px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.toast }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:110px;z-index:4"><dc-import name="Toast" embedded="{{ true }}" kind="toast" preset="{{ s.toastPreset }}" text="{{ s.toastText }}" icon="{{ s.toastIcon }}" dot="{{ s.toastDot }}" dot-fg="{{ s.toastDotFg }}" hint-size="366px,56px"></dc-import></div>
+                </sc-if>
+              </dc-import></div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </sc-for>
+      <sc-if value="{{ f.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="max-width:600px"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ f.spec }}" hint-size="540px,200px"></dc-import></div></sc-if>
+    </section>
+  </sc-for>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="rules" n="6" rules="{{ rules }}" hint-size="960px,200px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const P = [
+      { name: 'Orc Berserker', type: 'Enemy', hp: 40, ac: 18, pd: 16, md: 12, tags: ['Orcs', 'Ferry'] },
+      { name: 'Orc Shaman', type: 'Enemy', hp: 30, ac: 17, pd: 15, md: 16, tags: ['Orcs'] },
+      { name: 'Goblin Archer', type: 'Enemy', hp: 18, ac: 16, pd: 14, md: 12, tags: ['Goblins', 'Mooks', 'Ferry'] },
+      { name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 30, ac: 19, pd: 15, md: 17, tags: ['Allies', 'Named NPCs'] },
+      { name: '影の射手ゴブリン', type: 'Enemy', hp: 18, ac: 16, pd: 14, md: 12, tags: ['Goblins'] },
+      { name: 'Капитан стражи переправы Святослав Огнев', type: 'Ally', hp: 40, ac: 19, pd: 16, md: 13, tags: ['Allies', 'Ferry'] },
+      { name: 'Skeletal Ferryman', type: 'Enemy', hp: 52, ac: 19, pd: 17, md: 14, tags: ['Undead', 'Bosses'] },
+    ].map(p => ({ ...p, open: false, tap: '' }));
+    const open = (i, tap = '') => P.map((p, j) => j === i ? { ...p, open: true, tap } : p);
+    const COUNT = { Mooks: 8, Ferry: 6, Allies: 5, Undead: 4, Goblins: 3, 'Named NPCs': 3, Orcs: 2, Bosses: 2 };
+    const ck = (label, on, o = {}) => ({ label, on, count: o.count ?? COUNT[label], hl: !!o.hl });
+    const tagList = (sel, extra = []) => [...extra, ...sel.map(t => ck(t, true)), ...Object.keys(COUNT).filter(t => !sel.includes(t)).map(t => ck(t, false))].slice(0, 5);
+    const SORT = { icon: 'sort-descending', aria: 'Sort' }, TAGS = { icon: 'tags', label: 'Tags' };
+    const tagsOn = n => ({ icon: 'tags', label: 'Tags', count: n, active: true });
+    const D = { query: '', tools: [SORT, TAGS], chips: [], cards: P, empty: false, emptyIcon: '', emptyTitle: '', emptyBody: '', newTap: false, scrim: false,
+      form: false, formTitle: 'Edit preset', formCta: 'Save', nameVal: '', nameCount: '0/40', nameState: 'default', roleIdx: 1, nums: [], formTags: [], addTap: false,
+      scrim2: false, tagSheet: false, tagMode: 'assign', tagTitle: '', tagCta: 'Done', tagPh: 'Search or create', tagQuery: '', tagState: 'default', tagOpts: [], createTop: false, createBottom: false, noMatch: false,
+      sortSheet: false, sortValue: 0, sortTap: -1, dialog: false, toast: false, toastPreset: '', toastText: '', toastIcon: '', toastDot: '', toastDotFg: '' };
+    const S = (code, caption, o = {}) => ({ ...D, isStep: true, isArrow: false, code, caption, note: '', ...o });
+    const A = (label, sub = '', branch = false) => ({ isArrow: true, isStep: false, label, sub, branch });
+    const F = (code, title, goal, entry, exit, rules, parts, lines) => ({ code, title, goal, entry, exit, rules, parts, lines });
+    const main = items => ({ main: true, branch: false, label: '', items });
+    const br = (label, items) => ({ main: false, branch: true, label, items });
+    const nums = (p, o = {}) => [['Max HP', p.hp ?? 10], ['Armor Class', p.ac ?? 10], ['Physical Defense', p.pd ?? 10], ['Mental Defense', p.md ?? 10]].map(([l, v]) => ({ l, v, st: 'default' }));
+    const orc = P[0];
+    const editForm = (o = {}) => ({ scrim: true, form: true, formTitle: 'Edit preset', formCta: 'Save', nameVal: orc.name, nameCount: '13/40', roleIdx: 1, nums: nums(orc), formTags: ['Orcs', 'Ferry'], ...o });
+    const newForm = (o = {}) => ({ scrim: true, form: true, formTitle: 'New preset', formCta: 'Create', nums: nums({}), ...o });
+    const tagSheet = (o = {}) => ({ scrim2: true, tagSheet: true, tagTitle: 'Tags · Orc Berserker', tagCta: 'Done · 2 tags', ...o });
+    const t = (text, icon) => ({ toast: true, toastText: text, toastIcon: icon, toastDot: '#2E7A43', toastDotFg: '#FFFFFF' });
+
+    const flows = [
+      F('LB-F1', 'Browse and filter by tag', 'The DM finds a preset: expands a card, filters by tag, searches.', 'Library section', 'The right preset is in view', 'Several tags match presets with any of them. Tags and search combine.', 'PageHeader, ToolButton, PresetCard, Sheet, CheckList', [
+        main([
+          S('LB-F1.1', 'List', { cards: P.map((p, i) => i === 1 ? { ...p, tap: 'chevron' } : p) }),
+          A('tap ⌄'),
+          S('LB-F1.2', 'Card expanded', { cards: open(1) }),
+          A('tap Tags'),
+          S('LB-F1.3', 'Filter sheet', { scrim: true, ...tagSheet({ scrim2: false, tagMode: 'filter', tagTitle: 'Filter by tag', tagCta: 'Show 2 presets', tagPh: 'Search tags', tagOpts: tagList(['Orcs']) }), tools: [SORT, { ...TAGS, tap: true }] }),
+          A('Show 2 presets'),
+          S('LB-F1.4', 'Filter: Orcs', { tools: [SORT, tagsOn(1)], chips: ['Orcs'], cards: P.filter(p => p.tags.includes('Orcs')), note: '× on a chip removes that tag; Clear removes all.' }),
+        ]),
+        br('Search and empty states', [
+          S('LB-F1.5', 'Search “archer” + Goblins', { query: 'archer', tools: [SORT, tagsOn(1)], chips: ['Goblins'], cards: P.filter(p => p.name === 'Goblin Archer') }),
+          A('', '', true),
+          S('LB-F1.6', 'Nothing found', { query: 'dragon', cards: [], empty: true, emptyIcon: 'search-off', emptyTitle: 'Nothing found', emptyBody: 'No preset matches “dragon”.' }),
+          A('', '', true),
+          S('LB-F1.7', 'Library is empty', { tools: [], cards: [], empty: true, emptyIcon: 'books', emptyTitle: 'No presets yet', emptyBody: 'Create one here, or save any unit from a combat to the Library.', newTap: true }),
+        ]),
+      ]),
+      F('LB-F2', 'Sort', 'The DM changes the preset order.', 'ToolButton Sort', 'List in the chosen order', 'Newest first by default. By type: Enemy, Ally, Hero, alphabetical within each.', 'ToolButton, Sheet, RadioList', [
+        main([
+          S('LB-F2.1', 'Sort sheet', { tools: [{ ...SORT, tap: true }, TAGS], scrim: true, sortSheet: true, sortValue: 0, sortTap: 1 }),
+          A('A–Z'),
+          S('LB-F2.2', 'A–Z: button filled', { tools: [{ icon: 'sort-descending', label: 'A–Z', active: true }, TAGS], cards: [...P].sort((a, b) => a.name.localeCompare(b.name)) }),
+        ]),
+      ]),
+      F('LB-F3', 'Create a preset', 'The DM creates a preset from scratch.', 'New preset', 'Preset in the list', 'Name required, up to 40 characters. Max HP 1–999, defenses 1–40.', 'BottomBar, Sheet, TextField, Segmented, Stepper, Chip', [
+        main([
+          S('LB-F3.1', 'Tap New preset', { newTap: true }),
+          A('New preset'),
+          S('LB-F3.2', 'Empty form', { ...newForm({ nameState: 'focus' }) }),
+          A('Create', 'no name'),
+          S('LB-F3.3', 'Error: no name', { ...newForm({ nameState: 'error' }) }),
+          A('fill in'),
+          S('LB-F3.4', 'Form filled', { ...newForm({ nameVal: 'Orc Warchief', nameCount: '12/40', nameState: 'focus', nums: nums({ hp: 72, ac: 20, pd: 18, md: 14 }), formTags: ['Orcs', 'Bosses'] }) }),
+          A('Create'),
+          S('LB-F3.5', 'Preset created', { cards: [{ name: 'Orc Warchief', type: 'Enemy', hp: 72, ac: 20, pd: 18, md: 14, tags: ['Orcs', 'Bosses'], open: false, tap: 'card' }, ...P], ...t('Orc Warchief added to Library', 'bookmark') }),
+        ]),
+      ]),
+      F('LB-F4', 'Edit and tags', 'The DM edits a preset and adds a tag, including a new one.', 'Expanded card → Edit', 'Preset saved with the new tag', 'Tags up to 24 characters. Matching ignores case. A new tag is checked at once.', 'PresetCard, Sheet, Chip, SearchField, CheckList', [
+        main([
+          S('LB-F4.1', 'Tap Edit', { cards: open(0, 'edit') }),
+          A('Edit'),
+          S('LB-F4.2', 'Form: tap Add tag', { ...editForm({ addTap: true }) }),
+          A('Add tag'),
+          S('LB-F4.3', 'Tag sheet over the form', { ...editForm(), ...tagSheet({ tagOpts: tagList(['Orcs', 'Ferry']) }) }),
+          A('type «Elite»'),
+          S('LB-F4.4', 'No such tag: Create', { ...editForm(), ...tagSheet({ tagQuery: 'Elite', tagState: 'focus', tagOpts: [], createTop: true, noMatch: true }) }),
+          A('Create'),
+          S('LB-F4.5', 'Created and checked', { ...editForm(), ...tagSheet({ tagCta: 'Done · 3 tags', tagOpts: tagList(['Orcs', 'Ferry'], [ck('Elite', true, { count: 'new', hl: true })]) }) }),
+          A('Done'),
+          S('LB-F4.6', 'Form with the new tag', { ...editForm({ formTags: ['Orcs', 'Ferry', 'Elite'] }), note: 'Save stores the preset; × on a chip removes the tag.' }),
+        ]),
+        br('Search finds a tag', [
+          S('LB-F4.7', 'Typing “mo”', { ...editForm(), ...tagSheet({ tagQuery: 'mo', tagState: 'focus', tagOpts: [ck('Mooks', false, { hl: true })], createBottom: true }) }),
+        ]),
+      ]),
+      F('LB-F5', 'Duplicate and delete', 'The DM copies a preset for a variant or deletes one.', 'Expanded card', 'Copy in the list or preset deleted', 'The copy gets “ 2”. Deleting leaves units in combats untouched.', 'PresetCard, Dialog, Toast', [
+        main([
+          S('LB-F5.1', '⋯ → Duplicate', { cards: open(0, 'duplicate') }),
+          A('Duplicate'),
+          S('LB-F5.2', 'Copy below the original', { cards: [P[0], { ...orc, name: 'Orc Berserker 2', open: false }, ...P.slice(1)], ...t('Orc Berserker 2 created', 'copy') }),
+        ]),
+        br('Delete', [
+          S('LB-F5.3', '⋯ → Delete', { cards: open(0, 'delete') }),
+          A('Delete', '', true),
+          S('LB-F5.4', 'Confirmation', { cards: open(0), scrim: true, dialog: true }),
+          A('Delete', '', true),
+          S('LB-F5.5', 'Preset deleted', { cards: P.slice(1), toast: true, toastText: 'Orc Berserker deleted', toastIcon: 'trash', toastDot: '#F3EDE2', toastDotFg: '#231F1C' }),
+        ]),
+      ]),
+      F('LB-F6', 'From combat to Library', 'A unit from a combat is saved as a preset.', 'Save as preset in combat (CS-F6.3)', 'Preset at the top', 'Keeps name, type, Max HP, defenses and initiative bonus. Not HP, conditions or the note.', 'PresetCard', [
+        main([
+          S('LB-F6.1', 'New preset from combat', { cards: [{ name: 'Orc Berserker', type: 'Enemy', hp: 40, ac: 18, pd: 16, md: 12, tags: [], open: true }, ...P.slice(1)], note: 'No tags yet; add them with Edit.' }),
+        ]),
+      ]),
+    ];
+    const only = new URLSearchParams(location.search).get('flow');
+    const ONLY = new URLSearchParams(location.search).get('flow');
+    const STEPS = flows.flatMap(f => f.lines.flatMap(l => l.items)).filter(i => i.isStep);
+    const pick = (code, caption) => ({ ...STEPS.find(i => i.code === code), caption, note: '' });
+    const SPEC = [{"part":"Header","v":"PageHeader: burger, Library, search, sort and Tags."},{"part":"List","v":"PresetCard per preset, gap 8, padding 12."},{"part":"Bottom bar","v":"BottomBar: New preset."}];
+    const SEC = (code, secTitle, secDesc, items, o = {}) => ({ code, isSec: true, secTitle, secDesc, hasSpec: false, spec: [], title: '', lines: items.length ? [{ main: false, branch: false, label: '', items }] : [], ...o });
+    const PRE = [
+      SEC('anatomy', 'Anatomy', "The preset list; regions listed below.", [{ ...pick("LB-F1.1", "List") }], { hasSpec: true, spec: SPEC }),
+      SEC('states', 'Key states', "Empty Library, the list, filtered by a tag, nothing found, and a form error.", [pick("LB-F1.7", "Empty"), pick("LB-F1.1", "List"), pick("LB-F1.4", "Filtered"), pick("LB-F1.6", "Nothing found"), pick("LB-F3.3", "Form error")]),
+      SEC('flows', 'Flows', 'One row per flow: FlowHead, steps with arrows, branches below.', []),
+    ];
+    const NZ = fl => fl.map(f => ({ isSec: false, secTitle: '', secDesc: '', hasSpec: false, spec: [], ...f, lines: f.lines.map(ln => ({ ...ln, items: ln.items.map(i => ({ ...i })) })) }));
+    const RULES = [{"code":"LB-F4","text":"Tags up to 24 characters; matching ignores case."},{"code":"LB-F5","text":"Deleting a preset does not change units already in combats."},{"code":"LB-F6","text":"Save as preset keeps name, type, Max HP, defenses and initiative bonus; not HP, conditions or note."}];
+    return { sortOpts: ['Newest first', 'A–Z', 'By type'], showHead: !new URLSearchParams(location.search).get('embed'), flows: [...(ONLY ? [] : PRE), ...NZ(only ? flows.filter(f => f.code === only) : flows)], showPre: !ONLY, rules: RULES, links: flows.map(f => ({ id: f.code, label: f.title })) };
+  }
+}
+</script>
+</body>
+</html>

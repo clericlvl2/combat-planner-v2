@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="Chip" status="Draft" date="15.10.2026" desc="Small labels for tags, filters, conditions, status and meta. S 20 in rows and cards, M 28 in tight forms, L 36 when tappable." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Pill label with an optional icon, count or ×." where="UnitRow and PlayerRow (conditions), CombatCard (status, meta), PresetCard and Library (tags), PageHeader (active filters), TagSheet." behaviour="Tag toggles a filter on tap; × removes an active filter. Condition, Status and Meta are display only." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:24px"><div style="background:{{ g.frameBg }};border-radius:20px;padding:{{ g.framePad }};display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ g.showCols }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;padding-bottom:6px;border-bottom:1px solid #E6DDCC">
+            <span></span>
+            <sc-for list="{{ g.cols }}" as="c" hint-placeholder-count="3"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.04em">{{ c }}</span></sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;align-items:start">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C;padding-top:10px">{{ r.label }}</span></sc-if>
+            <sc-for list="{{ r.cells }}" as="b" hint-placeholder-count="1">
+              <div style="display:flex;flex-direction:column;min-width:0;width:{{ b.cellW }}">
+
+                <sc-if value="{{ b.isSeg }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:grid;grid-template-columns:{{ b.segGrid }};gap:8px">
+                    <sc-for list="{{ b.opts }}" as="o" hint-placeholder-count="3">
+                      <span style="height:44px;box-sizing:border-box;border-radius:12px;border:{{ o.border }};background:{{ o.bg }};color:{{ o.fg }};display:flex;align-items:center;justify-content:center;gap:8px;font-size:16px;font-weight:600;outline:{{ o.ring }};outline-offset:2px;white-space:nowrap">{{ o.label }}</span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ b.isRadio }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ b.opts }}" as="o" hint-placeholder-count="3">
+                      <div style="min-height:52px;display:flex;align-items:center;gap:12px;padding:4px 8px;border-radius:12px;background:{{ o.bg }};outline:{{ o.ring }};outline-offset:-2px">
+                        <span style="flex:none;width:22px;height:22px;box-sizing:border-box;border-radius:11px;border:2px solid {{ o.line }};background:#FFFFFF;display:flex;align-items:center;justify-content:center"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><span style="width:10px;height:10px;border-radius:5px;background:#231F1C"></span></sc-if></span>
+                        <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:{{ o.w }}">{{ o.label }}</span><sc-if value="{{ o.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#5F574D">{{ o.sub }}</span></sc-if></span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ b.isCheck }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column">
+                    <sc-if value="{{ b.createTop }}" hint-placeholder-val="{{ false }}">
+                      <div style="height:48px;display:flex;align-items:center;gap:12px;padding:0 8px;border-radius:12px;background:#FFF4D2;font-size:16px;font-weight:700"><span style="flex:none;width:22px;display:flex;justify-content:center"><i class="ti ti-plus" style="font-size:20px"></i></span><span style="white-space:nowrap">Create “{{ b.query }}”</span></div>
+                    </sc-if>
+                    <sc-for list="{{ b.opts }}" as="o" hint-placeholder-count="4">
+                      <div style="height:48px;display:flex;align-items:center;gap:12px;padding:0 8px;border-radius:12px;background:{{ o.bg }};font-size:16px;font-weight:{{ o.w }};outline:{{ o.ring }};outline-offset:-2px">
+                        <span style="flex:none;width:22px;height:22px;box-sizing:border-box;border-radius:4px;border:2px solid {{ o.line }};background:{{ o.boxBg }};display:flex;align-items:center;justify-content:center"><sc-if value="{{ o.on }}" hint-placeholder-val="{{ false }}"><i class="ti ti-check" style="font-size:16px;color:#FFFFFF"></i></sc-if></span>
+                        <sc-if value="{{ o.hasDot }}" hint-placeholder-val="{{ false }}"><span style="flex:none;font-size:12px;font-weight:600;border-radius:999px;padding:4px 8px;background:{{ o.dotBg }};color:{{ o.dotFg }}">{{ o.label }}</span><span style="flex:1"></span></sc-if>
+                        <sc-if value="{{ o.plain }}" hint-placeholder-val="{{ true }}"><span style="flex:1;min-width:0">{{ o.label }}</span></sc-if>
+                        <span style="font-size:14px;font-weight:500;color:#5F574D">{{ o.count }}</span>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{ b.createBottom }}" hint-placeholder-val="{{ false }}">
+                      <div style="height:48px;display:flex;align-items:center;gap:12px;padding:0 8px;font-size:16px;font-weight:700"><span style="flex:none;width:22px;display:flex;justify-content:center"><i class="ti ti-plus" style="font-size:20px"></i></span><span style="white-space:nowrap">Create “{{ b.query }}”</span></div>
+                    </sc-if>
+                    <sc-if value="{{ b.noMatch }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#5F574D;padding:8px">No tags match</span></sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ b.isSwatch }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:grid;grid-template-columns:repeat(8,1fr);gap:8px">
+                    <sc-for list="{{ b.opts }}" as="s" hint-placeholder-count="8">
+                      <span style="aspect-ratio:1;border-radius:12px;background:{{ s.c }};box-shadow:{{ s.ring }};display:flex;align-items:center;justify-content:center;color:#FFFFFF"><sc-if value="{{ s.on }}" hint-placeholder-val="{{ false }}"><i class="ti ti-check" style="font-size:20px"></i></sc-if></span>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ b.isChip }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex">
+                    <span style="flex:none;height:{{ b.h }};box-sizing:border-box;display:flex;align-items:center;gap:4px;padding:{{ b.padIn }};border-radius:999px;border:{{ b.border }};background:{{ b.bg }};color:{{ b.fg }};font-size:{{ b.fs }};font-weight:{{ b.fw }};white-space:nowrap;outline:{{ b.ring }};outline-offset:2px"><sc-if value="{{ b.hasIcon }}" hint-placeholder-val="{{ false }}"><i class="ti ti-{{ b.icon }}" style="font-size:{{ b.iconSize }}"></i></sc-if>{{ b.label }}<sc-if value="{{ b.hasCount }}" hint-placeholder-val="{{ false }}"><span style="font-weight:500;color:{{ b.countFg }}">{{ b.count }}</span></sc-if><sc-if value="{{ b.removable }}" hint-placeholder-val="{{ false }}"><i class="ti ti-x" style="font-size:{{ b.iconSize }}"></i></sc-if></span>
+                  </div>
+                </sc-if>
+
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tone&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;removable&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;options&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;string | {label:string, sub?:string, count?:number, on?:boolean, hl?:boolean, cond?:boolean}&gt;&quot;},&quot;query&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;createTop&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;createBottom&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noMatch&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;count&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number | boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6', HL = '#FFF4D2';
+    const ROLE = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const COND = { charmed: ['#F9DDE6', '#8A2448'], confused: ['#DDEFD5', '#2F6B1F'], dazed: ['#FFF1B8', '#6B5600'], fear: ['#E3E1DC', '#3D3A35'], helpless: ['#F6DCD5', '#8A2E17'], hindered: ['#D7EBF5', '#12506E'], shocked: ['#D5F0F0', '#0E5E63'], stuck: ['#E9DFD1', '#5C4026'], stunned: ['#FBE0C2', '#8A3F00'], vulnerable: ['#F8D7D7', '#9B1C1C'], weakened: ['#EDE6C9', '#5E5214'], staggered: ['#DCE6F7', '#1E4E8C'] };
+    const TAGS = ['#B4232A', '#A85400', '#8A6A00', '#2E7A43', '#0E5E63', '#1E5FA8', '#5C4026', '#8C8578'];
+    const tapRing = (i, tap) => tap === i ? '3px solid #FFE7A3' : 'none';
+    const flags = k => ({ isSeg: k === 'segmented', isRadio: k === 'radio', isCheck: k === 'check', isSwatch: k === 'swatches', isChip: k === 'chip' });
+    const MAKE = {
+      segmented: o => {
+        const opts = o.options || ['Hero', 'Enemy', 'Ally'], sel = o.value ?? 0, role = o.tone === 'role';
+        return { ...flags('segmented'), segGrid: `repeat(${opts.length},minmax(0,1fr))`, opts: opts.map((label, i) => {
+          const on = i === sel, c = role ? (ROLE[label] || INK) : INK, dis = o.state === 'disabled';
+          return { label, bg: on ? (dis ? '#E6DDCC' : c) : '#FFFFFF', fg: on ? (dis ? '#8C8578' : '#FFFFFF') : dis ? '#8C8578' : INK, border: on ? 'none' : '2px solid ' + LINE, ring: tapRing(i, o.tap) };
+        }) };
+      },
+      radio: o => ({ ...flags('radio'), opts: (o.options || ['Newest first', 'Last played', 'A–Z']).map((x, i) => {
+        const it = typeof x === 'string' ? { label: x } : x, on = i === (o.value ?? 0);
+        return { label: it.label, sub: it.sub || '', hasSub: !!it.sub, on, bg: on ? HL : 'transparent', line: on ? INK : '#8C8578', w: on ? 700 : 500, ring: tapRing(i, o.tap) };
+      }) }),
+      check: o => ({ ...flags('check'), query: o.query || '', createTop: !!o.createTop, createBottom: !!o.createBottom, noMatch: !!o.noMatch,
+        opts: (o.options || []).map((x, i) => {
+          const it = typeof x === 'string' ? { label: x } : x, on = !!it.on, cond = it.cond && COND[it.label];
+          return { label: it.label, count: it.count ?? '', on, bg: it.hl ? HL : 'transparent', w: on ? 700 : 500, line: on ? INK : '#8C8578', boxBg: on ? INK : '#FFFFFF', ring: tapRing(i, o.tap),
+            hasDot: !!cond, plain: !cond, dotBg: cond ? cond[0] : '', dotFg: cond ? cond[1] : '' };
+        }) }),
+      swatches: o => ({ ...flags('swatches'), opts: TAGS.map((c, i) => { const on = i === (o.value ?? 0); return { c, on, ring: on ? '0 0 0 2px #FFFFFF, 0 0 0 4px #231F1C' : o.tap === i ? '0 0 0 3px #FFE7A3' : 'none' }; }) }),
+      chip: o => {
+        const v = o.variant || 'tag', st = o.state || 'default', L = o.label || '';
+        const SIZE = { S: { h: 20, px: 8, fs: 12, fw: 700, is: 16 }, M: { h: 28, px: 12, fs: 14, fw: 600, is: 16 }, L: { h: 36, px: 12, fs: 14, fw: 600, is: 16 } };
+        const def = (v === 'tag' || v === 'tagActive' || v === 'add') ? 'L' : 'S';
+        const z = SIZE[o.size || def];
+        const bw = (v === 'tag' || v === 'tagActive' || v === 'add') ? (z.h >= 28 ? 2 : 1) : 0;
+        const padR = o.removable ? z.px - 2 : z.px;
+        const base = { ...flags('chip'), label: L, icon: o.icon || '', hasIcon: !!o.icon, count: o.count ?? '', hasCount: o.count != null && o.count !== '', removable: !!o.removable, ring: o.tap ? '3px solid #FFE7A3' : 'none', countFg: '#5F574D',
+          h: z.h + 'px', padIn: '0 ' + padR + 'px 0 ' + z.px + 'px', fs: z.fs + 'px', fw: z.fw, iconSize: z.is + 'px' };
+        if (v === 'condition') { const c = COND[L] || ['#E3E1DC', '#3D3A35']; return { ...base, border: 'none', bg: c[0], fg: c[1] }; }
+        if (v === 'status') { const on = L === 'Active'; return { ...base, border: 'none', bg: on ? '#FFE7A3' : '#F3EDE2', fg: on ? INK : '#5F574D', fw: 700 }; }
+        if (v === 'meta') return { ...base, border: 'none', bg: '#F3EDE2', fg: INK };
+        if (v === 'add') return { ...base, border: bw + 'px dashed #8C8578', bg: st === 'pressed' ? '#F3EDE2' : '#FFFFFF', fg: INK, hasIcon: true, icon: o.icon || 'plus' };
+        const on = v === 'tagActive' || o.active;
+        return { ...base, border: bw + 'px solid ' + (on ? INK : LINE), bg: on ? (st === 'pressed' ? '#3A3531' : INK) : st === 'pressed' ? '#F3EDE2' : '#FFFFFF', fg: on ? '#FFFFFF' : INK, countFg: on ? '#FFFFFF' : '#5F574D' };
+      },
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE.chip(p), cellW: '100%' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', grid: 'minmax(0,1fr)', frameBg: 'transparent', framePad: '0', cols: [], rows: [{ cells: [b] }] }] };
+    }
+    const G = (id, title, desc, cols, w, rows) => ({ id, title, desc, cols: cols.map(c => c.toUpperCase()), grid: `160px repeat(${cols.length}, ${w})`, frameBg: '#FFFFFF', framePad: '24px 28px', rows });
+    const C = (k, o, w) => ({ ...MAKE[k](o), cellW: w });
+    const tags = [{ label: 'Orcs', count: 2, on: true }, { label: 'Ferry', count: 6, on: true }, { label: 'Goblins', count: 3 }, { label: 'Undead', count: 4 }];
+    const SPEC = [{"part":"Pill","v":"L 36 high, padding 0 12, full radius, border 2. S 20 and M 28 for display chips."},{"part":"Label","v":"Rubik 14/600 at L, 12/700 at S. Never wraps."},{"part":"Count","v":"Rubik 500 in a muted colour after the label."},{"part":"Remove","v":"× 16 on TagActive; tap removes the filter."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '36px', rootW: 'max-content',
+      groups: [
+        { ...G('anatomy', 'Anatomy', 'TagActive, L, with a count and ×.', [], '200px', [{ label: '', cells: [ANAT(C('chip', { variant: 'tagActive', label: 'Orcs', count: 2, removable: true }, '200px'))] }]), grid: '0px 200px', framePad: '32px 36px', hasSpec: true, spec: SPEC },
+        G('variants', 'Variants × states', 'Tag, TagActive and Add are tappable at L. Pressed darkens the fill; tap shows the flow ring.', ['default', 'pressed', 'tap'], '200px', [
+          { label: 'Tag', cells: ['default', 'pressed', 'tap'].map(s => C('chip', { variant: 'tag', label: 'Goblins', state: s, tap: s === 'tap' }, '200px')) },
+          { label: 'TagActive + ×', cells: ['default', 'pressed', 'tap'].map(s => C('chip', { variant: 'tagActive', label: 'Orcs', removable: true, state: s, tap: s === 'tap' }, '200px')) },
+          { label: 'Add', cells: ['default', 'pressed', 'tap'].map(s => C('chip', { variant: 'add', label: 'Add tag', state: s, tap: s === 'tap' }, '200px')) },
+        ]),
+        G('sizes', 'Sizes', 'S 20 for conditions, status and meta; M 28 for tags in tight forms; L 36 when tappable.', ['S · 20', 'M · 28', 'L · 36'], '200px', [
+          { label: 'Tag', cells: ['S', 'M', 'L'].map(size => C('chip', { variant: 'tag', label: 'Goblins', size }, '200px')) },
+          { label: 'TagActive + ×', cells: ['S', 'M', 'L'].map(size => C('chip', { variant: 'tagActive', label: 'Orcs', removable: true, size }, '200px')) },
+          { label: 'Add', cells: ['S', 'M', 'L'].map(size => C('chip', { variant: 'add', label: 'Add tag', size }, '200px')) },
+          { label: 'Condition', cells: ['S', 'M', 'L'].map(size => C('chip', { variant: 'condition', label: 'staggered', size }, '200px')) },
+          { label: 'Status', cells: ['S', 'M', 'L'].map(size => C('chip', { variant: 'status', label: 'Active', size }, '200px')) },
+          { label: 'Meta', cells: ['S', 'M', 'L'].map(size => C('chip', { variant: 'meta', label: 'Named NPCs', size }, '200px')) },
+        ]),
+        G('edge', 'Edge cases', 'Long tag and condition names and a two-digit count. Chips never wrap; rows wrap instead.', ['de', 'ru', 'ja', 'count 12'], '200px', [
+          { label: 'Tag, L', cells: [C('chip', { variant: 'tag', label: 'Untote Wächter' }, '200px'), C('chip', { variant: 'tag', label: 'Нежить и призраки' }, '200px'), C('chip', { variant: 'tag', label: 'アンデッド' }, '200px'), C('chip', { variant: 'tagActive', label: 'Ferry', count: 12, removable: true }, '200px')] },
+          { label: 'Condition, S', cells: [C('chip', { variant: 'condition', label: 'verwundbar', size: 'S' }, '200px'), C('chip', { variant: 'condition', label: 'ошеломлён', size: 'S' }, '200px'), C('chip', { variant: 'condition', label: '朦朧', size: 'S' }, '200px')] },
+        ]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

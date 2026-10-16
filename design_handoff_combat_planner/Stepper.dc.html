@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Molecules" title="Stepper" status="Draft" date="15.10.2026" desc="Number input with − and + keys in forms and popovers: Max HP, temp HP, defenses, initiative bonus and the round." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="A number with − and + keys and an optional label." where="UnitForm (Max HP, Temp HP, AC, PD, MD, Init bonus), InitiativePopover, round popover in CombatHeader." behaviour="Tap − or + changes the value by 1. A key dims at the minimum or maximum. Tap the field to type." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:24px"><div style="background:{{ g.frameBg }};border-radius:20px;padding:{{ g.framePad }};display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ g.showCols }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;padding-bottom:6px;border-bottom:1px solid #E6DDCC">
+            <span></span>
+            <sc-for list="{{ g.cols }}" as="c" hint-placeholder-count="4"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.04em">{{ c }}</span></sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;align-items:center">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C;text-wrap:pretty">{{ r.label }}</span></sc-if>
+            <sc-for list="{{ r.cells }}" as="b" hint-placeholder-count="1">
+              <div style="display:flex;min-width:0;width:{{ b.cellW }};background:{{ b.cellBg }};border-radius:{{ b.cellR }}">
+
+
+
+
+
+                <sc-if value="{{ b.isStepper }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1;min-width:0;display:flex;align-items:center;gap:8px;min-height:{{ b.zh }}">
+                    <sc-if value="{{ b.hasLabel }}" hint-placeholder-val="{{ false }}"><span style="flex:1;min-width:0;font-size:16px;font-weight:600">{{ b.label }}</span></sc-if>
+                    <button aria-label="Decrease" style="flex:none;width:{{ b.zk }};height:{{ b.zk }};border:none;border-radius:12px;background:{{ b.minusBg }};color:{{ b.minusFg }};display:flex;align-items:center;justify-content:center;padding:0;outline:{{ b.minusRing }};outline-offset:2px"><i class="ti ti-minus" style="font-size:20px"></i></button>
+                    <span style="flex:none;width:{{ b.valW }};height:{{ b.zk }};box-sizing:border-box;border-radius:12px;background:#FFFFFF;border:2px solid {{ b.valLine }};display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ b.valFg }}">{{ b.value }}</span>
+                    <button aria-label="Increase" style="flex:none;width:{{ b.zk }};height:{{ b.zk }};border:none;border-radius:12px;background:{{ b.plusBg }};color:{{ b.plusFg }};display:flex;align-items:center;justify-content:center;padding:0;outline:{{ b.plusRing }};outline-offset:2px"><i class="ti ti-plus" style="font-size:20px"></i></button>
+                  </div>
+                </sc-if>
+
+
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;full&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;active&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;count&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean | 'minus' | 'plus'&quot;},&quot;aria&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;hint&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6', SOFT = '#F3EDE2', OFF = '#E6DDCC', OFF_FG = '#8C8578', RED = '#B4232A';
+    const flags = k => ({ isButton: k === 'button', isIcon: k === 'icon', isTool: k === 'tool', isAction: k === 'action', isStepper: k === 'stepper', isBar: k === 'bar' });
+
+    const stepper = (o) => {
+      const st = o.state || 'default', minD = st === 'min' || st === 'disabled', maxD = st === 'max' || st === 'disabled';
+      return { ...flags('stepper'), label: o.label || '', hasLabel: !!o.label, value: o.value ?? 10, valW: (o.valW || 64) + 'px',
+        minusBg: minD ? '#F3EDE2' : SOFT, minusFg: minD ? '#8C8578' : INK, plusBg: maxD ? '#F3EDE2' : SOFT, plusFg: maxD ? '#8C8578' : INK,
+        valLine: st === 'focus' ? INK : LINE, valFg: st === 'disabled' ? '#8C8578' : INK,
+        minusRing: o.tap === 'minus' ? '3px solid #FFE7A3' : 'none', plusRing: o.tap === 'plus' ? '3px solid #FFE7A3' : 'none' };
+    };
+    const ZS = {
+      icon: { S: { zh: 36, is: 16 }, M: { zh: 44, is: 20 }, L: { zh: 52, is: 24 } },
+      tool: { S: { zh: 40, is: 16 }, M: { zh: 48, is: 20 }, L: { zh: 56, is: 24 } },
+      action: { S: { zh: 40, zfs: 12 }, M: { zh: 48, zfs: 14 }, L: { zh: 56, zfs: 16 } },
+      stepper: { S: { zh: 40, zk: 36, valW: 56 }, M: { zh: 48, zk: 44, valW: 64 }, L: { zh: 56, zk: 52, valW: 72 } },
+    };
+    const sized = (k, f) => (o) => { const r = f(o), z = (ZS[k] || {})[o.size || 'M']; if (!z) return r; const out = { ...r, zh: z.zh + 'px' };
+      if (z.is && !(k === 'icon' && (o.variant || 'outline') === 'plain' && (o.size || 'M') === 'M')) out.is = z.is + 'px';
+      if (z.zfs) out.zfs = z.zfs + 'px'; if (z.zk) { out.zk = z.zk + 'px'; if (!o.valW) out.valW = z.valW + 'px'; } return out; };
+    const MAKE = { stepper: sized('stepper', stepper) };
+
+    const p = this.props;
+    if (p.embedded) {
+      const k = p.kind || 'stepper';
+      const b = { ...MAKE[k](p), cellW: '100%', cellBg: 'transparent', cellR: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', title: '', desc: '', cols: [], grid: 'minmax(0,1fr)', frameBg: 'transparent', framePad: '0', rows: [{ label: '', cells: [b] }] }] };
+    }
+    const cell = (k, o, w, bg) => ({ ...MAKE[k](o), cellW: w, cellBg: bg || 'transparent', cellR: bg ? '12px' : '0' });
+    const G = (id, title, desc, cols, colW, rows) => ({ id, title, desc, cols: cols.map(c => c.toUpperCase()), grid: `160px repeat(${cols.length}, ${colW})`, frameBg: '#FFFFFF', framePad: '24px 28px', rows });
+    const SPEC = [{"part":"Label","v":"Optional, Rubik 16/600, fills the space left."},{"part":"Key","v":"M 44, radius 12, #F3EDE2, icon 20. Dims to #8C8578 at a limit."},{"part":"Field","v":"64 wide (S 56, L 72), border 2 #E2D8C6, Unbounded 18/700."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '36px', rootW: 'max-content',
+      groups: [
+        { ...G('anatomy', 'Anatomy', 'With a label, Max HP.', [], '300px', [{ label: '', cells: [ANAT(cell('stepper', { label: 'Max HP', value: 40 }, '300px'))] }]), grid: '0px 300px', framePad: '32px 36px', hasSpec: true, spec: SPEC },
+        G('variants', 'Variants × states', 'With and without a label: default, at the minimum, at the maximum, focused.', ['default', 'min', 'max', 'focus'], '300px', [
+          { label: 'With label', cells: ['default', 'min', 'max', 'focus'].map(state => cell('stepper', { label: 'Max HP', value: { default: 40, min: 1, max: 999, focus: 40 }[state], state }, '300px')) },
+          { label: 'No label', cells: ['default', 'min', 'max', 'focus'].map(state => cell('stepper', { value: { default: 15, min: 0, max: 99, focus: 15 }[state], state }, '300px')) },
+        ]),
+        G('sizes', 'Sizes', 'Height 40 / 48 / 56, keys 36 / 44 / 52. M is the default.', ['S', 'M', 'L'], '240px', [
+          { label: 'Stepper', cells: ['S', 'M', 'L'].map(size => cell('stepper', { size, value: 15 }, '240px')) },
+        ]),
+        G('edge', 'Edge cases', 'Three digits, a negative bonus and the longest labels. The field keeps its width.', ['999', '−5', 'de', 'ru'], '300px', [
+          { label: 'Values and labels', cells: [cell('stepper', { label: 'Max HP', value: 999, state: 'max' }, '300px'), cell('stepper', { label: 'Init bonus', value: '−5' }, '300px'), cell('stepper', { label: 'Initiativebonus', value: '+3' }, '300px'), cell('stepper', { label: 'Бонус инициативы', value: '+3' }, '300px')] },
+        ]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

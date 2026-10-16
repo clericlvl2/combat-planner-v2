@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:48px 56px;display:flex;flex-direction:column;gap:28px;width:1260px;box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}">
+  <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Design" title="Tokens" status="Draft" date="15.10.2026" desc="Palette, roles, health, HP actions, 12 conditions, type, radii, spacing and tap targets. Components and screens use only these values. Light theme." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+      <div style="flex:1 1 360px;max-width:390px;background:#FAF6EE;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700">{{ g.title }}</span>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ g.items }}" as="t" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:34px max-content minmax(0,1fr);align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #E6DDCC">
+              <span style="width:30px;height:30px;box-sizing:border-box;border-radius:12px;border:1px solid rgba(0,0,0,0.12);background:{{ t.bgHex }};display:flex;align-items:center;justify-content:center;color:{{ t.fg }};font-size:12px;font-weight:700">{{ t.sample }}</span>
+              <span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap">{{ t.hex }}</span>
+              <span style="font-size:14px;color:#231F1C;text-wrap:pretty">{{ t.role }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+    <div style="flex:1 1 360px;max-width:600px;background:#FAF6EE;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:12px">
+      <span style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700">Typefaces</span>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700">Round 3 · 14/40</span><span style="font-size:14px;color:#5F574D">Unbounded 600/700: headings, HP numbers, round, initiative, main buttons</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:18px;font-weight:500">Brother Tomas of the Silver Lantern Order</span><span style="font-size:14px;color:#5F574D">Rubik 400/500/600/700: body, labels, names; tabular-nums for inline numbers</span></div>
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:18px;font-weight:500">影の射手ゴブリン</span><span style="font-size:14px;color:#5F574D">Noto Sans JP: Japanese fallback</span></div>
+      <span style="font-size:14px;color:#5F574D">Icons: Tabler Icons, 18 / 20 / 22 / 24px</span>
+    </div>
+    <div style="flex:1 1 560px;max-width:1224px;background:#FAF6EE;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:4px">
+      <span style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;padding-bottom:8px">Type scale</span>
+      <sc-for list="{{ typeScale }}" as="t" hint-placeholder-count="10">
+        <div style="display:grid;grid-template-columns:150px 230px minmax(0,1fr);align-items:baseline;gap:16px;padding:8px 0;border-bottom:1px solid #E6DDCC">
+          <span style="font-size:14px;font-weight:700">{{ t.name }}</span>
+          <span style="font-size:14px;color:#5F574D;font-variant-numeric:tabular-nums">{{ t.spec }}</span>
+          <span style="font-family:{{ t.ff }};font-size:{{ t.size }};font-weight:{{ t.w }};line-height:1.25;color:{{ t.c }}">{{ t.sample }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="flex:1 1 360px;max-width:600px;background:#FAF6EE;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:16px">
+      <span style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700">Radii</span>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end">
+        <sc-for list="{{ radii }}" as="r" hint-placeholder-count="7">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><span style="width:56px;height:56px;border:2px solid #231F1C;background:#FFFFFF;border-radius:{{ r.v }}"></span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">{{ r.label }}</span><span style="font-size:12px;color:#5F574D;text-align:center;max-width:76px">{{ r.use }}</span></div>
+        </sc-for>
+      </div>
+      <span style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;padding-top:6px">Spacing</span>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end">
+        <sc-for list="{{ space }}" as="s" hint-placeholder-count="7">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px"><span style="width:{{ s.px }};height:{{ s.px }};background:#231F1C;border-radius:2px"></span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">{{ s.v }}</span></div>
+        </sc-for>
+      </div>
+      <span style="font-size:14px;color:#5F574D;text-wrap:pretty">Borders 2px; 1px only for dividers inside lists. The active card is 2px ink. Line height: 1 for chips and numbers, 1.25 for names and headings, 1.45 for paragraphs. Icons: 16, 20, 24, 32. A block flush inside a card uses the card radius minus the border (16 − 2 = 14). Shadows only on gallery phones, never in the UI. Tap targets 44px or more. Bottom action: 58 high, 28 from the left, right and bottom phone edges in bars and sheets.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const T = (hex, role, fg = '#231F1C', sample = '') => ({ hex, role, fg, sample });
+    const CC = [['charmed', '#F9DDE6', '#8A2448'], ['confused', '#DDEFD5', '#2F6B1F'], ['dazed', '#FFF1B8', '#6B5600'], ['fear', '#E3E1DC', '#3D3A35'], ['helpless', '#F6DCD5', '#8A2E17'], ['hindered', '#D7EBF5', '#12506E'], ['shocked', '#D5F0F0', '#0E5E63'], ['stuck', '#E9DFD1', '#5C4026'], ['stunned', '#FBE0C2', '#8A3F00'], ['vulnerable', '#F8D7D7', '#9B1C1C'], ['weakened', '#EDE6C9', '#5E5214'], ['staggered', '#DCE6F7', '#1E4E8C']];
+    return {
+      groups: [
+        { title: 'Base', items: [
+          T('#FAF6EE', 'Screen background'), T('#FFFFFF', 'Surface: cards, fields, sheets'), T('#F3EDE2', 'Soft: keys, tiles, soft buttons, dead fill'),
+          T('#FFF4D2', 'Highlight: selected row'), T('#FFE7A3', 'Accent: active turn, tap marker'),
+          T('#E2D8C6', 'Border and divider'), T('#E6DDCC', 'Disabled fill, empty HP segment'),
+          T('#231F1C', 'Ink: text, primary button, active border', '#FFFFFF', 'Aa'), T('#3A3531', 'Ink pressed', '#FFFFFF', 'Aa'),
+          T('#5F574D', 'Secondary text, dead role block', '#FFFFFF', 'Aa'), T('#8C8578', 'Muted: placeholders, unchecked boxes, dashed lines', '#FFFFFF', 'Aa'),
+        ] },
+        { title: 'Roles', items: [
+          T('#1E5FA8', 'Hero', '#FFFFFF', '15'), T('#B4232A', 'Enemy', '#FFFFFF', '17'), T('#2D7D46', 'Ally', '#FFFFFF', '9'),
+          T('#5F574D', 'Role block when dead or disabled', '#FFFFFF', '12'), T('#F3EDE2', 'Card fill when dead or disabled'),
+        ] },
+        { title: 'Health', items: [
+          T('#2E7A43', 'Full: 4 segments', '#FFFFFF'), T('#855800', 'Wounded, 50% and up: 3 segments', '#FFFFFF'), T('#B33A0A', 'Bloodied, below 50%: 2 or 1', '#FFFFFF'),
+          T('#57534E', 'Dead, 0 or below: 0 segments, name struck', '#FFFFFF'), T('#E6DDCC', 'Empty segment'),
+        ] },
+        { title: 'HP actions', items: [
+          T('#B4232A', 'Damage; damage in history', '#FFFFFF'), T('#2E7A43', 'Heal; healing in history', '#FFFFFF'),
+          T('#1E5FA8', 'Set Temp', '#FFFFFF'), T('#A85400', 'Set Max', '#FFFFFF'),
+        ] },
+        { title: 'Conditions (fill / text)', items: CC.map(([n, bg, fg]) => ({ hex: bg + ' / ' + fg, role: n, fg, sample: 'Aa', swatch: bg })).map(x => ({ ...x, hex: x.hex })) },
+      ].map(g => ({ ...g, items: g.items.map(i => ({ ...i, hex: i.hex, bgHex: i.swatch || i.hex })) })),
+      radii: [['2', 'HP segments', '2px'], ['12', 'fields, keys, tiles, S buttons, stat squares', '12px'], ['16', 'cards, popovers, menus, toasts', '16px'], ['24', 'sheets, dialogs', '24px'], ['full', 'chips, 58 buttons, round icons', '28px']].map(([label, use, v]) => ({ label, use, v })),
+      showHead: !new URLSearchParams(location.search).get('embed'),
+      space: [4, 8, 12, 16, 24, 32].map(v => ({ v, px: v + 'px' })),
+      typeScale: [
+        ['Display', 'Unbounded 700 · 44', 'U', 44, 700, '14/40'],
+        ['Title', 'Unbounded 700 · 28', 'U', 28, 700, 'Combats'],
+        ['Heading', 'Unbounded 700 · 22', 'U', 22, 700, 'Sort combats'],
+        ['Number / Button', 'Unbounded 700 · 18', 'U', 18, 700, 'Next turn'],
+        ['Body', 'Rubik 400–600 · 16', 'R', 16, 600, 'Brother Tomas of the Silver Lantern Order'],
+        ['Small', 'Rubik 400–600 · 14', 'R', 14, 600, 'Duplicate'],
+        ['Meta', 'Rubik 600–700 · 12', 'R', 12, 600, 'Round 3 · 6 units', '#5F574D'],
+        ['Micro', 'Rubik 700 · 11', 'R', 11, 700, 'HP · AC · ENEMY'],
+      ].map(([name, spec, ff, s, w, sample, c]) => ({ name, spec, ff: ff === 'U' ? "'Unbounded',sans-serif" : "'Rubik','Noto Sans JP',sans-serif", size: s + 'px', w, sample, c: c || '#231F1C' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

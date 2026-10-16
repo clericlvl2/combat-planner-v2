@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:24px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="EscalationDie" status="Draft" date="15.10.2026" desc="Escalation die in the combat header for DM and player. Empty dashed tile at 0; pips and “Escalation N” from 1 to 6." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Tile with pips 0–6 and a caption under it." where="CombatHeader (DM, tap to set) and PlayerHeader (display only)." behaviour="DM taps it to open the face picker. Next turn raises it by 1 each round, up to 6. Players cannot change it." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+    <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+      <sc-for list="{{ g.cells }}" as="d" hint-placeholder-count="1">
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:center">
+          <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ d.caption }}</span></sc-if>
+          <div style="background:{{ d.stage }};border-radius:12px;padding:{{ d.stagePad }};display:flex;flex-direction:column;align-items:center;gap:4px">
+            <span style="width:50px;height:50px;box-sizing:border-box;border-radius:12px;background:{{ d.bg }};border:{{ d.border }};padding:{{ d.pad }};display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);outline:{{ d.ring }};outline-offset:2px">
+              <sc-for list="{{ d.pips }}" as="p" hint-placeholder-count="9"><span style="display:flex;align-items:center;justify-content:center"><span style="width:9px;height:9px;border-radius:50%;background:{{ p.bg }}"></span></span></sc-for>
+            </span>
+            <span style="font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;color:{{ d.fg }}">{{ d.label }}</span>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;esc&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:0,&quot;min&quot;:0,&quot;max&quot;:6,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const P = { 0: [], 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    const die = (o) => { const e = o.esc ?? 0; return { esc: e, bg: e ? '#231F1C' : 'transparent', border: e ? 'none' : '2px dashed #8C8578', pad: e ? '8px' : '6px', label: e ? 'Escalation ' + e : 'No escalation', fg: e ? '#231F1C' : '#5F574D', ring: o.tap ? '3px solid #FFE7A3' : 'none', pips: [0, 1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ bg: (P[e] || []).includes(n) ? '#FFFFFF' : 'transparent' })) }; };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: 'auto', groups: [{ hasSpec: false, spec: [], cells: [{ ...die(p), caption: '', stage: 'transparent', stagePad: '0' }] }] };
+    const SPEC = [{"part":"Tile","v":"50×50, radius 12. From 1: #231F1C, padding 8. At 0: dashed 2 #8C8578, no fill."},{"part":"Pip","v":"9, white, on a 3×3 grid."},{"part":"Caption","v":"12/600 tabular: “Escalation N”. At 0 “No escalation” in #5F574D."}];
+    const D = (caption, o) => ({ ...die(o), caption, stage: '#FAF6EE', stagePad: '12px' });
+    return { gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content', groups: [
+      { title: 'Anatomy', desc: 'Escalation 2.', hasSpec: true, spec: SPEC, cells: [{ ...D('', { esc: 2 }), stagePad: '24px 32px' }] },
+      { title: 'Variants × states', desc: 'Faces 0 to 6, and the tap ring when the DM opens the picker.', hasSpec: false, spec: [], cells: [...[0, 1, 2, 3, 4, 5, 6].map(e => D(String(e), { esc: e })), D('Tap (DM)', { esc: 2, tap: true })] },
+    ] };
+  }
+}
+</script>
+</body>
+</html>

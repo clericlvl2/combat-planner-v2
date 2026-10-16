@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:24px;width:{{ rootW }};height:{{ rootH }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="RoleBlock" status="Draft" date="15.10.2026" desc="Coloured block on the left of UnitRow, PlayerRow and PresetCard: initiative or HP on top, the role below, colour by role." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="62-wide coloured block with a number and the role." where="UnitRow and PlayerRow (initiative), PresetCard (HP)." behaviour="The DM taps it in UnitRow to open InitiativePopover; a player taps their own hero. Display only in PresetCard." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px;height:{{ gridH }}">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;height:{{ gridH }}">
+      <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+        <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }};height:{{ b.cellH }}">
+          <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;line-height:1.25;min-height:36px">{{ b.caption }}</span></sc-if>
+          <div style="box-sizing:border-box;width:{{ b.w }};height:{{ b.h }};min-height:{{ b.minH }};border-radius:{{ b.radius }};background:{{ b.bg }};color:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:8px 2px;outline:{{ b.ring }};outline-offset:-3px">
+            <sc-if value="{{ b.active }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:0;top:50%;margin-top:-9px;width:0;height:0;border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:9px solid #FFE7A3"></span></sc-if>
+            <sc-if value="{{ b.showValue }}" hint-placeholder-val="{{ true }}"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;line-height:1.25;border-bottom:{{ b.valueLine }};font-variant-numeric:tabular-nums">{{ b.value }}</span></sc-if>
+            <sc-if value="{{ b.showDie }}" hint-placeholder-val="{{ false }}"><span style="width:32px;height:32px;border-radius:16px;background:rgba(255,255,255,0.22);display:flex;align-items:center;justify-content:center"><i class="ti ti-dice-5" style="font-size:20px"></i></span></sc-if>
+            <span style="font-size:11px;font-weight:600;line-height:1">{{ b.label }}</span>
+            <sc-if value="{{ b.hasBadge }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:2px;max-width:56px;font-size:11px;font-weight:700;line-height:1;background:#FFFFFF;color:{{ b.badgeFg }};border-radius:999px;padding:4px 6px;margin-top:2px"><sc-if value="{{ b.badgeIcon }}" hint-placeholder-val="{{ false }}"><i class="ti ti-user" style="font-size:11px"></i></sc-if><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.badge }}</span></span></sc-if>
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;type&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'Hero'|'Enemy'|'Ally'&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number | string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;editable&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;die&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;active&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;mine&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;claim&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;dim&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;radius&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const TC = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const block = (o) => {
+      const dim = !!o.dim, hasV = o.value != null && o.value !== '';
+      const badge = o.mine ? 'You' : '';
+      return { bg: dim ? '#5F574D' : (TC[o.type] || TC.Enemy), active: !!o.active, value: hasV ? (o.value < 0 ? '−' + Math.abs(o.value) : o.value) : '', showValue: hasV, showDie: !hasV && !!o.die,
+        valueLine: o.editable && hasV ? '2px dashed #FFFFFF' : '0', label: o.label || o.type || 'Enemy',
+        hasBadge: !!badge, badge, badgeIcon: false, badgeFg: TC.Hero, radius: o.radius || '14px 0 0 14px', ring: o.tap ? '3px solid #FFE7A3' : 'none' };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: '100%', rootH: '100%', gridH: '100%', groups: [{ hasSpec: false, spec: [], cells: [{ ...block(p), caption: '', cellW: '100%', cellH: '100%', w: '100%', h: '100%', minH: '0' }] }] };
+    const C = (caption, o) => ({ ...block(o), caption, cellW: '96px', cellH: 'auto', w: '62px', h: 'auto', minH: '80px' });
+    const SPEC = [{"part":"Block","v":"62 wide, full row height. Hero #1E5FA8, Enemy #B4232A, Ally #2D7D46; dead or disabled #5F574D."},{"part":"Value","v":"Initiative or HP, Unbounded 22/700 white. Dashed underline when editable."},{"part":"Role","v":"11/600 white: Hero, Enemy, Ally, or HP in presets."},{"part":"Active notch","v":"#FFE7A3 triangle, 9, on the left edge during the unit’s turn."},{"part":"You chip","v":"Own hero in Player view only. Another player’s name shows under the unit name, not here."}];
+    const S = (title, desc, cells, o = {}) => ({ title, desc, cells, hasSpec: false, spec: [], ...o });
+    return { gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content', rootH: 'auto', gridH: 'auto', groups: [
+      S('Anatomy', 'Hero, editable, active turn.', [{ ...C('', { type: 'Hero', value: 15, active: true, editable: true }), cellW: '140px' }], { hasSpec: true, spec: SPEC }),
+      S('Variants × states', 'Roles, active turn, editable, no initiative yet, own hero, dead or disabled, preset. A claimed hero shows the player under the name, not here.', [
+        C('Enemy', { type: 'Enemy', value: 17 }), C('Hero', { type: 'Hero', value: 19 }), C('Ally', { type: 'Ally', value: 9 }),
+        C('Active turn', { type: 'Hero', value: 15, active: true }), C('DM: editable', { type: 'Enemy', value: 17, editable: true }), C('Tap', { type: 'Enemy', value: 17, editable: true, tap: true }),
+        C('No initiative: die', { type: 'Hero', die: true }), C('Own hero', { type: 'Hero', value: 15, mine: true, editable: true }),
+        C('Dead / disabled', { type: 'Enemy', value: 12, dim: true }), C('Preset: HP', { type: 'Enemy', value: 40, label: 'HP' })]),
+      S('Edge cases', 'Three-digit HP. The block width never changes.', [
+        C('Preset: 320 HP', { type: 'Enemy', value: 320, label: 'HP' }), C('Preset: 999 HP', { type: 'Enemy', value: 999, label: 'HP' })]),
+    ] };
+  }
+}
+</script>
+</body>
+</html>

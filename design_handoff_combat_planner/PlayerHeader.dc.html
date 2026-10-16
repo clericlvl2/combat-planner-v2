@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="PlayerHeader" status="Draft" date="15.10.2026" desc="Player view header: combat title, the round or Setup, the escalation die and the player menu. Nothing here is editable." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Top of the player view with the combat state." where="Player view in every state; the hero picker hides the menu." behaviour="Display only, except the menu: tap opens Menu with Change hero. Round and die follow the DM." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};overflow:hidden;display:flex;flex-direction:column">
+
+
+              <sc-if value="{{ b.isPlayerHeader }}" hint-placeholder-val="{{ false }}">
+                <div style="background:#FAF6EE;border-bottom:2px solid #E2D8C6;display:flex;flex-direction:column">
+                  <div style="height:44px;display:flex;align-items:center;padding:0 24px;font-size:16px;font-weight:600">9:41</div>
+                  <div style="min-height:82px;box-sizing:border-box;display:flex;align-items:center;padding:4px 12px 12px 16px;gap:8px">
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                      <span style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ b.title }}</span>
+                      <span style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums">{{ b.main }}</span>
+                    </div>
+                    <sc-if value="{{ b.showDie }}" hint-placeholder-val="{{ true }}">
+                      <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:4px">
+                        <dc-import name="EscalationDie" embedded="{{ true }}" esc="{{ b.esc }}" hint-size="64px,72px"></dc-import>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ b.showMenu }}" hint-placeholder-val="{{ true }}">
+                      <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:4px">
+                        <span style="width:50px;height:50px;box-sizing:border-box;border-radius:12px;background:#F3EDE2;outline:{{ b.menuRing }};outline-offset:2px;display:flex;align-items:center;justify-content:center"><i class="ti ti-dots" style="font-size:24px"></i></span>
+                        <span style="font-size:12px;font-weight:600">Menu</span>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
+
+
+
+
+
+
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;nav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'menu'|'back'|'close'&quot;},&quot;right&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;search&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string | false&quot;},&quot;query&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tools&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{icon,label?,count?,active?,tap?}&gt;&quot;},&quot;chips&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;round&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number | null&quot;},&quot;esc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;menu&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;menuTap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;code&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;caption&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;note&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;branch&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;goal&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;entry&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;exit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;rules&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;parts&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;links&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{id,label}&gt;&quot;},&quot;status&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;date&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;section&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const ring = t => t ? '3px solid #FFE7A3' : 'none';
+    const K = k => ({ isHeader: k === 'header', isPlayerHeader: k === 'playerHeader', isEmpty: k === 'empty' || k === 'message', isPhone: k === 'phone', isStep: k === 'step', isArrow: k === 'arrow', isFlowHead: k === 'flowHead', isPageHead: k === 'pageHead' });
+    const PIPS = { 0: [], 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    const MAKE = {
+      playerHeader: o => { const setup = o.round == null; return { ...K('playerHeader'), title: o.title || 'Ambush at the Ferry', main: setup ? 'Setup' : 'Round ' + o.round, esc: o.esc ?? 0, dieBg: o.esc ? '#231F1C' : 'transparent', dieBorder: o.esc ? 'none' : '2px dashed #8C8578', diePad: o.esc ? '8px' : '6px', escLabel: o.esc ? 'Escalation ' + o.esc : 'No escalation', escFg: o.esc ? '#231F1C' : '#5F574D', showDie: !setup, showMenu: o.menu !== false, menuRing: ring(o.menuTap), pips: [0, 1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ bg: (PIPS[o.esc ?? 0] || []).includes(n) ? '#FFFFFF' : 'transparent' })) }; }
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'playerHeader'](p), cellW: p.kind === 'step' || p.kind === 'phone' ? '390px' : '100%', stageBg: 'transparent', stageR: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: p.kind === 'step' || p.kind === 'phone' || p.kind === 'flowHead' || p.kind === 'arrow' ? 'auto' : '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, w = '390px', bg = '#FAF6EE') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: bg, stageR: '20px' });
+    const SPEC = [{"part":"Title","v":"Combat title 14/600, one line with an ellipsis."},{"part":"Round","v":"Unbounded 28/700: “Round N” or “Setup”."},{"part":"Die","v":"Escalation die 50, display only; hidden in Setup."},{"part":"Menu","v":"Tile 50, #F3EDE2, ⋯ 24, “Menu” 12/600. Holds Change hero."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1720px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Combat, round 3, escalation 2.', hasSpec: true, spec: SPEC, cells: [ANAT(C('playerHeader', { round: 3, esc: 2 }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Combat, Setup without the die, menu tapped, and the hero picker without a menu.', cells: [
+          C('playerHeader', { caption: 'Combat', round: 3, esc: 2 }), C('playerHeader', { caption: 'Setup', round: null }),
+          C('playerHeader', { caption: 'Menu tapped', round: 3, esc: 2, menuTap: true }), C('playerHeader', { caption: 'Hero picker', round: null, menu: false }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'A long title ends with an ellipsis; two-digit round and the top die face.', cells: [
+          C('playerHeader', { caption: 'Long title, round 12', title: 'Капитан стражи переправы: засада у моста', round: 12, esc: 6 }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

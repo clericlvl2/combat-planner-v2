@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="Sheet" status="Draft" date="15.10.2026" desc="Bottom sheet 12 from the screen edges: title, optional subtitle and back, × to close, content, one or two buttons." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Container for a short task: header, content and bottom buttons." where="SortSheet, TagSheet, ConditionPicker, UnitForm, ShareSheet, Combat list and Library forms." behaviour="Opens over a scrim. × or a scrim tap closes without saving. Content taller than the screen scrolls in the middle." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.stageW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};min-height:{{ b.stageH }};display:flex;flex-direction:column;justify-content:{{ b.justify }}">
+
+              <sc-if value="{{ b.isSheet }}" hint-placeholder-val="{{ true }}">
+                <div style="box-sizing:border-box;background:#FFFFFF;border:2px solid #231F1C;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:12px">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <sc-if value="{{ b.hasBack }}" hint-placeholder-val="{{ false }}"><dc-import name="IconButton" embedded="{{ true }}" kind="icon" variant="outline" icon="chevron-left" aria="Back" hint-size="44px,44px"></dc-import></sc-if>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                      <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;line-height:1.25;overflow-wrap:anywhere">{{ b.title }}</span>
+                      <sc-if value="{{ b.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#5F574D">{{ b.sub }}</span></sc-if>
+                    </div>
+                    <dc-import name="IconButton" embedded="{{ true }}" kind="icon" variant="outline" icon="x" aria="Close" hint-size="44px,44px"></dc-import>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:12px">
+                    {{ children }}
+                    <sc-if value="{{ b.sSort }}" hint-placeholder-val="{{ false }}"><dc-import name="RadioList" embedded="{{ true }}" kind="radio" value="{{ 0 }}" hint-size="100%,156px"></dc-import></sc-if>
+                    <sc-if value="{{ b.sTags }}" hint-placeholder-val="{{ false }}">
+                      <dc-import name="SearchField" embedded="{{ true }}" kind="search" placeholder="Search or create" hint-size="100%,48px"></dc-import>
+                      <dc-import name="CheckList" embedded="{{ true }}" kind="check" options="{{ b.tagOpts }}" hint-size="100%,192px"></dc-import>
+                    </sc-if>
+                    <sc-if value="{{ b.sForm }}" hint-placeholder-val="{{ false }}">
+                      <dc-import name="TextField" embedded="{{ true }}" kind="text" label="Title" counter="19/80" value="Ambush at the Ferry" state="focus" hint-size="100%,70px"></dc-import>
+                      <dc-import name="TextArea" embedded="{{ true }}" kind="textarea" label="Description" counter="0/500" placeholder="Optional" hint-size="100%,94px"></dc-import>
+                      <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:600;color:#5F574D">Color</span><dc-import name="SwatchRow" embedded="{{ true }}" kind="swatches" value="{{ 0 }}" hint-size="100%,40px"></dc-import></div>
+                    </sc-if>
+                  </div>
+                  <sc-if value="{{ b.hasActions }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;gap:8px">
+                      <sc-if value="{{ b.hasSecondary }}" hint-placeholder-val="{{ false }}"><div style="flex:1;min-width:0"><dc-import name="Button" embedded="{{ true }}" kind="button" variant="secondary" size="M" full="{{ true }}" label="{{ b.secondary }}" hint-size="100%,52px"></dc-import></div></sc-if>
+                      <div style="flex:1;min-width:0"><dc-import name="Button" embedded="{{ true }}" kind="button" variant="{{ b.primaryVariant }}" size="M" full="{{ true }}" label="{{ b.primary }}" state="{{ b.primaryState }}" hint-size="100%,52px"></dc-import></div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+
+
+
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;preset&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryVariant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryState&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;secondary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;back&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;items&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;[icon:string,label:string,opts?:{danger?:boolean,divider?:boolean,hint?:string,tap?:boolean}]&gt;&quot;},&quot;width&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;active&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;email&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;text&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;ok&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tone&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'ink' | 'danger'&quot;},&quot;sample&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', SOFT = '#F3EDE2';
+    const stage = (o) => ({ stageW: o.w || '390px', stageBg: o.bg ?? '#8C8578', stageR: o.r || '20px', stagePad: o.p || '12px', stageH: o.h || 'auto', justify: o.j || 'flex-end' });
+    const K = k => ({ isSheet: k === 'sheet', isPopover: k === 'popover' || k === 'menu', isDialog: k === 'dialog', isDrawer: k === 'drawer', isToast: k === 'toast' });
+    const MAKE = {
+      sheet: o => ({ ...K('sheet'), title: o.title || 'Sheet', sub: o.sub || '', hasSub: !!o.sub, hasBack: !!o.back, primary: o.primary || 'Done', primaryVariant: o.primaryVariant || 'primary', primaryState: o.primaryState || 'default', hasActions: o.primary !== '', secondary: o.secondary || '', hasSecondary: !!o.secondary, sSort: o.sample === 'sort', sTags: o.sample === 'tags', sForm: o.sample === 'form', tagOpts: [{ label: 'Orcs', count: 2, on: true }, { label: 'Ferry', count: 6, on: true }, { label: 'Goblins', count: 3 }, { label: 'Undead', count: 4 }] })
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'sheet'](p), ...stage({ w: '100%', bg: 'transparent', r: '0', p: '0', j: 'flex-start' }) };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, s = {}) => ({ ...MAKE[k](o), ...stage(s), caption: o.caption || '' });
+    const SPEC = [{"part":"Container","v":"Border 2 ink, radius 24, padding 14, gap 12; 12 from the screen edges."},{"part":"Title","v":"Unbounded 18/700, wraps. Subtitle 14 #5F574D."},{"part":"Close","v":"IconButton outline M, ×."},{"part":"Content","v":"Passed as children, gap 12."},{"part":"Actions","v":"Button M, full width; one, or two in a row."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1760px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Sort combats.', hasSpec: true, spec: SPEC, cells: [ANAT(C('sheet', { title: 'Sort combats', sample: 'sort' }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Radio list, checklist with search, a form, and two buttons with the primary disabled.', cells: [
+          C('sheet', { caption: 'Radio: Sort combats', title: 'Sort combats', sample: 'sort' }),
+          C('sheet', { caption: 'Checklist with search: Tags', title: 'Tags · Orc Berserker', sample: 'tags', primary: 'Done · 2 tags' }),
+          C('sheet', { caption: 'Form: Edit combat', title: 'Edit combat', sample: 'form', primary: 'Save' }),
+          C('sheet', { caption: 'Two buttons, primary disabled', title: 'New combat', sub: 'Title is required', sample: 'form', secondary: 'Cancel', primary: 'Create', primaryState: 'disabled' }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'A long title wraps beside back and ×; ru labels.', cells: [
+          C('sheet', { caption: 'Long title, back', title: 'Tags · Brother Tomas of the Silver Lantern Order', back: true, sample: 'tags', primary: 'Done' }),
+          C('sheet', { caption: 'ru', title: 'Сортировка сражений', sample: 'sort', primary: 'Готово' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

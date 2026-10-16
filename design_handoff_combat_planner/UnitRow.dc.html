@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;gap:24px;padding:{{ wrapPad }};font-family:'Rubik','Noto Sans JP',sans-serif;color:#231F1C">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <div><dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="UnitRow" status="Draft" date="15.10.2026" desc="DM unit row on the combat screen: role block, name, defenses, conditions, HP box and chevron. Expands for details and actions." hint-size="1100px,200px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="One unit in the DM turn order." where="Combat screen list, flows CS-F1 to CS-F8; NumpadSheet header." behaviour="Tap the row to expand it. The role block opens InitiativePopover, HP opens NumpadSheet. Conditions and HP History open sheets." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+    <div style="display:flex;flex-wrap:{{ g.wrap }};width:{{ g.w }};gap:24px 32px;align-items:flex-start">
+      <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1">
+        <sc-if value="{{ it.isHeading }}" hint-placeholder-val="{{ false }}">
+          <div style="flex:0 0 100%;display:flex;flex-direction:column;gap:4px;padding-top:16px">
+            <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ it.heading }}</span>
+            <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ it.sub }}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{ it.isArrow }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;padding-top:22px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ it.arrowLabel }}" width="{{ 110 }}" height="{{ 72 }}" hint-size="110px,72px"></dc-import></div></sc-if>
+      <sc-if value="{{ it.isCard }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:8px;width:{{ itemWidth }};max-width:370px">
+          <sc-if value="{{ it.showLabel }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ it.label }}</span></sc-if>
+          <div style="position:relative;display:grid;grid-template-columns:62px minmax(0,1fr) 100px 40px;min-height:72px;border-radius:16px;border:{{ it.border }};background:{{ it.tileBg }};box-sizing:border-box;overflow:{{ it.cardOverflow }};margin-bottom:{{ it.cardGap }}">
+            <button aria-label="Roll initiative" style="border:none;background:transparent;padding:0;display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch;justify-items:stretch"><dc-import name="RoleBlock" embedded="{{ true }}" type="{{ it.typeWord }}" value="{{ it.rbValue }}" editable="{{ true }}" active="{{ it.active }}" dim="{{ it.rbDim }}" radius="{{ it.blockRadius }}" tap="{{ it.initOpen }}" style="width:62px;height:100%" hint-size="62px,72px"></dc-import></button>
+            <div style="padding:12px 4px 12px 12px;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0">
+              <span style="font-size:16px;font-weight:600;line-height:1.25;color:{{ it.nameColor }};overflow-wrap:anywhere;text-wrap:pretty"><span style="text-decoration:{{ it.nameDeco }}">{{ it.name }}</span><sc-if value="{{ it.claimInline }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:4px;margin-left:6px;vertical-align:1px;font-size:12px;font-weight:700;color:#1E5FA8"><i class="ti ti-user" style="font-size:16px"></i>{{ it.claimedBy }}</span></sc-if></span>
+              <sc-if value="{{ it.claimLine }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;color:#1E5FA8"><i class="ti ti-user" style="font-size:16px"></i>{{ it.claimedBy }}</span></sc-if>
+              <sc-if value="{{ it.showDefs }}" hint-placeholder-val="{{ true }}"><dc-import name="DefenseLine" embedded="{{ true }}" d="{{ it.dArr }}" style="width:100%;height:auto;min-height:0" hint-size="100%,18px"></dc-import></sc-if>
+              <sc-if value="{{ it.hasRowChips }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:4px">
+                  <sc-for list="{{ it.conds }}" as="c" hint-placeholder-count="0"><span style="display:inline-flex;align-items:center;height:20px;box-sizing:border-box;font-size:12px;font-weight:700;line-height:1;border-radius:999px;padding:0 8px;background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }}</span></sc-for>
+                  <sc-if value="{{ it.rowAddChip }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:4px;font-size:12px;font-weight:700;line-height:1.25;border-radius:999px;padding:4px 8px 4px 8px;border:1px dashed #231F1C"><i class="ti ti-selector" style="font-size:16px"></i>Edit</span></sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{ it.showNoteLine }}" hint-placeholder-val="{{ false }}"><dc-import name="NoteField" embedded="{{ true }}" variant="line" note="{{ it.note }}" hint-size="100%,20px"></dc-import></sc-if>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:flex-end">
+              <dc-import name="HpBox" embedded="{{ true }}" hp="{{ it.hpNum }}" max="{{ it.hpMax }}" temp="{{ it.hpTemp }}" disabled="{{ it.skipped }}" hidden="{{ it.hpHidden }}" lang="{{ it.lang }}" hint-size="96px,54px"></dc-import>
+            </div>
+            <button aria-label="Unit details" style="border:none;background:transparent;display:flex;align-items:center;justify-content:center;padding:0"><span style="width:8px;height:8px;border-right:2px solid {{ it.nameColor }};border-bottom:2px solid {{ it.nameColor }};transform:{{ it.chev }}"></span></button>
+  
+            <sc-if value="{{ it.initOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:76px;left:0;z-index:4"><dc-import name="InitiativePopover" embedded="{{ true }}" value="{{ it.init }}" bonus="{{ it.bonusNum }}" hint-size="240px,170px"></dc-import></div>
+            </sc-if>
+            <sc-if value="{{ it.claimFooter }}" hint-placeholder-val="{{ false }}">
+              <div style="grid-column:1 / -1;display:flex;align-items:flex-start;gap:4px;padding:8px 12px;background:#DCE6F7;color:#1E5FA8;font-size:14px;font-weight:600;line-height:1.25"><i class="ti ti-user" style="font-size:16px;flex:none;margin-top:1px"></i><span style="overflow-wrap:anywhere">{{ it.claimedBy }}</span></div>
+            </sc-if>
+            <sc-if value="{{ it.expanded }}" hint-placeholder-val="{{ false }}">
+              <div style="grid-column:1 / -1;border-top:2px solid {{ it.divider }};padding:12px;display:flex;flex-direction:column;gap:8px">
+  
+                <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
+                  <sc-if value="{{ it.x1 }}" hint-placeholder-val="{{ false }}">
+                    <div style="grid-column:1 / -1;display:flex;gap:8px">
+                      <div style="position:relative;flex:1;min-width:0">
+                        <button style="width:100%;height:48px;box-sizing:border-box;border:2px solid {{ it.condLine }};border-radius:12px;background:#FFFFFF;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px 0 12px"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Conditions</span><i class="ti ti-chevron-down" style="font-size:20px"></i></button>
+                      </div>
+                      <div style="position:relative;flex:1;min-width:0">
+                        <button style="width:100%;height:48px;box-sizing:border-box;border:2px solid {{ it.histLine }};border-radius:12px;background:#FFFFFF;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px 0 12px"><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">HP History</span><i class="ti ti-chevron-down" style="font-size:20px"></i></button>
+                        
+                      </div>
+                    </div>
+                  </sc-if>
+                  <div style="grid-column:1 / -1"><dc-import name="NoteField" embedded="{{ true }}" note="{{ it.note }}" editing="{{ it.noteEdit }}" draft="{{ it.noteDraftVal }}" hint-size="100%,56px"></dc-import></div>
+                  <sc-if value="{{ it.release }}" hint-placeholder-val="{{ false }}">
+                    <div style="grid-column:1 / -1"><dc-import name="Button" embedded="{{ true }}" kind="button" variant="secondary" size="S" full="{{ true }}" icon="user-x" label="Release hero" hint-size="100%,48px"></dc-import></div>
+                  </sc-if>
+                  <sc-if value="{{ it.a2 }}" hint-placeholder-val="{{ false }}">
+                    <div style="grid-column:1 / -1"><dc-import name="CardActions" embedded="{{ true }}" preset="unit" open="{{ it.moreOpen }}" tap="{{ it.actTap }}" tap-item="{{ it.actItem }}" hint-size="100%,48px"></dc-import></div>
+                  </sc-if>
+                </div>
+  
+              </div>
+            </sc-if>
+          </div>
+        </div>
+        </sc-if>
+      </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;unit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Unit&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._rv();
+    r.groups = (r.groups || []).map(g => { const flow = (g.items || []).some(i => i.isArrow); return { ...g, wrap: flow ? 'nowrap' : 'wrap', w: flow ? 'max-content' : 'auto' }; });
+    return r;
+  }
+  card(u) {
+    const TC = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const HC = { Full: '#2E7A43', Wounded: '#855800', Bloodied: '#B33A0A', Dead: '#57534E' };
+    const CC = {
+      charmed: ['#F9DDE6', '#8A2448'], confused: ['#DDEFD5', '#2F6B1F'], dazed: ['#FFF1B8', '#6B5600'], fear: ['#E3E1DC', '#3D3A35'],
+      helpless: ['#F6DCD5', '#8A2E17'], hindered: ['#D7EBF5', '#12506E'], shocked: ['#D5F0F0', '#0E5E63'], stuck: ['#E9DFD1', '#5C4026'],
+      stunned: ['#FBE0C2', '#8A3F00'], vulnerable: ['#F8D7D7', '#9B1C1C'], weakened: ['#EDE6C9', '#5E5214'], staggered: ['#DCE6F7', '#1E4E8C'],
+    };
+    const st = u.hp <= 0 ? 'Dead' : u.hp >= u.max ? 'Full' : u.hp >= u.max / 2 ? 'Wounded' : 'Bloodied';
+    const pips = st === 'Full' ? 4 : st === 'Wounded' ? 3 : st === 'Bloodied' ? (u.hp >= u.max / 4 ? 2 : 1) : 0;
+    const dead = st === 'Dead', dis = !!u.disabled, off = dead || dis;
+    const conds = (u.cond || []).map(c => ({ label: c, bg: (CC[c] || CC.fear)[0], fg: (CC[c] || CC.fear)[1] }));
+            const hist = u.history || [];
+    return {
+      isCard: true, isHeading: false,
+      label: u.label || '', showLabel: !!u.label,
+      init: u.init ?? '—', bonusNum: u.bonus ?? 0, noteDraftVal: u.noteDraft ?? u.note ?? '', bonus: (u.bonus ?? 0) >= 0 ? '+' + (u.bonus ?? 0) : String(u.bonus), name: u.name, typeWord: u.type,
+      blockBg: off ? '#5F574D' : TC[u.type], blockFg: '#FFFFFF', blockLine: 'none', rbDim: off, rbValue: u.hidden ? '' : (u.init ?? ''),
+      border: u.active ? '2px solid #231F1C' : off ? '2px solid #E2D8C6' : u.flash ? '2px solid #B33A0A' : '2px solid #E2D8C6',
+      tileBg: u.active ? '#FFE7A3' : off ? '#F3EDE2' : '#FFFFFF',
+      divider: u.active ? '#E2D8C6' : '#E2D8C6',
+      nameColor: dead || dis ? '#5F574D' : '#231F1C', subColor: '#5F574D',
+      nameDeco: dead ? 'line-through' : 'none',
+      dArr: u.d,
+      conds, condCount: conds.length,
+      claimedBy: u.claimedBy || '',
+      claimInline: false, claimLine: !!u.claimedBy, claimBlock: false, claimFooter: false,
+      hasRowChips: conds.length > 0,
+      note: u.note || '', showNoteLine: !!u.note && !u.expanded,
+      noteOrEmpty: u.noteEdit ? (u.noteDraft ?? u.note ?? '') : (u.note || 'Add a note'), noteColor: u.note || u.noteEdit ? '#231F1C' : '#8C8578', noteEdit: !!u.noteEdit, noteLine: u.noteEdit ? '#231F1C' : '#E2D8C6',
+      hpText: `${u.hp < 0 ? '−' + Math.abs(u.hp) : u.hp}/${u.max}`,
+      hpBg: off || u.hidden ? 'transparent' : '#FFFFFF', hpLine: off || u.hidden ? '2px solid transparent' : '2px solid #E2D8C6',
+      segs: [0, 1, 2, 3].map(i => ({ bg: i < pips ? HC[st] : '#E6DDCC' })),
+      hpNum: u.hp, hpMax: u.max, hpTemp: u.temp || 0, hpHidden: !!u.hidden, lang: u.lang || 'en', hasState: st !== 'Full' || !!u.hidden, state: (({ de: { Full: 'Voll', Wounded: 'Verwundet', Bloodied: 'Blutend', Dead: 'Tot', t: 'temp' }, es: { Full: 'Completo', Wounded: 'Herido', Bloodied: 'Malherido', Dead: 'Muerto', t: 'temp.' }, fr: { Full: 'Indemne', Wounded: 'Blessé', Bloodied: 'Ensanglanté', Dead: 'Mort', t: 'temp.' }, ja: { Full: '無傷', Wounded: '負傷', Bloodied: '重傷', Dead: '死亡', t: '一時' }, ru: { Full: 'Цел', Wounded: 'Ранен', Bloodied: 'Тяжело ранен', Dead: 'Мёртв', t: 'врем.' } })[u.lang] || {})[st] || st, showHpNum: !u.hidden, stateColor: HC[st],
+      hasTemp: !!u.temp, tempText: u.temp ? `+${u.temp} ${(({ de: { Full: 'Voll', Wounded: 'Verwundet', Bloodied: 'Blutend', Dead: 'Tot', t: 'temp' }, es: { Full: 'Completo', Wounded: 'Herido', Bloodied: 'Malherido', Dead: 'Muerto', t: 'temp.' }, fr: { Full: 'Indemne', Wounded: 'Blessé', Bloodied: 'Ensanglanté', Dead: 'Mort', t: 'temp.' }, ja: { Full: '無傷', Wounded: '負傷', Bloodied: '重傷', Dead: '死亡', t: '一時' }, ru: { Full: 'Цел', Wounded: 'Ранен', Bloodied: 'Тяжело ранен', Dead: 'Мёртв', t: 'врем.' } })[u.lang] || {}).t || 'temp'}` : '', active: !!u.active, skipped: dis,
+      expanded: !!u.expanded, chev: u.expanded ? 'rotate(-135deg) translate(-2px,-2px)' : 'rotate(45deg) translate(-2px,-2px)',
+      noConds: conds.length === 0, blockRadius: u.expanded ? '14px 0 0 0' : '14px 0 0 14px', initOpen: !!u.initOpen,
+      ...(() => { const dd = u.expanded ? 'x1' : ''; const x = dd !== ''; return {
+        showBlockInit: !u.hidden, blockDie: false, showDefs: !u.hidden, rowAddChip: false,
+        showCondTile: !x, showInitTile: !x, showDefTile: false, condSpan: 'auto',
+        x1: dd === 'x1', x2: dd === 'x2', x3: dd === 'x3',
+        defList: [{ k: 'AC', v: u.d[0] }, { k: 'PD', v: u.d[1] }, { k: 'MD', v: u.d[2] }],
+      }; })(), condOpen: !!u.condOpen, cardOverflow: u.condOpen || u.moreOpen || u.histOpen || u.initOpen ? 'visible' : 'hidden', cardGap: u.condOpen ? '0' : u.histOpen ? '0' : u.initOpen ? '120px' : u.moreOpen ? '300px' : '0', condLine: u.condOpen ? '#231F1C' : '#E2D8C6',
+      condSel: u.cond || [], allConds: Object.keys(CC).map(c => { const on = (u.cond || []).includes(c); return { label: c[0].toUpperCase() + c.slice(1), on, dot: CC[c][1], weight: on ? 700 : 400, rowBg: on ? CC[c][0] : 'transparent', boxBg: on ? '#231F1C' : '#FFFFFF', boxLine: on ? '#231F1C' : '#8C8578' }; }),
+      a2: !!u.expanded && !u.player, release: !!u.expanded && !!u.player, moreOpen: !!u.moreOpen, actTap: u.actTap || '', actItem: u.actItem || '',
+      initEdit: !!u.initEdit, initView: !u.initEdit, initLine: u.initEdit ? '#231F1C' : '#E2D8C6', histLine: u.histOpen ? '#231F1C' : '#E2D8C6',
+      history: hist.slice().reverse().map(h => ({ ...h, color: h.delta.startsWith('+') ? '#2E7A43' : h.delta ? '#B4232A' : '#231F1C' })), historyCount: hist.length ? hist.length + ' changes' : 'No changes',
+      histRows: hist.slice().reverse().map(h => ({ when: h.when, delta: h.delta, result: h.result })), histOpen: !!u.histOpen, histChev: u.histOpen ? 'up' : 'down',
+    };
+  }
+  groupsOf(samples) {
+    const SPEC = [{"part":"Card","v":"Min 72 high, radius 16, border 2 #E2D8C6. Active: #FFE7A3 fill, ink border."},{"part":"RoleBlock","v":"62 wide; editable initiative."},{"part":"Name","v":"Rubik 16/600, wraps; struck through when dead."},{"part":"Conditions","v":"Chip S per condition, wraps."},{"part":"HP","v":"HpBox DM variant, 96 wide."},{"part":"Chevron","v":"Chevron 8 in the 40 column; turns when expanded."},{"part":"Actions","v":"CardActions when expanded: Edit, ⋯ with the other unit actions."}];
+    const g = [{ title: 'Anatomy', desc: 'Active turn, Wounded, one condition.', hasSpec: true, spec: SPEC, items: [{ isArrow: false, ...this.card({ label: '', init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed'], active: true }) }] }];
+    samples.forEach(u => { if (u.isHeading) g.push({ title: u.heading, desc: u.sub, hasSpec: false, spec: [], items: [] }); else g[g.length - 1].items.push(u.isArrow ? u : { isArrow: false, ...this.card(u) }); });
+    const ORD = ['Anatomy', 'Variants', 'Edge cases', 'Flow']; let last = 0;
+    const ranked = g.map((x, i) => { const k = ORD.findIndex(o => (x.title || '').startsWith(o)); if (k >= 0) last = k; return [x, i, k >= 0 ? k : last]; });
+    return ranked.sort((a, b) => a[2] - b[2] || a[1] - b[1]).map(x => x[0]);
+  }
+  _rv() {
+    const vh = [{ when: 'Start', delta: '', result: '36/36' }, { when: 'Round 2', delta: '−9', result: '27/36' }, { when: 'Round 2', delta: '+4', result: '31/36' }, { when: 'Round 3', delta: '−11', result: '20/36' }];
+    const note = 'Hex on Orc Berserker until the end of round 4';
+    const V = { init: 15, bonus: 3, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed', 'weakened'], active: true, expanded: true, history: vh, note };
+    const H = (heading, sub) => ({ isHeading: true, isCard: false, heading, sub });
+    const samples = [
+      H('Variants: states', 'Dead and Disabled look alike: grey fill and grey role block. Dead has a struck name, Disabled does not.'),
+      { label: 'Full', init: 19, name: 'Ser Aldric', type: 'Hero', hp: 52, max: 52, d: [21, 17, 15] },
+      { label: 'Active turn, Wounded', init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed'], active: true },
+      { label: 'Bloodied', init: 17, name: 'Orc Berserker', type: 'Enemy', hp: 14, max: 40, d: [18, 16, 12], cond: ['staggered'] },
+      { label: 'Dead', init: 12, name: 'Goblin Archer 1', type: 'Enemy', hp: -3, max: 18, d: [16, 14, 12] },
+      { label: 'Disabled', init: 7, name: '影の射手ゴブリン', type: 'Enemy', hp: 18, max: 18, d: [16, 14, 12], cond: ['stuck'], disabled: true },
+      { label: 'Ally, temp HP, long name', init: 9, name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 30, max: 30, temp: 5, d: [19, 15, 17] },
+      
+      { label: '40 characters, ru', init: 10, name: 'Капитан стражи переправы Святослав Огнев', type: 'Ally', hp: 40, max: 40, d: [19, 16, 13] },
+      { label: 'With note', init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed'], note },
+      H('Variants: claimed by a player', 'Its own line under the unit name: conditions do not push it, long names wrap.'),
+      { label: 'Short player name', init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed', 'weakened', 'hindered'], claimedBy: 'Mika', claimPos: 'p3' },
+      { label: 'Long player name, 37 characters', init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed', 'weakened', 'hindered'], claimedBy: 'Александра Константиновна Вишневецкая', claimPos: 'p3' },
+      H('Edge cases: three-digit HP', 'Max HP goes up to 999. The HP box keeps its width; numbers stay on one line.'),
+      { label: 'Wounded, 287/320', init: 22, name: 'Ancient Black Dragon', type: 'Enemy', hp: 287, max: 320, d: [24, 22, 20] },
+      { label: 'Bloodied, temp +120', init: 22, name: 'Ancient Black Dragon', type: 'Enemy', hp: 112, max: 320, temp: 120, d: [24, 22, 20] },
+      { label: 'Full, 999/999', init: 3, name: 'The Tarrasque', type: 'Enemy', hp: 999, max: 999, d: [30, 28, 26] },
+      { label: 'Dead, −105/320', init: 22, name: 'Ancient Black Dragon', type: 'Enemy', hp: -105, max: 320, d: [24, 22, 20] },
+      H('Edge cases: languages', 'Status and temp in the HP box per language. The longest, ru “Тяжело ранен” and fr “Ensanglanté”, wrap onto two lines inside the box.'),
+      { label: 'de · Blutend', lang: 'de', init: 17, name: 'Ork-Berserker', type: 'Enemy', hp: 14, max: 40, d: [18, 16, 12] },
+      { label: 'es · Malherido + temp', lang: 'es', init: 17, name: 'Berserker orco', type: 'Enemy', hp: 14, max: 40, temp: 5, d: [18, 16, 12] },
+      { label: 'fr · Ensanglanté, 3 digits', lang: 'fr', init: 22, name: 'Dragon noir ancien', type: 'Enemy', hp: 112, max: 320, d: [24, 22, 20] },
+      { label: 'ja · 重傷', lang: 'ja', init: 17, name: 'オークの狂戦士', type: 'Enemy', hp: 14, max: 40, d: [18, 16, 12] },
+      { label: 'ru · Тяжело ранен, 3 digits + temp', lang: 'ru', init: 22, name: 'Древний чёрный дракон', type: 'Enemy', hp: 112, max: 320, temp: 120, d: [24, 22, 20] },
+      { label: 'ru · Мёртв', lang: 'ru', init: 12, name: 'Гоблин-лучник', type: 'Enemy', hp: -3, max: 18, d: [16, 14, 12] },
+      H('Edge cases: conditions', 'All selected conditions show; chips wrap. Each of the 12 has its own color.'),
+      { label: 'Four conditions, all shown', init: 17, name: 'Orc Berserker', type: 'Enemy', hp: 14, max: 40, d: [18, 16, 12], cond: ['staggered', 'dazed', 'vulnerable', 'stuck'] },
+      { label: 'All 12 colors', init: 6, name: 'Condition palette', type: 'Enemy', hp: 10, max: 10, d: [10, 10, 10], cond: ['charmed', 'confused', 'dazed', 'fear', 'helpless', 'hindered', 'shocked', 'stuck', 'stunned', 'vulnerable', 'weakened', 'staggered'] },
+      H('Variants: expanded', 'Below the top: Conditions and HP History buttons, then the note. Initiative opens from the role block.'),
+      { ...V, label: 'Expanded' },
+      { ...V, label: 'Conditions: list open', condOpen: true },
+      { ...V, expanded: false, label: 'Initiative: tap the role block', initOpen: true },
+      { ...V, label: 'HP History open', histOpen: true },
+      H('Flow', 'Tap the row to expand it; tap the role block to set initiative.'),
+      { ...V, expanded: false, label: 'Collapsed' }, { isArrow: true, isCard: false, isHeading: false, arrowLabel: 'tap row' }, { ...V, label: 'Expanded' },
+      H('', ''),
+      { ...V, expanded: false, active: false, label: 'Tap the role block' }, { isArrow: true, isCard: false, isHeading: false, arrowLabel: 'tap role block' }, { ...V, expanded: false, active: false, label: 'Initiative popover', initOpen: true },
+      H('Variants: unit actions', 'CardActions: Edit opens the unit form; ⋯ holds Duplicate, Disable / Enable, Save as preset, Release claim and Remove.'),
+      { ...V, label: 'Edit and ⋯' }, { ...V, label: '⋯ open', moreOpen: true },
+    ];
+    const single = this.props.unit;
+    return {
+      gallery: !single, wrapPad: single ? '0' : '48px 56px 80px', itemWidth: single ? '100%' : '370px',
+      groups: single ? [{ title: '', desc: '', hasSpec: false, spec: [], items: [{ isArrow: false, ...this.card({ ...single, label: '' }) }] }] : this.groupsOf(samples),
+    };
+  }
+}
+</script>
+</body>
+</html>

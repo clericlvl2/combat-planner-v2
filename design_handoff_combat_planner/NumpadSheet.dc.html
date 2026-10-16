@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;gap:24px;width:{{ rootW }};box-sizing:border-box;padding:{{ wrapPad }};font-family:'Rubik',sans-serif;color:#231F1C">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="NumpadSheet" status="Draft" date="15.10.2026" desc="HP calculator sheet from a tap on HP: Now and After, an amount typed with the keys, then one of four actions." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Sheet for changing one unit’s HP with an amount and an action." where="UnitRow HP (DM, any unit) and PlayerRow HP (own hero), flow CS-F3." behaviour="Actions stay disabled until an amount is typed. An action applies at once, closes the sheet and flashes the row." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ rows }}" as="row" hint-placeholder-count="1">
+  <div style="display:flex;flex-wrap:{{ row.wrap }};gap:24px 16px;align-items:flex-start">
+  <sc-if value="{{ row.hasFlow }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;width:280px;padding-top:28px"><dc-import name="Flow" embedded="{{ true }}" kind="flowHead" code="{{ row.code }}" title="{{ row.title }}" goal="{{ row.goal }}" entry="{{ row.entry }}" exit="{{ row.exit }}" rules="{{ row.rules }}" hint-size="280px,380px"></dc-import></div>
+  </sc-if>
+  <sc-for list="{{ row.items }}" as="it" hint-placeholder-count="1">
+  <sc-if value="{{ it.isArrow }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;padding-top:28px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ it.label }}" sub="{{ it.sub }}" width="{{ 110 }}" height="{{ 560 }}" hint-size="110px,560px"></dc-import></div>
+  </sc-if>
+  <sc-if value="{{ it.isResult }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:none;width:366px;display:flex;flex-direction:column;gap:8px">
+      <span style="font-size:14px;font-weight:600;color:#231F1C">{{ it.label }}</span>
+      <div style="background:#FAF6EE;border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px">
+        <span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.05em">BEFORE</span>
+        <dc-import name="UnitRow" unit="{{ it.before }}" hint-size="100%,72px"></dc-import>
+        <span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.05em;padding-top:8px">AFTER · ROW FLASHES 2 S</span>
+        <dc-import name="UnitRow" unit="{{ it.after }}" hint-size="100%,72px"></dc-import>
+      </div>
+      <span style="font-size:14px;line-height:1.45;color:#231F1C;text-wrap:pretty">{{ it.note }}</span>
+    </div>
+  </sc-if>
+  <sc-if value="{{ it.isHead }}" hint-placeholder-val="{{ false }}">
+    <div id="{{ it.headId }}" style="flex:0 0 100%;display:flex;flex-direction:column;gap:4px;padding-top:{{ it.headPt }};border-top:{{ it.headLine }}">
+      <span style="font-family:'Unbounded',sans-serif;font-size:{{ it.headFs }};font-weight:700">{{ it.headTitle }}</span>
+      <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">{{ it.headDesc }}</span>
+    </div>
+  </sc-if>
+  <sc-if value="{{ it.isSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ it.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+  <sc-if value="{{ it.isCard }}" hint-placeholder-val="{{ true }}">
+  <div style="flex:{{ cardFlex }};display:flex;flex-direction:column;gap:8px;width:{{ itemWidth }};max-width:366px">
+  <sc-if value="{{ it.showLabel }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ it.label }}</span></sc-if>
+  <div style="box-sizing:border-box;background:#FFFFFF;border:2px solid #231F1C;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="flex:none;width:48px;height:48px;border-radius:12px;background:{{ it.u.roleBg }};color:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700">{{ it.u.init }}</span><span style="font-size:11px;font-weight:600">{{ it.u.role }}</span></span>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+        <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">{{ it.u.name }}</span>
+      </div>
+      <button aria-label="Close" style="flex:none;width:44px;height:44px;border:2px solid #E2D8C6;border-radius:22px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:0"><i class="ti ti-x" style="font-size:20px"></i></button>
+    </div>
+
+
+    <div style="background:#FAF6EE;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px">
+        <div style="display:flex;flex-direction:column;align-items:flex-start;gap:8px">
+          <span style="font-size:12px;font-weight:600;color:#5F574D">{{ it.L.now }}</span>
+          <span style="font-family:'Unbounded',sans-serif;font-size:{{ it.nowFs }};font-weight:700;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap">{{ it.u.now }}<span style="font-size:18px;color:#5F574D">/{{ it.u.max }}</span></span>
+          <span style="display:flex;gap:4px"><sc-for list="{{ it.u.nowPips }}" as="p" hint-placeholder-count="4"><span style="width:18px;height:7px;border-radius:2px;background:{{ p.bg }}"></span></sc-for></span>
+          <span style="font-size:14px;font-weight:700;color:{{ it.u.nowColor }}">{{ it.u.nowState }}</span><sc-if value="{{ it.u.hasNowTemp }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#1E5FA8">+{{ it.u.temp }} {{ it.L.tw }}</span></sc-if>
+        </div>
+        <sc-if value="{{ it.arrow }}" hint-placeholder-val="{{ true }}"><i class="ti ti-arrow-right" style="font-size:32px;color:#231F1C"></i></sc-if>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <span style="font-size:12px;font-weight:600;color:#5F574D">{{ it.L.after }}</span>
+          <span style="font-family:'Unbounded',sans-serif;font-size:{{ it.afterFs }};font-weight:700;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;color:{{ it.u.afterColor }}">{{ it.u.after }}<span style="font-size:18px;color:#5F574D">/{{ it.u.afterMax }}</span></span>
+          <span style="display:flex;gap:4px"><sc-for list="{{ it.u.afterPips }}" as="p" hint-placeholder-count="4"><span style="width:18px;height:7px;border-radius:2px;background:{{ p.bg }}"></span></sc-for></span>
+          <span style="font-size:14px;font-weight:700;color:{{ it.u.afterColor }}">{{ it.u.afterState }}</span><sc-if value="{{ it.u.hasAfterTemp }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#1E5FA8">+{{ it.u.afterTemp }} {{ it.L.tw }}</span></sc-if>
+        </div>
+      </div>
+    </div>
+
+
+    <sc-if value="{{ it.i1 }}" hint-placeholder-val="{{ true }}">
+      <div style="height:56px;box-sizing:border-box;border:2px solid #231F1C;border-radius:16px;display:flex;align-items:center;gap:8px;padding:0 16px">
+        <span style="flex:1;font-size:14px;font-weight:600;color:#5F574D">{{ it.L.amount }}</span>
+        <span style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ it.amountFg }}">{{ it.amountText }}</span><span style="width:2px;height:28px;background:#231F1C"></span>
+      </div>
+    </sc-if>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+      <sc-for list="{{ keys }}" as="k" hint-placeholder-count="12">
+        <button style="height:52px;border:none;border-radius:16px;background:{{ k.bg }};font-family:'Unbounded',sans-serif;font-size:22px;font-weight:600;display:flex;align-items:center;justify-content:center">{{ k.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <sc-for list="{{ it.acts }}" as="a" hint-placeholder-count="4"><button style="height:{{ a.h }};border:none;border-radius:29px;outline:{{ a.ring }};outline-offset:2px;background:{{ a.bg }};color:{{ a.fg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700"><span>{{ a.label }}</span><sc-if value="{{ a.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Rubik',sans-serif;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">{{ a.sub }}</span></sc-if></button></sc-for>
+    </div>
+    <div><dc-import name="HpHistory" embedded="{{ true }}" open="{{ it.histOpen }}" rows="{{ it.histRows }}" lang="{{ it.lang }}" hint-size="100%,48px"></dc-import></div>
+  </div>
+  </div>
+  </sc-if>
+  </sc-for>
+  </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noMax&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;who&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;amount&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;temp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tapAction&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;histOpen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const single = !!this.props.embedded;
+    const HC = { Full: '#2E7A43', Wounded: '#855800', Bloodied: '#B33A0A', Dead: '#57534E' };
+    const stOf = (hp, max) => hp <= 0 ? 'Dead' : hp >= max ? 'Full' : hp >= max / 2 ? 'Wounded' : 'Bloodied';
+    const pipsOf = (hp, max) => { const s = stOf(hp, max); const n = s === 'Full' ? 4 : s === 'Wounded' ? 3 : s === 'Bloodied' ? (hp >= max / 4 ? 2 : 1) : 0; return [0, 1, 2, 3].map(i => ({ bg: i < n ? HC[s] : '#E6DDCC' })); };
+    const P = this.props;
+    const H = (when, kind, delta, result) => ({ when, kind, delta, result, ...({ Damage: { tagBg: '#F8D7D7', tagFg: '#9B1C1C', color: '#B4232A' }, Heal: { tagBg: '#DDEFD5', tagFg: '#2F6B1F', color: '#2E7A43' }, Temp: { tagBg: '#DCE6F7', tagFg: '#1E4E8C', color: '#1E4E8C' }, Max: { tagBg: '#E3E1DC', tagFg: '#3D3A35', color: '#231F1C' } })[kind] });
+    const BASE = {
+      orc: { name: 'Orc Berserker', role: 'Enemy', roleBg: '#B4232A', init: 17, now: 14, max: 40, history: null },
+      dragon: { name: 'Ancient Black Dragon', role: 'Enemy', roleBg: '#B4232A', init: 22, now: 287, max: 320, history: null },
+      vashti: { name: 'Vashti the Hexer', role: 'Hero', roleBg: '#1E5FA8', init: 15, now: 20, max: 36, history: [H('Round 3', 'Damage', '−7', '20/36'), H('Round 2', 'Damage', '−9', '27/36'), H('Round 1', 'Max', '32 → 36', '36/36')] },
+    };
+    const HF = [H('Round 3', 'Damage', '−12', '14/40'), H('Round 3', 'Heal', '+3', '26/40'), H('Round 2', 'Damage', '−8 (5 temp)', '23/40'), H('Round 2', 'Temp', '+5 temp', '26/40'), H('Round 1', 'Damage', '−14', '26/40'), H('Round 1', 'Max', '45 → 40', '40/40')];
+    const HL = [...HF, H('Start', 'Damage', '−3', '42/45'), H('Start', 'Heal', '+3', '45/45'), H('Start', 'Damage', '−6', '39/45'), H('Start', 'Max', '40 → 45', '45/45')];
+    const L10N = {
+      en: { name: 'English', dmg: 'Damage', heal: 'Heal', temp: 'Set Temp', max: 'Set Max', now: 'Now', after: 'After', amount: 'Amount', hist: 'HP History', empty: 'No changes yet', changes: 'changes', tw: 'temp', round: 'Round', r: 'R', st: { Full: 'Full', Wounded: 'Wounded', Bloodied: 'Bloodied', Dead: 'Dead' }, k: { Damage: 'Damage', Heal: 'Heal', Temp: 'Temp', Max: 'Max' }, start: 'Start' },
+      de: { name: 'Deutsch', dmg: 'Schaden', heal: 'Heilen', temp: 'Temp setzen', max: 'Max setzen', now: 'Jetzt', after: 'Danach', amount: 'Betrag', hist: 'TP-Verlauf', empty: 'Noch keine Änderungen', changes: 'Änderungen', tw: 'temp', round: 'Runde', r: 'R', st: { Full: 'Voll', Wounded: 'Verwundet', Bloodied: 'Blutend', Dead: 'Tot' }, k: { Damage: 'Schaden', Heal: 'Heilung', Temp: 'Temp', Max: 'Max' }, start: 'Start' },
+      es: { name: 'Español', dmg: 'Daño', heal: 'Curar', temp: 'Fijar temp.', max: 'Fijar máx.', now: 'Ahora', after: 'Después', amount: 'Cantidad', hist: 'Historial de PG', empty: 'Aún no hay cambios', changes: 'cambios', tw: 'temp.', round: 'Ronda', r: 'R', st: { Full: 'Completo', Wounded: 'Herido', Bloodied: 'Malherido', Dead: 'Muerto' }, k: { Damage: 'Daño', Heal: 'Curación', Temp: 'Temp.', Max: 'Máx.' }, start: 'Inicio' },
+      fr: { name: 'Français', dmg: 'Dégâts', heal: 'Soigner', temp: 'Fixer temp.', max: 'Fixer max', now: 'Avant', after: 'Après', amount: 'Montant', hist: 'Historique des PV', empty: 'Aucun changement', changes: 'changements', tw: 'temp.', round: 'Tour', r: 'T', st: { Full: 'Indemne', Wounded: 'Blessé', Bloodied: 'Ensanglanté', Dead: 'Mort' }, k: { Damage: 'Dégâts', Heal: 'Soin', Temp: 'Temp.', Max: 'Max' }, start: 'Début' },
+      ja: { name: '日本語', dmg: 'ダメージ', heal: '回復', temp: '一時HP', max: '最大HP', now: '現在', after: '変更後', amount: '数値', hist: 'HP履歴', empty: 'まだ変更はありません', changes: '件', tw: '一時', round: 'ラウンド', r: 'R', st: { Full: '無傷', Wounded: '負傷', Bloodied: '重傷', Dead: '死亡' }, k: { Damage: 'ダメージ', Heal: '回復', Temp: '一時', Max: '最大' }, start: '開始' },
+      ru: { name: 'Русский', dmg: 'Урон', heal: 'Лечение', temp: 'Врем. ХП', max: 'Макс. ХП', now: 'Сейчас', after: 'После', amount: 'Значение', hist: 'История ХП', empty: 'Изменений пока нет', changes: 'изм.', tw: 'врем.', round: 'Раунд', r: 'Р', st: { Full: 'Цел', Wounded: 'Ранен', Bloodied: 'Тяжело ранен', Dead: 'Мёртв' }, k: { Damage: 'Урон', Heal: 'Лечение', Temp: 'Врем.', Max: 'Макс.' }, start: 'Старт' },
+    };
+    const KEY = { damage: 'Damage', heal: 'Heal', temp: 'Set Temp', max: 'Set Max' };
+    const ACTS = [['Damage', '#B4232A'], ['Heal', '#2E7A43'], ['Set Temp', '#1E5FA8'], ['Set Max', '#A85400']];
+    const card = (cfg) => {
+      const A = cfg.amount ?? 8, ACT = cfg.action || 'damage', o = BASE[cfg.who] || BASE.orc, L = L10N[cfg.lang] || L10N.en;
+      const AL = { Damage: L.dmg, Heal: L.heal, 'Set Temp': L.temp, 'Set Max': L.max };
+      const t0 = cfg.temp ?? 0; let after = o.now, afterMax = o.max, afterTemp = t0;
+      if (A) {
+        if (ACT === 'damage') { const d = Math.max(0, A - t0); afterTemp = Math.max(0, t0 - A); after = o.now - d; }
+        if (ACT === 'heal') after = Math.min(o.max, o.now + A);
+        if (ACT === 'temp') afterTemp = A;
+        if (ACT === 'max') { afterMax = Math.max(1, A); after = Math.min(o.now, afterMax); }
+      }
+      const u = { ...o, temp: t0, after, afterMax, afterTemp, hasNowTemp: t0 > 0, hasAfterTemp: afterTemp > 0, nowState: stOf(o.now, o.max), afterState: stOf(after, afterMax), nowColor: HC[stOf(o.now, o.max)], afterColor: HC[stOf(after, afterMax)], nowPips: pipsOf(o.now, o.max), afterPips: pipsOf(after, afterMax) };
+      const HSET = { none: [], short: o.history || HF.slice(0, 3), full: HF, long: HL };
+      const histRows = cfg.hist ? HSET[cfg.hist] : (o.history || HF);
+      const open = !!cfg.histOpen;
+      const fs = (v, m) => (String(v) + '/' + m).length > 5 ? '28px' : '44px';
+      u.nowState = L.st[u.nowState]; u.afterState = L.st[u.afterState];
+      return { L, lang: cfg.lang || 'en', nowFs: fs(u.now, u.max), afterFs: fs(u.after, u.afterMax), isCard: true, isHead: false, isArrow: false, isResult: false, showLabel: !!cfg.caption, label: cfg.caption || '', u, i1: true, arrow: true,
+        amountText: A ? String(A) : '0', amountFg: A ? '#231F1C' : '#8C8578',
+        histOpen: open, histChev: open ? 'up' : 'down', histLine: open ? '#231F1C' : '#E2D8C6', histRows, histEmpty: histRows.length === 0, histLong: cfg.hist === 'long', histMax: cfg.hist === 'long' ? '248px' : 'none',
+        acts: ACTS.filter(([l]) => !(cfg.noMax && l === 'Set Max')).map(([key, bg]) => ({ label: AL[key], key, sub: '', hasSub: false, h: '58px', bg: A ? bg : '#E6DDCC', fg: A ? '#FFFFFF' : '#8C8578', ring: cfg.tapAction && key === KEY[ACT] ? '3px solid #FFE7A3' : 'none' })) };
+    };
+    const arrow = (label, sub = '') => ({ isArrow: true, isCard: false, isHead: false, isResult: false, label, sub });
+    const result = (before, after, note) => ({ isResult: true, isArrow: false, isCard: false, isHead: false, label: '4 · Result', before, after, note });
+    const head = (id, title, desc, big = true) => ({ isHead: true, isCard: false, isArrow: false, isResult: false, headId: id, headTitle: title, headDesc: desc, headFs: big ? '22px' : '16px', headPt: big ? '16px' : '4px', headLine: 'none' });
+    const c = (caption, o) => card({ caption, who: 'orc', amount: 0, action: 'damage', temp: 0, tapAction: false, histOpen: false, hist: 'full', noMax: false, ...o });
+    const OR = { init: 17, name: 'Orc Berserker', type: 'Enemy', hp: 14, max: 40, d: [18, 16, 12], cond: ['staggered'] };
+    const VA = { init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed'], claimedBy: 'Mika' };
+    const flow = (code, title, rules, amount, action, o, before, after, note) => ({ hasFlow: true, wrap: 'nowrap', code, title, goal: 'Typed ' + amount + ', then ' + title.split(' ')[0] + '.', entry: 'Tap HP in the unit row', exit: 'Sheet closed, HP updated', rules, items: [
+      c('1 · Opened: actions disabled', o), arrow('type ' + amount, 'keys'),
+      c('2 · Typed ' + amount + ': After previews', { ...o, amount, action }), arrow('tap ' + KEY[action], 'applies at once'),
+      c('3 · Pressed ' + KEY[action], { ...o, amount, action, tapAction: true }), arrow('sheet closes'),
+      result(before, after, note) ] });
+    const section = (id, title, desc) => ({ hasFlow: false, wrap: 'wrap', items: [head(id, title, desc)] });
+    const grid = (items) => ({ hasFlow: false, wrap: 'wrap', items });
+    const SPEC = [{"part":"Sheet","v":"Border 2 ink, radius 24, padding 14; 12 from the screen edges."},{"part":"Header","v":"Initiative, role and unit name; × closes without changes."},{"part":"Now and After","v":"Unbounded 44 (28 above five characters), pips and status."},{"part":"Keys","v":"3×4 keys: digits, C clears, < deletes one digit."},{"part":"HP History","v":"HpHistory inline, collapsed by default."}];
+    const rowsGal = [
+      section('anatomy', 'Anatomy', 'Orc Berserker, 12 typed, Damage previewed.'),
+      grid([{ ...c('', { amount: 12 }) }, { isSpec: true, spec: SPEC, isCard: false, isHead: false, isArrow: false, isResult: false }]),
+      section('history', 'Variants: HP History', 'Collapsed by default; newest first. Damage that hit temp shows how much temp it took.'),
+      grid([c('Collapsed', {}), c('Open, no changes yet', { histOpen: true, hist: 'none' }), c('Open, a few changes', { who: 'vashti', histOpen: true, hist: 'short' }), c('Open, every kind', { histOpen: true, hist: 'full' }), c('Open, long: scrolls inside the sheet', { histOpen: true, hist: 'long' })]),
+      section('player', 'Variants: player', 'Same sheet for the player’s own hero, without Set Max. Three actions.'),
+      grid([c('Player, typed 7', { who: 'vashti', amount: 7, noMax: true }), c('Player, pressed Damage', { who: 'vashti', amount: 7, noMax: true, tapAction: true })]),
+      section('three', 'Edge cases: three-digit HP', 'Above five characters Now and After drop from 44 to 28 so both fit.'),
+      grid([c('Opened, 287/320', { who: 'dragon' }), c('Damage 120 → 167/320', { who: 'dragon', amount: 120 }), c('Damage 400 → −113/320', { who: 'dragon', amount: 400 }), c('Set Max 999', { who: 'dragon', amount: 999, action: 'max' })]),
+      section('lang', 'Edge cases: languages', 'Longest strings per language, with 12 typed and history open.'),
+      grid(['de', 'es', 'fr', 'ja', 'ru'].map(lg => c(L10N[lg].name, { amount: 12, histOpen: true, lang: lg }))),
+      section('actions', 'Flows: actions', 'One flow per action: opened, typed, pressed, and the unit row before and after.'),
+      flow('NP-1', 'Damage', 'Temp HP absorbs first, then HP. HP can go below 0.', 12, 'damage', {}, OR, { ...OR, hp: 2, flash: true }, '14 − 12 = 2/40. Still Bloodied.'),
+      flow('NP-2', 'Damage with temp', '5 temp goes first, then 3 HP.', 8, 'damage', { temp: 5 }, { ...OR, temp: 5 }, { ...OR, hp: 11, temp: 0, flash: true }, '8 damage: 5 from temp, 3 from HP. 11/40, temp gone.'),
+      flow('NP-3', 'Heal', 'Adds HP up to Max. Temp is untouched.', 8, 'heal', { who: 'vashti' }, VA, { ...VA, hp: 28, flash: true }, '20 + 8 = 28/36. Bloodied → Wounded.'),
+      flow('NP-4', 'Set Temp', 'Replaces temp HP, does not add. 0 clears it.', 5, 'temp', {}, OR, { ...OR, temp: 5, flash: true }, 'Temp set to 5. HP unchanged.'),
+      flow('NP-5', 'Set Max', 'New Max HP; current HP is capped to it. DM only.', 30, 'max', {}, OR, { ...OR, max: 30, flash: true }, 'Max 40 → 30. HP 14 stays: it is under the new Max.'),
+    ].map(r => ({ ...r, items: r.items.map(i => ({ isSpec: false, spec: [], ...i })) }));
+    return {
+      gallery: !single, wrapPad: single ? '0' : '48px 56px 80px', itemWidth: single ? '100%' : '366px', cardFlex: single ? '0 1 auto' : 'none', rootW: single ? 'auto' : 'max-content',
+      keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '<'].map(l => ({ label: l, bg: l === 'C' || l === '<' ? '#E6DDCC' : '#F3EDE2' })),
+      rows: single ? [{ hasFlow: false, wrap: 'wrap', items: [{ isSpec: false, spec: [], ...card({ who: P.who, amount: P.amount, action: P.action, temp: P.temp, tapAction: P.tapAction, histOpen: P.histOpen, hist: P.hist, noMax: P.noMax, lang: P.lang }) }] }] : rowsGal,
+    };
+  }
+}
+</script>
+</body>
+</html>

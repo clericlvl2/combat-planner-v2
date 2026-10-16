@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="Drawer" status="Draft" date="15.10.2026" desc="Section navigation from the burger or a right swipe. The current section is highlighted; account email at the bottom." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Side panel with the app sections and the account." where="PageHeader burger in Combat list, Library, Settings, Account and About." behaviour="Opens from the burger or a right swipe. Tap a section to go there; tap the scrim to close." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.stageW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};min-height:{{ b.stageH }};display:flex;flex-direction:column;justify-content:{{ b.justify }}">
+
+
+
+
+              <sc-if value="{{ b.isDrawer }}" hint-placeholder-val="{{ false }}">
+                <div style="width:300px;min-height:{{ b.drawerH }};box-sizing:border-box;background:#FAF6EE;border-right:2px solid #231F1C;border-radius:0 24px 24px 0;display:flex;flex-direction:column;padding:56px 12px 28px;gap:4px">
+                  <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;padding:0 12px 16px">Combat Planner</span>
+                  <sc-for list="{{ b.nav }}" as="n" hint-placeholder-count="5">
+                    <div style="height:52px;border-radius:16px;background:{{ n.bg }};display:flex;align-items:center;gap:12px;padding:0 12px;font-size:16px;font-weight:{{ n.w }}"><i class="ti ti-{{ n.icon }}" style="font-size:24px"></i>{{ n.label }}</div>
+                  </sc-for>
+                  <span style="flex:1"></span>
+                  <span style="padding:0 12px;font-size:14px;color:#5F574D;overflow-wrap:anywhere">{{ b.email }}</span>
+                </div>
+              </sc-if>
+
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;preset&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryVariant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryState&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;secondary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;back&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;items&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;[icon:string,label:string,opts?:{danger?:boolean,divider?:boolean,hint?:string,tap?:boolean}]&gt;&quot;},&quot;width&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;active&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;email&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;text&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;ok&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tone&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'ink' | 'danger'&quot;},&quot;sample&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', SOFT = '#F3EDE2';
+    const NAV = ['swords:Combats', 'books:Library', 'settings:Settings', 'user:Account', 'info-circle:About'];
+    const stage = (o) => ({ stageW: o.w || '390px', stageBg: o.bg ?? '#8C8578', stageR: o.r || '20px', stagePad: o.p || '12px', stageH: o.h || 'auto', justify: o.j || 'flex-end' });
+    const K = k => ({ isSheet: k === 'sheet', isPopover: k === 'popover' || k === 'menu', isDialog: k === 'dialog', isDrawer: k === 'drawer', isToast: k === 'toast' });
+    const MAKE = {
+      drawer: o => ({ ...K('drawer'), drawerH: o.height || '844px', email: o.email || 'dm@ferry.games', nav: NAV.map(s => { const [icon, label] = s.split(':'), on = label === (o.active || 'Combats'); return { icon, label, bg: on ? '#FFE7A3' : 'transparent', w: on ? 700 : 500 }; }) })
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'drawer'](p), ...stage({ w: '100%', bg: 'transparent', r: '0', p: '0', j: 'flex-start' }) };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, s = {}) => ({ ...MAKE[k](o), ...stage(s), caption: o.caption || '' });
+    const SPEC = [{"part":"Panel","v":"300 wide, #FAF6EE, border-right 2 ink, radius 0 24 24 0, padding 56 12 28."},{"part":"Title","v":"Unbounded 18/700: Combat Planner."},{"part":"Item","v":"52 high, radius 16, icon 24, Rubik 16. Current section filled, 600."},{"part":"Email","v":"14 #5F574D at the bottom; wraps."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1760px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Combats is current.', hasSpec: true, spec: SPEC, cells: [ANAT(C('drawer', { active: 'Combats', height: '640px' }, { w: '390px', p: '0', j: 'flex-start' }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Combats or Library is the current section.', cells: [
+          C('drawer', { caption: 'Combats active', active: 'Combats', height: '640px' }, { w: '390px', p: '0', j: 'flex-start' }),
+          C('drawer', { caption: 'Library active', active: 'Library', height: '640px' }, { w: '390px', p: '0', j: 'flex-start' }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'A long account email wraps at the bottom.', cells: [
+          C('drawer', { caption: 'Long email', active: 'Settings', email: 'aleksandra.konstantinovna.vishnevetskaya@example.com', height: '640px' }, { w: '390px', p: '0', j: 'flex-start' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

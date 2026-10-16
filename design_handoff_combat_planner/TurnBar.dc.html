@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;gap:24px;padding:{{ wrapPad }};font-family:'Rubik',sans-serif;color:#231F1C">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="TurnBar" status="Draft" date="15.10.2026" desc="Bottom bar of the combat screen: one two-line button, Next turn or Start combat, with the next unit or a reason." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Bottom bar with the main combat action and what comes next." where="Combat screen, flows CS-F1 to CS-F8. Lists use BottomBar." behaviour="Next turn passes the turn; Start combat rolls missing initiative and sorts. When blocked, the button is grey and shows the reason." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+    <div style="display:flex;flex-wrap:wrap;gap:24px 32px;align-items:flex-start">
+      <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1">
+        <div style="display:flex;flex-direction:column;gap:8px;width:{{ itemWidth }};max-width:390px">
+          <sc-if value="{{ it.showLabel }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ it.label }}</span></sc-if>
+          <div style="height:98px;box-sizing:border-box;padding:12px 28px 28px;background:#FAF6EE;border-top:2px solid #E2D8C6;display:flex;align-items:center">
+            
+            <button style="width:100%;height:58px;border:none;border-radius:29px;background:{{ it.bg }};color:{{ it.fg }};display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:0 16px">
+              <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ it.title }}</span>
+              <span style="font-size:14px;font-weight:500;color:{{ it.subFg }};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%">{{ it.sub }}</span>
+            </button>
+            
+            
+          </div>
+        </div>
+      </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;mode&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'active'|'setup'&quot;},&quot;next&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;undo&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;blocked&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (o) => {
+      const blocked = !!o.blocked, setup = o.mode === 'setup';
+      return {
+        slotLine: this.props.embedded ? '0' : '2px dashed #E2D8C6', hasMenu: !!o.menu,
+        label: o.label || '', showLabel: !!o.label, hasUndo: !!o.undo, undo: o.undo || '',
+        title: o.title || (setup ? 'Start combat' : 'Next turn'),
+        sub: blocked ? o.blocked : setup ? (o.setupSub || 'Rolls missing initiative') : (o.next || 'Brother Tomas'),
+        bg: blocked ? '#E6DDCC' : '#231F1C', fg: blocked ? '#5F574D' : '#FFFFFF', subFg: blocked ? '#5F574D' : '#E6DDCC',
+      };
+    };
+    const single = !!this.props.embedded;
+    const samples = [
+      { label: 'Active', mode: 'active' },
+      { label: 'Setup', mode: 'setup' },
+      { label: 'Blocked: all units disabled', mode: 'active', blocked: 'Every unit is disabled' },
+      { label: 'Blocked: round 99', mode: 'active', blocked: 'Round 99 is the last' },
+      { label: 'Long next name: ellipsis', mode: 'active', next: 'Brother Tomas of the Silver Lantern Order' },
+      { label: 'Long next name, ja', mode: 'active', next: '黒水の渡し守と呪われし大蛇の群れ' },
+      { label: 'ru: longest labels', mode: 'active', title: 'Следующий ход', next: 'Капитан стражи переправы Святослав Огнев' },
+      { label: 'de: Setup', mode: 'setup', title: 'Kampf beginnen', setupSub: 'Würfelt fehlende Initiative' },
+      { label: 'fr: blocked', mode: 'active', title: 'Tour suivant', blocked: 'Toutes les unités sont désactivées' },
+    ];
+    const SPEC = [{"part":"Bar","v":"98 high, padding 12 28 28, border-top 2 #E2D8C6, #FAF6EE."},{"part":"Button","v":"58 high, radius 29, ink; #E6DDCC when blocked."},{"part":"Title","v":"Unbounded 18/700, one line, ellipsis."},{"part":"Next or reason","v":"14/500 #E6DDCC: the next unit or why it is blocked."}];
+    return {
+      gallery: !single, wrapPad: single ? '0' : '48px 56px 80px', itemWidth: single ? '100%' : '390px',
+      groups: single ? [{ title: '', desc: '', hasSpec: false, spec: [], items: [{ ...mk({ mode: this.props.mode, next: this.props.next, undo: this.props.undo, blocked: this.props.blocked, menu: this.props.menu }) }] }] : [
+        { title: 'Anatomy', desc: 'Active combat.', hasSpec: true, spec: SPEC, items: [{ ...mk({ mode: 'active' }) }] },
+        { title: 'Variants × states', desc: 'Next turn, Start combat, and blocked with the reason.', hasSpec: false, spec: [], items: samples.slice(0, 4).map(s => ({ ...mk(s) })) },
+        { title: 'Edge cases', desc: 'Long names and labels in four languages end with an ellipsis; the bar height never changes.', hasSpec: false, spec: [], items: samples.slice(4).map(s => ({ ...mk(s) })) },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

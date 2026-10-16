@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:24px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="TagSheet" status="Draft" date="15.10.2026" desc="One sheet for tags, two jobs: filter presets in the Library, or assign tags in the preset form, with Create." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Sheet with search and a CheckList of tags with counts." where="Library and UnitForm From Library (filter); Library preset form (assign)." behaviour="Typing narrows the list, ignoring case. Tap a tag toggles it. Assign offers Create for a new name. Done applies." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="c" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ c.w }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ c.caption }}</span></sc-if>
+            <sc-if value="{{ c.isArrow }}" hint-placeholder-val="{{ false }}"><div style="align-self:center;padding-top:120px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ c.label }}" width="{{ 110 }}" height="{{ 80 }}" hint-size="110px,80px"></dc-import></div></sc-if>
+            <sc-if value="{{ c.isSheet }}" hint-placeholder-val="{{ true }}"><div>
+        <dc-import name="Sheet" embedded="{{ true }}" kind="sheet" title="{{ c.title }}" primary="{{ c.cta }}" hint-size="100%,420px">
+          <dc-import name="SearchField" embedded="{{ true }}" kind="search" placeholder="{{ c.ph }}" value="{{ c.query }}" state="{{ c.qState }}" hint-size="100%,48px"></dc-import>
+          <dc-import name="CheckList" embedded="{{ true }}" kind="check" options="{{ c.opts }}" query="{{ c.query }}" create-top="{{ c.createTop }}" create-bottom="{{ c.createBottom }}" no-match="{{ c.noMatch }}" hint-size="100%,240px"></dc-import>
+        </dc-import>
+            </div></sc-if>
+          </div>
+        </sc-for>
+        <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+      </div>
+    </div>
+  </sc-for>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;mode&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'filter' | 'assign'&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;query&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;selected&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;created&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;options&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{label,count,on,hl}&gt;&quot;},&quot;cta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;shown&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;preset&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const COUNT = { Mooks: 8, Ferry: 6, Allies: 5, Undead: 4, Goblins: 3, 'Named NPCs': 3, Orcs: 2, Bosses: 2 };
+    const sheet = (o) => {
+      const q = (o.query || '').trim(), sel = o.selected || [], filter = (o.mode || 'filter') === 'filter';
+      const names = Object.keys(COUNT), hits = q ? names.filter(n => n.toLowerCase().includes(q.toLowerCase())) : names;
+      const exact = names.some(n => n.toLowerCase() === q.toLowerCase());
+      const extra = (o.created || []).map(n => ({ label: n, count: 'new', on: true, hl: true }));
+      const opts = o.options || [...extra, ...hits.map(n => ({ label: n, count: COUNT[n], on: sel.includes(n), hl: !!q }))].slice(0, 6);
+      const total = sel.length + extra.length;
+      return { title: o.title || (filter ? 'Filter by tag' : 'Tags · ' + (o.preset || 'Orc Berserker')), ph: filter ? 'Search tags' : 'Search or create', query: q, qState: q ? 'focus' : 'default', opts,
+        createTop: !filter && !!q && !hits.length, createBottom: !filter && !!q && hits.length > 0 && !exact, noMatch: !!q && !hits.length && !extra.length,
+        cta: o.cta || (filter ? (total ? 'Show ' + (o.shown ?? 2) + ' presets' : 'Show all') : 'Done' + (total ? ' · ' + total + (total === 1 ? ' tag' : ' tags') : '')) };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: '100%', groups: [{ title: '', desc: '', hasSpec: false, spec: [], cells: [{ ...sheet(p), caption: '', w: '100%', isSheet: true, isArrow: false }] }] };
+    const C = (caption, o) => ({ ...sheet(o), caption, w: '366px', isSheet: true, isArrow: false });
+    const ARW = label => ({ isArrow: true, isSheet: false, label, caption: '', w: '110px' });
+    const SPEC = [{"part":"Sheet","v":"Sheet: title, × and one Done button with the result."},{"part":"Search","v":"SearchField M: Search tags, or Search or create when assigning."},{"part":"List","v":"CheckList M: tag and count; Create row while typing."},{"part":"Done","v":"Bottom action 58: “Show 2 presets” or “Done · 2 tags”."}];
+    const G = (title, desc, cells, o = {}) => ({ title, desc, cells, hasSpec: false, spec: [], ...o });
+    return { gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content', groups: [
+      G('Anatomy', 'Filter with Orcs selected.', [{ ...C('', { mode: 'filter', selected: ['Orcs'], shown: 2 }) }], { hasSpec: true, spec: SPEC }),
+      G('Variants: filter', 'Nothing selected, a tag selected, and a search narrowing the list.', [C('Nothing selected', { mode: 'filter' }), C('Orcs selected', { mode: 'filter', selected: ['Orcs'], shown: 2 }), C('Search “gob”', { mode: 'filter', query: 'gob', selected: [] })]),
+      G('Variants: assign', 'Current tags, and a partial match with Create at the end.', [C('Current tags', { mode: 'assign', selected: ['Orcs', 'Ferry'] }), C('“mo” matches, Create at the end', { mode: 'assign', query: 'mo', selected: ['Orcs', 'Ferry'] })]),
+      G('Edge cases', 'No match: filter shows nothing; assign offers Create on top.', [C('Filter · no match', { mode: 'filter', query: 'elite' }), C('Assign · no match', { mode: 'assign', query: 'Elite', selected: ['Orcs', 'Ferry'] })]),
+      G('Flow', 'Create a new tag while assigning; it is checked at once.', [C('Type “Elite”', { mode: 'assign', query: 'Elite', selected: ['Orcs', 'Ferry'] }), ARW('tap Create'), C('Created and checked', { mode: 'assign', selected: ['Orcs', 'Ferry'], created: ['Elite'] })]),
+        ] };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="Menu" status="Draft" date="15.10.2026" desc="Opens at its source, which gets a ring. Popover is a small form; Menu is a list of actions with icon circles." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Floating panel anchored to the control that opened it." where="CombatHeader (combat menu, round, escalation), PlayerHeader (player menu), CardActions ⋯ (unit and card actions). InitiativePopover uses the same frame." behaviour="Opens on tap; tap outside closes. An item runs at once. Destructive items are red, under a divider. Long labels wrap." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.stageW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};min-height:{{ b.stageH }};display:flex;flex-direction:column;justify-content:{{ b.justify }}">
+
+
+              <sc-if value="{{ b.isPopover }}" hint-placeholder-val="{{ false }}">
+                <div style="box-sizing:border-box;width:{{ b.popW }};background:#FFFFFF;border:2px solid #231F1C;border-radius:16px;padding:{{ b.popPad }};display:flex;flex-direction:column;gap:12px">
+                  <sc-if value="{{ b.hasTitle }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ b.title }}<sc-if value="{{ b.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-weight:500;color:#5F574D"> · {{ b.sub }}</span></sc-if></span></sc-if>
+                  {{ children }}
+                  <sc-if value="{{ b.isMenu }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column">
+                      <sc-for list="{{ b.items }}" as="m" hint-placeholder-count="4">
+                        <div style="display:flex;flex-direction:column">
+                          <sc-if value="{{ m.divider }}" hint-placeholder-val="{{ false }}"><span style="height:2px;background:#E2D8C6;margin:4px 8px"></span></sc-if>
+                          <div style="min-height:52px;box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:6px 12px;border-radius:12px;background:{{ m.bg }};color:{{ m.fg }}">
+                            <span style="flex:none;width:32px;height:32px;border-radius:16px;background:{{ m.iconBg }};display:flex;align-items:center;justify-content:center"><i class="ti ti-{{ m.icon }}" style="font-size:20px"></i></span>
+                            <span style="flex:1;min-width:0;font-size:16px;font-weight:600;line-height:1.25;text-wrap:pretty">{{ m.label }}</span>
+                            <sc-if value="{{ m.hasHint }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:500;color:#5F574D">{{ m.hint }}</span></sc-if>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                                    <sc-if value="{{ b.sRound }}" hint-placeholder-val="{{ false }}">
+                    <dc-import name="Stepper" embedded="{{ true }}" kind="stepper" value="{{ 3 }}" hint-size="100%,48px"></dc-import>
+                    <span style="font-size:14px;color:#5F574D">1–99. Changing the round doesn’t move the turn.</span>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+
+
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;preset&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryVariant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryState&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;secondary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;back&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;items&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;[icon:string,label:string,opts?:{danger?:boolean,divider?:boolean,hint?:string,tap?:boolean}]&gt;&quot;},&quot;width&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;active&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;email&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;text&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;ok&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tone&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'ink' | 'danger'&quot;},&quot;sample&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', SOFT = '#F3EDE2';
+    const MENU = {
+      combat: [['user-plus', 'Add unit'], ['arrow-back-up', 'Undo', { hint: '12 damage' }], ['share', 'Share'], ['refresh', 'Restart combat', { divider: true }], ['trash', 'Clear combat', { danger: true }]],
+      unit: [['copy', 'Duplicate'], ['player-pause', 'Disable'], ['bookmark', 'Save as preset'], ['user-off', 'Release claim'], ['user-minus', 'Remove', { danger: true, divider: true }]],
+      player: [['switch-horizontal', 'Change hero']],
+      card: [['copy', 'Duplicate'], ['trash', 'Delete', { danger: true, divider: true }]],
+    };
+    const stage = (o) => ({ stageW: o.w || '390px', stageBg: o.bg ?? '#8C8578', stageR: o.r || '20px', stagePad: o.p || '12px', stageH: o.h || 'auto', justify: o.j || 'flex-end' });
+    const K = k => ({ isSheet: k === 'sheet', isPopover: k === 'popover' || k === 'menu', isDialog: k === 'dialog', isDrawer: k === 'drawer', isToast: k === 'toast' });
+    const MAKE = {
+      popover: o => ({ ...K('popover'), title: o.title || '', hasTitle: !!o.title, sub: o.sub || '', hasSub: !!o.sub, popW: o.width ? o.width + 'px' : 'auto', popPad: '12px', isMenu: false, sInit: o.sample === 'init', sRound: o.sample === 'round' }),
+      menu: o => ({ ...K('menu'), title: o.title || '', hasTitle: !!o.title, popW: (o.width || 260) + 'px', popPad: '6px', isMenu: true,
+        items: (o.items || MENU[o.preset || 'combat']).map(([icon, label, x = {}]) => ({ icon, label, divider: !!x.divider, hint: x.hint || '', hasHint: !!x.hint, fg: x.danger ? '#B4232A' : INK, iconBg: x.danger ? '#F7E4E2' : SOFT, bg: (x.tap || (o.tap && o.tap === label)) ? '#FFF4D2' : 'transparent' })) })
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'menu'](p), ...stage({ w: '100%', bg: 'transparent', r: '0', p: '0', j: 'flex-start' }) };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, s = {}) => ({ ...MAKE[k](o), ...stage(s), caption: o.caption || '' });
+    const SPEC = [{"part":"Panel","v":"Border 2 ink, radius 16. Menu: padding 6, 260 wide. Popover: padding 12."},{"part":"Item","v":"Min 52 high, radius 12, padding 6 12, gap 12; long labels wrap."},{"part":"Icon circle","v":"32, #F3EDE2, icon 20; #F7E4E2 for danger."},{"part":"Label","v":"Rubik 16/600; danger #B4232A. Optional hint 14/500 #5F574D."},{"part":"Divider","v":"2 #E2D8C6, margin 4 8, above destructive items."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1760px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Combat menu.', hasSpec: true, spec: SPEC, cells: [ANAT(C('menu', { preset: 'combat' }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Round popover with a stepper; combat, unit, card and player menus.', cells: [
+          C('popover', { caption: 'Round', title: 'Round', sample: 'round', width: 240 }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }),
+          C('menu', { caption: 'Combat menu', preset: 'combat' }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }),
+          C('menu', { caption: 'Unit actions (⋯ in UnitRow)', preset: 'unit' }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }),
+          C('menu', { caption: 'Card actions (⋯ in CombatCard, PresetCard)', preset: 'card', width: 240 }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }),
+          C('menu', { caption: 'Player menu', preset: 'player', width: 240 }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'Longest labels in ru and de; labels wrap, the panel width stays.', cells: [
+          C('menu', { caption: 'ru', items: [['user-plus', 'Добавить юнита'], ['arrow-back-up', 'Отменить', { hint: '12 урона' }], ['share', 'Поделиться'], ['refresh', 'Перезапустить бой', { divider: true }], ['trash', 'Очистить бой', { danger: true }]] }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }),
+          C('menu', { caption: 'de', items: [['copy', 'Duplizieren'], ['player-pause', 'Deaktivieren'], ['bookmark', 'Als Vorlage speichern'], ['user-off', 'Anspruch freigeben'], ['user-minus', 'Entfernen', { danger: true, divider: true }]] }, { w: '300px', bg: '#FAF6EE', j: 'flex-start' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

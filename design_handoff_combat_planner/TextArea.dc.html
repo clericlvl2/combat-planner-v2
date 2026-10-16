@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="TextArea" status="Draft" date="15.10.2026" desc="Multi-line field for a combat description or a unit note. Grows with the text; counter up to 500." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Labelled multi-line text field with a character counter." where="Combat list form (description, 500), UnitForm (note, 250)." behaviour="Tap focuses and opens the keyboard. The field grows with the text. Over the limit the counter turns red and an error shows." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:24px"><div style="background:{{ g.frameBg }};border-radius:20px;padding:{{ g.framePad }};display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ g.showCols }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;padding-bottom:6px;border-bottom:1px solid #E6DDCC">
+            <span></span>
+            <sc-for list="{{ g.cols }}" as="c" hint-placeholder-count="4"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.04em">{{ c }}</span></sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;align-items:start">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C;padding-top:14px">{{ r.label }}</span></sc-if>
+            <sc-for list="{{ r.cells }}" as="b" hint-placeholder-count="1">
+              <div style="display:flex;flex-direction:column;gap:8px;min-width:0;width:{{ b.cellW }}">
+                <sc-if value="{{ b.hasHead }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:#5F574D"><span>{{ b.label }}</span><span style="font-variant-numeric:tabular-nums;color:{{ b.countFg }}">{{ b.counter }}</span></div>
+                </sc-if>
+
+
+                <sc-if value="{{ b.isText }}" hint-placeholder-val="{{ false }}">
+                  <div style="min-height:{{ b.minH }};box-sizing:border-box;border:2px solid {{ b.line }};border-radius:12px;background:{{ b.bg }};padding:{{ b.padIn }};display:flex;align-items:{{ b.align }};font-size:{{ b.fs }};line-height:1.45;font-weight:{{ b.fw }};color:{{ b.fg }};outline:{{ b.ring }};outline-offset:2px;overflow-wrap:anywhere">
+                    <span>{{ b.text }}<sc-if value="{{ b.caret }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:2px;height:20px;background:#231F1C;margin-left:1px;vertical-align:-4px"></span></sc-if></span>
+                  </div>
+                </sc-if>
+
+
+                <sc-if value="{{ b.hasError }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;color:#B4232A"><i class="ti ti-alert-circle" style="font-size:16px"></i>{{ b.error }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;placeholder&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;counter&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;error&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;over&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;rows&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6', RED = '#B4232A', PH = '#8C8578';
+    const ringOf = (tap) => tap ? '3px solid #FFE7A3' : 'none';
+    const base = (o, k) => {
+      const st = o.state || 'default', has = o.value != null && o.value !== '';
+      const line = st === 'error' ? RED : st === 'focus' ? INK : st === 'disabled' ? '#E2D8C6' : LINE;
+      return { isSearch: k === 'search', isText: k === 'text' || k === 'textarea', isNumber: k === 'number', line, bg: st === 'disabled' ? '#F3EDE2' : '#FFFFFF',
+        text: has ? String(o.value) : st === 'focus' ? '' : (o.placeholder || ''), fg: st === 'disabled' ? '#8C8578' : has ? INK : PH, caret: st === 'focus',
+        ring: ringOf(o.tap), hasError: st === 'error' && !!o.error, error: o.error || '',
+        label: o.label || '', hasHead: !!o.label && k !== 'number', counter: o.counter || '', countFg: o.over ? RED : '#5F574D' };
+    };
+    const IZ = { S: { h: 40, fs: 14, is: 16 }, M: { h: 48, fs: 16, is: 20 }, L: { h: 56, fs: 18, is: 24 } };
+    const iz = o => { const z = IZ[o.size || 'M']; return { zh: z.h + 'px', zfs: z.fs + 'px', zis: z.is + 'px' }; };
+    const MAKE0 = {
+      search: o => { const b = base(o, 'search'); return { ...b, iconFg: o.state === 'disabled' ? '#8C8578' : INK, clear: o.value != null && o.value !== '' && o.state !== 'disabled', text: b.text || (o.state === 'focus' ? '' : 'Search') }; },
+      text: o => ({ ...base(o, 'text'), minH: iz(o).zh, padIn: '0 12px', align: 'center', fs: iz(o).zfs, fw: 500 }),
+      textarea: o => ({ ...base(o, 'textarea'), minH: (o.rows || 3) * 24 + 'px', padIn: '10px 12px', align: 'flex-start', fs: '15px', fw: 400 }),
+      number: o => { const b = base(o, 'number'); return { ...b, label2: o.label || 'Amount', text: o.value != null && o.value !== '' ? String(o.value) : '0', fg: o.value ? INK : '#8C8578' }; },
+    };
+    const MAKE = Object.fromEntries(Object.entries(MAKE0).map(([k, f]) => [k, o => ({ ...iz(o), ...f(o) })]));
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'textarea'](p), cellW: '100%' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', grid: 'minmax(0,1fr)', frameBg: 'transparent', framePad: '0', cols: [], rows: [{ cells: [b] }] }] };
+    }
+    const G = (id, title, desc, cols, w, rows) => ({ id, title, desc, cols: cols.map(c => c.toUpperCase()), grid: `160px repeat(${cols.length}, ${w})`, frameBg: '#FFFFFF', framePad: '24px 28px', rows });
+    const C = (k, o, w) => ({ ...MAKE[k](o), cellW: w });
+    const SPEC = [{"part":"Label","v":"Rubik 12/600 #5F574D above the field, gap 8."},{"part":"Counter","v":"12/600 tabular, right aligned; #B4232A over the limit."},{"part":"Field","v":"Min 72 high (3 lines), border 2 #E2D8C6, radius 12, padding 10 12. Ink on focus."},{"part":"Text","v":"Rubik 15/400, line height 1.45; placeholder Optional in #8C8578."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '36px', rootW: 'max-content',
+      groups: [
+        { ...G('anatomy', 'Anatomy', 'Filled description.', [], '280px', [{ label: '', cells: [ANAT(C('textarea', { label: 'Description', counter: '64/500', value: 'Session 12. Goblins hold the crossing, the orc waits on the raft.' }, '280px'))] }]), grid: '0px 280px', framePad: '32px 36px', hasSpec: true, spec: SPEC },
+        G('variants', 'Variants × states', 'Empty, focused, filled and over the limit.', ['empty', 'focus', 'filled', 'error'], '280px', [
+          { label: 'Description · 500', cells: [
+            C('textarea', { label: 'Description', counter: '0/500', placeholder: 'Optional' }, '280px'),
+            C('textarea', { label: 'Description', counter: '0/500', state: 'focus' }, '280px'),
+            C('textarea', { label: 'Description', counter: '64/500', value: 'Session 12. Goblins hold the crossing, the orc waits on the raft.' }, '280px'),
+            C('textarea', { label: 'Description', counter: '512/500', over: true, value: 'Session 12. Goblins hold the crossing…', state: 'error', error: 'Up to 500 characters' }, '280px')] },
+        ]),
+        G('edge', 'Edge cases', 'Long text in ru and de. The field grows with the text.', ['ru', 'de', 'note 250'], '280px', [
+          { label: 'Long text', cells: [
+            C('textarea', { label: 'Description', counter: '214/500', value: 'Сессия 12. Гоблины держат переправу, орк ждёт на плоту. Если герои пойдут по мосту, лучники стреляют с крыши мельницы; если вплавь, берсерк прыгает в воду.' }, '280px'),
+            C('textarea', { label: 'Beschreibung', counter: '176/500', value: 'Sitzung 12. Goblins halten die Furt, der Ork wartet auf dem Floß. Gehen die Helden über die Brücke, schießen die Bogenschützen vom Mühlendach.' }, '280px'),
+            C('textarea', { label: 'Note', counter: '250/250', value: 'Concentrating on Hex. If she takes damage, roll a save; on a fail the hex ends and Orc Berserker is no longer vulnerable. Ally Tomas holds the bridge until the end of round 4, then falls back to the mill with the archers.' }, '280px')] },
+        ]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

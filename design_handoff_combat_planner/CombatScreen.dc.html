@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:48px 56px 80px;display:flex;flex-direction:column;gap:64px;width:max-content">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}"><dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Pages" title="Combat screen · DM" status="Draft" date="15.10.2026" desc="The DM runs a combat here: turn order, HP, conditions, round and escalation. Opened from a card in the Combat list." links="{{ links }}" hint-size="1100px,230px"></dc-import></sc-if>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" k1="PURPOSE" k2="ENTRY POINTS" k3="COMPONENTS USED" what="Run one combat: build the roster, take turns, track HP, conditions, round and escalation." where="A combat card in the Combat list; New combat opens it in Setup." behaviour="CombatHeader, UnitRow, TurnBar, NumpadSheet, ConditionPicker, HpHistory, UnitForm, ShareSheet, Menu, Dialog, Toast." hint-size="960px,160px"></dc-import></sc-if>
+  <sc-for list="{{ flows }}" as="f" hint-placeholder-count="2">
+    <section id="{{ f.code }}" style="display:flex;flex-direction:column;gap:32px">
+      <sc-if value="{{ f.isSec }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ f.secTitle }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ f.secDesc }}</span></div></sc-if>
+      <sc-for list="{{ f.lines }}" as="ln" hint-placeholder-count="1">
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <sc-if value="{{ ln.main }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;width:280px"><dc-import name="Flow" embedded="{{ true }}" kind="flowHead" code="{{ f.code }}" title="{{ f.title }}" goal="{{ f.goal }}" entry="{{ f.entry }}" exit="{{ f.exit }}" rules="{{ f.rules }}" parts="{{ f.parts }}" hint-size="280px,420px"></dc-import></div>
+          </sc-if>
+          <sc-if value="{{ ln.branch }}" hint-placeholder-val="{{ false }}">
+            <div style="width:280px;flex:none;box-sizing:border-box;border:2px dashed #8C8578;border-radius:16px;padding:16px 16px;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:#5F574D">BRANCH</span><span style="font-size:16px;font-weight:600;line-height:1.45;text-wrap:pretty">{{ ln.label }}</span></div>
+          </sc-if>
+          <sc-for list="{{ ln.items }}" as="s" hint-placeholder-count="3">
+            <sc-if value="{{ s.isArrow }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ s.label }}" sub="{{ s.sub }}" branch="{{ s.branch }}" hint-size="120px,894px"></dc-import></div>
+            </sc-if>
+            <sc-if value="{{ s.isStep }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:none;width:390px"><dc-import name="Flow" embedded="{{ true }}" kind="step" code="{{ s.code }}" caption="{{ s.caption }}" note="{{ s.note }}" hint-size="390px,894px">
+                <dc-import name="CombatHeader" embedded="{{ true }}" mode="{{ s.mode }}" round="{{ s.round }}" escalation="{{ s.esc }}" menu-open="{{ s.menuOpen }}" esc-open="{{ s.escOpen }}" round-open="{{ s.roundOpen }}" style="position:absolute;top:0;left:0;right:0;z-index:6" hint-size="390px,126px"></dc-import>
+                <div style="position:absolute;top:{{ s.listTop }};bottom:{{ s.listBottom }};left:0;right:{{ s.listRight }};overflow:hidden">
+                  <div style="padding:8px 12px 8px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;margin-top:{{ s.shift }}">
+                    <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ false }}">
+                      <dc-import name="EmptyState" embedded="{{ true }}" kind="empty" icon="users" title="No units yet" body="Add heroes, enemies and allies. You can start once there is one unit." action="Add unit" action-icon="user-plus" action-tap="{{ s.addTap }}" pad="110px 24px 0" hint-size="100%,360px"></dc-import>
+                    </sc-if>
+                    <sc-for list="{{ s.rows }}" as="u" hint-placeholder-count="6">
+                      <dc-import name="UnitRow" unit="{{ u }}" hint-size="100%,72px"></dc-import>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ s.scrollbar }}" hint-placeholder-val="{{ false }}">
+                    <span style="position:absolute;right:3px;top:6px;bottom:6px;width:4px;border-radius:2px;background:#E2D8C6"></span>
+                    <span style="position:absolute;right:3px;top:38%;height:118px;width:4px;border-radius:2px;background:#8C8578"></span>
+                  </sc-if>
+                </div>
+                <dc-import name="TurnBar" embedded="{{ true }}" mode="{{ s.mode }}" blocked="{{ s.blocked }}" next="{{ s.next }}" style="position:absolute;bottom:0;left:0;right:0;z-index:2" hint-size="390px,98px"></dc-import>
+                <sc-if value="{{ s.nextTap }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;bottom:28px;left:28px;right:28px;height:58px;border-radius:29px;outline:3px solid #FFE7A3;outline-offset:2px;z-index:3;pointer-events:none"></div></sc-if>
+                <sc-if value="{{ s.menuOpen }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(35,31,28,0.3);z-index:1"></div></sc-if>
+                <sc-if value="{{ s.scrim }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(35,31,28,0.5);z-index:5"></div></sc-if>
+                <sc-if value="{{ s.numpad }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;top:{{ s.npTop }};bottom:{{ s.npBottom }};z-index:6"><dc-import name="NumpadSheet" embedded="{{ true }}" who="{{ s.who }}" amount="{{ s.amount }}" action="{{ s.action }}" temp="{{ s.temp }}" tap-action="{{ s.tapAction }}" hist-open="{{ s.histOpen }}" hint-size="366px,660px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.histSheet }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6"><dc-import name="HpHistory" embedded="{{ true }}" variant="popover" hist="short" unit-name="Vashti the Hexer" width="{{ 366 }}" hint-size="366px,320px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.condSheet }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6"><dc-import name="ConditionPicker" embedded="{{ true }}" selected="{{ s.condSel }}" tap="{{ s.condTap }}" width="{{ 366 }}" hint-size="366px,480px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.share }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:12px;z-index:6"><dc-import name="ShareSheet" embedded="{{ true }}" hint-size="366px,500px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.form }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;top:12px;bottom:12px;z-index:6;overflow:hidden;border-radius:24px;display:flex;flex-direction:column;justify-content:flex-end"><dc-import name="UnitForm" embedded="{{ true }}" variant="{{ s.formVariant }}" hint-size="366px,700px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.dialog }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:24px;right:24px;top:240px;z-index:6"><dc-import name="Dialog" embedded="{{ true }}" kind="dialog" preset="{{ s.dialogPreset }}" hint-size="342px,300px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.toast }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:110px;z-index:4"><dc-import name="Toast" embedded="{{ true }}" kind="toast" preset="{{ s.toastPreset }}" text="{{ s.toastText }}" action="{{ s.toastAction }}" icon="{{ s.toastIcon }}" dot="{{ s.toastDot }}" dot-fg="{{ s.toastDotFg }}" hint-size="366px,56px"></dc-import></div>
+                </sc-if>
+              </dc-import></div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </sc-for>
+      <sc-if value="{{ f.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="max-width:600px"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ f.spec }}" hint-size="540px,200px"></dc-import></div></sc-if>
+    </section>
+  </sc-for>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="rules" n="6" rules="{{ rules }}" hint-size="960px,200px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const vh = [{ when: 'Start', delta: '', result: '36/36' }, { when: 'R2', delta: '−9', result: '27/36' }, { when: 'R3', delta: '−7', result: '20/36' }];
+    const U = [
+      { init: 19, name: 'Ser Aldric', type: 'Hero', hp: 52, max: 52, d: [21, 17, 15], claimedBy: 'Jonas' },
+      { init: 17, name: 'Orc Berserker', type: 'Enemy', hp: 14, max: 40, d: [18, 16, 12], cond: ['staggered'] },
+      { init: 15, bonus: 3, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, d: [16, 14, 19], cond: ['dazed'], active: true, history: vh, claimedBy: 'Mika' },
+      { init: 12, name: 'Goblin Archer 1', type: 'Enemy', hp: -3, max: 18, d: [16, 14, 12] },
+      { init: 9, name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 30, max: 30, temp: 5, d: [19, 15, 17] },
+      { init: 7, name: '影の射手ゴブリン', type: 'Enemy', hp: 18, max: 18, d: [16, 14, 12], cond: ['stuck'], disabled: true },
+    ];
+    const map = (fn) => U.map(u => ({ ...u, ...(fn(u) || {}) }));
+    const by = (name, patch) => map(u => u.name === name ? patch : null);
+    const turn = name => map(u => ({ active: u.name === name }));
+    const setup = U.map(({ init, active, claimedBy, ...u }) => ({ ...u, hp: u.max, cond: [], disabled: false, temp: 0, history: [], ...(u.name.startsWith('Brother') ? { init: 9 } : {}), ...(u.type === 'Hero' ? { claimedBy: u.name === 'Ser Aldric' ? 'Jonas' : 'Mika' } : {}) }));
+    const started = [
+      { init: 19, name: 'Ser Aldric', type: 'Hero', hp: 52, max: 52, d: [21, 17, 15], claimedBy: 'Jonas', active: true },
+      { init: 17, name: 'Orc Berserker', type: 'Enemy', hp: 40, max: 40, d: [18, 16, 12] },
+      { init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 36, max: 36, d: [16, 14, 19], claimedBy: 'Mika' },
+      { init: 12, name: 'Goblin Archer 1', type: 'Enemy', hp: 18, max: 18, d: [16, 14, 12] },
+      { init: 9, name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 30, max: 30, d: [19, 15, 17] },
+      { init: 7, name: '影の射手ゴブリン', type: 'Enemy', hp: 18, max: 18, d: [16, 14, 12] },
+    ];
+    const g = { d: [16, 14, 12] };
+    const longUnits = [
+      { init: 11, name: 'Flussbrückenwächterin Adelheid von Stein', type: 'Ally', hp: 24, max: 32, d: [18, 15, 14] },
+      { init: 11, name: 'Guardiana del vado Esperanza de la Luz', type: 'Ally', hp: 32, max: 32, d: [17, 15, 14] },
+      { init: 10, name: 'Капитан стражи переправы Святослав Огнев', type: 'Ally', hp: 40, max: 40, d: [19, 16, 13] },
+      { init: 10, name: 'Goblin Archer 3', type: 'Enemy', hp: 18, max: 18, ...g },
+      { init: 9, name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 30, max: 30, temp: 5, d: [19, 15, 17] },
+      { init: 8, name: 'Sœur Éléonore de la Lanterne d’Argent', type: 'Ally', hp: 11, max: 28, d: [17, 13, 18], cond: ['weakened', 'vulnerable'] },
+      { init: 8, name: 'Orc Shaman', type: 'Enemy', hp: 0, max: 30, d: [17, 15, 16] },
+      { init: 7, name: '影の射手ゴブリン', type: 'Enemy', hp: 18, max: 18, ...g, cond: ['stuck'], disabled: true },
+      { init: 6, name: '黒水の渡し守と呪われし大蛇の群れ', type: 'Enemy', hp: 61, max: 80, d: [20, 18, 14] },
+    ];
+    const D = { mode: 'active', round: 3, esc: 2, menuOpen: false, escOpen: false, roundOpen: false, rows: U, empty: false, addTap: false, blocked: '', next: 'Brother Tomas', nextTap: false, listTop: '126px', listBottom: '98px', listRight: '0px', shift: '0px', scrollbar: false, condSheet: false, condSel: [], condTap: '', histSheet: false,
+      scrim: false, numpad: false, who: 'orc', amount: 8, action: 'damage', temp: 0, tapAction: false, histOpen: false, npTop: 'auto', npBottom: '12px', share: false, form: false, formVariant: 0,
+      dialog: false, dialogPreset: '', toast: false, toastPreset: '', toastText: '', toastAction: '', toastIcon: '', toastDot: '', toastDotFg: '' };
+    const S = (code, caption, o = {}) => ({ ...D, isStep: true, isArrow: false, code, caption, note: '', ...o });
+    const A = (label, sub = '', branch = false) => ({ isArrow: true, isStep: false, label, sub, branch });
+    const chain = (...xs) => xs;
+    const sheet = o => ({ scrim: true, ...o });
+    const toast = (preset, o = {}) => ({ toast: true, toastPreset: preset, ...o });
+    const dlg = p => ({ scrim: true, dialog: true, dialogPreset: p });
+    const F = (code, title, goal, entry, exit, rules, parts, lines) => ({ code, title, goal, entry, exit, rules, parts, lines });
+    const main = items => ({ main: true, branch: false, label: '', items });
+    const br = (label, items) => ({ main: false, branch: true, label, items });
+
+    const flows = [
+      F('CS-F1', 'Combat setup', 'The DM builds the roster, sets initiative and starts the combat.', 'New combat opened from the list', 'Combat running, round 1, first in initiative acts', 'Initiative: d20 + bonus. Start is unavailable with no units. Start rolls any missing initiative.', 'CombatHeader, EmptyState, UnitForm, UnitRow, TurnBar', [
+        main(chain(
+          S('CS-F1.1', 'Empty combat', { mode: 'setup', rows: [], empty: true, addTap: true, blocked: 'Add a unit first', note: 'Start stays unavailable until a unit is added.' }),
+          A('tap Add unit'),
+          S('CS-F1.2', 'New unit: empty form', { mode: 'setup', rows: [], empty: true, blocked: 'Add a unit first', ...sheet({ form: true, formVariant: 0 }), note: 'An empty name becomes a default name.' }),
+          A('From Library'),
+          S('CS-F1.3', 'From Library: filter by tag, pick', { mode: 'setup', rows: [], empty: true, blocked: 'Add a unit first', ...sheet({ form: true, formVariant: 4 }), note: 'Same search and Tags filter as the Library, no sorting.' }),
+          A('Add · ×6'),
+          S('CS-F1.4', 'Roster ready, in order added', { mode: 'setup', rows: setup, note: 'In Setup units keep the order added; some have no initiative yet.' }),
+          A('tap role block'),
+          S('CS-F1.5', 'Initiative: roll or ±', { mode: 'setup', rows: setup.map((u, i) => i === 1 ? { ...u, initOpen: true } : u) }),
+          A('Start combat'),
+          S('CS-F1.6', 'Combat started: round 1', { rows: started, round: 1, esc: 0, next: 'Orc Berserker', note: 'Missing initiative rolled, rows sorted.' }),
+        )),
+      ]),
+      F('CS-F2', 'Turns and rounds', 'The DM passes the turn. Dead and disabled units are skipped.', 'Combat running', 'Next unit acts; wrapping past the end starts a new round', 'Escalation goes up by 1 from round 2, max 6. Round 99 is the last.', 'CombatHeader, UnitRow, TurnBar', [
+        main(chain(
+          S('CS-F2.1', 'Vashti’s turn', { nextTap: true }),
+          A('Next turn', 'Goblin dead: skipped'),
+          S('CS-F2.2', 'Brother Tomas’s turn', { rows: turn('Brother Tomas of the Silver Lantern Order'), next: 'Ser Aldric · round 4' }),
+          A('Next turn', '影 disabled: skipped'),
+          S('CS-F2.3', 'Round 4, escalation 3', { rows: turn('Ser Aldric'), round: 4, esc: 3, next: 'Orc Berserker' }),
+        )),
+        br('Nowhere to go next', chain(
+          S('CS-F2.4', 'Round 99', { round: 99, esc: 6, blocked: 'Round 99 is the last' }),
+          A('', '', true),
+          S('CS-F2.5', 'All units disabled', { rows: map(() => ({ disabled: true, active: false })), blocked: 'Every unit is disabled' }),
+        )),
+      ]),
+      F('CS-F3', 'Damage and healing', 'The DM changes HP: damage, healing, temp and max HP.', 'Tap HP in UnitRow', 'Sheet closed, HP updated, row flashes', 'Temp HP absorbs damage first. Set Temp replaces, it does not add. Heal stops at Max.', 'UnitRow, NumpadSheet', [
+        main(chain(
+          S('CS-F3.1', 'Tap Orc Berserker’s HP'),
+          A('tap HP'),
+          S('CS-F3.2', 'Calculator open', { ...sheet({ numpad: true, amount: 0 }) }),
+          A('type 12'),
+          S('CS-F3.3', 'Damage 12: preview', { ...sheet({ numpad: true, amount: 12, tapAction: true }) }),
+          A('Damage'),
+          S('CS-F3.4', 'Orc Bloodied, row flashes', { rows: by('Orc Berserker', { hp: 2, flash: true }), note: 'The flash fades after 2 s.' }),
+        )),
+        br('Other calculator actions', chain(
+          S('CS-F3.5', 'Heal 8 on Vashti', { ...sheet({ numpad: true, who: 'vashti', amount: 8, action: 'heal', tapAction: true }) }),
+          A('', '', true),
+          S('CS-F3.6', 'Set Temp 5', { ...sheet({ numpad: true, amount: 5, action: 'temp', tapAction: true }) }),
+          A('', '', true),
+          S('CS-F3.7', 'Damage 8 with 5 temp', { ...sheet({ numpad: true, amount: 8, action: 'damage', temp: 5, tapAction: true }), note: '5 temp go first, then 3 HP.' }),
+          A('', '', true),
+          S('CS-F3.8', 'Set Max 30', { ...sheet({ numpad: true, amount: 30, action: 'max', tapAction: true }) }),
+          A('', '', true),
+          S('CS-F3.9', 'HP History open', { ...sheet({ numpad: true, who: 'vashti', amount: 0, histOpen: true, npTop: '56px', npBottom: 'auto' }), note: 'Sheet taller than the screen: it scrolls as a whole.' }),
+        )),
+      ]),
+      F('CS-F4', 'Conditions and note', 'The DM marks a unit’s conditions and writes a note.', 'Tap a unit row', 'Condition chips and note show in the row', '12 conditions from the vision, any combination. Note up to 250 characters.', 'UnitRow', [
+        main(chain(
+          S('CS-F4.1', 'Vashti expanded', { rows: by('Vashti the Hexer', { expanded: true }) }),
+          A('Conditions'),
+          S('CS-F4.2', 'Condition list', { rows: by('Vashti the Hexer', { expanded: true, condOpen: true }), scrim: true, condSheet: true, condSel: ['dazed'], condTap: 'weakened' }),
+          A('+ weakened'),
+          S('CS-F4.3', 'Editing the note', { rows: by('Vashti the Hexer', { expanded: true, cond: ['dazed', 'weakened'], noteEdit: true, noteDraft: 'Hex on Orc Berserker' }) }),
+          A('collapse'),
+          S('CS-F4.4', 'Chips and note in the row', { rows: by('Vashti the Hexer', { cond: ['dazed', 'weakened'], note: 'Hex on Orc Berserker' }) }),
+        )),
+        br('HP History', chain(
+          S('CS-F4.5', 'HP History sheet', { rows: by('Vashti the Hexer', { expanded: true, histOpen: true }), scrim: true, histSheet: true, note: 'Opens from the HP History button in the expanded row. Read only; changes are made in the calculator.' }),
+        )),
+      ]),
+      F('CS-F5', 'Round and escalation', 'The DM edits the round or the escalation die by hand.', 'Tap the round or the die in the header', 'New values in the header', 'Round 1–99, escalation 0–6. The turn does not move.', 'CombatHeader', [
+        main(chain(
+          S('CS-F5.1', 'Round: popover', { roundOpen: true }),
+          A('+ → 4'),
+          S('CS-F5.2', 'Escalation: popover', { round: 4, escOpen: true }),
+          A('tap 3'),
+          S('CS-F5.3', 'Round 4, escalation 3', { round: 4, esc: 3 }),
+        )),
+      ]),
+      F('CS-F6', 'Unit actions', 'Edit, and in ⋯: duplicate, disable, save to Library, release claim and remove.', 'Expanded unit row', 'The change shows in the list, with a toast where needed', 'Remove needs confirmation; Undo brings it back. Disable skips turns. Release claim frees the hero.', 'UnitRow, UnitForm, Overlays', [
+        main(chain(
+          S('CS-F6.1', 'Orc expanded: Edit and ⋯', { rows: by('Orc Berserker', { expanded: true, actTap: 'edit' }) }),
+          A('Edit'),
+          S('CS-F6.2', 'Editing the unit', { ...sheet({ form: true, formVariant: 7 }) }),
+          A('Save'),
+          S('CS-F6.3', 'Saved as preset from ⋯', { rows: by('Orc Berserker', { expanded: true }), ...toast('preset') }),
+          A('⋯ → Remove'),
+          S('CS-F6.4', 'Confirm removal', { ...dlg('remove') }),
+          A('Remove'),
+          S('CS-F6.5', 'Unit removed, can be undone', { rows: U.filter(u => u.name !== 'Orc Berserker'), ...toast('', { toastText: 'Orc Berserker removed', toastAction: 'Undo', toastIcon: 'user-minus', toastDot: '#F3EDE2', toastDotFg: '#231F1C' }) }),
+        )),
+        br('Duplicate and Disable', chain(
+          S('CS-F6.6', 'Duplicate: copy below the original', { rows: [U[0], U[1], { ...U[1], name: 'Orc Berserker 2', hp: 40, cond: [], flash: true }, U[2], U[3], U[4]] }),
+          A('', '', true),
+          S('CS-F6.7', 'Disable: the orc skips turns', { rows: by('Orc Berserker', { disabled: true }) }),
+        )),
+      ]),
+      F('CS-F7', 'Combat menu', 'Undo, player link, restart and clear.', 'Tap ⋯ in the header', 'Action done, menu closed', 'Revoke issues a new link and releases claims. Restart resets the combat; Clear removes every unit.', 'CombatHeader, ShareSheet, Overlays', [
+        main(chain(
+          S('CS-F7.1', 'Menu open', { menuOpen: true }),
+          A('Undo'),
+          S('CS-F7.2', 'Last action undone', { rows: by('Orc Berserker', { hp: 14 }), ...toast('undone') }),
+          A('Share'),
+          S('CS-F7.3', 'Link and QR', { ...sheet({ share: true }) }),
+          A('Copy'),
+          S('CS-F7.4', 'Link copied', { ...toast('link') }),
+        )),
+        br('Destructive actions', chain(
+          S('CS-F7.5', 'Revoke link', { ...dlg('revoke') }),
+          A('', '', true),
+          S('CS-F7.6', 'Restart combat', { ...dlg('restart') }),
+          A('Restart'),
+          S('CS-F7.7', 'After Restart: Setup', { mode: 'setup', rows: setup }),
+          A('', '', true),
+          S('CS-F7.8', 'Clear combat', { ...dlg('clear') }),
+          A('Clear'),
+          S('CS-F7.9', 'After Clear: empty combat', { mode: 'setup', rows: [], empty: true, blocked: 'Add a unit first' }),
+        )),
+      ]),
+      F('CS-F8', 'Edge cases', 'Long lists and strings, limits, network errors.', 'Any combat step', 'The UI holds up and the error is clear', 'Up to 99 units. Names up to 40 characters in en, de, es, fr, ja, ru.', 'UnitRow, Overlays', [
+        main(chain(
+          S('CS-F8.1', 'Long list, scrolled, 6 languages', { rows: longUnits, shift: '-38px', scrollbar: true, note: 'The active row can scroll out of view; nothing pins it.' }),
+          A('Add unit'),
+          S('CS-F8.2', '99-unit limit', { rows: longUnits, shift: '-38px', scrollbar: true, ...toast('cap') }),
+          A('offline'),
+          S('CS-F8.3', 'Request failed', { ...toast('failed'), note: 'Retry repeats the request; on-screen data stays as it was.' }),
+        )),
+      ]),
+    ];
+    const only = new URLSearchParams(location.search).get('flow');
+    const links = flows.map(f => ({ id: f.code, label: f.title }));
+    const all = only ? flows.filter(f => f.code === only) : flows;
+    const ONLY = new URLSearchParams(location.search).get('flow');
+    const STEPS = flows.flatMap(f => f.lines.flatMap(l => l.items)).filter(i => i.isStep);
+    const pick = (code, caption) => ({ ...STEPS.find(i => i.code === code), caption, note: '' });
+    const SPEC = [{"part":"Header","v":"CombatHeader: back, title, round, escalation die, menu."},{"part":"List","v":"UnitRow per unit, gap 8, padding 12; scrolls under the header."},{"part":"Bottom bar","v":"TurnBar 98: Next turn and the next unit."}];
+    const SEC = (code, secTitle, secDesc, items, o = {}) => ({ code, isSec: true, secTitle, secDesc, hasSpec: false, spec: [], title: '', lines: items.length ? [{ main: false, branch: false, label: '', items }] : [], ...o });
+    const PRE = [
+      SEC('anatomy', 'Anatomy', "A running combat on one phone; regions listed below.", [{ ...pick("CS-F2.1", "Combat running") }], { hasSpec: true, spec: SPEC }),
+      SEC('states', 'Key states', "Empty, Setup, running, a long list, and a failed request.", [pick("CS-F1.1", "Empty"), pick("CS-F1.4", "Setup"), pick("CS-F2.1", "Running"), pick("CS-F8.1", "Long list"), pick("CS-F8.3", "Request failed")]),
+      SEC('flows', 'Flows', 'One row per flow: FlowHead, steps with arrows, branches below.', []),
+    ];
+    const NZ = fl => fl.map(f => ({ isSec: false, secTitle: '', secDesc: '', hasSpec: false, spec: [], ...f, lines: f.lines.map(ln => ({ ...ln, items: ln.items.map(i => ({ ...i })) })) }));
+    const RULES = [{"code":"CS-F2","text":"The escalation die rises by 1 each round from round 2, up to 6."},{"code":"CS-F3","text":"Set Temp replaces temp HP; Heal never goes above Max."},{"code":"CS-F6","text":"Duplicate puts the copy under the original, numbered 2."}];
+    return { showHead: !new URLSearchParams(location.search).get('embed'), flows: [...(ONLY ? [] : PRE), ...NZ(all)], showPre: !ONLY, rules: RULES, links };
+  }
+}
+</script>
+</body>
+</html>

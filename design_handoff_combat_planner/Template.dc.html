@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:48px 56px 80px;display:flex;flex-direction:column;gap:40px;width:max-content;box-sizing:border-box">
+  <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Design" title="Template" status="Draft" date="15.10.2026" desc="One structure for every page: what to write in each section, word limits, an example from HpHistory, what to leave out. Audit of every page below." hint-size="1100px,200px"></dc-import>
+
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:1240px">
+    <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">Rules for every section</span>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+      <sc-for list="{{ rules }}" as="r" hint-placeholder-count="3">
+        <div style="background:#FFFFFF;border-radius:16px;padding:16px 24px;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:{{ r.fg }}">{{ r.k }}</span>
+          <sc-for list="{{ r.items }}" as="i" hint-placeholder-count="4"><span style="font-size:14px;line-height:1.45;text-wrap:pretty">{{ i }}</span></sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <sc-for list="{{ pages }}" as="pg" hint-placeholder-count="2">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ pg.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px">{{ pg.desc }}</span></div>
+      <div style="display:grid;grid-template-columns:200px 760px;gap:8px;align-items:stretch">
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:#5F574D;padding:0 4px">SECTION</span>
+        <span style="font-size:12px;font-weight:700;letter-spacing:0.05em;color:#5F574D;padding:0 4px">CONTENT</span>
+        <sc-for list="{{ pg.rows }}" as="b" hint-placeholder-count="7">
+          <div style="background:#FFFFFF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:16px;font-weight:700">{{ b.name }}</span></div>
+            <span style="align-self:flex-start;display:inline-flex;align-items:center;height:20px;padding:0 8px;border-radius:999px;font-size:12px;font-weight:700;background:{{ b.tagBg }};color:{{ b.tagFg }}">{{ b.tag }}</span>
+          </div>
+          <div style="background:#FFFFFF;border-radius:16px;padding:16px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:8px 12px;align-items:baseline">
+            <span style="font-size:12px;font-weight:700;color:#5F574D">WRITE</span><span style="font-size:14px;line-height:1.45;text-wrap:pretty">{{ b.write }}</span>
+            <span style="font-size:12px;font-weight:700;color:#5F574D">LIMIT</span><span style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ b.limits }}" as="l" hint-placeholder-count="1"><span style="display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:999px;background:#FFE7A3;font-size:12px;font-weight:700">{{ l }}</span></sc-for></span>
+            <span style="font-size:12px;font-weight:700;color:#5F574D">EXAMPLE</span><span style="font-size:14px;line-height:1.45;background:#FAF6EE;border-radius:12px;padding:8px 12px;text-wrap:pretty">{{ b.ex }}</span>
+            <span style="font-size:12px;font-weight:700;color:#B4232A">DON’T</span><span style="font-size:14px;line-height:1.45;color:#5F574D;text-wrap:pretty">{{ b.dont }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-for>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">Audit, 15.10.2026</span>
+    <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">Black: there and in the template shape. Yellow: partly, or under another name. Red ring: missing. Grey: does not apply. Clean: no copied data or filter code left from the split. Pages: Variants means Key states, Flow means Flows. Words: header description.</span>
+    <div style="background:#FFFFFF;border-radius:16px;padding:8px 16px;display:grid;grid-template-columns:180px 72px repeat(7,84px) minmax(0,320px);align-items:center">
+      <sc-for list="{{ cols }}" as="c" hint-placeholder-count="10"><span style="font-size:12px;font-weight:700;color:#5F574D;padding:8px 0;text-align:{{ c.align }}">{{ c.k }}</span></sc-for>
+      <sc-for list="{{ audit }}" as="r" hint-placeholder-count="20">
+        <sc-if value="{{ r.isGroup }}" hint-placeholder-val="{{ false }}"><span style="grid-column:1 / -1;font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;padding:16px 0 8px;border-top:2px solid #8C8578">{{ r.group }}</span></sc-if>
+        <sc-if value="{{ r.isRow }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size:14px;font-weight:600;padding:8px 0;border-top:1px solid #E2D8C6;height:100%;box-sizing:border-box;display:flex;align-items:center">{{ r.page }}</span>
+          <span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ r.hwFg }};border-top:1px solid #E2D8C6;height:100%;display:flex;align-items:center;justify-content:center">{{ r.hw }}</span>
+          <sc-for list="{{ r.marks }}" as="m" hint-placeholder-count="7"><span style="display:flex;justify-content:center;align-items:center;height:100%;border-top:1px solid #E2D8C6"><span style="width:12px;height:12px;box-sizing:border-box;border-radius:50%;background:{{ m.bg }};border:2px solid {{ m.line }}"></span></span></sc-for>
+          <span style="font-size:12px;font-weight:600;line-height:1.45;color:#5F574D;border-top:1px solid #E2D8C6;height:100%;box-sizing:border-box;padding:8px 0;display:flex;align-items:center">{{ r.note }}</span>
+        </sc-if>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const T = { must: ['Required', '#231F1C', '#FFFFFF'], opt: ['If it applies', '#F3EDE2', '#5F574D'] };
+    const B = (n, name, tag, write, limits, ex, dont) => ({ n, name, write, limits, ex, dont, tag: T[tag][0], tagBg: T[tag][1], tagFg: T[tag][2] });
+    const comp = [
+      B(1, 'Header', 'must',
+        'What it is and where it lives. One sentence.', ['1 sentence', '15–25 words'],
+        'The log of HP changes for one unit, inline in the HP calculator and as a sheet from an expanded unit row.',
+        'Repeat the title. Start with “This component”. List states or sizes.'),
+      B(2, 'Overview', 'must',
+        'What: noun and job. Where: component and screen names as in nav.js, flow codes. Behaviour: Tap / Opens / Closes / Disabled when, plus limits.', ['3 cards', '≤ 25 words each'],
+        'Where: NumpadSheet, inline at the bottom. UnitRow expanded → HP History opens it as a sheet (CS-F4.5).',
+        'Repeat the header. Describe looks. Use names that are not in nav.js.'),
+      B(3, 'Anatomy', 'must',
+        'One default instance at 1×, the list of parts under it. One row per visible part: name, then numbers and tokens. No numbers or marks.', ['part ≤ 3 words', 'value ≤ 20 words'],
+        'Kind chip — Chip S: 20 high, 12/700, padding 0 8, radius full. Damage, Heal, Temp, Max colours.',
+        'Sentences. Values off the token scale. Parts you cannot see on the instance.'),
+      B(4, 'Variants × states', 'must',
+        'One group per variant. States in this order: default, pressed, disabled, focus, tap. Group description says when each variant is used.', ['description ≤ 20 words', 'caption 2–4 words'],
+        'Caption: “Open, long: scrolls”. Description: Bottom of the HP calculator. Collapsed by default; tap the header to open.',
+        'States that cannot happen. Captions that explain instead of naming.'),
+      B(5, 'Sizes', 'opt',
+        'S, M, L side by side. Description lists the heights. Leave the section out when there are no sizes.', ['description ≤ 15 words'],
+        'Height 36 / 44 / 52, icon 16 / 20 / 24. M is the default.',
+        'Empty Sizes section. Sizes no screen uses.'),
+      B(6, 'Edge cases', 'must',
+        'Only real limits: 999, 40 characters, 6 languages, empty, error, overflow, max count. Caption names the case and the value.', ['description ≤ 25 words', 'caption 2–5 words'],
+        'Caption: “Three-digit, sheet”, “ru, column 84”. Description: Wider when column for es, ja, ru.',
+        'Made-up cases. Duplicates of the variants.'),
+      B(7, 'Flow', 'opt',
+        'Interactive components only. One row per action: start → arrow → result. Arrow label is the user action.', ['description ≤ 20 words', 'arrow ≤ 3 words'],
+        'Arrow: “tap header”. Description: Two ways in. Read only: changes come from the calculator.',
+        'Arrows labelled with the system result. Flows for static parts.'),
+    ];
+    const scr = [
+      B(1, 'Header', 'must',
+        'Who uses it and how they get there. One sentence. Flow links below.', ['1 sentence', '15–25 words'],
+        'The DM runs a combat here: turn order, HP, conditions and the round, opened from the Combat list.',
+        'List flows in prose; the links do it.'),
+      B(2, 'Overview', 'must',
+        'Purpose: the job. Entry points: from where and which link. Components used: names as in nav.js.', ['3 cards', '≤ 25 words each'],
+        'Components used: CombatHeader, UnitRow, TurnBar, NumpadSheet, ConditionPicker, ShareSheet, UnitForm, Dialog, Toast.',
+        'Explain components; link them.'),
+      B(3, 'Anatomy', 'must',
+        'Default state on one phone, the list of regions under it. One row per region: name, component, size. No numbers.', ['region ≤ 15 words'],
+        'List — UnitRow ×6, gap 8, padding 12, scrolls under the header.',
+        'Spec values that belong to a component page.'),
+      B(4, 'Key states', 'must',
+        'Static phones: empty, default, full, long strings, error, offline when in scope.', ['description ≤ 20 words', 'caption 2–4 words'],
+        'Caption: “Long list, scrolled”.',
+        'States already shown as a flow step.'),
+      B(5, 'Flows', 'must',
+        'FlowHead fields, then steps. Step caption names the screen state; note only when the rule is not visible.', ['goal ≤ 15', 'entry / exit ≤ 12', 'rules ≤ 25', 'step ≤ 6', 'note ≤ 20', 'arrow ≤ 3'],
+        'CS-F4.2 · Condition list. Arrow: “+ weakened”.',
+        'Notes that repeat the picture.'),
+      B(6, 'Rules', 'opt',
+        'One line per proposed rule, linked to VISION-UPDATES.md.', ['≤ 25 words per rule'],
+        'Changing the round does not move the turn.',
+        'Rules already in the vision.'),
+    ];
+
+    const A = [
+      ['Atoms'],
+      ['Button', 20, 'yyyyy-y'], ['IconButton', 22, 'yyyy--y', 'No edge cases: icon only'], ['ToolButton', 21, 'yyyyy-y'],
+      ['TextField', 19, 'yyyyy-y'], ['TextArea', 18, 'yyy-y-y'], ['SearchField', 19, 'yyyyy-y'], ['NumberField', 16, 'yyy-y-y'],
+      ['Checkbox', 20, 'yyyyy-y'], ['Radio', 17, 'yyyy--y', 'No edge cases: no text'], ['Swatch', 20, 'yyyy--y', 'No edge cases: no text'],
+      ['Chip', 24, 'yyyyy-y'], ['StatSquare', 21, 'yyy-y-y'], ['EscalationDie', 23, 'yyy---y', 'Faces 0–6 cover the range'], ['RoleBlock', 21, 'yyy-y-y'],
+      ['Molecules'],
+      ['Stepper', 21, 'yyyyy-y'], ['Segmented', 21, 'yyyyy-y'], ['RadioList', 21, 'yyyyy-y'], ['CheckList', 21, 'yyyyy-y'], ['SwatchRow', 21, 'yyy-y-y'], ['CardActions', 22, 'yyy-yyy'],
+      ['HpBox', 23, 'yyy-y-y'], ['HistoryRow', 19, 'yyy-y-y'], ['DefenseLine', 21, 'yyy-y-y'], ['NoteField', 21, 'yyy-yyy'], ['InitiativePopover', 23, 'yyy-yyy'],
+      ['Toast', 22, 'yyy-y-y'], ['EmptyState', 22, 'yyy-y-y'],
+      ['Organisms'],
+      ['Sheet', 20, 'yyy-y-y', 'Flows live in SortSheet, TagSheet'], ['Dialog', 21, 'yyy-y-y'], ['Menu', 22, 'yyy-y-y'], ['Drawer', 19, 'yyy-y-y'],
+      ['PageHeader', 20, 'yyy-y-y'], ['PlayerHeader', 20, 'yyy-y-y'], ['BottomBar', 19, 'yyy-y-y'], ['CombatHeader', 19, 'yyy-yyy'], ['TurnBar', 21, 'yyy-y-y'],
+      ['UnitRow', 21, 'yyy-yyy'], ['PlayerRow', 19, 'yyy-yyy'], ['CombatCard', 20, 'yyy-yyy'], ['PresetCard', 21, 'yyy-yyy'],
+      ['HpHistory', 22, 'yyy-yyy', 'Reference'], ['ConditionPicker', 20, 'yyy-yyy'], ['TagSheet', 20, 'yyy-yyy'], ['SortSheet', 20, 'yyy-yyy'],
+      ['NumpadSheet', 22, 'yyy-yyy'], ['UnitForm', 20, 'yyy-yyy'], ['ShareSheet', 20, 'yyy--yy'], ['MessageScreen', 18, 'yyy-y-y'],
+      ['Pages'],
+      ['Combat screen', 21, 'yyy--yy', 'Rules: 3 proposed'], ['Player view', 18, 'yyy--yy', 'Rules: 2 proposed'], ['Combat list', 20, 'yyy--yy', 'Rules: 1 proposed, 1 open'], ['Library', 20, 'yyy--yy', 'Rules: 3 proposed'], ['App pages', 18, 'yyy--yy', 'Rules: 1 open'],
+    ];
+    const MK = { y: { bg: '#231F1C', line: '#231F1C' }, p: { bg: '#FFE7A3', line: '#855800' }, n: { bg: '#FFFFFF', line: '#B4232A' }, '-': { bg: '#E6DDCC', line: '#E6DDCC' } };
+    const audit = A.map(([page, hw, m, note]) => hw === undefined ? { isGroup: true, isRow: false, group: page } : { isGroup: false, isRow: true, page, hw, hwFg: hw >= 15 && hw <= 25 ? '#231F1C' : '#B4232A', marks: m.split('').map(c => MK[c]), note: note || '' });
+    const cols = ['PAGE', 'WORDS', 'OVERVIEW', 'ANATOMY', 'VARIANTS', 'SIZES', 'EDGE', 'FLOW', 'CLEAN', 'NOTE'].map((k, i) => ({ k, align: i === 0 || i === 9 ? 'left' : 'center' }));
+    return {
+      cols, audit,
+      rules: [
+        { k: 'ALWAYS', fg: '#2E7A43', items: ['Names exactly as in nav.js.', 'Numbers as digits, sizes from the token scale.', 'Rules (HP thresholds, temp HP) go in Behaviour or Anatomy.', 'Bottom buttons: 58 high, 28 from the screen edges. Sheets: 12 from the edges, border 2, padding 14.'] },
+        { k: 'NEVER', fg: '#B4232A', items: ['Marketing words: seamless, intuitive, powerful.', '“This component…”, repeating the title.', 'Token prose outside Anatomy.', 'A section kept only to fill the order.'] },
+        { k: 'CHECK', fg: '#1E5FA8', items: ['A script counts words per section and flags missing ones.', 'Results go into an audit table on this page.', 'Reference page: HpHistory.'] },
+      ],
+      pages: [
+        { title: 'Component page', desc: 'Seven sections, always in this order. A section marked “If it applies” is left out when it does not.', rows: comp },
+        { title: 'Screen page', desc: 'Six sections, always in this order. Flow fields have their own limits.', rows: scr },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

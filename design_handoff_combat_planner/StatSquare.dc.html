@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="StatSquare" status="Draft" date="15.10.2026" desc="Defense value in a 40 square: AC, PD or MD with the number under it. Three in a row in PresetCard." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Small tile with a defense label and its number." where="DefenseLine squares in PresetCard." behaviour="Display only. Values are edited in UnitForm." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:{{ g.cellGap }};align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};margin-bottom:{{ b.cellMb }};display:flex;flex-direction:column">
+
+              <sc-if value="{{ b.isStat }}" hint-placeholder-val="{{ false }}">
+                <span style="display:flex;flex-direction:column;align-items:center;justify-content:center;width:40px;height:40px;box-sizing:border-box;border-radius:12px;border:2px solid #E2D8C6;background:#FFFFFF"><span style="font-size:11px;font-weight:700;color:#5F574D;line-height:1">{{ b.k }}</span><span style="font-family:'Unbounded',sans-serif;font-size:16px;font-weight:700;line-height:1.25">{{ b.v }}</span></span>
+              </sc-if>
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;unit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{init,name,type,hp,max,temp?,cond?,claim?,d?,note?,active?,disabled?}&quot;},&quot;mine&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;setup&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;expanded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;condOpen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteEdit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteDraft&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'Active' | 'Setup'&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tag&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;open&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;name&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;type&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;hp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;max&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;temp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;ac&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;pd&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;md&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tags&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'dm' | 'player'&quot;},&quot;enemy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;k&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;v&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'card'|'chevron'|'edit'|'duplicate'|'delete'|'hp'|'init'|'cond'|'note'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6';
+    const TC = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const TAGS = ['#B4232A', '#A85400', '#8A6A00', '#2E7A43', '#0E5E63', '#1E5FA8', '#5C4026', '#8C8578'];
+    const ring = t => t ? '3px solid #FFE7A3' : 'none';
+    const K = k => ({ isPlayer: k === 'player', isCombat: k === 'combat', isPreset: k === 'preset', isHp: k === 'hp', isStat: k === 'stat' });
+
+    const stat = (o) => ({ ...K('stat'), k: o.k || 'AC', v: o.v ?? 18 });
+    const MAKE = { stat 
+    };
+
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'stat'](p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cellGap: '0', cells: [b] }] };
+    }
+    const C = (k, o, w = '366px') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: '#FAF6EE', stageR: '16px', stagePad: '12px', cellMb: '0' });
+    const SPEC = [{"part":"Tile","v":"40×40, radius 12, border 2 #E2D8C6, #FFFFFF."},{"part":"Label","v":"Rubik 11/700 #5F574D: AC, PD or MD."},{"part":"Value","v":"Unbounded 16/700, line height 1.25."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1640px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'AC 18.', cellGap: '24px', hasSpec: true, spec: SPEC, cells: [ANAT(C('stat', { k: 'AC', v: 18 }, '96px'))] },
+        { id: 'variants', title: 'Variants × states', desc: 'One per defense. Display only, no states.', cellGap: '16px', cells: [
+          C('stat', { caption: 'AC', k: 'AC', v: 18 }, '64px'), C('stat', { caption: 'PD', k: 'PD', v: 16 }, '64px'), C('stat', { caption: 'MD', k: 'MD', v: 12 }, '64px'),
+        ] },
+        { id: 'edge', title: 'Edge cases', desc: 'Two digits fit the tile; a missing value shows a dash.', cellGap: '16px', cells: [
+          C('stat', { caption: '30', k: 'AC', v: 30 }, '64px'), C('stat', { caption: 'Single digit', k: 'PD', v: 8 }, '64px'), C('stat', { caption: 'Missing', k: 'MD', v: '—' }, '64px'),
+        ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:32px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="SortSheet" status="Draft" date="15.10.2026" desc="Bottom sheet with one RadioList for sorting. Combat list: Newest first, Last played, A–Z. Library: Newest first, A–Z, By type." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Sort options for a list, in a sheet." where="Combat list and Library, from the sort ToolButton in PageHeader." behaviour="Tap an option applies it at once and the ToolButton shows it. Done or × closes." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};display:flex;flex-direction:column"><sc-if value="{{ b.isArrow }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ b.label }}" width="{{ 110 }}" height="{{ 300 }}" hint-size="110px,300px"></dc-import></sc-if>
+              <sc-if value="{{ b.isSheet }}" hint-placeholder-val="{{ true }}"><dc-import name="Sheet" embedded="{{ true }}" kind="sheet" title="{{ b.title }}" primary="Done" hint-size="100%,300px">
+                <dc-import name="RadioList" embedded="{{ true }}" kind="radio" options="{{ b.options }}" value="{{ b.value }}" tap="{{ b.tap }}" hint-size="100%,156px"></dc-import>
+              </dc-import></sc-if>
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;preset&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'combats' | 'presets'&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;options&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const PRESETS = {
+      combats: { title: 'Sort combats', options: ['Newest first', 'Last played', 'A–Z'] },
+      presets: { title: 'Sort presets', options: ['Newest first', 'A–Z', 'By type'] },
+    };
+    const mk = o => { const d = PRESETS[o.preset || 'combats']; return { isSheet: true, title: o.title || d.title, options: o.options || d.options, value: o.value ?? 0, tap: o.tap ?? -1 }; };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: '100%', groups: [{ cells: [{ ...mk(p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0' }] }] };
+    const C = (caption, o) => ({ ...mk(o), caption, cellW: '390px', stageBg: '#8C8578', stageR: '20px', stagePad: '12px' });
+    const SPEC = [{"part":"Sheet","v":"Sheet with title, × and Done."},{"part":"Options","v":"RadioList M, three rows."},{"part":"Done","v":"Bottom action 58: Done."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', desc: 'Sort combats, Newest first.', hasSpec: true, spec: SPEC, cells: [ANAT(C('', { preset: 'combats', value: 0 }))] },
+        { title: 'Variants: Combat list', desc: 'From the sort ToolButton in the Combat list header.', cells: [C('Newest first', { preset: 'combats', value: 0 }), C('Last played', { preset: 'combats', value: 1 }), C('Tap A–Z', { preset: 'combats', value: 0, tap: 2 })] },
+        { title: 'Variants: Library', desc: 'From the sort ToolButton in the Library header.', cells: [C('Newest first', { preset: 'presets', value: 0 }), C('By type', { preset: 'presets', value: 2 }), C('Tap A–Z', { preset: 'presets', value: 0, tap: 1 })] },
+        { title: 'Edge cases', desc: 'Long ru and de options wrap inside the rows.', cells: [C('ru', { title: 'Сортировка сражений', options: ['Сначала новые', 'Сначала последние сыгранные', 'По алфавиту'], value: 1 }), C('de', { title: 'Kämpfe sortieren', options: ['Neueste zuerst', 'Zuletzt gespielt', 'A–Z'], value: 1 })] },
+        { title: 'Flow', desc: 'The pick applies at once; Done closes.', cells: [C('Tap A–Z', { preset: 'combats', value: 0, tap: 2 }), { isArrow: true, isSheet: false, label: 'tap A–Z', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0' }, C('A–Z selected', { preset: 'combats', value: 2 })] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

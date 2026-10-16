@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="PresetCard" status="Draft" date="15.10.2026" desc="Preset card in the Library: HP in the role block, defenses as squares and a tag line. The chevron expands actions." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="One preset in the Library." where="Library list, flows LB-F1 to LB-F6." behaviour="The chevron expands CardActions: Edit opens the preset form; ⋯ holds Duplicate and Delete, and Delete asks in a Dialog." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:{{ g.cellGap }};align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};margin-bottom:{{ b.cellMb }};display:flex;flex-direction:column"><sc-if value="{{ b.isArrow }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ b.label }}" width="{{ 110 }}" height="{{ 80 }}" hint-size="110px,80px"></dc-import></sc-if>
+
+              <sc-if value="{{ b.isPreset }}" hint-placeholder-val="{{ false }}">
+                <div style="box-sizing:border-box;border-radius:16px;border:{{ b.border }};background:#FFFFFF;overflow:{{ b.cardOv }};display:flex;flex-direction:column;outline:{{ b.ring }};outline-offset:2px;margin-bottom:{{ b.caPb }}">
+                  <div style="display:grid;grid-template-columns:62px minmax(0,1fr) auto 36px;min-height:68px">
+                    <span style="display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch"><dc-import name="RoleBlock" embedded="{{ true }}" type="{{ b.ptype }}" value="{{ b.hp }}" label="HP" radius="14px 0 0 14px" style="width:62px;height:100%" hint-size="62px,68px"></dc-import></span>
+                    <div style="padding:8px 8px 8px 12px;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0">
+                      <span style="font-size:16px;font-weight:600;line-height:1.25;overflow-wrap:anywhere">{{ b.name }}</span>
+                      <span style="font-size:12px;font-weight:600;color:#5F574D">{{ b.tagLine }}</span>
+                    </div>
+                    <span style="display:flex;align-items:center"><dc-import name="DefenseLine" embedded="{{ true }}" variant="squares" d="{{ b.dArr }}" style="width:128px" hint-size="128px,40px"></dc-import></span>
+                    <span style="display:flex;align-items:center;justify-content:center;border-radius:12px;outline:{{ b.chevRing }};outline-offset:-4px"><i class="ti ti-chevron-{{ b.chev }}" style="font-size:24px;color:{{ b.chevFg }}"></i></span>
+                  </div>
+                  <sc-if value="{{ b.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:12px;border-top:2px solid #E2D8C6"><dc-import name="CardActions" embedded="{{ true }}" preset="card" open="{{ b.caOpen }}" tap="{{ b.caTap }}" tap-item="{{ b.caItem }}" hint-size="100%,48px"></dc-import></div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;unit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{init,name,type,hp,max,temp?,cond?,claim?,d?,note?,active?,disabled?}&quot;},&quot;mine&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;setup&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;expanded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;condOpen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteEdit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteDraft&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'Active' | 'Setup'&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tag&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;open&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;name&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;type&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;hp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;max&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;temp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;ac&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;pd&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;md&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tags&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'dm' | 'player'&quot;},&quot;enemy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;k&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;v&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'card'|'chevron'|'edit'|'duplicate'|'delete'|'hp'|'init'|'cond'|'note'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6';
+    const TC = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const TAGS = ['#B4232A', '#A85400', '#8A6A00', '#2E7A43', '#0E5E63', '#1E5FA8', '#5C4026', '#8C8578'];
+    const ring = t => t ? '3px solid #FFE7A3' : 'none';
+    const K = k => ({ isPlayer: k === 'player', isCombat: k === 'combat', isPreset: k === 'preset', isHp: k === 'hp', isStat: k === 'stat' });
+
+    const preset = (o) => ({ ...K('preset'), ptype: o.type || 'Enemy', name: o.presetName || o.name || '', hp: o.hp, typeBg: TC[o.type || 'Enemy'], tagLine: (o.tags || []).join(' · ') || 'No tags',
+      dArr: [o.ac, o.pd, o.md], open: !!o.open,
+      border: o.open ? '2px solid ' + INK : '2px solid ' + LINE, chev: o.open ? 'up' : 'down', chevFg: o.open ? INK : '#5F574D',
+      ring: ring(o.tap === 'card'), chevRing: ring(o.tap === 'chevron'), caTap: o.tap === 'edit' || o.tap === 'more' ? o.tap : '', caOpen: !!o.menu || o.tap === 'duplicate' || o.tap === 'delete', caItem: o.tap === 'duplicate' ? 'Duplicate' : o.tap === 'delete' ? 'Delete' : '', cardOv: o.menu || o.tap === 'duplicate' || o.tap === 'delete' ? 'visible' : 'hidden', caPb: o.menu || o.tap === 'duplicate' || o.tap === 'delete' ? '150px' : '0' });
+    const MAKE = { preset 
+    };
+
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'preset'](p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cellGap: '0', cells: [b] }] };
+    }
+    const C = (k, o, w = '366px') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: '#FAF6EE', stageR: '16px', stagePad: '12px', cellMb: '0' });
+    const orc = { name: 'Orc Berserker', type: 'Enemy', hp: 40, ac: 18, pd: 16, md: 12, tags: ['Orcs', 'Ferry'] };
+    const SPEC = [{"part":"Card","v":"Radius 16, border 2 #E2D8C6, #FFFFFF; ink border when expanded."},{"part":"RoleBlock","v":"HP and the role, 62 wide."},{"part":"Name","v":"Rubik 16/600, wraps."},{"part":"Tags","v":"Tag line 12/600 #5F574D; “No tags” when empty."},{"part":"Defenses","v":"DefenseLine squares."},{"part":"Chevron","v":"24, in the last 36 column."},{"part":"Actions","v":"CardActions when expanded, under a 2 divider: Edit, ⋯ with Duplicate and Delete."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1640px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Enemy preset with tags.', cellGap: '24px', hasSpec: true, spec: SPEC, cells: [ANAT(C('preset', { ...orc }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'With and without tags, expanded, and the ⋯ menu open.', cellGap: '24px', cells: [
+          C('preset', { caption: 'Enemy', ...orc }),
+          C('preset', { caption: 'No tags', name: 'Bandit Captain', type: 'Enemy', hp: 36, ac: 17, pd: 15, md: 13, tags: [] }),
+          C('preset', { caption: 'Expanded', ...orc, open: true }),
+          C('preset', { caption: 'Expanded, ⋯ open', ...orc, open: true, menu: true }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'Long names wrap, three-digit HP, ru name and tags.', cellGap: '24px', cells: [
+          C('preset', { caption: 'Ally, long name', name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 30, ac: 19, pd: 15, md: 17, tags: ['Allies', 'Named NPCs'] }),
+          C('preset', { caption: 'Three-digit HP', name: 'Ancient Black Dragon', type: 'Enemy', hp: 320, ac: 24, pd: 22, md: 20, tags: ['Dragons', 'Bosses'] }),
+          C('preset', { caption: 'ru', name: 'Капитан стражи переправы', type: 'Ally', hp: 40, ac: 19, pd: 16, md: 13, tags: ['Переправа', 'Именные НПС'] }) ] },
+        { id: 'flow', title: 'Flow', desc: 'The chevron expands the card; Edit opens the preset form.', cellGap: '24px', cells: [
+          C('preset', { caption: 'Tap chevron', ...orc, tap: 'chevron' }), { isArrow: true, isPreset: false, label: 'tap chevron', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' },
+          C('preset', { caption: 'Expanded, tap Edit', ...orc, open: true, tap: 'edit' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

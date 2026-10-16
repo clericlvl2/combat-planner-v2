@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:32px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Molecules" title="NoteField" status="Draft" date="15.10.2026" desc="A unit note: a field in the expanded UnitRow and own PlayerRow, edited in place; a line in a collapsed row." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Note on a unit, as an editable field or a single line." where="UnitRow and PlayerRow: field when expanded, line when collapsed and a note exists." behaviour="Tap the field to edit in place; the keyboard opens. Collapsing the row saves. Up to 250 characters." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};display:flex;flex-direction:column"><sc-if value="{{ b.isArrow }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ b.label }}" width="{{ 110 }}" height="{{ 80 }}" hint-size="110px,80px"></dc-import></sc-if>
+              <sc-if value="{{ b.isField }}" hint-placeholder-val="{{ true }}">
+                <button aria-label="Note" style="width:100%;min-height:56px;box-sizing:border-box;border:2px solid {{ b.line }};border-radius:12px;background:#FFFFFF;padding:8px 12px;display:flex;flex-direction:column;align-items:stretch;gap:4px;text-align:left;outline:{{ b.ring }};outline-offset:2px">
+                  <span style="font-size:12px;font-weight:600;color:#5F574D">{{ b.label }}</span>
+                  <span style="font-size:14px;line-height:1.45;color:{{ b.fg }};overflow-wrap:anywhere;text-wrap:pretty">{{ b.text }}<sc-if value="{{ b.editing }}" hint-placeholder-val="{{ false }}"><span style="display:inline-block;width:2px;height:16px;background:#231F1C;margin-left:1px;vertical-align:-3px"></span></sc-if></span>
+                </button>
+              </sc-if>
+              <sc-if value="{{ b.isLine }}" hint-placeholder-val="{{ false }}">
+                <span style="display:flex;align-items:flex-start;gap:4px;font-size:14px;line-height:1.45;color:#5F574D;min-width:0"><i class="ti ti-note" style="font-size:16px;flex:none;margin-top:1px"></i><span style="overflow-wrap:anywhere;text-wrap:pretty">{{ b.text }}</span></span>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'field' | 'line'&quot;},&quot;note&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;editing&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;draft&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;placeholder&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const mk = o => {
+      const line = o.variant === 'line', ed = !!o.editing, txt = ed ? (o.draft ?? o.note ?? '') : (o.note || '');
+      return { isField: !line, isLine: line, editing: ed, label: o.label || 'Note',
+        text: line ? (o.note || '') : (txt || (ed ? '' : (o.placeholder || 'Add a note'))),
+        fg: txt ? '#231F1C' : '#8C8578', line: ed ? '#231F1C' : '#E2D8C6', ring: o.tap ? '3px solid #FFE7A3' : 'none',
+        count: txt.length + '/250', showCount: ed };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: '100%', groups: [{ cells: [{ ...mk(p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0' }] }] };
+    const N = 'Hex on Orc Berserker until the end of round 4';
+    const C = (caption, o) => ({ ...mk(o), caption, cellW: '346px', stageBg: '#FAF6EE', stageR: '16px', stagePad: '12px' });
+    const SPEC = [{"part":"Field","v":"Min 56 high, border 2 #E2D8C6, radius 12, padding 8 12. Ink while editing."},{"part":"Label","v":"12/600 #5F574D: Note."},{"part":"Text","v":"14/1.45 ink. Empty shows “Add a note” in #8C8578."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', desc: 'Field with a note.', hasSpec: true, spec: SPEC, cells: [ANAT(C('', { note: N }))] },
+        { title: 'Variants × states', desc: 'Field: empty, with a note, tap, editing. Line in a collapsed row.', cells: [
+          C('Field, empty', {}), C('Field, with note', { note: N }), C('Field, tap', { note: N, tap: true }), C('Field, editing', { editing: true, draft: 'Hex on Orc Berserker' }), C('Line', { variant: 'line', note: 'Concentrating on Hex' }) ] },
+        { title: 'Edge cases', desc: 'Long notes wrap in the field and the line. Japanese text.', cells: [
+          C('Field, long', { note: 'Concentrating on Hex. If she takes damage, roll a save; on a fail the hex ends and Orc Berserker is no longer vulnerable to her spells.' }),
+          C('Line, wraps', { variant: 'line', note: N }), C('Line, ja', { variant: 'line', note: 'ラウンド4の終わりまでオークに呪い' }) ] },
+        { title: 'Flow', desc: 'Edit in place, then collapse the row to save.', cells: [
+          C('Empty field', { tap: true }), { isArrow: true, isField: false, isLine: false, label: 'tap', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0' },
+          C('Editing', { editing: true, draft: 'Hex on Orc Berserker' }), { isArrow: true, isField: false, isLine: false, label: 'collapse row', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0' },
+          C('Line in the row', { variant: 'line', note: 'Hex on Orc Berserker' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

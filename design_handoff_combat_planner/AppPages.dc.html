@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:48px 56px 80px;display:flex;flex-direction:column;gap:64px;width:max-content">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ true }}"><dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Pages" title="App pages" status="Draft" date="15.10.2026" desc="Sign-in, settings, account, About and system screens around the main lists. Opened from the Drawer or on errors." links="{{ links }}" hint-size="1100px,230px"></dc-import></sc-if>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" k1="PURPOSE" k2="ENTRY POINTS" k3="COMPONENTS USED" what="Sign in, change the interface language, manage the account, and show errors." where="First launch, Settings, Account and About in the Drawer, or a failed request." behaviour="PageHeader, TextField, Button, RadioList, Drawer, Dialog, MessageScreen, Toast." hint-size="960px,160px"></dc-import></sc-if>
+  <sc-for list="{{ flows }}" as="f" hint-placeholder-count="2">
+    <section id="{{ f.code }}" style="display:flex;flex-direction:column;gap:32px">
+      <sc-if value="{{ f.isSec }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ f.secTitle }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ f.secDesc }}</span></div></sc-if>
+      <sc-for list="{{ f.lines }}" as="ln" hint-placeholder-count="1">
+        <div style="display:flex;align-items:flex-start;gap:16px">
+          <sc-if value="{{ ln.main }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:none;width:280px"><dc-import name="Flow" embedded="{{ true }}" kind="flowHead" code="{{ f.code }}" title="{{ f.title }}" goal="{{ f.goal }}" entry="{{ f.entry }}" exit="{{ f.exit }}" rules="{{ f.rules }}" parts="{{ f.parts }}" hint-size="280px,420px"></dc-import></div>
+          </sc-if>
+          <sc-if value="{{ ln.branch }}" hint-placeholder-val="{{ false }}">
+            <div style="width:280px;flex:none;box-sizing:border-box;border:2px dashed #8C8578;border-radius:16px;padding:16px 16px;display:flex;flex-direction:column;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:0.05em;color:#5F574D">BRANCH</span><span style="font-size:16px;font-weight:600;line-height:1.45;text-wrap:pretty">{{ ln.label }}</span></div>
+          </sc-if>
+          <sc-for list="{{ ln.items }}" as="s" hint-placeholder-count="3">
+            <sc-if value="{{ s.isArrow }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:none"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ s.label }}" sub="{{ s.sub }}" branch="{{ s.branch }}" hint-size="120px,894px"></dc-import></div>
+            </sc-if>
+            <sc-if value="{{ s.isStep }}" hint-placeholder-val="{{ true }}">
+              <div style="flex:none;width:390px"><dc-import name="Flow" embedded="{{ true }}" kind="step" code="{{ s.code }}" caption="{{ s.caption }}" note="{{ s.note }}" hint-size="390px,894px">
+
+                <sc-if value="{{ s.auth }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:44px;flex:none;display:flex;align-items:center;padding:0 24px;font-size:16px;font-weight:600">9:41</div>
+                  <div style="flex:1;min-height:0;padding:32px 24px 28px;display:flex;flex-direction:column;gap:16px">
+                    <span style="width:56px;height:56px;border-radius:16px;background:#231F1C;color:#FFE7A3;display:flex;align-items:center;justify-content:center"><i class="ti ti-swords" style="font-size:32px"></i></span>
+                    <div style="display:flex;flex-direction:column;gap:8px;padding-bottom:6px">
+                      <span style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;line-height:1.25">{{ s.authTitle }}</span>
+                      <span style="font-size:16px;color:#5F574D;line-height:1.45">{{ s.authSub }}</span>
+                    </div>
+                    <dc-import name="TextField" embedded="{{ true }}" kind="text" label="Email" value="{{ s.email }}" placeholder="you@example.com" state="{{ s.emailState }}" error="{{ s.emailErr }}" hint-size="100%,70px"></dc-import>
+                    <dc-import name="TextField" embedded="{{ true }}" kind="text" label="Password" value="{{ s.pass }}" placeholder="{{ s.passPh }}" state="{{ s.passState }}" error="{{ s.passErr }}" hint-size="100%,70px"></dc-import>
+                    <dc-import name="Button" embedded="{{ true }}" kind="button" size="M" full="{{ true }}" label="{{ s.authCta }}" state="{{ s.ctaState }}" tap="{{ s.ctaTap }}" hint-size="100%,52px"></dc-import>
+                    <sc-if value="{{ s.oauth }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;align-items:center;gap:12px;font-size:14px;color:#5F574D"><span style="flex:1;height:2px;background:#E2D8C6"></span>or<span style="flex:1;height:2px;background:#E2D8C6"></span></div>
+                      <dc-import name="Button" embedded="{{ true }}" kind="button" variant="secondary" size="M" full="{{ true }}" icon="brand-google" label="Continue with Google" tap="{{ s.googleTap }}" hint-size="100%,52px"></dc-import>
+                      <dc-import name="Button" embedded="{{ true }}" kind="button" variant="secondary" size="M" full="{{ true }}" icon="brand-github" label="Continue with GitHub" hint-size="100%,52px"></dc-import>
+                    </sc-if>
+                    <span style="margin-top:auto;text-align:center;font-size:16px;color:#231F1C">{{ s.switchText }} <span style="font-weight:700;text-decoration:underline;text-underline-offset:3px;outline:{{ s.switchRing }};outline-offset:3px;border-radius:4px">{{ s.switchLink }}</span></span>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ s.page }}" hint-placeholder-val="{{ true }}">
+                  <dc-import name="PageHeader" embedded="{{ true }}" kind="header" title="{{ s.title }}" search="{{ false }}" nav-tap="{{ s.navTap }}" hint-size="390px,108px"></dc-import>
+                  <div style="flex:1;min-height:0;padding:16px 12px;display:flex;flex-direction:column;gap:{{ s.pageGap }}">
+                    <sc-if value="{{ s.settings }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:8px">
+                        <span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.05em;padding:0 8px">{{ s.langLabel }}</span>
+                        <div style="background:#FFFFFF;border:2px solid #E2D8C6;border-radius:16px;padding:8px"><dc-import name="RadioList" embedded="{{ true }}" kind="radio" options="{{ langs }}" value="{{ s.lang }}" tap="{{ s.langTap }}" hint-size="100%,312px"></dc-import></div>
+                        <span style="font-size:14px;color:#5F574D;padding:0 8px;line-height:1.45">{{ s.langNote }}</span>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ s.accA }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.05em;padding:0 4px">SIGNED IN AS</span><div style="background:#FFFFFF;border:2px solid #E2D8C6;border-radius:16px;overflow:hidden;display:flex;flex-direction:column"><div style="padding:16px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:12px;font-weight:600;color:#5F574D">Email</span><span style="font-size:16px;font-weight:600;overflow-wrap:anywhere">dm@ferry.games</span><span style="font-size:14px;color:#5F574D">Signed in with email</span></div><span style="height:2px;background:#E2D8C6"></span><div style="min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;outline:{{ s.signOutRing }};outline-offset:-3px;border-radius:0 0 14px 14px"><i class="ti ti-logout" style="font-size:20px;color:#231F1C"></i><span style="flex:1;font-size:16px;font-weight:600;color:#231F1C">Sign out</span></div></div></div><div style="display:flex;flex-direction:column;gap:8px;padding-top:16px"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.05em;padding:0 4px">DANGER ZONE</span><div style="background:#FFFFFF;border:2px solid #E2D8C6;border-radius:16px;overflow:hidden;display:flex;flex-direction:column"><div style="min-height:56px;display:flex;align-items:center;gap:12px;padding:0 16px;outline:{{ s.deleteRing }};outline-offset:-3px;border-radius:16px"><i class="ti ti-user-x" style="font-size:20px;color:#B4232A"></i><span style="flex:1;font-size:16px;font-weight:600;color:#B4232A">Delete account</span><i class="ti ti-chevron-right" style="font-size:20px;color:#8C8578"></i></div></div><span style="font-size:14px;color:#5F574D;line-height:1.45;padding:0 4px">Deletes all combats, presets and player links.</span></div></sc-if>
+                    <sc-if value="{{ s.about }}" hint-placeholder-val="{{ false }}">
+                      <div style="background:#FFFFFF;border:2px solid #E2D8C6;border-radius:16px;display:flex;flex-direction:column">
+                        <sc-for list="{{ aboutRows }}" as="r" hint-placeholder-count="3"><div style="min-height:52px;display:flex;align-items:center;gap:12px;padding:0 16px;border-top:{{ r.line }}"><span style="flex:1;font-size:16px;font-weight:600">{{ r.l }}</span><span style="font-size:16px;color:#231F1C">{{ r.v }}</span></div></sc-for>
+                      </div>
+                      <span style="font-size:14px;color:#5F574D;line-height:1.45;padding:0 8px">Combat tracker for 13th Age. Not affiliated with Pelgrane Press.</span>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ s.msg }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:44px;flex:none;display:flex;align-items:center;padding:0 24px;font-size:16px;font-weight:600">9:41</div>
+                  <dc-import name="MessageScreen" embedded="{{ true }}" kind="message" icon="{{ s.msgIcon }}" title="{{ s.msgTitle }}" body="{{ s.msgBody }}" action="{{ s.msgAction }}" hint-size="100%,500px"></dc-import>
+                </sc-if>
+
+                <sc-if value="{{ s.scrim }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;inset:0;background:rgba(35,31,28,0.5);z-index:5"></div></sc-if>
+                <sc-if value="{{ s.dialog }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:24px;right:24px;top:240px;z-index:6"><dc-import name="Dialog" embedded="{{ true }}" kind="dialog" preset="deleteAccount" hint-size="342px,300px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.drawer }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;top:0;bottom:0;left:0;z-index:6"><dc-import name="Drawer" embedded="{{ true }}" kind="drawer" active="{{ s.drawerActive }}" height="844px" hint-size="300px,844px"></dc-import></div>
+                </sc-if>
+                <sc-if value="{{ s.toast }}" hint-placeholder-val="{{ false }}">
+                  <div style="position:absolute;left:12px;right:12px;bottom:24px;z-index:4"><dc-import name="Toast" embedded="{{ true }}" kind="toast" text="{{ s.toastText }}" icon="{{ s.toastIcon }}" dot="#F3EDE2" dot-fg="#231F1C" hint-size="366px,56px"></dc-import></div>
+                </sc-if>
+              </dc-import></div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </sc-for>
+      <sc-if value="{{ f.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="max-width:600px"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ f.spec }}" hint-size="540px,200px"></dc-import></div></sc-if>
+    </section>
+  </sc-for>
+  <sc-if value="{{ showPre }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="rules" n="6" rules="{{ rules }}" hint-size="960px,200px"></dc-import></sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const D = { auth: false, page: false, msg: false, title: '', navTap: false, settings: false, account: false, about: false,
+      authTitle: '', authSub: '', email: '', emailState: 'default', emailErr: '', pass: '', passPh: '', passState: 'default', passErr: '', authCta: '', ctaState: 'default', ctaTap: false, oauth: true, googleTap: false, switchText: '', switchLink: '', switchRing: 'none',
+      lang: 0, langTap: -1, langLabel: 'LANGUAGE', langNote: 'Changes the interface language. Unit and combat names stay as typed.', signOutTap: false, deleteTap: false, accA: false, pageGap: '16px', signOutRing: 'none', deleteRing: 'none',
+      msgIcon: '', msgTitle: '', msgBody: '', msgAction: '', scrim: false, dialog: false, drawer: false, drawerActive: 'Settings', toast: false, toastText: '', toastIcon: '' };
+    const S = (code, caption, o = {}) => ({ ...D, isStep: true, isArrow: false, code, caption, note: '', ...o });
+    const A = (label, sub = '', branch = false) => ({ isArrow: true, isStep: false, label, sub, branch });
+    const F = (code, title, goal, entry, exit, rules, parts, lines) => ({ code, title, goal, entry, exit, rules, parts, lines });
+    const main = items => ({ main: true, branch: false, label: '', items });
+    const br = (label, items) => ({ main: false, branch: true, label, items });
+    const signIn = o => ({ auth: true, authTitle: 'Sign in', authSub: 'Your combats and Library are saved to your account.', passPh: '••••••••', authCta: 'Sign in', switchText: 'No account?', switchLink: 'Sign up', ...o });
+    const signUp = o => ({ auth: true, authTitle: 'Create account', authSub: 'Free. Players don’t need an account.', passPh: 'At least 8 characters', authCta: 'Create account', switchText: 'Have an account?', switchLink: 'Sign in', ...o });
+    const page = (title, o) => ({ page: true, title, ...o });
+    const msg = (icon, title, body, action) => ({ msg: true, msgIcon: icon, msgTitle: title, msgBody: body, msgAction: action });
+
+    const flows = [
+      F('AP-F1', 'Sign in and sign up', 'The DM signs in or creates an account.', 'Any DM page without a session', 'Combat list (CL-F1.1)', 'Email and a password of 8+ characters. Google and GitHub only if configured. Players need no account.', 'TextField, Button', [
+        main([
+          S('AP-F1.1', 'Sign in: empty', { ...signIn({ emailState: 'focus' }) }),
+          A('type'),
+          S('AP-F1.2', 'Sign in: filled', { ...signIn({ email: 'dm@ferry.games', pass: '••••••', passState: 'focus', ctaTap: true }) }),
+          A('Sign in'),
+          S('AP-F1.3', 'Wrong password', { ...signIn({ email: 'dm@ferry.games', pass: '••••••', passState: 'error', passErr: 'Wrong email or password' }), note: 'The error does not say which part is wrong.' }),
+        ]),
+        br('Sign up and OAuth', [
+          S('AP-F1.4', 'Sign up', { ...signUp({ emailState: 'focus' }) }),
+          A('Create', '', true),
+          S('AP-F1.5', 'Sign-up errors', { ...signUp({ email: 'dm@ferry.games', emailState: 'error', emailErr: 'This email already has an account', pass: '•••••', passState: 'error', passErr: 'At least 8 characters' }) }),
+          A('', '', true),
+          S('AP-F1.6', 'Sign in with Google', { ...signIn({ googleTap: true }), note: 'Opens the Google window; after sign-in, the combat list.' }),
+          A('', '', true),
+          S('AP-F1.7', 'OAuth not configured', { ...signIn({ oauth: false }) }),
+        ]),
+      ]),
+      F('AP-F2', 'Interface language', 'The DM switches the language.', 'Drawer → Settings', 'Interface in the chosen language', 'Six languages: en, de, es, fr, ja, ru. Applies at once.', 'PageHeader, RadioList, Drawer', [
+        main([
+          S('AP-F2.1', 'Drawer: Settings', { ...page('Combats', {}), scrim: true, drawer: true }),
+          A('Settings'),
+          S('AP-F2.2', 'Language: English', { ...page('Settings', { settings: true, lang: 0, langTap: 5 }) }),
+          A('Русский'),
+          S('AP-F2.3', 'Interface in Russian', { ...page('Настройки', { settings: true, lang: 5, langLabel: 'ЯЗЫК', langNote: 'Меняет язык интерфейса. Названия юнитов и боёв не переводятся.' }) }),
+        ]),
+      ]),
+      F('AP-F3', 'Account', 'The DM signs out or deletes the account.', 'Drawer → Account', 'Sign-in screen', 'Deletion is permanent and needs confirmation.', 'PageHeader, Button, Dialog, Toast', [
+        main([
+          S('AP-F3.1', 'Account', { ...page('Account', { accA: true, pageGap: '8px', signOutRing: '3px solid #FFE7A3' }) }),
+          A('Sign out'),
+          S('AP-F3.2', 'Signed out: sign-in screen', { ...signIn({}) }),
+        ]),
+        br('Delete account', [
+          S('AP-F3.3', 'Tap Delete account', { ...page('Account', { accA: true, pageGap: '8px', deleteRing: '3px solid #FFE7A3' }) }),
+          A('Delete account', '', true),
+          S('AP-F3.4', 'Confirmation', { ...page('Account', { accA: true, pageGap: '8px' }), scrim: true, dialog: true }),
+          A('Delete account', '', true),
+          S('AP-F3.5', 'Account deleted', { ...signIn({}), toast: true, toastText: 'Your account was deleted', toastIcon: 'user-x' }),
+        ]),
+      ]),
+      F('AP-F4', 'About', 'Version and source.', 'Drawer → About', '—', 'Version comes from the build.', 'PageHeader', [
+        main([ S('AP-F4.1', 'About', { ...page('About', { about: true }) }) ]),
+      ]),
+      F('AP-F5', 'System screens', 'The user sees what went wrong and where to go.', 'Bad address, deleted combat, crash', 'Combat list or reload', 'One action per screen.', 'MessageScreen', [
+        main([
+          S('AP-F5.1', '404', { ...msg('map-off', 'Page not found', 'This address doesn’t lead anywhere.', 'Go to combats') }),
+          A('', '', true),
+          S('AP-F5.2', 'Combat not found', { ...msg('swords', 'Combat not found', 'It was deleted or never existed.', 'Go to combats') }),
+          A('', '', true),
+          S('AP-F5.3', 'Unexpected error', { ...msg('alert-triangle', 'Something went wrong', 'Reload the page. Your last saved changes are safe.', 'Reload') }),
+        ]),
+      ]),
+    ];
+    const only = new URLSearchParams(location.search).get('flow');
+    const ONLY = new URLSearchParams(location.search).get('flow');
+    const STEPS = flows.flatMap(f => f.lines.flatMap(l => l.items)).filter(i => i.isStep);
+    const pick = (code, caption) => ({ ...STEPS.find(i => i.code === code), caption, note: '' });
+    const SPEC = [{"part":"Header","v":"PageHeader with burger or back, no search."},{"part":"Content","v":"White group cards, radius 16, padding 8."}];
+    const SEC = (code, secTitle, secDesc, items, o = {}) => ({ code, isSec: true, secTitle, secDesc, hasSpec: false, spec: [], title: '', lines: items.length ? [{ main: false, branch: false, label: '', items }] : [], ...o });
+    const PRE = [
+      SEC('anatomy', 'Anatomy', "The Account page; regions listed below.", [{ ...pick("AP-F3.1", "Account") }], { hasSpec: true, spec: SPEC }),
+      SEC('states', 'Key states', "Sign-in, a wrong password, the language list, About, and 404.", [pick("AP-F1.1", "Sign in"), pick("AP-F1.3", "Wrong password"), pick("AP-F2.2", "Language"), pick("AP-F4.1", "About"), pick("AP-F5.1", "404")]),
+      SEC('flows', 'Flows', 'One row per flow: FlowHead, steps with arrows, branches below.', []),
+    ];
+    const NZ = fl => fl.map(f => ({ isSec: false, secTitle: '', secDesc: '', hasSpec: false, spec: [], ...f, lines: f.lines.map(ln => ({ ...ln, items: ln.items.map(i => ({ ...i })) })) }));
+    const RULES = [{"code":"Open","text":"Copy for toasts, dialogs, empty states and About."}];
+    return {
+      langs: ['English', 'Deutsch', 'Español', 'Français', '日本語', 'Русский'],
+      aboutRows: [['Version', '2.0.0'], ['Rules', '13th Age'], ['Source', 'GitHub']].map(([l, v], i) => ({ l, v, line: i ? '1px solid #E2D8C6' : 'none' })),
+      showHead: !new URLSearchParams(location.search).get('embed'), flows: [...(ONLY ? [] : PRE), ...NZ(only ? flows.filter(f => f.code === only) : flows)], showPre: !ONLY, rules: RULES, links: flows.map(f => ({ id: f.code, label: f.title })),
+    };
+  }
+}
+</script>
+</body>
+</html>

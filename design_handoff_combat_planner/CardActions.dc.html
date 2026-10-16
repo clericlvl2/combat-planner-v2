@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Molecules" title="CardActions" status="Draft" date="16.10.2026" desc="Actions of an expanded card: Edit with its label, ⋯ opens Menu with the rest. Same row in UnitRow, CombatCard and PresetCard." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Edit button and a ⋯ button that opens the other actions in Menu." where="UnitRow (unit actions), CombatCard and PresetCard (Duplicate, Delete), when expanded." behaviour="Edit opens the form. ⋯ opens Menu under the button; an item runs at once, Delete and Remove ask in a Dialog. Tap outside closes." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+      <div style="display:flex;flex-wrap:{{ g.wrap }};gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <sc-if value="{{ b.isArrow }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;padding-top:40px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ b.label }}" width="{{ 110 }}" height="{{ 60 }}" hint-size="110px,60px"></dc-import></div></sc-if>
+          <sc-if value="{{ b.isCell }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+              <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ b.caption }}</span></sc-if>
+              <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};padding-bottom:{{ b.stagePb }}">
+                <div style="position:relative;display:flex;gap:8px">
+                  <button style="flex:1;min-width:0;height:48px;box-sizing:border-box;padding:0 12px;border:2px solid #E2D8C6;border-radius:12px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;gap:8px;white-space:nowrap;outline:{{ b.editRing }};outline-offset:2px"><i class="ti ti-pencil" style="font-size:20px"></i><span style="font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis">{{ b.editLabel }}</span></button>
+                  <button aria-label="{{ b.moreAria }}" style="flex:none;width:48px;height:48px;box-sizing:border-box;border:2px solid {{ b.moreLine }};border-radius:12px;background:{{ b.moreBg }};display:flex;align-items:center;justify-content:center;outline:{{ b.moreRing }};outline-offset:2px"><i class="ti ti-dots" style="font-size:20px"></i></button>
+                  <sc-if value="{{ b.open }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;right:-2px;top:70px;z-index:10;width:{{ b.menuW }}">
+                      <dc-import name="Menu" embedded="{{ true }}" kind="menu" preset="{{ b.preset }}" items="{{ b.items }}" tap="{{ b.tapItem }}" width="{{ b.menuWn }}" hint-size="240px,160px"></dc-import>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </sc-for>
+        <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+      </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;preset&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'card' | 'unit'&quot;},&quot;items&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;[icon:string,label:string,opts?:object]&gt;&quot;},&quot;editLabel&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;open&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'edit' | 'more'&quot;},&quot;tapItem&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;menuW&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const RING = '3px solid #FFE7A3';
+    const mk = (o) => {
+      const open = !!o.open, items = o.items || null;
+      return { isCell: true, isArrow: false, editLabel: o.editLabel || 'Edit', moreAria: o.moreAria || 'More actions',
+        editRing: o.tap === 'edit' ? RING : 'none', moreRing: o.tap === 'more' ? RING : 'none',
+        moreLine: open ? '#231F1C' : '#E2D8C6', moreBg: open ? '#FFE7A3' : '#FFFFFF',
+        open, preset: o.preset || 'card', items, tapItem: o.tapItem || '', menuWn: o.menuW || 240, menuW: (o.menuW || 240) + 'px' };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', gap: '0', rootW: '100%',
+      groups: [{ wrap: 'wrap', hasSpec: false, spec: [], cells: [{ ...mk(p), caption: '', cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0', stagePb: '0' }] }] };
+    const C = (caption, o, w = 342) => ({ ...mk(o), caption, cellW: w + 24 + 'px', stageBg: '#FFFFFF', stageR: '16px', stagePad: '12px', stagePb: o.open ? (o.pb || '190px') : '12px' });
+    const AR = label => ({ isArrow: true, isCell: false, label });
+    const G = (title, desc, cells, o = {}) => ({ title, desc, cells, wrap: 'wrap', hasSpec: false, spec: [], ...o });
+    const SPEC = [{ part: 'Row', v: 'Gap 8, full card width. Sits at the bottom of the expanded card, padding 12.' }, { part: 'Edit', v: 'Fills the free width: 48 high, border 2 #E2D8C6 like ⋯ and Secondary buttons, radius 12, pencil 20, Rubik 14/600.' }, { part: 'More', v: '48 square, border 2 #E2D8C6, ⋯ 20, aria-label “More actions”. Ink border and #FFE7A3 while open.' }, { part: 'Menu', v: 'Menu, 240 wide, 8 under the card edge, right aligned to ⋯. Danger item last, under a divider.' }];
+    const UNIT = { de: [['copy', 'Duplizieren'], ['player-pause', 'Deaktivieren'], ['bookmark', 'Als Vorlage speichern'], ['user-off', 'Anspruch freigeben'], ['user-minus', 'Entfernen', { danger: true, divider: true }]],
+      ru: [['copy', 'Копировать'], ['player-pause', 'Отключить'], ['bookmark', 'Сохранить как заготовку'], ['user-off', 'Освободить героя'], ['user-minus', 'Удалить', { danger: true, divider: true }]] };
+    return { gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: 'max-content', groups: [
+      G('Anatomy', 'Closed row, as in every expanded card.', [C('', {})], { hasSpec: true, spec: SPEC }),
+      G('Variants × states', 'Default, tap Edit, tap ⋯, and ⋯ open with the card menu or the unit menu.', [
+        C('Default', {}), C('Tap Edit', { tap: 'edit' }), C('Tap ⋯', { tap: 'more' }),
+        C('Open: card (Duplicate, Delete)', { open: true, preset: 'card', pb: '140px' }), C('Open: unit (UnitRow)', { open: true, preset: 'unit', pb: '310px' })]),
+      G('Edge cases', 'Longest labels at 390 (row 342) and 320 (row 272). Edit always keeps its label; long menu labels wrap.', [
+        C('de · 390', { editLabel: 'Bearbeiten' }), C('ru · 390', { editLabel: 'Изменить' }), C('de · 320', { editLabel: 'Bearbeiten' }, 272), C('ru · 320', { editLabel: 'Изменить' }, 272),
+        C('de · 320 · unit menu', { editLabel: 'Bearbeiten', open: true, items: UNIT.de, pb: '360px' }, 272), C('ru · 320 · unit menu', { editLabel: 'Изменить', open: true, items: UNIT.ru, pb: '360px' }, 272)]),
+      G('Flow', '⋯ opens the menu; an item runs at once and the menu closes. Delete then asks in a Dialog.', [
+        C('Tap ⋯', { tap: 'more' }), AR('tap ⋯'), C('Menu open, tap Delete', { open: true, preset: 'card', tapItem: 'Delete', pb: '140px' }), AR('Dialog'), C('Closed', {})], { wrap: 'nowrap' }),
+    ] };
+  }
+}
+</script>
+</body>
+</html>

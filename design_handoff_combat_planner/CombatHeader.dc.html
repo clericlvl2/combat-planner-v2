@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;gap:24px;padding:{{ wrapPad }};font-family:'Rubik',sans-serif;color:#231F1C">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="CombatHeader" status="Draft" date="15.10.2026" desc="DM combat header: back, combat title, round, escalation die and the combat menu. Each control opens its own popover." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Top of the DM combat screen with the round, die and menu." where="Combat screen in every state, flows CS-F1 to CS-F8." behaviour="Tap the round to change it, the die to set escalation, Menu for combat actions. Setup shows “Setup” and hides the die." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+    <div style="display:flex;flex-wrap:{{ g.wrap }};width:{{ g.w }};gap:24px 32px;align-items:flex-start">
+      <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1">
+        <sc-if value="{{ it.isArrow }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;padding-top:22px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ it.arrowLabel }}" width="{{ 110 }}" height="{{ 126 }}" hint-size="110px,126px"></dc-import></div></sc-if>
+        <sc-if value="{{ it.isItem }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:8px;width:{{ itemWidth }};max-width:390px;padding-bottom:{{ it.extra }}">
+          <sc-if value="{{ it.showLabel }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ it.label }}</span></sc-if>
+          <div style="position:relative;height:126px;box-sizing:border-box;background:#FAF6EE;border-bottom:2px solid #E2D8C6">
+            <div style="height:44px;display:flex;align-items:center;padding:0 32px;font-size:16px;font-weight:600">9:41</div>
+            <div style="display:flex;align-items:center;padding:4px 12px 12px 4px;gap:8px">
+              <dc-import name="IconButton" embedded="{{ true }}" kind="icon" variant="plain" icon="chevron-left" aria="Back to combats" style="flex:none;width:44px" hint-size="44px,44px"></dc-import>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.title }}</span>
+                <sc-if value="{{ it.isActive }}" hint-placeholder-val="{{ true }}">
+                  <button aria-label="Edit round" style="align-self:flex-start;border:none;border-radius:12px;background:{{ it.roundBg }};padding:0 8px;margin-left:-6px;display:flex;align-items:baseline;gap:8px">
+                    <span style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;line-height:1.25">Round</span>
+                    <span style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;line-height:1.25;border-bottom:2px dashed #231F1C;font-variant-numeric:tabular-nums">{{ it.round }}</span>
+                  </button>
+                </sc-if>
+                <sc-if value="{{ it.isSetup }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-family:'Unbounded',sans-serif;font-size:28px;font-weight:700;line-height:1.25">Setup</span>
+                </sc-if>
+              </div>
+  
+              <sc-if value="{{ it.showDie }}" hint-placeholder-val="{{ true }}">
+                <button aria-label="Set escalation die" style="flex:none;border:none;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px">
+                  <dc-import name="EscalationDie" embedded="{{ true }}" esc="{{ it.esc }}" tap="{{ it.escOpen }}" hint-size="64px,72px"></dc-import>
+                </button>
+              </sc-if>
+  
+              
+  
+              
+              <sc-if value="{{ it.tileMenu }}" hint-placeholder-val="{{ true }}">
+                <button aria-label="Combat menu" style="flex:none;border:none;background:transparent;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px">
+                  <span style="width:50px;height:50px;box-sizing:border-box;border-radius:12px;border:{{ it.tileLine }};background:{{ it.tileBg }};outline:{{ it.menuRing }};outline-offset:2px;display:flex;align-items:center;justify-content:center"><i class="ti ti-dots" style="font-size:24px"></i></span>
+                  <span style="font-size:12px;font-weight:600">Menu</span>
+                </button>
+              </sc-if>
+              
+            </div>
+  
+            <sc-if value="{{ it.escOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:120px;right:8px;z-index:3"><dc-import name="Menu" embedded="{{ true }}" kind="popover" title="Escalation die" hint-size="340px,140px">
+                <div style="display:flex;gap:8px">
+                  <sc-for list="{{ it.escKeys }}" as="k" hint-placeholder-count="7">
+                    <button aria-label="{{ k.aria }}" style="width:40px;height:40px;box-sizing:border-box;border-radius:12px;border:2px solid {{ k.line }};background:{{ k.bg }};padding:4px;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);outline:{{ k.ring }};outline-offset:2px">
+                      <sc-for list="{{ k.pips }}" as="p" hint-placeholder-count="9"><span style="display:flex;align-items:center;justify-content:center"><span style="width:6px;height:6px;border-radius:50%;background:{{ p.bg }}"></span></span></sc-for>
+                    </button>
+                  </sc-for>
+                </div>
+                <span style="font-size:12px;color:#5F574D">Next turn raises it by 1 each round, up to 6</span>
+              </dc-import></div>
+            </sc-if>
+            <sc-if value="{{ it.menuOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:120px;right:8px;width:240px;z-index:3"><dc-import name="Menu" embedded="{{ true }}" kind="menu" items="{{ it.menuItems }}" width="{{ 240 }}" hint-size="240px,280px"></dc-import></div>
+            </sc-if>
+            <sc-if value="{{ it.roundOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="position:absolute;top:120px;left:44px;width:240px;z-index:3"><dc-import name="Menu" embedded="{{ true }}" kind="popover" title="Round" width="{{ 240 }}" hint-size="240px,150px">
+                <dc-import name="Stepper" embedded="{{ true }}" kind="stepper" value="{{ it.round }}" hint-size="100%,48px"></dc-import>
+                <span style="font-size:14px;color:#5F574D">1–99. Changing the round doesn’t move the turn.</span>
+              </dc-import></div>
+            </sc-if>
+          </div>
+        </div></sc-if>
+      </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;mode&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'active'|'setup'&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;round&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;escalation&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._rv();
+    r.groups = (r.groups || []).map(g => { const flow = (g.items || []).some(i => i.isArrow); return { ...g, wrap: flow ? 'nowrap' : 'wrap', w: flow ? 'max-content' : 'auto' }; });
+    return r;
+  }
+  _rv() {
+    const P = { 0: [], 1: [4], 2: [2, 6], 3: [2, 4, 6], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
+    const single = !!this.props.embedded;
+    const mk = (o, i) => {
+      const v = 'n3', esc = o.escalation ?? 2, active = o.mode !== 'setup';
+      const escOpen = !!o.escOpen, roundOpen = !!o.roundOpen, menuOpen = !!o.menuOpen;
+      return {
+        label: o.label || '', showLabel: !!o.label, title: o.title ?? 'Ambush at the Ferry',
+        isActive: active, isSetup: !active, round: o.round ?? 3, esc,
+        dieBg: esc ? '#231F1C' : 'transparent', dieBorder: esc ? 'none' : '2px dashed #8C8578', diePad: esc ? '8px' : '6px', escLabel: esc ? 'Escalation ' + esc : 'No escalation', escFg: esc ? '#231F1C' : '#5F574D',
+        pips: [0, 1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ bg: (P[esc] || []).includes(n) ? '#FFFFFF' : 'transparent' })),
+        showDie: active, tileMenu: true,
+        tileLine: v === 'n3' ? '0' : '2px solid #231F1C', tileBg: v === 'n3' ? '#F3EDE2' : '#FFFFFF',
+                escOpen: active && escOpen, roundOpen: active && roundOpen, menuOpen, menuRing: menuOpen ? '3px solid #FFE7A3' : 'none',
+        dieRing: escOpen ? '3px solid #FFE7A3' : 'none', roundBg: roundOpen ? '#FFE7A3' : 'transparent',
+        extra: single ? '0' : menuOpen ? (active ? '300px' : '250px') : active && escOpen ? '120px' : active && roundOpen ? '160px' : '0',
+        escKeys: [0, 1, 2, 3, 4, 5, 6].map(n => { const on = n === esc; return { aria: 'Escalation ' + n, bg: on ? '#231F1C' : '#FFFFFF', line: on ? '#231F1C' : '#E2D8C6', ring: on ? '3px solid #FFE7A3' : 'none', pips: [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => ({ bg: (P[n] || []).includes(i) ? (on ? '#FFFFFF' : '#231F1C') : 'transparent' })) }; }),
+      };
+    };
+    const samples = [
+      { label: 'Active, round 3, escalation 2', mode: 'active' },
+      { label: 'Menu open', mode: 'active', menuOpen: true },
+      { label: 'Escalation open', mode: 'active', escOpen: true },
+      { label: 'Round open', mode: 'active', roundOpen: true },
+      { label: 'Setup', mode: 'setup' },
+      { label: 'Setup, menu open', mode: 'setup', menuOpen: true },
+    ];
+    const ink = '#231F1C', soft = '#F3EDE2';
+    const menuFor = setup => [
+      ['user-plus', 'Add unit'], ['arrow-back-up', 'Undo'], ['share', 'Share'],
+      ...(setup ? [] : [['refresh', 'Restart combat', { divider: true }]]),
+      ['trash', 'Clear combat', { danger: true, divider: setup }],
+    ];
+    const M = (s) => { const it = mk(s); return { ...it, menuItems: menuFor(it.isSetup), isItem: true, isArrow: false }; };
+    const AR = arrowLabel => ({ isArrow: true, isItem: false, arrowLabel });
+    const SPEC = [{"part":"Header","v":"126 high with the status bar, #FAF6EE, border-bottom 2 #E2D8C6."},{"part":"Back","v":"IconButton plain M, back to the Combat list."},{"part":"Title","v":"Combat title 14/600, one line, ellipsis."},{"part":"Round","v":"Unbounded 28/700; the dashed number opens the round popover."},{"part":"Die","v":"EscalationDie; tap opens the face picker."},{"part":"Menu","v":"Tile 50, #F3EDE2, ⋯ 24, “Menu” 12/600."}];
+    const p = this.props;
+    return {
+      gallery: !single, wrapPad: single ? '0' : '48px 56px 80px', itemWidth: single ? '100%' : '390px',
+      groups: single ? [{ title: '', desc: '', hasSpec: false, spec: [], items: [{ isItem: true, isArrow: false, ...mk({ mode: p.mode, title: p.title, round: p.round, escalation: p.escalation, menuOpen: !!p.menuOpen, escOpen: !!p.escOpen, roundOpen: !!p.roundOpen }, 0), menuItems: menuFor(p.mode === 'setup') }] }] : [
+        { title: 'Anatomy', desc: 'Active, round 3, escalation 2.', hasSpec: true, spec: SPEC, items: [{ ...M({ mode: 'active' }) }] },
+        { title: 'Variants × states', desc: 'Active and Setup, with the menu, escalation picker or round popover open.', hasSpec: false, spec: [], items: samples.map(M) },
+        { title: 'Edge cases', desc: 'A long title ends with an ellipsis; round 99 and the top die face fit.', hasSpec: false, spec: [], items: [M({ label: 'Long title, round 99', mode: 'active', title: 'Капитан стражи переправы: засада у моста', round: 99, escalation: 6 })] },
+        { title: 'Flow', desc: 'Each control opens its own popover; tap outside closes it.', items: [M({ label: 'Round 3', mode: 'active' }), AR('tap round'), M({ label: 'Round popover', mode: 'active', roundOpen: true })] },
+        { title: '', desc: '', items: [M({ label: 'Escalation 2', mode: 'active' }), AR('tap die'), M({ label: 'Face picker', mode: 'active', escOpen: true })] },
+        { title: '', desc: '', items: [M({ label: 'Combat screen', mode: 'active' }), AR('tap Menu'), M({ label: 'Combat menu', mode: 'active', menuOpen: true })] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="NumberField" status="Draft" date="15.10.2026" desc="Amount field in the HP calculator, typed with the calculator keys. The system keyboard stays closed." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Large number display with a label for the HP amount." where="NumpadSheet, above the calculator keys." behaviour="Calculator keys type into it; backspace removes a digit. Damage, Heal, Temp and Max stay disabled while it is empty." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:24px"><div style="background:{{ g.frameBg }};border-radius:20px;padding:{{ g.framePad }};display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ g.showCols }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;padding-bottom:6px;border-bottom:1px solid #E6DDCC">
+            <span></span>
+            <sc-for list="{{ g.cols }}" as="c" hint-placeholder-count="4"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.04em">{{ c }}</span></sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;align-items:start">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C;padding-top:14px">{{ r.label }}</span></sc-if>
+            <sc-for list="{{ r.cells }}" as="b" hint-placeholder-count="1">
+              <div style="display:flex;flex-direction:column;gap:8px;min-width:0;width:{{ b.cellW }}">
+                <sc-if value="{{ b.hasHead }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:600;color:#5F574D"><span>{{ b.label }}</span><span style="font-variant-numeric:tabular-nums;color:{{ b.countFg }}">{{ b.counter }}</span></div>
+                </sc-if>
+
+
+
+                <sc-if value="{{ b.isNumber }}" hint-placeholder-val="{{ false }}">
+                  <div style="height:68px;box-sizing:border-box;border:2px solid {{ b.line }};border-radius:16px;background:#FFFFFF;padding:0 16px;display:flex;align-items:center;gap:12px;outline:{{ b.ring }};outline-offset:2px">
+                    <span style="flex:1;font-size:14px;font-weight:700;color:#5F574D">{{ b.label2 }}</span>
+                    <span style="font-family:'Unbounded',sans-serif;font-size:32px;font-weight:700;line-height:1;font-variant-numeric:tabular-nums;color:{{ b.fg }}">{{ b.text }}</span>
+                    <sc-if value="{{ b.caret }}" hint-placeholder-val="{{ false }}"><span style="width:2px;height:30px;background:#231F1C;margin-left:-8px"></span></sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ b.hasError }}" hint-placeholder-val="{{ false }}">
+                  <span style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;color:#B4232A"><i class="ti ti-alert-circle" style="font-size:16px"></i>{{ b.error }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;placeholder&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;counter&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;error&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;over&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;rows&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6', RED = '#B4232A', PH = '#8C8578';
+    const ringOf = (tap) => tap ? '3px solid #FFE7A3' : 'none';
+    const base = (o, k) => {
+      const st = o.state || 'default', has = o.value != null && o.value !== '';
+      const line = st === 'error' ? RED : st === 'focus' ? INK : st === 'disabled' ? '#E2D8C6' : LINE;
+      return { isSearch: k === 'search', isText: k === 'text' || k === 'textarea', isNumber: k === 'number', line, bg: st === 'disabled' ? '#F3EDE2' : '#FFFFFF',
+        text: has ? String(o.value) : st === 'focus' ? '' : (o.placeholder || ''), fg: st === 'disabled' ? '#8C8578' : has ? INK : PH, caret: st === 'focus',
+        ring: ringOf(o.tap), hasError: st === 'error' && !!o.error, error: o.error || '',
+        label: o.label || '', hasHead: !!o.label && k !== 'number', counter: o.counter || '', countFg: o.over ? RED : '#5F574D' };
+    };
+    const IZ = { S: { h: 40, fs: 14, is: 16 }, M: { h: 48, fs: 16, is: 20 }, L: { h: 56, fs: 18, is: 24 } };
+    const iz = o => { const z = IZ[o.size || 'M']; return { zh: z.h + 'px', zfs: z.fs + 'px', zis: z.is + 'px' }; };
+    const MAKE0 = {
+      search: o => { const b = base(o, 'search'); return { ...b, iconFg: o.state === 'disabled' ? '#8C8578' : INK, clear: o.value != null && o.value !== '' && o.state !== 'disabled', text: b.text || (o.state === 'focus' ? '' : 'Search') }; },
+      text: o => ({ ...base(o, 'text'), minH: iz(o).zh, padIn: '0 12px', align: 'center', fs: iz(o).zfs, fw: 500 }),
+      textarea: o => ({ ...base(o, 'textarea'), minH: (o.rows || 3) * 24 + 'px', padIn: '10px 12px', align: 'flex-start', fs: '15px', fw: 400 }),
+      number: o => { const b = base(o, 'number'); return { ...b, label2: o.label || 'Amount', text: o.value != null && o.value !== '' ? String(o.value) : '0', fg: o.value ? INK : '#8C8578' }; },
+    };
+    const MAKE = Object.fromEntries(Object.entries(MAKE0).map(([k, f]) => [k, o => ({ ...iz(o), ...f(o) })]));
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'number'](p), cellW: '100%' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', grid: 'minmax(0,1fr)', frameBg: 'transparent', framePad: '0', cols: [], rows: [{ cells: [b] }] }] };
+    }
+    const G = (id, title, desc, cols, w, rows) => ({ id, title, desc, cols: cols.map(c => c.toUpperCase()), grid: `160px repeat(${cols.length}, ${w})`, frameBg: '#FFFFFF', framePad: '24px 28px', rows });
+    const C = (k, o, w) => ({ ...MAKE[k](o), cellW: w });
+    const SPEC = [{"part":"Container","v":"68 high, border 2, radius 16, padding 0 16, gap 12. Ink while typing."},{"part":"Label","v":"Rubik 14/700 #5F574D, fills the space left."},{"part":"Value","v":"Unbounded 32/700 tabular, right aligned. Caret while typing."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '36px', rootW: 'max-content',
+      groups: [
+        { ...G('anatomy', 'Anatomy', 'Typing 12.', [], '320px', [{ label: '', cells: [ANAT(C('number', { label: 'Amount', value: 12, state: 'focus' }, '320px'))] }]), grid: '0px 320px', framePad: '32px 36px', hasSpec: true, spec: SPEC },
+        G('variants', 'Variants × states', 'Empty, typing the first digit, filled.', ['empty', 'typing', 'filled'], '320px', [
+          { label: 'Amount', cells: [C('number', { label: 'Amount' }, '320px'), C('number', { label: 'Amount', value: 1, state: 'focus' }, '320px'), C('number', { label: 'Amount', value: 12, state: 'focus' }, '320px')] },
+        ]),
+        G('edge', 'Edge cases', 'Three digits, the maximum amount, and the longest label.', ['999', 'ru', 'es'], '320px', [
+          { label: 'Amount', cells: [C('number', { label: 'Amount', value: 999, state: 'focus' }, '320px'), C('number', { label: 'Значение', value: 120, state: 'focus' }, '320px'), C('number', { label: 'Cantidad', value: 45, state: 'focus' }, '320px')] },
+        ]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

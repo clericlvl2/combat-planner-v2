@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="MessageScreen" status="Draft" date="15.10.2026" desc="Full-screen message for errors, an expired link or a deleted combat: icon tile, title, body and one action." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Centred full-screen message with one action." where="Player view (link revoked, combat deleted) and App pages." behaviour="Display only. The single action retries or leads back to a working screen." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};overflow:hidden;display:flex;flex-direction:column">
+
+
+
+              <sc-if value="{{ b.isEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:{{ b.emptyPad }};display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center">
+                  <span style="width:72px;height:72px;border-radius:20px;background:#F3EDE2;display:flex;align-items:center;justify-content:center"><i class="ti ti-{{ b.icon }}" style="font-size:32px"></i></span>
+                  <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;line-height:1.25">{{ b.title }}</span>
+                  <span style="font-size:16px;line-height:1.45;color:#5F574D;max-width:280px;text-wrap:pretty">{{ b.body }}</span>
+                  <sc-if value="{{ b.hasAction }}" hint-placeholder-val="{{ false }}"><div style="padding-top:6px"><dc-import name="Button" embedded="{{ true }}" kind="button" variant="{{ b.actionVariant }}" size="M" label="{{ b.action }}" icon="{{ b.actionIcon }}" tap="{{ b.actionTap }}" hint-size="200px,52px"></dc-import></div></sc-if>
+                </div>
+              </sc-if>
+
+
+
+
+
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;nav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'menu'|'back'|'close'&quot;},&quot;right&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;search&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string | false&quot;},&quot;query&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tools&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{icon,label?,count?,active?,tap?}&gt;&quot;},&quot;chips&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;round&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number | null&quot;},&quot;esc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;menu&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;menuTap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;code&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;caption&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;note&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;branch&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;goal&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;entry&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;exit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;rules&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;parts&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;links&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{id,label}&gt;&quot;},&quot;status&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;date&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;section&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const K = k => ({ isHeader: k === 'header', isPlayerHeader: k === 'playerHeader', isEmpty: k === 'empty' || k === 'message', isPhone: k === 'phone', isStep: k === 'step', isArrow: k === 'arrow', isFlowHead: k === 'flowHead', isPageHead: k === 'pageHead' });
+    const MAKE = {
+      empty: o => ({ ...K('empty'), icon: o.icon || 'swords', title: o.title || '', body: o.body || '', action: o.action || '', hasAction: !!o.action, actionIcon: o.actionIcon || '', actionVariant: o.actionVariant || 'primary', actionTap: !!o.actionTap, emptyPad: o.pad || '40px 24px' }),
+      message: o => ({ ...MAKE.empty(o), emptyPad: o.pad || '160px 24px 40px' })
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'message'](p), cellW: p.kind === 'step' || p.kind === 'phone' ? '390px' : '100%', stageBg: 'transparent', stageR: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: p.kind === 'step' || p.kind === 'phone' || p.kind === 'flowHead' || p.kind === 'arrow' ? 'auto' : '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, w = '390px', bg = '#FAF6EE') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: bg, stageR: '20px' });
+    const SPEC = [{"part":"Icon tile","v":"72, radius 20, #F3EDE2, icon 32."},{"part":"Title","v":"Unbounded 22/700, line height 1.25, centred."},{"part":"Body","v":"Rubik 16, line height 1.45, #5F574D, max 280 wide."},{"part":"Action","v":"Button M, usually secondary."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1720px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Revoked link.', hasSpec: true, spec: SPEC, cells: [ANAT(C('message', { icon: 'link-off', title: 'This link no longer works', body: 'The DM issued a new link. Ask them to share it again.', pad: '60px 24px', action: 'Try again', actionVariant: 'secondary' }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Revoked link with Try again; deleted combat without an action.', cells: [
+          C('message', { caption: 'Link revoked', icon: 'link-off', title: 'This link no longer works', body: 'The DM issued a new link. Ask them to share it again.', pad: '60px 24px', action: 'Try again', actionVariant: 'secondary' }),
+          C('message', { caption: 'Combat deleted', icon: 'trash', title: 'This combat was deleted', body: 'The DM deleted it. Ask them for a new link.', pad: '60px 24px' }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'Long ru and de text wraps; the action stays one line.', cells: [
+          C('message', { caption: 'ru', icon: 'link-off', title: 'Эта ссылка больше не работает', body: 'Мастер выпустил новую ссылку. Попросите его поделиться ей снова.', pad: '60px 24px', action: 'Повторить', actionVariant: 'secondary' }),
+          C('message', { caption: 'de', icon: 'wifi-off', title: 'Keine Verbindung zum Server', body: 'Prüfe die Verbindung und versuche es erneut.', pad: '60px 24px', action: 'Erneut versuchen', actionVariant: 'secondary' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

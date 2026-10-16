@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="PageHeader" status="Draft" date="15.10.2026" desc="Section header: status bar, navigation, title and an optional button. Below it the search with ToolButtons and active filter chips." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Top of a section screen with navigation, title and search." where="Combat list, Library, App pages (Settings, Account, About)." behaviour="Burger opens Drawer; back returns. Typing filters the list. ToolButtons open SortSheet or TagSheet; × on a chip removes the filter." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};overflow:hidden;display:flex;flex-direction:column">
+
+              <sc-if value="{{ b.isHeader }}" hint-placeholder-val="{{ true }}">
+                <div style="background:#FAF6EE;border-bottom:2px solid #E2D8C6;padding-bottom:12px;display:flex;flex-direction:column">
+                  <div style="height:44px;display:flex;align-items:center;padding:0 32px;font-size:16px;font-weight:600">9:41</div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:4px 12px 0 4px;min-height:48px">
+                    <dc-import name="IconButton" embedded="{{ true }}" kind="icon" variant="plain" icon="{{ b.navIcon }}" aria="{{ b.navAria }}" tap="{{ b.navTap }}" hint-size="44px,44px"></dc-import>
+                    <span style="flex:1;min-width:0;display:flex;align-items:baseline;gap:8px"><span style="font-family:'Unbounded',sans-serif;font-size:{{ b.titleFs }};font-weight:700;line-height:1.25;overflow-wrap:anywhere">{{ b.title }}</span><sc-if value="{{ b.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#5F574D;white-space:nowrap">{{ b.sub }}</span></sc-if></span>
+                    <sc-if value="{{ b.hasRight }}" hint-placeholder-val="{{ false }}"><dc-import name="Button" embedded="{{ true }}" kind="button" variant="primary" size="S" label="{{ b.right }}" tap="{{ b.rightTap }}" hint-size="80px,48px"></dc-import></sc-if>
+                  </div>
+                  <sc-if value="{{ b.hasSearch }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin:10px 12px 0;display:flex;gap:8px">
+                      <div style="flex:1;min-width:0"><dc-import name="SearchField" embedded="{{ true }}" kind="search" placeholder="{{ b.search }}" value="{{ b.query }}" state="{{ b.searchState }}" tap="{{ b.searchTap }}" hint-size="100%,48px"></dc-import></div>
+                      <sc-for list="{{ b.tools }}" as="t" hint-placeholder-count="1"><dc-import name="ToolButton" embedded="{{ true }}" kind="tool" icon="{{ t.icon }}" label="{{ t.label }}" count="{{ t.count }}" active="{{ t.active }}" aria="{{ t.aria }}" tap="{{ t.tap }}" hint-size="48px,48px"></dc-import></sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ b.hasChips }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin:10px 12px 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                      <sc-for list="{{ b.chips }}" as="c" hint-placeholder-count="1"><dc-import name="Chip" embedded="{{ true }}" kind="chip" variant="tagActive" removable="{{ true }}" label="{{ c }}" hint-size="80px,36px"></dc-import></sc-for>
+                      <dc-import name="Button" embedded="{{ true }}" kind="button" variant="ghost" size="S" label="Clear" hint-size="64px,48px"></dc-import>
+                    </div>
+                  </sc-if>
+                  {{ children }}
+                </div>
+              </sc-if>
+
+
+
+
+
+
+
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;nav&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'menu'|'back'|'close'&quot;},&quot;right&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;search&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string | false&quot;},&quot;query&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tools&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{icon,label?,count?,active?,tap?}&gt;&quot;},&quot;chips&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;round&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number | null&quot;},&quot;esc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;menu&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;menuTap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;code&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;caption&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;note&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;branch&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;goal&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;entry&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;exit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;rules&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;parts&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;links&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;{id,label}&gt;&quot;},&quot;status&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;date&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;section&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const K = k => ({ isHeader: k === 'header', isPlayerHeader: k === 'playerHeader', isEmpty: k === 'empty' || k === 'message', isPhone: k === 'phone', isStep: k === 'step', isArrow: k === 'arrow', isFlowHead: k === 'flowHead', isPageHead: k === 'pageHead' });
+    const MAKE = {
+      header: o => ({ ...K('header'), title: o.title || 'Combats', titleFs: (o.titleSize || 28) + 'px', sub: o.sub || '', hasSub: !!o.sub,
+        navIcon: o.nav === 'back' ? 'chevron-left' : o.nav === 'close' ? 'x' : 'menu-2', navAria: o.nav === 'back' ? 'Back' : o.nav === 'close' ? 'Close' : 'Open navigation', navTap: !!o.navTap,
+        right: o.right || '', hasRight: !!o.right, rightTap: !!o.rightTap,
+        hasSearch: o.search !== false && o.search !== '' && o.search != null, search: o.search || '', query: o.query || '', searchState: o.searchState || (o.query ? 'focus' : 'default'), searchTap: !!o.searchTap,
+        tools: (o.tools || []).map(t => ({ icon: t.icon, label: t.label || '', count: t.count ?? null, active: !!t.active, aria: t.aria || t.label || t.icon, tap: !!t.tap })),
+        chips: o.chips || [], hasChips: !!(o.chips && o.chips.length) })
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'header'](p), cellW: p.kind === 'step' || p.kind === 'phone' ? '390px' : '100%', stageBg: 'transparent', stageR: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: p.kind === 'step' || p.kind === 'phone' || p.kind === 'flowHead' || p.kind === 'arrow' ? 'auto' : '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, w = '390px', bg = '#FAF6EE') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: bg, stageR: '20px' });
+    const SPEC = [{"part":"Status bar","v":"44 high, time 16/600."},{"part":"Navigation","v":"IconButton plain M: burger, back or ×."},{"part":"Title","v":"Unbounded 28/700, wraps."},{"part":"Search","v":"SearchField M, margin 10 12 0, gap 8 to ToolButtons."},{"part":"Tools","v":"ToolButton M; filled when sort or filter is active."},{"part":"Filter chips","v":"Chip TagActive L with ×, then Clear."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1720px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Library filtered by a tag.', hasSpec: true, spec: SPEC, cells: [ANAT(C('header', { title: 'Library', search: 'Search presets', tools: [{ icon: 'sort-descending', aria: 'Sort' }, { icon: 'tags', label: 'Tags', count: 1, active: true }], chips: ['Orcs'] }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Combats with sort, sort active, Library filtered by tags, and a nested screen with back.', cells: [
+          C('header', { caption: 'Combats + Sort', title: 'Combats', search: 'Search combats', tools: [{ icon: 'sort-descending', aria: 'Sort' }] }),
+          C('header', { caption: 'Sort active', title: 'Combats', search: 'Search combats', tools: [{ icon: 'sort-descending', label: 'Last played', active: true }] }),
+          C('header', { caption: 'Library + Sort + Tags, filtered', title: 'Library', search: 'Search presets', tools: [{ icon: 'sort-descending', aria: 'Sort' }, { icon: 'tags', label: 'Tags', count: 1, active: true }], chips: ['Orcs'] }),
+          C('header', { caption: 'Nested screen', title: 'Settings', nav: 'back', search: false }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'ru title, two-digit tag count and long filter chips that wrap to a second row.', cells: [
+          C('header', { caption: 'ru, filtered', title: 'Библиотека', search: 'Поиск заготовок', tools: [{ icon: 'sort-descending', aria: 'Sort' }, { icon: 'tags', label: 'Теги', count: 12, active: true }], chips: ['Нежить и призраки', 'Орки', 'Переправа'] }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

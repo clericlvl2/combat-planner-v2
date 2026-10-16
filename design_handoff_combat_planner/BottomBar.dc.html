@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="BottomBar" status="Draft" date="15.10.2026" desc="List bottom bar: one button in the bottom-action rect, 58 high and 28 from the edges. Bar height 98." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Bottom bar with one primary action and an optional hint." where="Combat list (New combat), Library (New preset). The combat screen uses TurnBar." behaviour="Tap opens the create form. Disabled with a hint when a limit is reached." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="6">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:24px"><div style="background:{{ g.frameBg }};border-radius:20px;padding:{{ g.framePad }};display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ g.showCols }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;padding-bottom:6px;border-bottom:1px solid #E6DDCC">
+            <span></span>
+            <sc-for list="{{ g.cols }}" as="c" hint-placeholder-count="4"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.04em">{{ c }}</span></sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="4">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;align-items:center">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C;text-wrap:pretty">{{ r.label }}</span></sc-if>
+            <sc-for list="{{ r.cells }}" as="b" hint-placeholder-count="1">
+              <div style="display:flex;min-width:0;width:{{ b.cellW }};background:{{ b.cellBg }};border-radius:{{ b.cellR }}">
+
+
+
+
+
+
+                <sc-if value="{{ b.isBar }}" hint-placeholder-val="{{ false }}">
+                  <div style="flex:1;min-width:0;box-sizing:border-box;padding:12px 28px 28px;border-top:2px solid #E2D8C6;background:#FAF6EE;display:flex;flex-direction:column;align-items:center;gap:8px">
+                    <sc-if value="{{ b.hasHint }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#5F574D">{{ b.hint }}</span></sc-if>
+                    <button style="width:100%;height:58px;border:none;border-radius:29px;background:{{ b.bg }};color:{{ b.fg }};font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;outline:{{ b.ring }};outline-offset:2px"><i class="ti ti-{{ b.icon }}" style="font-size:20px"></i>{{ b.label }}</button>
+                  </div>
+                </sc-if>
+
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;full&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;active&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;count&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean | 'minus' | 'plus'&quot;},&quot;aria&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;hint&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6', SOFT = '#F3EDE2', OFF = '#E6DDCC', OFF_FG = '#8C8578', RED = '#B4232A';
+    const ringOf = (state, tap) => tap ? '3px solid #FFE7A3' : state === 'focus' ? '2px solid #1E5FA8' : 'none';
+    const flags = k => ({ isButton: k === 'button', isIcon: k === 'icon', isTool: k === 'tool', isAction: k === 'action', isStepper: k === 'stepper', isBar: k === 'bar' });
+
+    const bar = (o) => {
+      const st = o.state || 'default';
+      return { ...flags('bar'), label: o.label || 'New combat', icon: o.icon || 'plus', hint: o.hint || '', hasHint: !!o.hint, bg: st === 'disabled' ? OFF : st === 'pressed' ? '#3A3531' : INK, fg: st === 'disabled' ? OFF_FG : '#FFFFFF', ring: ringOf(st, o.tap) };
+    };
+    const ZS = {
+      icon: { S: { zh: 36, is: 16 }, M: { zh: 44, is: 20 }, L: { zh: 52, is: 24 } },
+      tool: { S: { zh: 40, is: 16 }, M: { zh: 48, is: 20 }, L: { zh: 56, is: 24 } },
+      action: { S: { zh: 40, zfs: 12 }, M: { zh: 48, zfs: 14 }, L: { zh: 56, zfs: 16 } },
+      stepper: { S: { zh: 40, zk: 36, valW: 56 }, M: { zh: 48, zk: 44, valW: 64 }, L: { zh: 56, zk: 52, valW: 72 } },
+    };
+    const sized = (k, f) => (o) => { const r = f(o), z = (ZS[k] || {})[o.size || 'M']; if (!z) return r; const out = { ...r, zh: z.zh + 'px' };
+      if (z.is && !(k === 'icon' && (o.variant || 'outline') === 'plain' && (o.size || 'M') === 'M')) out.is = z.is + 'px';
+      if (z.zfs) out.zfs = z.zfs + 'px'; if (z.zk) { out.zk = z.zk + 'px'; if (!o.valW) out.valW = z.valW + 'px'; } return out; };
+    const MAKE = { bar };
+
+    const p = this.props;
+    if (p.embedded) {
+      const k = p.kind || 'bar';
+      const b = { ...MAKE[k](p), cellW: '100%', cellBg: 'transparent', cellR: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', title: '', desc: '', cols: [], grid: 'minmax(0,1fr)', frameBg: 'transparent', framePad: '0', rows: [{ label: '', cells: [b] }] }] };
+    }
+    const cell = (k, o, w, bg) => ({ ...MAKE[k](o), cellW: w, cellBg: bg || 'transparent', cellR: bg ? '12px' : '0' });
+    const G = (id, title, desc, cols, colW, rows) => ({ id, title, desc, cols: cols.map(c => c.toUpperCase()), grid: `160px repeat(${cols.length}, ${colW})`, frameBg: '#FFFFFF', framePad: '24px 28px', rows });
+    const SPEC = [{"part":"Bar","v":"98 high, padding 12 28 28, border-top 2 #E2D8C6, #FAF6EE."},{"part":"Button","v":"58 high, radius 29, ink, Unbounded 18/700, full width."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '36px', rootW: 'max-content',
+      groups: [
+        { ...G('anatomy', 'Anatomy', 'New combat.', [], '390px', [{ label: '', cells: [ANAT(cell('bar', { label: 'New combat' }, '390px'))] }]), grid: '0px 390px', framePad: '32px 36px', hasSpec: true, spec: SPEC },
+        G('variants', 'Variants × states', 'New combat and New preset: default, pressed, and disabled with a hint.', ['default', 'pressed', 'disabled'], '390px', [
+          { label: 'New combat', cells: ['default', 'pressed', 'disabled'].map(state => cell('bar', { label: 'New combat', state, hint: state === 'disabled' ? 'Combat limit reached' : '' }, '390px')) },
+          { label: 'New preset', cells: ['default', 'pressed', 'disabled'].map(state => cell('bar', { label: 'New preset', state }, '390px')) },
+        ]),
+        G('edge', 'Edge cases', 'Longest labels and hints in ru and de; one line each.', ['ru', 'de'], '390px', [
+          { label: 'Disabled + hint', cells: [cell('bar', { label: 'Новое сражение', state: 'disabled', hint: 'Достигнут лимит сражений' }, '390px'), cell('bar', { label: 'Neuer Kampf', state: 'disabled', hint: 'Kampflimit erreicht' }, '390px')] },
+        ]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;gap:24px;padding:{{ wrapPad }};font-family:'Rubik',sans-serif;color:#231F1C">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="ShareSheet" status="Draft" date="15.10.2026" desc="Player link in a sheet: QR code, the link with Copy, and Reissue. Opens from Share in the combat menu." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Sheet with the player link, a QR code and link actions." where="Combat screen, from Share in the combat menu." behaviour="Copy puts the link on the clipboard and shows Copied. Reissue makes a new link and releases every claim. × closes." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div></sc-if>
+    <div style="display:flex;flex-wrap:{{ g.wrap }};width:{{ g.w }};gap:24px 32px;align-items:flex-start">
+      <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="1">
+        <sc-if value="{{ it.isArrow }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;padding-top:22px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ it.arrowLabel }}" width="{{ 110 }}" height="{{ 480 }}" hint-size="110px,480px"></dc-import></div></sc-if>
+        <sc-if value="{{ it.isItem }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;gap:8px;width:{{ itemWidth }};max-width:366px">
+          <sc-if value="{{ it.showLabel }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ it.label }}</span></sc-if>
+          <div style="box-sizing:border-box;background:#FFFFFF;border:2px solid #231F1C;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:16px">
+            <div style="display:flex;align-items:center;gap:12px">
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">Share with players</span>
+                <span style="font-size:14px;color:#5F574D">Ambush at the Ferry</span>
+              </div>
+              <button aria-label="Close" style="flex:none;width:44px;height:44px;border:2px solid #E2D8C6;border-radius:22px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:0"><i class="ti ti-x" style="font-size:20px"></i></button>
+            </div>
+            <div style="align-self:center;width:220px;height:220px;box-sizing:border-box;border:2px dashed #8C8578;border-radius:16px;background:#F3EDE2;display:flex;align-items:center;justify-content:center">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:14px;background:#FFFFFF;padding:4px 8px;border-radius:4px">QR code</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;border:2px solid #E2D8C6;border-radius:12px;padding:0 4px 0 12px">
+              <span style="flex:1;min-width:0;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.link }}</span>
+              <button style="flex:none;height:40px;padding:0 16px;border:none;border-radius:20px;background:{{ it.copyBg }};color:{{ it.copyFg }};font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px"><i class="ti ti-{{ it.copyIcon }}" style="font-size:20px"></i>{{ it.copyText }}</button>
+            </div>
+            <span style="font-size:14px;color:#5F574D;text-wrap:pretty">Players claim their heroes. They see enemy names, health status and conditions, but not HP or defenses.</span>
+            <button style="height:58px;border:2px solid #E2D8C6;border-radius:29px;background:#FFFFFF;font-size:18px;font-weight:600;color:#B4232A;display:flex;align-items:center;justify-content:center;gap:8px"><i class="ti ti-refresh" style="font-size:20px"></i>Revoke and reissue link</button>
+          </div>
+        </div></sc-if>
+      </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._rv();
+    r.groups = (r.groups || []).map(g => { const flow = (g.items || []).some(i => i.isArrow); return { ...g, wrap: flow ? 'nowrap' : 'wrap', w: flow ? 'max-content' : 'auto' }; });
+    return r;
+  }
+  _rv() {
+    const single = !!this.props.embedded;
+    const mk = (label, copied, gen) => ({ isItem: true, isArrow: false,
+      label, showLabel: !single, link: `combat.example/combats/01J9ZQ/play?t=g${gen}.k7Fh2`,
+      copyBg: copied ? '#2E7A43' : '#231F1C', copyFg: '#FFFFFF', copyIcon: copied ? 'check' : 'copy', copyText: copied ? 'Copied' : 'Copy',
+    });
+    const SPEC = [{"part":"Sheet","v":"Border 2 ink, radius 24, padding 14, gap 16."},{"part":"Title","v":"Unbounded 18/700; the combat title 14 #5F574D."},{"part":"Close","v":"44 circle, border 2 #E2D8C6, × 20."},{"part":"QR","v":"220 square; react-qr-code in the app."},{"part":"Link","v":"52 high, border 2 #E2D8C6, radius 12; link 14 with an ellipsis."},{"part":"Copy","v":"40 high, radius 20, ink; #2E7A43 with Copied."}];
+    return {
+      gallery: !single, wrapPad: single ? '0' : '48px 56px 80px', itemWidth: single ? '100%' : '366px',
+      groups: single ? [{ title: '', desc: '', hasSpec: false, spec: [], items: [{ ...mk('', false, 3) }] }] : [
+        { title: 'Anatomy', desc: 'Link ready to copy.', hasSpec: true, spec: SPEC, items: [{ ...mk('', false, 3) }] },
+        { title: 'Variants × states', desc: 'Link, copied, and a new link after Reissue.', hasSpec: false, spec: [], items: [mk('Link', false, 3), mk('Link copied', true, 3), mk('After reissue: new link', false, 4)].map(x => ({ ...x })) },
+        { title: 'Flow', desc: 'Copy confirms in place; Reissue replaces the link and releases every claim.', items: [mk('Link', false, 3), { isArrow: true, isItem: false, arrowLabel: 'tap Copy' }, mk('Copied', true, 3), { isArrow: true, isItem: false, arrowLabel: 'tap Reissue' }, mk('New link', false, 4)] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:32px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Molecules" title="DefenseLine" status="Draft" date="15.10.2026" desc="AC, PD and MD of a unit: a line under the unit name in UnitRow and PlayerRow, three StatSquares in PresetCard." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="The three defenses of a unit, as one line or three squares." where="UnitRow and PlayerRow (line), PresetCard (squares)." behaviour="Display only. Hidden for enemies in Player view. Values are edited in UnitForm." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span><span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ g.desc }}</span></div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};display:flex">
+              <sc-if value="{{ b.isLine }}" hint-placeholder-val="{{ true }}"><span style="font-size:14px;line-height:1.25;color:{{ b.fg }};font-variant-numeric:tabular-nums;overflow-wrap:normal">{{ b.text }}</span></sc-if>
+              <sc-if value="{{ b.isSquares }}" hint-placeholder-val="{{ false }}">
+                <span style="display:flex;align-items:center;gap:4px">
+                  <sc-for list="{{ b.stats }}" as="s" hint-placeholder-count="3"><dc-import name="StatSquare" embedded="{{ true }}" kind="stat" k="{{ s.k }}" v="{{ s.v }}" style="width:40px" hint-size="40px,40px"></dc-import></sc-for>
+                </span>
+              </sc-if>
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'line' | 'squares'&quot;},&quot;d&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;[number, number, number]&quot;},&quot;ac&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;pd&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;md&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;dim&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const v = x => (x === undefined || x === null || x === '') ? '—' : x;
+    const mk = o => {
+      const d = o.d || [o.ac, o.pd, o.md];
+      const stats = [['AC', d[0]], ['PD', d[1]], ['MD', d[2]]].map(([k, x]) => ({ k, v: v(x) }));
+      return { isLine: (o.variant || 'line') === 'line', isSquares: o.variant === 'squares', stats,
+        text: stats.map(s => s.k + '\u00A0' + s.v).join('\u00A0· '), fg: o.dim ? '#8C8578' : '#5F574D' };
+    };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, showHead: false, pad: '0', rootW: '100%', groups: [{ cells: [{ ...mk(p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0' }] }] };
+    const C = (caption, o, w = '260px') => ({ ...mk(o), caption, cellW: w, stageBg: '#FFFFFF', stageR: '16px', stagePad: '16px' });
+    const SPEC = [{"part":"Text","v":"Rubik 14/400 #5F574D, tabular, “ · ” between values."},{"part":"Order","v":"Always AC, PD, MD. A missing value shows a dash. Wraps between pairs, never inside “AC 16”."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', desc: 'Line.', hasSpec: true, spec: SPEC, cells: [ANAT(C('', { d: [16, 14, 19] }))] },
+        { title: 'Variants × states', desc: 'Line in rows, squares in PresetCard. Display only.', cells: [C('Line', { d: [16, 14, 19] }), C('Squares', { variant: 'squares', d: [18, 16, 12] }, '160px')] },
+        { title: 'Edge cases', desc: 'Two and three digits and a missing value.', cells: [
+          C('Line, two digits', { d: [24, 22, 20] }), C('Line, three digits', { d: [105, 99, 120] }), C('Line, missing value', { d: [16, null, 19] }),
+          C('Squares, two digits', { variant: 'squares', d: [30, 28, 26] }, '160px'), C('Squares, missing value', { variant: 'squares', d: [18, null, 12] }, '160px') ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

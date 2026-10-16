@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="Dialog" status="Draft" date="15.10.2026" desc="Confirms a destructive or resetting action: an icon, a question as the title, what is lost, then Cancel and a verb." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Centred confirmation with two buttons." where="Combat screen (restart, clear, remove, revoke link), Combat list, Library, App pages (delete account)." behaviour="Opens over a scrim. Cancel or a scrim tap closes. The action runs it; Restart is neutral, the rest are danger." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.stageW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};min-height:{{ b.stageH }};display:flex;flex-direction:column;justify-content:{{ b.justify }}">
+
+
+
+              <sc-if value="{{ b.isDialog }}" hint-placeholder-val="{{ false }}">
+                <div style="box-sizing:border-box;background:#FFFFFF;border:2px solid #231F1C;border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:16px">
+                  <span style="width:48px;height:48px;border-radius:24px;background:{{ b.iconBg }};color:{{ b.iconFg }};display:flex;align-items:center;justify-content:center"><i class="ti ti-{{ b.icon }}" style="font-size:24px"></i></span>
+                  <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;line-height:1.25;overflow-wrap:anywhere">{{ b.title }}</span>
+                  <span style="font-size:16px;line-height:1.45;color:#231F1C;text-wrap:pretty">{{ b.body }}</span>
+                  {{ children }}
+                  <div style="display:flex;gap:8px;padding-top:4px">
+                    <div style="flex:1;min-width:0"><dc-import name="Button" embedded="{{ true }}" kind="button" variant="secondary" size="M" full="{{ true }}" label="{{ b.cancel }}" hint-size="100%,52px"></dc-import></div>
+                    <div style="flex:1;min-width:0"><dc-import name="Button" embedded="{{ true }}" kind="button" variant="{{ b.okVariant }}" size="M" full="{{ true }}" label="{{ b.ok }}" hint-size="100%,52px"></dc-import></div>
+                  </div>
+                </div>
+              </sc-if>
+
+
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;preset&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;sub&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryVariant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;primaryState&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;secondary&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;back&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;items&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;[icon:string,label:string,opts?:{danger?:boolean,divider?:boolean,hint?:string,tap?:boolean}]&gt;&quot;},&quot;width&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;active&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;email&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;height&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;text&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;action&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;body&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;ok&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tone&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'ink' | 'danger'&quot;},&quot;sample&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;children&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;ReactNode&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', SOFT = '#F3EDE2';
+    const DIALOGS = {
+      restart: { icon: 'refresh', title: 'Restart combat?', body: 'Units and claims stay. Initiative, HP, temp HP, conditions, disabled state, HP history, round and escalation die reset.', ok: 'Restart', tone: 'ink' },
+      clear: { icon: 'trash', title: 'Clear combat?', body: 'All 6 units are removed and every player claim is released.', ok: 'Clear' },
+      remove: { icon: 'user-minus', title: 'Remove Orc Berserker?', body: 'The unit leaves the turn order. Undo can bring it back.', ok: 'Remove' },
+      revoke: { icon: 'link-off', title: 'Revoke the link?', body: 'The current link stops working and every claim is released. Players need the new link.', ok: 'Revoke' },
+      deleteCombat: { icon: 'trash', title: 'Delete Ambush at the Ferry?', body: 'The combat, its 6 units and the player link are deleted. This can’t be undone.', ok: 'Delete' },
+      deletePreset: { icon: 'trash', title: 'Delete Orc Berserker?', body: 'The preset leaves the Library. Units already added to combats stay.', ok: 'Delete' },
+      deleteAccount: { icon: 'user-x', title: 'Delete your account?', body: 'All combats, presets and player links are deleted. This can’t be undone.', ok: 'Delete' },
+    };
+    const clean = x => Object.fromEntries(Object.entries(x || {}).filter(([, v]) => v != null && v !== ''));
+    const stage = (o) => ({ stageW: o.w || '390px', stageBg: o.bg ?? '#8C8578', stageR: o.r || '20px', stagePad: o.p || '12px', stageH: o.h || 'auto', justify: o.j || 'flex-end' });
+    const K = k => ({ isSheet: k === 'sheet', isPopover: k === 'popover' || k === 'menu', isDialog: k === 'dialog', isDrawer: k === 'drawer', isToast: k === 'toast' });
+    const MAKE = {
+      dialog: o => { const d = DIALOGS[o.preset] || {}; const t = { ...d, ...clean(o) }; const ink = (t.tone || 'danger') === 'ink';
+        return { ...K('dialog'), icon: t.icon || 'alert-triangle', title: t.title || '', body: t.body || '', ok: t.ok || 'OK', cancel: t.cancel || 'Cancel', okVariant: ink ? 'primary' : 'danger', iconBg: ink ? SOFT : '#F7E4E2', iconFg: ink ? INK : '#B4232A' }; }
+    };
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'dialog'](p), ...stage({ w: '100%', bg: 'transparent', r: '0', p: '0', j: 'flex-start' }) };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cells: [b] }] };
+    }
+    const C = (k, o, s = {}) => ({ ...MAKE[k](o), ...stage(s), caption: o.caption || '' });
+    const SPEC = [{"part":"Container","v":"Border 2 ink, radius 24, padding 16, gap 16; 24 from the screen edges."},{"part":"Icon","v":"48 circle: #F7E4E2 with a red icon for danger, #F3EDE2 for neutral."},{"part":"Title","v":"Unbounded 18/700, a question."},{"part":"Body","v":"Rubik 16, line height 1.45: what is lost."},{"part":"Buttons","v":"Button M: Secondary Cancel, then the action, equal width."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1760px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Clear combat.', hasSpec: true, spec: SPEC, cells: [ANAT(C('dialog', { preset: 'clear' }, { p: '24px', j: 'center', h: '420px' }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Restart is neutral; clear, remove, revoke and delete are danger.', cells: Object.keys(DIALOGS).map(k => C('dialog', { caption: k, preset: k }, { p: '24px', j: 'center', h: '420px' })) },
+        { id: 'edge', title: 'Edge cases', desc: 'Long names in the title and ru text wrap; buttons keep equal width.', cells: [
+          C('dialog', { caption: 'Long unit name', preset: 'remove', title: 'Remove Brother Tomas of the Silver Lantern Order?' }, { p: '24px', j: 'center', h: '420px' }),
+          C('dialog', { caption: 'ru', preset: 'deleteCombat', title: 'Удалить «Засада у переправы»?', body: 'Сражение, его 6 юнитов и ссылка для игроков удаляются. Это нельзя отменить.', ok: 'Удалить' }, { p: '24px', j: 'center', h: '420px' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

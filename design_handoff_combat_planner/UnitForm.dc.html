@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;color:inherit;cursor:pointer}
+</style>
+</helmet>
+<div style="display:flex;flex-direction:column;gap:24px;padding:{{ wrapPad }};font-family:'Rubik','Noto Sans JP',sans-serif;color:#231F1C">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+  <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="UnitForm" status="Draft" date="15.10.2026" desc="Sheet for adding or editing a unit: name, role, defenses, HP and note, or a preset picked from the Library." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="Unit form in a sheet, 12 from the phone edges." where="Combat screen: Add unit in Setup and during combat, Edit in an expanded UnitRow." behaviour="Steppers keep numbers within the vision limits. An empty name becomes a default name. From Library adds the picked preset." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <div style="display:flex;flex-wrap:wrap;gap:28px 32px;align-items:flex-start;width:{{ gridW }}">
+    <sc-for list="{{ items }}" as="it" hint-placeholder-count="5">
+      <sc-if value="{{ it.isHeading }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:0 0 100%;display:flex;flex-direction:column;gap:4px;padding-top:16px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ it.heading }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:860px;text-wrap:pretty">{{ it.sub }}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{ it.isSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ it.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+      <sc-if value="{{ it.isArrow }}" hint-placeholder-val="{{ false }}"><div style="align-self:flex-start;padding-top:22px"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ it.arrowLabel }}" width="{{ 110 }}" height="{{ 640 }}" hint-size="110px,640px"></dc-import></div></sc-if>
+      <sc-if value="{{ it.isCard }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:8px;width:{{ cardW }}">
+        <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ it.label }}</span></sc-if>
+        <div style="position:relative;box-sizing:border-box;background:#FFFFFF;border:2px solid #231F1C;border-radius:24px;padding:14px;display:flex;flex-direction:column;gap:{{ cardGap }};overflow:hidden">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+              <span style="font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">{{ it.title }}</span>
+              <span style="font-size:14px;color:#5F574D">{{ it.sub }}</span>
+            </div>
+            <button aria-label="Close" style="flex:none;width:44px;height:44px;border:2px solid #E2D8C6;border-radius:22px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;padding:0"><i class="ti ti-x" style="font-size:20px"></i></button>
+          </div>
+
+          <sc-if value="{{ it.isCreate }}" hint-placeholder-val="{{ true }}">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#F3EDE2;border-radius:24px;padding:4px">
+              <button style="height:40px;border:none;border-radius:20px;background:{{ it.tabNewBg }};color:{{ it.tabNewFg }};font-size:16px;font-weight:600">New</button>
+              <button style="height:40px;border:none;border-radius:20px;background:{{ it.tabPresetBg }};color:{{ it.tabPresetFg }};font-size:16px;font-weight:600">From Library</button>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ it.showForm }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#5F574D"><span>Name</span><span style="font-variant-numeric:tabular-nums;color:{{ it.nameCountColor }}">{{ it.nameCount }}</span></div>
+              <div style="min-height:48px;box-sizing:border-box;border:2px solid {{ it.nameLine }};border-radius:12px;padding:12px 12px;font-size:16px;font-weight:500;line-height:1.25;color:{{ it.nameColor }};overflow-wrap:anywhere">{{ it.nameText }}</div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:12px;font-weight:600;color:#5F574D">Type</span>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <sc-for list="{{ it.types }}" as="t" hint-placeholder-count="3">
+                  <button style="height:48px;box-sizing:border-box;border:2px solid {{ t.line }};border-radius:12px;background:{{ t.bg }};color:{{ t.fg }};font-size:16px;font-weight:600">{{ t.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ it.stepper }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column">
+                <div style="display:none">
+                  <sc-for list="{{ it.pairRows }}" as="n" hint-placeholder-count="2">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <span style="font-size:16px;font-weight:600">{{ n.long }}</span>
+                      <div style="display:flex;align-items:center;gap:4px">
+                        <button aria-label="Decrease" style="flex:none;width:44px;height:44px;border:none;border-radius:12px;background:{{ n.minBg }};color:{{ n.minFg }};display:flex;align-items:center;justify-content:center;padding:0"><i class="ti ti-minus" style="font-size:20px"></i></button>
+                        <span style="flex:1;min-width:0;height:44px;box-sizing:border-box;border-radius:12px;background:{{ n.valBg }};color:{{ n.valFg }};border:2px solid {{ n.valLine }};display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">{{ n.value }}</span>
+                        <button aria-label="Increase" style="flex:none;width:44px;height:44px;border:none;border-radius:12px;background:#F3EDE2;display:flex;align-items:center;justify-content:center;padding:0"><i class="ti ti-plus" style="font-size:20px"></i></button>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+                <sc-for list="{{ it.stepRows }}" as="n" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:4px;padding:{{ rowPad }}">
+                    <div style="display:flex;align-items:center;gap:8px;min-height:{{ rowH }}">
+                      <span style="flex:1;min-width:0;font-size:16px;font-weight:600">{{ n.long }}</span>
+                      <button aria-label="Decrease" style="flex:none;width:44px;height:44px;border:none;border-radius:12px;background:{{ n.minBg }};color:{{ n.minFg }};display:flex;align-items:center;justify-content:center;padding:0"><i class="ti ti-minus" style="font-size:20px"></i></button>
+                      <span style="flex:none;width:64px;height:44px;box-sizing:border-box;border-radius:12px;background:{{ n.valBg }};color:{{ n.valFg }};border:2px solid {{ n.valLine }};display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums">{{ n.value }}</span>
+                      <button aria-label="Increase" style="flex:none;width:44px;height:44px;border:none;border-radius:12px;background:#F3EDE2;display:flex;align-items:center;justify-content:center;padding:0"><i class="ti ti-plus" style="font-size:20px"></i></button>
+                    </div>
+                    <sc-if value="{{ n.hasErr }}" hint-placeholder-val="{{ false }}"><span style="align-self:flex-end;font-size:12px;font-weight:600;color:#B4232A">{{ n.err }}</span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ it.grid }}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{ it.numRows }}" as="row" hint-placeholder-count="2">
+              <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+                <sc-for list="{{ row.fields }}" as="n" hint-placeholder-count="3">
+                  <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+                    <span style="font-size:12px;font-weight:600;color:#5F574D;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ n.label }}</span>
+                    <div style="height:48px;box-sizing:border-box;border:2px solid {{ n.line }};border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ n.color }}">{{ n.value }}</div>
+                    <sc-if value="{{ n.hasErr }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:600;color:#B4232A">{{ n.err }}</span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-for>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:600;color:#5F574D"><span>Note</span><span style="font-variant-numeric:tabular-nums">{{ it.noteCount }}</span></div>
+              <div style="min-height:72px;box-sizing:border-box;border:2px solid #E2D8C6;border-radius:12px;padding:12px 12px;font-size:16px;line-height:1.45;color:{{ it.noteColor }}">{{ it.noteText }}</div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ it.showPresets }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;min-width:0"><dc-import name="SearchField" embedded="{{ true }}" kind="search" placeholder="Search presets" value="{{ it.libQuery }}" state="{{ it.libQueryState }}" hint-size="100%,48px"></dc-import></div>
+              <dc-import name="ToolButton" embedded="{{ true }}" kind="tool" icon="tags" label="Tags" count="{{ it.libTagCount }}" active="{{ it.libTagsOn }}" tap="{{ it.libTagsTap }}" hint-size="96px,48px"></dc-import>
+            </div>
+            <sc-if value="{{ it.libTagsOn }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px">
+                <sc-for list="{{ it.libChips }}" as="g" hint-placeholder-count="1"><dc-import name="Chip" embedded="{{ true }}" kind="chip" variant="tagActive" removable="{{ true }}" label="{{ g }}" hint-size="80px,36px"></dc-import></sc-for>
+                <dc-import name="Button" embedded="{{ true }}" kind="button" variant="ghost" size="S" label="Clear" hint-size="64px,48px"></dc-import>
+              </div>
+            </sc-if>
+            <div style="position:relative;height:336px;display:flex;flex-direction:column;overflow:hidden">
+            <sc-if value="{{ it.libEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="flex:1;box-sizing:border-box;border:2px dashed #E2D8C6;border-radius:12px;padding:24px 8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center"><span style="font-size:16px;font-weight:600">Nothing found</span><span style="font-size:14px;color:#5F574D">{{ it.libEmptyText }}</span></div>
+            </sc-if>
+            <sc-if value="{{ it.libHasList }}" hint-placeholder-val="{{ true }}">
+            <div style="flex:1;min-height:0;display:flex;flex-direction:column;border:2px solid #E2D8C6;border-radius:12px;overflow:hidden">
+              <sc-for list="{{ it.libPresets }}" as="p" hint-placeholder-count="5">
+                <div style="min-height:56px;display:flex;align-items:center;gap:12px;padding:8px 12px 8px 8px;background:{{ p.bg }};border-bottom:2px solid #E2D8C6">
+                  <span style="flex:none;width:44px;height:44px;border-radius:12px;background:{{ p.typeBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600">{{ p.type }}</span>
+                  <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:16px;font-weight:600;overflow-wrap:anywhere">{{ p.name }}</span>
+                    <span style="font-size:14px;color:#5F574D;font-variant-numeric:tabular-nums">HP {{ p.hp }} · AC {{ p.ac }} · PD {{ p.pd }} · MD {{ p.md }}</span>
+                  </span>
+                  <sc-if value="{{ p.on }}" hint-placeholder-val="{{ false }}"><i class="ti ti-check" style="font-size:20px;flex:none"></i></sc-if>
+                </div>
+              </sc-for>
+            </div>
+            </sc-if>
+            <sc-if value="{{ it.libLong }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;left:2px;right:2px;bottom:2px;height:48px;border-radius:0 0 10px 10px;background:linear-gradient(rgba(255,255,255,0),#FFFFFF);pointer-events:none"></span></sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ it.libSheet }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;inset:0;z-index:5;background:rgba(35,31,28,0.5)"></div>
+            <div style="position:absolute;left:8px;right:8px;bottom:8px;z-index:6"><dc-import name="TagSheet" embedded="{{ true }}" mode="filter" cta="{{ it.libSheetCta }}" options="{{ it.libTagOpts }}" hint-size="100%,420px"></dc-import></div>
+          </sc-if>
+
+          <button style="height:58px;border:none;border-radius:29px;background:{{ it.ctaBg }};color:{{ it.ctaFg }};font-family:'Unbounded',sans-serif;font-size:18px;font-weight:700">{{ it.cta }}</button>
+        </div>
+      </div>
+      </sc-if>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const TC = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const types = sel => ['Hero', 'Enemy', 'Ally'].map(t => ({ label: t, bg: t === sel ? TC[t] : '#FFFFFF', fg: t === sel ? '#FFFFFF' : '#231F1C', line: t === sel ? TC[t] : '#E2D8C6' }));
+    const num = (label, value, o = {}, long) => ({ label, long: long || label, minBg: o.atMin ? '#FAF6EE' : '#F3EDE2', minFg: o.atMin ? '#8C8578' : '#231F1C', value: String(value), valBg: o.err || o.empty ? '#FFFFFF' : '#231F1C', valFg: o.err ? '#B4232A' : o.empty ? '#8C8578' : '#FFFFFF', valLine: o.err ? '#B4232A' : o.empty ? '#E2D8C6' : '#231F1C', line: o.err ? '#B4232A' : o.empty ? '#E2D8C6' : '#E2D8C6', color: o.empty ? '#8C8578' : '#231F1C', hasErr: !!o.err, err: o.err || '' });
+    const mk = o => {
+      const create = o.mode !== 'edit', tab = o.tab || 'new', v = o.v || {};
+      const name = v.name || '', nameErr = !!o.nameErr;
+      const ready = !!name;
+      const r = {
+        isCard: true, isHeading: false, stepper: !!o.stepper, grid: !o.stepper,
+        label: o.label, title: create ? 'Add unit' : 'Edit unit', sub: create ? 'Ambush at the Ferry' : name,
+        isCreate: create, showForm: tab === 'new', showPresets: tab === 'preset',
+        tabNewBg: tab === 'new' ? '#231F1C' : 'transparent', tabNewFg: tab === 'new' ? '#FFFFFF' : '#231F1C',
+        tabPresetBg: tab === 'preset' ? '#231F1C' : 'transparent', tabPresetFg: tab === 'preset' ? '#FFFFFF' : '#231F1C',
+        nameText: name || (v.type || 'Enemy') + ' 1', nameColor: name ? '#231F1C' : '#8C8578', nameLine: nameErr ? '#B4232A' : name ? '#231F1C' : '#E2D8C6',
+        nameErr, nameCount: [...name].length + '/40', nameCountColor: [...name].length >= 40 ? '#B4232A' : '#5F574D',
+        types: types(v.type || 'Enemy'),
+        numRows: [
+          { fields: [num('Init bonus', v.bonus ?? '+0', { empty: v.bonus === undefined }, 'Initiative bonus'), num('Max HP', v.max ?? 10, { empty: v.max === undefined, atMin: v.max === 1 }), num('Temp HP', v.temp ?? 0, { empty: v.temp === undefined, atMin: (v.temp ?? 0) === 0 })] },
+          { fields: [num('AC', v.ac ?? 10, { empty: v.ac === undefined }, 'Armor Class'), num('PD', v.pd ?? 10, { empty: v.pd === undefined }, 'Physical Defense'), num('MD', v.md ?? 10, { empty: v.md === undefined }, 'Mental Defense')] },
+        ],
+        noteText: v.note || 'Optional', noteColor: v.note ? '#231F1C' : '#8C8578', noteCount: (v.note || '').length + '/250',
+        hasHint: create, hint: o.active === false ? 'Initiative is rolled when the combat starts' : 'Initiative is rolled on add: d20 ' + (v.bonus ?? '+0'),
+        cta: create ? (tab === 'preset' ? (o.pick ? 'Add ' + o.pick : 'Pick a preset') : 'Add unit') : 'Save changes',
+        ctaBg: (tab === 'preset' && !o.pick) || false ? '#E6DDCC' : '#231F1C',
+        ctaFg: (tab === 'preset' && !o.pick) || false ? '#5F574D' : '#FFFFFF',
+      };
+      const all = r.numRows.flatMap(x => x.fields); const by = k => all.find(x => x.label === k);
+      r.pairRows = []; r.stepRows = [by('Max HP'), by('Temp HP'), by('AC'), by('PD'), by('MD'), by('Init bonus')];
+      return r;
+    };
+    const vashti = { name: 'Vashti the Hexer', type: 'Hero', bonus: '+3', max: 36, temp: 0, ac: 16, pd: 14, md: 19, note: 'Hex on Orc Berserker until the end of round 4' };
+    const presetList = [
+      { name: 'Orc Berserker', type: 'Enemy', hp: 40, ac: 18, pd: 16, md: 12 },
+      { name: 'Goblin Archer', type: 'Enemy', hp: 18, ac: 16, pd: 14, md: 12 },
+      { name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 30, ac: 19, pd: 15, md: 17 },
+      { name: '影の射手ゴブリン', type: 'Enemy', hp: 18, ac: 16, pd: 14, md: 12 },
+    ];
+    presetList.forEach(p => p.tags = { 'Orc Berserker': ['Orcs', 'Ferry'], 'Goblin Archer': ['Goblins', 'Ferry'], 'Brother Tomas of the Silver Lantern Order': ['Allies'], '影の射手ゴブリン': ['Goblins'] }[p.name]);
+    presetList.push({ name: 'Orc Shaman', type: 'Enemy', hp: 30, ac: 17, pd: 15, md: 16, tags: ['Orcs'] });
+    const TAGC = { Ferry: 6, Goblins: 3, Orcs: 2, Allies: 5, Bosses: 2 };
+    const lib = (o = {}) => {
+      const q = (o.q || '').toLowerCase(), sel = o.tags || [], pk = o.pick ?? null;
+      const list = presetList.filter(p => (!q || p.name.toLowerCase().includes(q)) && (!sel.length || p.tags.some(x => sel.includes(x))));
+      return { libQuery: o.q || '', libQueryState: o.q ? 'focus' : 'default', libChips: sel, libTagsOn: sel.length > 0, libTagCount: sel.length || null, libTagsTap: !!o.sheet,
+        libPresets: list.map(p => ({ ...p, typeBg: TC[p.type], on: p.name === pk, bg: p.name === pk ? '#FFF4D2' : '#FFFFFF' })), libEmpty: !list.length, libHasList: list.length > 0, libLong: list.length > 4,
+        libEmptyText: 'No preset matches ' + [o.q ? '“' + o.q + '”' : '', sel.join(', ')].filter(Boolean).join(' in ') + '.',
+        libSheet: !!o.sheet, libSheetCta: 'Show ' + presetList.filter(p => !(o.sheetSel || sel).length || p.tags.some(x => (o.sheetSel || sel).includes(x))).length + ' presets',
+        libTagOpts: Object.keys(TAGC).map(k => ({ label: k, count: TAGC[k], on: (o.sheetSel || sel).includes(k) })) };
+    };
+    const pick = 'Orc Berserker';
+    const single = !!this.props.embedded;
+    const SPEC = [{"part":"Sheet","v":"Border 2 ink, radius 24, padding 14; 12 from the phone edges."},{"part":"Close","v":"× 44; closes without saving."},{"part":"Steppers","v":"Stepper M for Max HP, Temp HP, AC, PD, MD and Init bonus."},{"part":"Action","v":"Bottom action 58: Add unit or Save changes."}];
+    const H = (heading, sub) => ({ isHeading: true, isCard: false, heading, sub });
+    const all = [
+        mk({ stepper: true, label: 'New, empty', mode: 'create', tab: 'new' }),
+        mk({ stepper: true, label: 'New, filled', mode: 'create', tab: 'new', v: { name: 'Orc Shaman', type: 'Enemy', bonus: '+2', max: 30, temp: 0, ac: 17, pd: 15, md: 16 } }),
+        { ...mk({ label: 'From Library', mode: 'create', tab: 'preset' }), ...lib() },
+        { ...mk({ label: 'Library, Tags sheet', mode: 'create', tab: 'preset' }), ...lib({ sheet: true, sheetSel: ['Orcs'] }) },
+        { ...mk({ label: 'Library, filtered, picked', mode: 'create', tab: 'preset', pick }), ...lib({ tags: ['Orcs'], pick }) },
+        { ...mk({ label: 'Library, search “gob”', mode: 'create', tab: 'preset' }), ...lib({ q: 'gob' }) },
+        { ...mk({ label: 'Library, nothing found', mode: 'create', tab: 'preset' }), ...lib({ q: 'dragon', tags: ['Orcs'] }) },
+        mk({ stepper: true, label: 'Edit', mode: 'edit', v: vashti }),
+        mk({ stepper: true, label: 'Minimum values', mode: 'edit', v: { ...vashti, max: 1, temp: 0 } }),
+        mk({ stepper: true, label: '40-character name, ru', mode: 'edit', v: { ...vashti, name: 'Капитан стражи переправы Святослав Огнев', type: 'Ally', note: '' } }),
+    ];
+    const gal = [
+      H('Anatomy', 'Create, New, filled.'), { ...all[1], label: '' }, { isSpec: true, spec: SPEC, isCard: false, isHeading: false },
+      H('Variants: create', 'New or From Library: empty, filled, the library list, the Tags sheet and a picked preset.'), all[0], all[1], all[2], all[3], all[4],
+      H('Variants: edit', 'The same form with Save changes.'), all[7],
+      H('Edge cases', 'Search and no results, minimum values with “−” disabled, a 40-character ru name.'), all[5], all[6], all[8], all[9],
+      H('Flow', 'Add from the Library: filter by tag, then pick a preset. Add closes the sheet.'), all[2], { isArrow: true, isCard: false, arrowLabel: 'filter Orcs, tap a preset' }, all[4],
+    ].map(i => ({ isSpec: false, spec: [], isHeading: false, isArrow: false, ...i }));
+    return {
+      gridW: single ? 'auto' : '1240px', gallery: !single, wrapPad: single ? '0' : '48px 56px 80px', cardW: single ? '100%' : '366px', cardGap: single ? '12px' : '14px', rowPad: single ? '0' : '4px 0', rowH: single ? '48px' : '52px',
+      items: single ? [{ isSpec: false, spec: [], isArrow: false, ...all[this.props.variant ?? 0] }] : gal,
+      tags: ['Goblins', 'Orcs', 'Bosses', 'Allies', 'Ferry'].map((t, i) => ({ label: t, bg: i === 1 ? '#231F1C' : '#FFFFFF', fg: i === 1 ? '#FFFFFF' : '#231F1C', line: i === 1 ? '#231F1C' : '#E2D8C6' })),
+      presets: presetList.map(p => ({ ...p, typeBg: TC[p.type], on: p.name === pick, bg: p.name === pick ? '#FFF4D2' : '#FFFFFF' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

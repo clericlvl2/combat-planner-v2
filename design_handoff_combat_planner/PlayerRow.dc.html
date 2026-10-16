@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+button{font-family:inherit;cursor:pointer;color:inherit}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Organisms" title="PlayerRow" status="Draft" date="15.10.2026" desc="Unit row in the player view. The own hero is marked and expands; enemies show only status and conditions." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="One unit in the player’s turn order." where="Player view list, flows PV-F1 to PV-F5." behaviour="Only the own hero expands: Conditions, HP History, Note. Own role block sets initiative, own HP opens the calculator. Others are display only." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:{{ g.cellGap }};align-items:flex-start">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;width:{{ b.cellW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C">{{ b.caption }}</span></sc-if>
+            <div style="box-sizing:border-box;background:{{ b.stageBg }};border-radius:{{ b.stageR }};padding:{{ b.stagePad }};margin-bottom:{{ b.cellMb }};display:flex;flex-direction:column"><sc-if value="{{ b.isArrow }}" hint-placeholder-val="{{ false }}"><dc-import name="Flow" embedded="{{ true }}" kind="arrow" label="{{ b.label }}" width="{{ 110 }}" height="{{ 80 }}" hint-size="110px,80px"></dc-import></sc-if>
+
+              <sc-if value="{{ b.isPlayer }}" hint-placeholder-val="{{ false }}">
+                <div style="position:relative;display:grid;grid-template-columns:62px minmax(0,1fr) 104px;min-height:72px;border-radius:16px;border:{{ b.border }};background:{{ b.bg }};box-sizing:border-box;overflow:{{ b.ovf }}">
+                  <div style="display:grid;grid-template-columns:minmax(0,1fr);align-items:stretch"><dc-import name="RoleBlock" embedded="{{ true }}" type="{{ b.type }}" value="{{ b.rbValue }}" editable="{{ b.mine }}" die="{{ b.showDie }}" active="{{ b.active }}" mine="{{ b.mine }}" dim="{{ b.rbDim }}" radius="{{ b.rbRadius }}" tap="{{ b.rbTap }}" style="width:62px;height:100%" hint-size="62px,72px"></dc-import>
+                  </div>
+                  <div style="padding:12px 4px 12px 12px;display:flex;flex-direction:column;justify-content:center;gap:4px;min-width:0">
+                    <span style="font-size:16px;font-weight:600;line-height:1.25;color:{{ b.nameColor }};overflow-wrap:anywhere;text-wrap:pretty;text-decoration:{{ b.deco }}">{{ b.name }}</span>
+                    <sc-if value="{{ b.hasClaim }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;color:#1E5FA8"><i class="ti ti-user" style="font-size:16px"></i>{{ b.claim }}</span></sc-if>
+                    <sc-if value="{{ b.showDefs }}" hint-placeholder-val="{{ true }}"><dc-import name="DefenseLine" embedded="{{ true }}" d="{{ b.dArr }}" style="width:100%;height:auto;min-height:0" hint-size="100%,18px"></dc-import></sc-if>
+                    <sc-if value="{{ b.hasConds }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:4px"><sc-for list="{{ b.conds }}" as="c" hint-placeholder-count="1"><span style="display:inline-flex;align-items:center;height:20px;box-sizing:border-box;font-size:12px;font-weight:700;line-height:1;border-radius:999px;padding:0 8px;background:{{ c.bg }};color:{{ c.fg }}">{{ c.label }}</span></sc-for></div></sc-if>
+                    <sc-if value="{{ b.showNote }}" hint-placeholder-val="{{ false }}"><dc-import name="NoteField" embedded="{{ true }}" variant="line" note="{{ b.note }}" hint-size="100%,20px"></dc-import></sc-if>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:flex-end;padding-right:6px">
+                    <dc-import name="HpBox" embedded="{{ true }}" variant="player" hp="{{ b.hpNum }}" max="{{ b.hpMax }}" temp="{{ b.hpTemp }}" enemy="{{ b.hpEnemy }}" mine="{{ b.mine }}" disabled="{{ b.hpOff }}" tap="{{ b.hpTap }}" hint-size="96px,54px"></dc-import>
+                  </div>
+                  <sc-if value="{{ b.expanded }}" hint-placeholder-val="{{ false }}">
+                    <div style="grid-column:1 / -1;border-top:2px solid #E2D8C6;padding:12px;display:flex;flex-direction:column;gap:8px">
+                      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px">
+                        <div style="position:relative">
+                          <div style="height:48px;box-sizing:border-box;border:2px solid {{ b.condLine }};border-radius:12px;background:#FFFFFF;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px 0 12px;outline:{{ b.condRing }};outline-offset:2px"><span>Conditions</span><i class="ti ti-chevron-{{ b.condChev }}" style="font-size:20px"></i></div>
+                        </div>
+                        <div style="height:48px;box-sizing:border-box;border:2px solid #E2D8C6;border-radius:12px;background:#FFFFFF;font-size:14px;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:0 12px 0 12px"><span>HP History</span><i class="ti ti-chevron-down" style="font-size:20px"></i></div>
+                      </div>
+                      <dc-import name="NoteField" embedded="{{ true }}" note="{{ b.note }}" editing="{{ b.noteEdit }}" draft="{{ b.noteDraft }}" tap="{{ b.noteTap }}" hint-size="100%,56px"></dc-import>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+        </sc-for>
+      <sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;unit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;{init,name,type,hp,max,temp?,cond?,claim?,d?,note?,active?,disabled?}&quot;},&quot;mine&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;setup&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;expanded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;condOpen&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteEdit&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noteDraft&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;title&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;desc&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'Active' | 'Setup'&quot;},&quot;meta&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tag&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;open&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;name&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;type&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;hp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;max&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;temp&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;ac&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;pd&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;md&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tags&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string[]&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'dm' | 'player'&quot;},&quot;enemy&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;k&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;v&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;'card'|'chevron'|'edit'|'duplicate'|'delete'|'hp'|'init'|'cond'|'note'&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ isArrow: false, ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6';
+    const TC = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const TAGS = ['#B4232A', '#A85400', '#8A6A00', '#2E7A43', '#0E5E63', '#1E5FA8', '#5C4026', '#8C8578'];
+    const CC = { charmed: ['#F9DDE6', '#8A2448'], confused: ['#DDEFD5', '#2F6B1F'], dazed: ['#FFF1B8', '#6B5600'], fear: ['#E3E1DC', '#3D3A35'], helpless: ['#F6DCD5', '#8A2E17'], hindered: ['#D7EBF5', '#12506E'], shocked: ['#D5F0F0', '#0E5E63'], stuck: ['#E9DFD1', '#5C4026'], stunned: ['#FBE0C2', '#8A3F00'], vulnerable: ['#F8D7D7', '#9B1C1C'], weakened: ['#EDE6C9', '#5E5214'], staggered: ['#DCE6F7', '#1E4E8C'] };
+    const ST = { Full: ['#2E7A43', 4], Wounded: ['#855800', 3], Bloodied: ['#B33A0A', 2], Dead: ['#57534E', 0] };
+    const TINT = { Full: '#E3F1E6', Wounded: '#F8ECD2', Bloodied: '#FBE3D8', Dead: '#F3EDE2' };
+    const status = (hp, max) => hp <= 0 ? 'Dead' : hp >= max ? 'Full' : hp * 2 >= max ? 'Wounded' : 'Bloodied';
+    const hpStr = (hp, max) => (hp < 0 ? '−' + Math.abs(hp) : hp) + '/' + max;
+    const ring = t => t ? '3px solid #FFE7A3' : 'none';
+    const K = k => ({ isPlayer: k === 'player', isCombat: k === 'combat', isPreset: k === 'preset', isHp: k === 'hp', isStat: k === 'stat' });
+
+    const player = (o) => {
+      const u = o.unit || {}, st = status(u.hp, u.max), enemy = u.type === 'Enemy', dim = st === 'Dead' || u.disabled, mine = !!o.mine, setup = !!o.setup, active = !!u.active && !setup;
+      const exp = mine && !!o.expanded, conds = setup ? [] : (u.cond || []);
+      return { ...K('player'), type: u.type, name: u.name, init: u.init, mine, active,
+        showInit: u.init != null, showDie: mine && u.init == null, rbValue: u.init ?? '', rbDim: dim, rbRadius: exp ? '14px 0 0 0' : '14px 0 0 14px', rbTap: o.tap === 'init',
+        initLine: mine ? '2px dashed #FFFFFF' : '0', blockRing: o.tap === 'init' ? '3px solid #FFE7A3' : 'none', blockBR: exp ? '0' : '14px',
+        blockBg: dim ? '#5F574D' : TC[u.type], bg: active ? '#FFE7A3' : dim ? '#F3EDE2' : '#FFFFFF',
+        border: exp || active ? '2px solid ' + INK : dim ? '2px solid #E2D8C6' : '2px solid ' + LINE, ovf: o.condOpen ? 'visible' : 'hidden',
+        nameColor: dim ? '#5F574D' : INK, deco: st === 'Dead' ? 'line-through' : 'none',
+        hasClaim: !!u.claim, claim: u.claim || '', showDefs: !enemy && !!u.d, dArr: u.d || [],
+        conds: conds.map(c => ({ label: c, bg: CC[c][0], fg: CC[c][1] })), hasConds: conds.length > 0,
+        showNote: !!u.note && !exp && mine, note: u.note || '',
+        hpNum: u.hp, hpMax: u.max, hpTemp: u.temp || 0, hpEnemy: enemy, hpOff: dim, hpTap: o.tap === 'hp', showHpNum: !enemy, hpText: hpStr(u.hp, u.max), status: st, stColor: ST[st][0], hpBg: dim ? '#F3EDE2' : TINT[st], hpNumLine: mine && !dim ? '2px dashed ' + INK : '0', hpRing: ring(o.tap === 'hp'),
+        hasTemp: !!u.temp, tempText: u.temp ? '+' + u.temp + ' temp' : '',
+        expanded: exp, condOpen: exp && !!o.condOpen, condLine: o.condOpen ? INK : LINE, condChev: o.condOpen ? 'up' : 'down', condRing: ring(o.tap === 'cond'),
+        condSel: u.cond || [], condOpts: Object.keys(CC).map(c => ({ label: c, cond: true, on: (u.cond || []).includes(c) })),
+        noteEdit: !!o.noteEdit, noteDraft: o.noteDraft ?? u.note ?? '', noteTap: o.tap === 'note' };
+    };
+    const MAKE = { player 
+    };
+
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'player'](p), cellW: '100%', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', cellGap: '0', cells: [b] }] };
+    }
+    const C = (k, o, w = '366px') => ({ ...MAKE[k](o), caption: o.caption || '', cellW: w, stageBg: '#FAF6EE', stageR: '16px', stagePad: '12px', cellMb: '0' });
+    const vashti = { init: 15, name: 'Vashti the Hexer', type: 'Hero', hp: 20, max: 36, cond: ['dazed'], claim: 'Mika', d: [16, 12, 15], note: 'Concentrating on Hex' };
+    const SPEC = [{"part":"Row","v":"Min 72 high, radius 16, border 2. Own hero light blue; active turn ink border."},{"part":"RoleBlock","v":"“You” on the own hero; dashed initiative when editable."},{"part":"Name","v":"Rubik 16/600, wraps; struck through when dead."},{"part":"Player","v":"Claimed by: 14/600 #1E5FA8 with a user icon 16."},{"part":"Conditions","v":"Chip S per condition, wraps."},{"part":"HP","v":"HpBox player variant; dashed number on the own hero."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '40px', rootW: '1640px',
+      groups: [
+        { id: 'anatomy', title: 'Anatomy', desc: 'Own hero, claimed, one condition.', cellGap: '24px', hasSpec: true, spec: SPEC, cells: [ANAT(C('player', { unit: vashti, mine: true }))] },
+        { id: 'variants', title: 'Variants × states', desc: 'Own hero collapsed, active, expanded and editing; other heroes, allies and enemies.', cellGap: '24px', cells: [
+          C('player', { caption: 'Own hero', unit: vashti, mine: true }),
+          C('player', { caption: 'Own, active turn', unit: { ...vashti, active: true }, mine: true }),
+          C('player', { caption: 'Own, expanded', unit: vashti, mine: true, expanded: true }),
+          C('player', { caption: 'Own, Conditions open', unit: vashti, mine: true, expanded: true, condOpen: true, tap: 'cond' }),
+          C('player', { caption: 'Own, editing note', unit: vashti, mine: true, expanded: true, noteEdit: true, noteDraft: 'Concentrating on Hex, 2 rounds left', tap: 'note' }),
+          C('player', { caption: 'Own, Setup, no initiative', unit: { ...vashti, init: null }, mine: true, setup: true, tap: 'init' }),
+          C('player', { caption: 'Other hero', unit: { init: 19, name: 'Ser Aldric', type: 'Hero', hp: 52, max: 52, claim: 'Jonas', d: [18, 14, 12] } }),
+          C('player', { caption: 'Enemy, Bloodied', unit: { init: 17, name: 'Orc Berserker', type: 'Enemy', hp: 14, max: 40, cond: ['staggered'] } }),
+          C('player', { caption: 'Enemy, Dead', unit: { init: 12, name: 'Goblin Archer 1', type: 'Enemy', hp: -3, max: 18 } }) ] },
+        { id: 'edge', title: 'Edge cases', desc: 'Long names wrap, temp HP, three-digit HP, and a ru name with four conditions.', cellGap: '24px', cells: [
+          C('player', { caption: 'Ally, temp HP, long name', unit: { init: 9, name: 'Brother Tomas of the Silver Lantern Order', type: 'Ally', hp: 24, max: 30, temp: 5, d: [17, 15, 13] } }),
+          C('player', { caption: 'Ally, three-digit HP', unit: { init: 14, name: 'Silver Dragon Wyrmling', type: 'Ally', hp: 187, max: 240, temp: 120, d: [20, 18, 17] } }),
+          C('player', { caption: 'ru, four conditions', unit: { init: 17, name: 'Орк-берсерк', type: 'Enemy', hp: 14, max: 40, cond: ['staggered', 'dazed', 'vulnerable', 'stuck'] } }) ] },
+        { id: 'flow', title: 'Flow', desc: 'Own hero: expand the row, then edit the note in place.', cellGap: '24px', cells: [
+          C('player', { caption: 'Own, tap row', unit: vashti, mine: true, tap: 'card' }), { isArrow: true, isPlayer: false, label: 'tap row', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' },
+          C('player', { caption: 'Expanded', unit: vashti, mine: true, expanded: true, tap: 'note' }), { isArrow: true, isPlayer: false, label: 'tap Note', caption: '', cellW: '110px', stageBg: 'transparent', stageR: '0', stagePad: '0', cellMb: '0' },
+          C('player', { caption: 'Editing note', unit: vashti, mine: true, expanded: true, noteEdit: true, noteDraft: 'Concentrating on Hex' }) ] },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

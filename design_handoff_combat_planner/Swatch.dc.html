@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:40px;width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Atoms" title="Swatch" status="Draft" date="15.10.2026" desc="One colour choice for a combat. Eight in a SwatchRow. Selected: ink ring through a white gap and a check." hint-size="1100px,200px"></dc-import>
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="One colour for a combat card and its dot." where="SwatchRow in New combat and Edit combat." behaviour="Single select within the row. Tap selects." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="1">
+    <section style="display:flex;flex-direction:column;gap:12px;width:{{ rootW }}">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span></sc-if>
+      <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;width:{{ rootW }}">
+        <sc-for list="{{ g.cells }}" as="b" hint-placeholder-count="1">
+          <div style="display:flex;flex-direction:column;gap:8px;align-items:{{ b.align }};min-width:{{ b.cellW }};width:{{ b.fullW }}">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600">{{ b.caption }}</span></sc-if>
+            <div style="background:{{ b.stage }};border-radius:12px;padding:{{ b.stagePad }};display:flex;width:{{ b.fullW }};box-sizing:border-box">
+              <span style="flex:none;width:{{ b.size }};height:{{ b.h }};aspect-ratio:1;border-radius:12px;background:{{ b.bg }};box-shadow:{{ b.ring }};display:flex;align-items:center;justify-content:center;color:#FFFFFF"><sc-if value="{{ b.on }}" hint-placeholder-val="{{ false }}"><i class="ti ti-check" style="font-size:{{ b.icon }}"></i></sc-if></span>
+            </div>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="flex:0 0 100%;display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if>
+    </section>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;on&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;shape&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;square&quot;,&quot;round&quot;],&quot;default&quot;:&quot;square&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;S&quot;,&quot;M&quot;,&quot;L&quot;],&quot;default&quot;:&quot;M&quot;,&quot;tsType&quot;:&quot;string&quot;},&quot;color&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;disabled&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const TAGS = ['#B4232A', '#A85400', '#8A6A00', '#2E7A43', '#0E5E63', '#1E5FA8', '#5C4026', '#6E685F'];
+    const SZ = { S: [32, 16], M: [40, 20], L: [48, 24] };
+    const box = (o) => { const [z, ic] = SZ[o.size || 'M'], on = !!o.on;
+      return { size: o.fluid ? '100%' : z + 'px', h: o.fluid ? 'auto' : z + 'px', icon: ic + 'px', on, bg: o.color || TAGS[0], ring: on ? '0 0 0 2px #FFFFFF, 0 0 0 4px #231F1C' : o.tap ? '0 0 0 3px #FFE7A3' : 'none' }; };
+    const p = this.props;
+    if (p.embedded) return { gallery: false, pad: '0', rootW: 'auto', groups: [{ title: '', cells: [{ ...box(p), caption: '', cellW: '0', stage: 'transparent', stagePad: '0', align: p.fluid ? 'stretch' : 'flex-start', fullW: p.fluid ? '100%' : 'auto' }] }], rootW: p.fluid ? '100%' : 'auto' };
+    const C = (caption, o) => ({ ...box(o), caption, cellW: '96px', stage: '#FFFFFF', stagePad: '16px', align: 'flex-start', fullW: 'auto' });
+    const SPEC = [{"part":"Tile","v":"M 40 (S 32, L 48) square, radius 12. One of 8 tag colours."},{"part":"Check","v":"20 white, only when selected."},{"part":"Ring","v":"Selected: 2 white gap, then 2 ink outside the tile."}];
+    return { gallery: true, pad: '48px 56px 80px', rootW: 'max-content',
+      groups: [
+        { title: 'Anatomy', cells: [{ ...(C('Selected, M', { color: TAGS[5], on: true })) }], hasSpec: true, spec: SPEC },
+        { title: 'Variants × states', cells: [...TAGS.map((c, i) => C('Colour ' + (i + 1), { color: c })), C('Selected', { color: TAGS[0], on: true }), C('Tap', { color: TAGS[5], tap: true })] },
+        { title: 'Sizes', cells: ['S', 'M', 'L'].map(z => C(z, { size: z, on: true, color: TAGS[5] })) },
+      ] };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700&family=Rubik:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+html{background:#DCD8CF}body{margin:0;background:#DCD8CF;min-height:100vh;font-family:"Rubik","Noto Sans JP",sans-serif;color:#231F1C;-webkit-font-smoothing:antialiased}
+a{color:#231F1C}a:hover{color:#B4232A}
+</style>
+</helmet>
+<div style="padding:{{ pad }};display:flex;flex-direction:column;gap:{{ gap }};width:{{ rootW }};box-sizing:border-box">
+  <sc-if value="{{ showHead }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="pageHead" section="Molecules" title="RadioList" status="Draft" date="15.10.2026" desc="One option from a list in a sheet: sort combats, sort presets, language. The selected row is tinted; applies at once." hint-size="1100px,200px"></dc-import>
+  </sc-if>
+  <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+    <dc-import name="Flow" embedded="{{ true }}" kind="overview" n="2" what="List of rows with a Radio mark and a label." where="SortSheet (combats, presets), App pages Settings (language)." behaviour="Tap a row selects it and applies at once. Done closes the sheet." hint-size="960px,160px"></dc-import>
+  </sc-if>
+  <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+    <div id="{{ g.id }}" style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span style="font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700">{{ g.title }}</span>
+          <span style="font-size:14px;line-height:1.45;color:#5F574D;max-width:900px;text-wrap:pretty">{{ g.desc }}</span>
+        </div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:24px"><div style="background:{{ g.frameBg }};border-radius:20px;padding:{{ g.framePad }};display:flex;flex-direction:column;gap:16px">
+        <sc-if value="{{ g.showCols }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;padding-bottom:6px;border-bottom:1px solid #E6DDCC">
+            <span></span>
+            <sc-for list="{{ g.cols }}" as="c" hint-placeholder-count="3"><span style="font-size:12px;font-weight:700;color:#5F574D;letter-spacing:0.04em">{{ c }}</span></sc-for>
+          </div>
+        </sc-if>
+        <sc-for list="{{ g.rows }}" as="r" hint-placeholder-count="2">
+          <div style="display:grid;grid-template-columns:{{ g.grid }};gap:24px;align-items:start">
+            <sc-if value="{{ gallery }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;font-weight:600;color:#231F1C;padding-top:10px">{{ r.label }}</span></sc-if>
+            <sc-for list="{{ r.cells }}" as="b" hint-placeholder-count="1">
+              <div style="display:flex;flex-direction:column;min-width:0;width:{{ b.cellW }}">
+
+
+                <sc-if value="{{ b.isRadio }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column">
+                    <sc-for list="{{ b.opts }}" as="o" hint-placeholder-count="3">
+                      <div style="min-height:{{ b.zh }};box-sizing:border-box;display:flex;align-items:center;gap:12px;padding:4px 8px;border-radius:12px;background:{{ o.bg }};outline:{{ o.ring }};outline-offset:-2px">
+                        <dc-import name="Radio" embedded="{{ true }}" on="{{ o.on }}" hint-size="22px,22px"></dc-import>
+                        <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px"><span style="font-size:{{ b.zfs }};font-weight:{{ o.w }}">{{ o.label }}</span><sc-if value="{{ o.hasSub }}" hint-placeholder-val="{{ false }}"><span style="font-size:14px;color:#5F574D">{{ o.sub }}</span></sc-if></span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+
+
+
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </div><sc-if value="{{ g.hasSpec }}" hint-placeholder-val="{{ false }}"><div style="display:flex"><div style="flex:0 1 600px;min-width:0"><dc-import name="Flow" embedded="{{ true }}" kind="spec" spec="{{ g.spec }}" hint-size="100%,200px"></dc-import></div></div></sc-if></div>
+    </div>
+  </sc-for>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;embedded&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;kind&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;variant&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;tone&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;label&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;value&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;state&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;removable&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;options&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;Array&lt;string | {label:string, sub?:string, count?:number, on?:boolean, hl?:boolean, cond?:boolean}&gt;&quot;},&quot;query&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;createTop&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;createBottom&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;noMatch&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;boolean&quot;},&quot;icon&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;string&quot;},&quot;count&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number&quot;},&quot;tap&quot;:{&quot;editor&quot;:null,&quot;tsType&quot;:&quot;number | boolean&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const r = this._base();
+    const fix = c => ({ ...c });
+    r.groups = (r.groups || []).map(g => ({ hasSpec: false, spec: [], showCols: !!(g.cols && g.cols.length), ...g, rows: g.rows ? g.rows.map(x => ({ ...x, cells: (x.cells || []).map(fix) })) : g.rows, cells: g.cells ? g.cells.map(fix) : g.cells }));
+    return r;
+  }
+  _base() {
+    const INK = '#231F1C', LINE = '#E2D8C6', HL = '#FFF4D2';
+    const ROLE = { Hero: '#1E5FA8', Enemy: '#B4232A', Ally: '#2D7D46' };
+    const COND = { charmed: ['#F9DDE6', '#8A2448'], confused: ['#DDEFD5', '#2F6B1F'], dazed: ['#FFF1B8', '#6B5600'], fear: ['#E3E1DC', '#3D3A35'], helpless: ['#F6DCD5', '#8A2E17'], hindered: ['#D7EBF5', '#12506E'], shocked: ['#D5F0F0', '#0E5E63'], stuck: ['#E9DFD1', '#5C4026'], stunned: ['#FBE0C2', '#8A3F00'], vulnerable: ['#F8D7D7', '#9B1C1C'], weakened: ['#EDE6C9', '#5E5214'], staggered: ['#DCE6F7', '#1E4E8C'] };
+    const TAGS = ['#B4232A', '#A85400', '#8A6A00', '#2E7A43', '#0E5E63', '#1E5FA8', '#5C4026', '#8C8578'];
+    const tapRing = (i, tap) => tap === i ? '3px solid #FFE7A3' : 'none';
+    const flags = k => ({ isSeg: k === 'segmented', isRadio: k === 'radio', isCheck: k === 'check', isSwatch: k === 'swatches', isChip: k === 'chip' });
+    const SZ = { segmented: { S: [36, 14], M: [44, 16], L: [52, 18] }, radio: { S: [44, 14], M: [52, 16], L: [60, 18] }, check: { S: [40, 14], M: [48, 16], L: [56, 18] } };
+    const MAKE0 = {
+      segmented: o => {
+        const opts = o.options || ['Hero', 'Enemy', 'Ally'], sel = o.value ?? 0, role = o.tone === 'role';
+        return { ...flags('segmented'), segGrid: `repeat(${opts.length},minmax(0,1fr))`, opts: opts.map((label, i) => {
+          const on = i === sel, c = role ? (ROLE[label] || INK) : INK, dis = o.state === 'disabled';
+          return { label, bg: on ? (dis ? '#E6DDCC' : c) : '#FFFFFF', fg: on ? (dis ? '#8C8578' : '#FFFFFF') : dis ? '#8C8578' : INK, border: on ? 'none' : '2px solid ' + LINE, ring: tapRing(i, o.tap) };
+        }) };
+      },
+      radio: o => ({ ...flags('radio'), opts: (o.options || ['Newest first', 'Last played', 'A–Z']).map((x, i) => {
+        const it = typeof x === 'string' ? { label: x } : x, on = i === (o.value ?? 0);
+        return { label: it.label, sub: it.sub || '', hasSub: !!it.sub, on, bg: on ? HL : 'transparent', line: on ? INK : '#8C8578', w: on ? 700 : 500, ring: tapRing(i, o.tap) };
+      }) }),
+      check: o => ({ ...flags('check'), query: o.query || '', createTop: !!o.createTop, createBottom: !!o.createBottom, noMatch: !!o.noMatch,
+        opts: (o.options || []).map((x, i) => {
+          const it = typeof x === 'string' ? { label: x } : x, on = !!it.on, cond = it.cond && COND[it.label];
+          return { label: it.label, count: it.count ?? '', on, bg: it.hl ? HL : 'transparent', w: on ? 700 : 500, line: on ? INK : '#8C8578', boxBg: on ? INK : '#FFFFFF', ring: tapRing(i, o.tap),
+            hasDot: !!cond, plain: !cond, dotBg: cond ? cond[0] : '', dotFg: cond ? cond[1] : '' };
+        }) }),
+      swatches: o => ({ ...flags('swatches'), opts: TAGS.map((c, i) => { const on = i === (o.value ?? 0); return { c, on, ring: on ? '0 0 0 2px #FFFFFF, 0 0 0 4px #231F1C' : o.tap === i ? '0 0 0 3px #FFE7A3' : 'none' }; }) }),
+      chip: o => {
+        const v = o.variant || 'tag', st = o.state || 'default', L = o.label || '';
+        const SIZE = { S: { h: 20, px: 8, fs: 12, fw: 700, is: 12 }, M: { h: 28, px: 10, fs: 13, fw: 600, is: 14 }, L: { h: 36, px: 12, fs: 14, fw: 600, is: 15 } };
+        const def = (v === 'tag' || v === 'tagActive' || v === 'add') ? 'L' : 'S';
+        const z = SIZE[o.size || def];
+        const bw = (v === 'tag' || v === 'tagActive' || v === 'add') ? (z.h >= 28 ? 2 : 1.5) : 0;
+        const padR = o.removable ? z.px - 2 : z.px;
+        const base = { ...flags('chip'), label: L, icon: o.icon || '', hasIcon: !!o.icon, count: o.count ?? '', hasCount: o.count != null && o.count !== '', removable: !!o.removable, ring: o.tap ? '3px solid #FFE7A3' : 'none', countFg: '#5F574D',
+          h: z.h + 'px', padIn: '0 ' + padR + 'px 0 ' + z.px + 'px', fs: z.fs + 'px', fw: z.fw, iconSize: z.is + 'px' };
+        if (v === 'condition') { const c = COND[L] || ['#E3E1DC', '#3D3A35']; return { ...base, border: 'none', bg: c[0], fg: c[1] }; }
+        if (v === 'status') { const on = L === 'Active'; return { ...base, border: 'none', bg: on ? '#FFE7A3' : '#F3EDE2', fg: on ? INK : '#5F574D', fw: 700 }; }
+        if (v === 'meta') return { ...base, border: 'none', bg: '#F3EDE2', fg: INK };
+        if (v === 'add') return { ...base, border: bw + 'px dashed #8C8578', bg: st === 'pressed' ? '#F3EDE2' : '#FFFFFF', fg: INK, hasIcon: true, icon: o.icon || 'plus' };
+        const on = v === 'tagActive' || o.active;
+        return { ...base, border: bw + 'px solid ' + (on ? INK : LINE), bg: on ? (st === 'pressed' ? '#3A3531' : INK) : st === 'pressed' ? '#F3EDE2' : '#FFFFFF', fg: on ? '#FFFFFF' : INK, countFg: on ? '#FFFFFF' : '#5F574D' };
+      },
+    };
+    const MAKE = Object.fromEntries(Object.entries(MAKE0).map(([k, f]) => [k, o => { const z = (SZ[k] || {})[o.size || 'M']; return z ? { zh: z[0] + 'px', zfs: z[1] + 'px', ...f(o) } : f(o); }]));
+    const p = this.props;
+    if (p.embedded) {
+      const b = { ...MAKE[p.kind || 'radio'](p), cellW: '100%' };
+      return { gallery: false, pad: '0', gap: '0', rootW: '100%', groups: [{ id: 'one', grid: 'minmax(0,1fr)', frameBg: 'transparent', framePad: '0', cols: [], rows: [{ cells: [b] }] }] };
+    }
+    const G = (id, title, desc, cols, w, rows) => ({ id, title, desc, cols: cols.map(c => c.toUpperCase()), grid: `160px repeat(${cols.length}, ${w})`, frameBg: '#FFFFFF', framePad: '24px 28px', rows });
+    const C = (k, o, w) => ({ ...MAKE[k](o), cellW: w });
+    const SPEC = [{"part":"Row","v":"M 52 high, padding 4 8, radius 12, gap 12. Selected row tinted."},{"part":"Radio","v":"Radio M, 22."},{"part":"Label","v":"Rubik 16, 600 when selected. Optional sub line 14 #5F574D."}];
+    const ANAT = (o) => o;
+    return {
+      gallery: true, showHead: !new URLSearchParams(location.search).get('embed'), pad: '48px 56px 80px', gap: '36px', rootW: 'max-content',
+      groups: [
+        { ...G('anatomy', 'Anatomy', 'Sort combats, Newest first selected.', [], '330px', [{ label: '', cells: [ANAT(C('radio', { value: 0 }, '330px'))] }]), grid: '0px 330px', framePad: '32px 36px', hasSpec: true, spec: SPEC },
+        G('variants', 'Variants × states', 'Sort and language lists: default and tap.', ['default', 'tap'], '330px', [
+          { label: 'Sort combats', cells: [C('radio', { value: 0 }, '330px'), C('radio', { value: 0, tap: 1 }, '330px')] },
+          { label: 'Language', cells: [C('radio', { options: ['English', 'Deutsch', 'Español', 'Français', '日本語', 'Русский'], value: 5 }, '330px'), C('radio', { options: ['English', 'Deutsch', 'Español', 'Français', '日本語', 'Русский'], value: 5, tap: 0 }, '330px')] },
+        ]),
+        G('sizes', 'Sizes', 'Rows 44 / 52 / 60, text 14 / 16 / 18. M is the default.', ['S', 'M', 'L'], '330px', [
+          { label: 'RadioList', cells: ['S', 'M', 'L'].map(size => C('radio', { size, value: 0 }, '330px')) },
+        ]),
+        G('edge', 'Edge cases', 'Long options in de and ru wrap to a second line; the row grows.', ['de', 'ru'], '330px', [
+          { label: 'Sort combats', cells: [C('radio', { options: ['Neueste zuerst', 'Zuletzt gespielt zuerst', 'Alphabetisch von A bis Z'], value: 1 }, '330px'), C('radio', { options: ['Сначала новые', 'Сначала последние сыгранные', 'По алфавиту от А до Я'], value: 1 }, '330px')] },
+        ]),
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>
