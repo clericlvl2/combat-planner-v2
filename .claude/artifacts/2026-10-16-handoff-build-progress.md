@@ -62,10 +62,10 @@
 | 2.3-organisms-a | merged 4ed54f8, gate ok `.claude/run/2.3-organisms-a/summary.log`, guard running | Sheet, Dialog |
 | 2.3-organisms-b | running worker-bee 2026-10-17T01:05+03:00 | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
-| 2.3-organisms-d | running worker-bee 2026-10-17T01:25+03:00 (ahead of c: c needs Menu from b) | BottomBar, TurnBar |
+| 2.3-organisms-d | rebased, report `.claude/artifacts/reports/2.3-organisms-d.md`, gate running | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
-| 2.3-organisms-g | todo | ConditionPicker, TagSheet |
+| 2.3-organisms-g | running worker-bee 2026-10-17T01:50+03:00 (ahead of c/e/f: they need Menu from b) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | todo | SortSheet, ShareSheet |
 | 2.3-organisms-i | todo | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
@@ -90,6 +90,13 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-d, решения оркестратора 2026-10-17: высота баров 98 с верхним
+  отступом 10 (SPEC 12 даёт 100, а разметка страницы, бриф и
+  `layout.toast.bottom` 110 считают 98) — принято; `hint?` у BottomBar
+  принят; пропсы TurnBar и причины блокировки в неймспейсе `TurnBar` приняты
+  (экран передаёт `reason`); эллипсис доказан ru- и Extra-историями —
+  принято.
 
 - 2.3-organisms-a, решения оркестратора 2026-10-17: `fix-2.3` делает `actions`
   у Sheet опциональным (страница знает случай без кнопок); фокус на Cancel при
@@ -261,6 +268,9 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-d: верхний отступ баров 10 вместо 12 (итог 98); pressed/focus
+  TurnBar без ячеек на странице.
 
 - 2.3-organisms-a: Sheet и Dialog в PhoneFrame поверх скрима ink 50 %, не на
   стадии `#8C8578`; Dialog с фокус-кольцом на Cancel; Sheet-истории с кликом —
