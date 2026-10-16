@@ -51,7 +51,7 @@
 | fix-1-domain-core | guarded `.claude/artifacts/guard/fix-1-domain-core.md` | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
-| 2.1-atoms-c | merged 1050965, guard running | Swatch, Chip, StatSquare |
+| 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | running worker-bee 2026-10-16T18:35:18+03:00 | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
@@ -217,6 +217,11 @@
   игрока без токена — параметр убран.
 - fix-1-domain-core, вопрос отчёта: `duplicateUnit` по-прежнему сбрасывает
   `disabled` — принято (vision Unit → Actions молчит).
+
+- 2.1-atoms-c, P2 (гейт): `gate.sh` не гонял проект `visual`; с 2026-10-16
+  гейт запускает `vp test --project visual` (baselines локального Chromium).
+  P3 → `fix-2.1`: Enter/Space на toggle-теге Chip не проверены;
+  `&[data-pressed]` перекрывает заливки condition/status/meta.
 
 ## Падения гейта
 
