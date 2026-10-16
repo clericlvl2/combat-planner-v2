@@ -65,10 +65,10 @@
 | fix-2.3-organisms-b | merged eedf22d, gate ok `.claude/run/fix-2.3-organisms-b/summary.log`, guard running | Menu, Drawer |
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
-| 2.3-organisms-e | todo | CombatHeader, CombatCard |
+| 2.3-organisms-e | running worker-bee 2026-10-17T05:00+03:00 | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
-| 2.3-organisms-h | running worker-bee 2026-10-17T04:00+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b) | SortSheet, ShareSheet |
+| 2.3-organisms-h | rebased, report `.claude/artifacts/reports/2.3-organisms-h.md`, gate running | SortSheet, ShareSheet |
 | 2.3-organisms-i | running worker-bee 2026-10-17T04:35+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b on master) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
@@ -92,6 +92,20 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-h, решения оркестратора 2026-10-17: выбор в SortSheet
+  применяется и закрывает лист (бриф и флоу экранов CL-F1.3→F1.4,
+  LB-F2.1→F2.2; страница SortSheet держит лист открытым), стрелки применяют
+  без закрытия — принято, ячейка «A–Z selected» без истории — принято;
+  пропсы ShareSheet (`opened`, `combatTitle`, `url`, `onCopy`, `onReissue`,
+  `onClose`), буфер обмена и тост на хосте — приняты; сокращённые подписи
+  Reissue в de/es/fr/ru — приняты. Владельцу: ru/de подписи сортировки в
+  SortSheet взяты из литералов страницы («Сортировка сражений», «Сначала
+  последние сыгранные», «По алфавиту»), RadioList говорит «Сортировка боёв»,
+  «Последняя игра», «А–Я» — одна лексика на выбор владельца. `fix-2.3`
+  добавляет `react-qr-code` (и прочие зависимости, на которых гейт ловил
+  переоптимизацию: `@mantine/hooks`, setup-файл addon-vitest) в
+  `optimizeDeps.include`.
 
 - fix-2.3-organisms-b, решения оркестратора 2026-10-17: при обёртке-`target`
   (CardActions) `data-open` ложится на корень обёртки, кольцо ⋯ рисует
@@ -319,6 +333,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-h: настоящий QR вместо пунктирной заглушки; зазоры ShareSheet
+  12 (Sheet) вместо 16; Reissue — Button secondary с цветом `--cp-role-enemy`;
+  флоу-истории SortSheet заканчиваются закрытым листом.
 
 - 2.3-organisms-c: «9:41» от PhoneFrame с отступом 32 (страница PlayerHeader
   24); «Menu tapped» с открытым меню и фокусом на первом пункте; ru-плейсхолдер
