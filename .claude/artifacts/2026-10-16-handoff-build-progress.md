@@ -42,7 +42,7 @@
 |-------|--------|---------|
 | -1-renders | guarded — | renders, errata |
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
-| 0.5-reference | running worker-bee 2026-10-16T17:26:07+03:00 | theme, PhoneFrame, ThemeAudit, Button, check scripts |
+| 0.5-reference | merged 98cd2a5, guard running | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | running worker-bee 2026-10-16T17:27:46+03:00 | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
@@ -88,6 +88,14 @@
 
 ## Вопросы владельцу
 
+- 0.5-reference, решения оркестратора 2026-10-16 по вопросам отчёта:
+  `theme.module.css` рядом с `theme.ts` остаётся; stale baseline `Hello`
+  уходит в `fix-2.1` (удалить `Hello` целиком); статус-бар оверлеем в
+  `PhoneFrame`, заголовки резервируют 44 сами; лимит 844 px в
+  `visual.test.tsx` — экранные истории выше 844 снимаются с полной высотой
+  канваса, правка `visual.test.tsx` в `2.4-api-hooks`; правило имён ячеек с
+  `caption` принято и идёт в брифы фазы 2; правило non-ASCII per-cell принято;
+  гейт экспортирует `COMBAT_PLANNER_NO_DOCKER=1` целиком.
 - 2026-10-16, оркестратор: `/var/run/docker.sock` принадлежит `root:docker`,
   пользователь не в группе `docker`, sudo без пароля нет. `screenshots:update` и
   `docker run` образа Playwright недоступны на этой машине; baselines фазы 0 и 0.5
@@ -95,6 +103,14 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 0.5-reference, ThemeAudit: две колонки, свотчи 14 px, подписи 9–10 px, чтобы
+  уместиться в 390×844; подпись строки = ключ палитры; заметки Typefaces
+  сокращены; сноска Radii/Spacing опущена. HP actions содержит `#F7E4E2` из
+  README. Размеры иконок 16/20/24/32 по README, страница Tokens говорит
+  18/20/22/24.
+- 0.5-reference, Button: full-width edge-ячейки заполняют канвас 358 px вместо
+  240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
 
