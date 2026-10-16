@@ -8,6 +8,14 @@ import { playwright } from 'vite-plus/test/browser-playwright';
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const uiDir = path.join(rootDir, 'packages/ui');
 const screenshotsDir = path.join(uiDir, '__screenshots__');
+const browserOptimizeDeps = {
+  include: [
+    'react-dom/client',
+    'react-qr-code',
+    '@mantine/hooks',
+    '@storybook/addon-vitest/internal/setup-file',
+  ],
+};
 
 export default defineConfig({
   fmt: {
@@ -47,6 +55,7 @@ export default defineConfig({
       {
         root: uiDir,
         plugins: [storybookTest({ configDir: path.join(uiDir, '.storybook') })],
+        optimizeDeps: browserOptimizeDeps,
         test: {
           name: 'storybook',
           browser: {
@@ -60,6 +69,7 @@ export default defineConfig({
       {
         root: uiDir,
         plugins: [react()],
+        optimizeDeps: browserOptimizeDeps,
         test: {
           name: 'visual',
           include: ['test/visual.test.tsx'],
