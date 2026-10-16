@@ -81,13 +81,26 @@
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
-| 3-server-live | running worker-bee 2026-10-16T20:50+03:00, resumed 23:21 after API rate limit (events route committed) | events route, play routes |
+| 3-server-live | rebased, report `.claude/artifacts/reports/3-server-live.md`, gate running | events route, play routes |
 | 3-server-rest | running worker-bee 2026-10-16T21:25+03:00, resumed 23:21 after API rate limit | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 3-server-live, решения оркестратора 2026-10-16 по 12 вопросам отчёта: все
+  приняты и становятся контрактом: 410 `{ code: 'linkRevoked' }` для любого
+  не-текущего поколения при валидной подписи, 404 для битого токена / чужого
+  боя; `players` апсертится из документа на `GET /play/:id` и после
+  `dispatch`; SSE `event: <type>`, `id` = version только у `document`,
+  heartbeat-комментарий каждые 15 с; подписка на registry до загрузки
+  начального документа; `Last-Event-ID` впереди версии → текущий документ;
+  `X-Player-Id` через `c.req.header` + `ulidSchema`; тест-ридер SSE в
+  `packages/api/test/sse.ts`. Бриф `2.4-api-hooks` добавляет в
+  `hono-client.ts` `ERROR_CODES` маппинг 410 → `linkRevoked` (и код в
+  `client.ts` `ApiError`, если его нет) — единственная правка `packages/api`
+  в той пачке.
 
 - 2.2-molecules-e, решения оркестратора 2026-10-16: текст Toast 16/400 по
   разметке и рендеру (SPEC говорит 14/500) — принято; `fix-2.2`: при
