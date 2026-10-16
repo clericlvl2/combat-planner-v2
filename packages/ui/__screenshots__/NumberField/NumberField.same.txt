@@ -1,0 +1,3 @@
+Anatomy AmountFilled
+Amount999 ExtraClampMax
+AmountTyping ExtraTyping

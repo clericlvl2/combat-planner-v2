@@ -1,0 +1,5 @@
+{
+  "amount": "数値",
+  "maxHp": "最大HP",
+  "errorRange": "1〜999で入力"
+}
