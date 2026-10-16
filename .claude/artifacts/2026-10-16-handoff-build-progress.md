@@ -59,8 +59,8 @@
 | 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
 | 2.2-molecules-e | guarded `.claude/artifacts/guard/2.2-molecules-e.md` (P2 hollow keyboard story → fix-2.2) | Toast, EmptyState |
 | fix-2.2 | guarded `.claude/artifacts/guard/fix-2.2.md` | |
-| 2.3-organisms-a | running worker-bee 2026-10-17T00:35+03:00 | Sheet, Dialog |
-| 2.3-organisms-b | todo | Menu, Drawer |
+| 2.3-organisms-a | rebased, report `.claude/artifacts/reports/2.3-organisms-a.md`, gate running | Sheet, Dialog |
+| 2.3-organisms-b | running worker-bee 2026-10-17T01:05+03:00 | Menu, Drawer |
 | 2.3-organisms-c | todo | PageHeader, PlayerHeader |
 | 2.3-organisms-d | todo | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
@@ -90,6 +90,14 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.3-organisms-a, решения оркестратора 2026-10-17: `fix-2.3` делает `actions`
+  у Sheet опциональным (страница знает случай без кнопок); фокус на Cancel при
+  открытии Dialog (кольцо в baseline) принят; скрим ink 50 % вместо стадии
+  `#8C8578` принят; Dialog на собственной разметке с `FocusTrap` из-за
+  `role="alertdialog"` принят, `fix-2.3` добавляет блокировку прокрутки.
+  Падение `check-domain-tests` на пункте плана 2026-10-17 исправлено
+  оркестратором (пункт начинается с «Модели»).
 
 - 3-server-rest, решения оркестратора 2026-10-17: все 8 вопросов приняты как
   контракт. Q1 → бриф `2.4-api-hooks`: `errorOf` в `hono-client.ts`
@@ -253,6 +261,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.3-organisms-a: Sheet и Dialog в PhoneFrame поверх скрима ink 50 %, не на
+  стадии `#8C8578`; Dialog с фокус-кольцом на Cancel; Sheet-истории с кликом —
+  с кольцом на кнопке.
 
 - 2.2-molecules-e: Toast-истории внутри PhoneFrame, не на канвасе; `undone` без
   Redo (vision, errata); EmptyState на канвасе 358 с телом до 280.
