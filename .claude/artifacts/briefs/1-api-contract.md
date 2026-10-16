@@ -31,8 +31,8 @@ domain does not already define; no implementation.
   `get(id) → Combat`, `dispatch(id, action) → { version }`, `subscribe(id,
   viewer, onDocument: (doc: Combat | PlayerCombat) => void, onEnd: (event:
   ApiEndEvent) => void) → () => void`); `link` (`reissue(id) → { token,
-  version }`); `play` (`get(token) → { combatId, playerId, combat: PlayerCombat
-  }`, `subscribe(token, …)` mirrors `combats.subscribe` for the player
+  version }`); `play` (`get(token) → { combatId, playerId, language: Locale, combat:
+  PlayerCombat }` where `language` is the DM's settings language, `subscribe(token, …)` mirrors `combats.subscribe` for the player
   identity); `presets` (`list`, `create`, `update`, `remove`, `duplicate`);
   `tags` (`list`, `create`, `rename`, `remove`); `settings` (`get`, `update({
   language })`); `account` (`update({ displayName })`, `remove()`).

@@ -44,11 +44,11 @@
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
-| 1-domain-rest | running worker-bee 2026-10-16T17:58:22+03:00 | project, undo, index, tests |
+| 1-domain-rest | rebased, report `.claude/artifacts/reports/1-domain-rest.md`, gate running | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
 | fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
-| 2.1-atoms-a | merged c33e019, guard running | IconButton, ToolButton, TextField, TextArea |
-| 2.1-atoms-b | running worker-bee 2026-10-16T18:08:06+03:00 | SearchField, NumberField, Checkbox, Radio |
+| 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
+| 2.1-atoms-b | running worker-bee 2026-10-16T18:08:06+03:00 , resumed after rate limit 18:20 | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | todo | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | todo | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
@@ -89,6 +89,11 @@
 
 ## Вопросы владельцу
 
+- 1-domain-rest, решения оркестратора 2026-10-16 по 12 вопросам отчёта: все
+  приняты. Язык игрока (вопрос 4): документ боя языка не несёт; `play.get`
+  в `1-api-contract` возвращает `language` настроек DM, сервер (фаза 3) читает
+  его из settings. Новый пункт «Решения владельца» требует теста или записи в
+  skip-листе `scripts/check-domain-tests.mjs` (вопрос 9).
 - 2.1-atoms-a, решения оркестратора 2026-10-16: `LIMITS` живёт в
   `packages/domain`; `fix-2.1` добавляет `@combat-planner/domain` в зависимости
   `packages/ui` и заменяет литералы 80/40/500/250 на `LIMITS`; ToolButton иконка
@@ -156,6 +161,15 @@
   `editUnit`); P3: `copyCombat` сбрасывает `disabled` (vision не перечисляет
   его среди сбросов — копия сохраняет `disabled`); P3: тесты «Depth: 10 steps
   back…» проверяют только константу — `1-domain-rest` покрывает поведение.
+
+- 2.1-atoms-a, P1 → `fix-2.1`: TextField многострочные ячейки `Name, ru` 94 px
+  вместо ~74 (padding по вертикали 10.4 px; нужен wrapper min-height 48 +
+  `align-items: center` вокруг textarea без padding). P3: `ActiveEn` в
+  ToolButton с литералом вместо `labelKey`; `aria-multiline="false"` на
+  `<textarea>` (гипотеза: запрещено ARIA in HTML).
+- 1-domain-rest, P-уровень guard ещё не выставлен; вопрос 3 отчёта →
+  `fix-1-domain-core`: `project` обнуляет `activeUnitId`, если активный юнит
+  скрыт от игрока.
 
 ## Падения гейта
 
