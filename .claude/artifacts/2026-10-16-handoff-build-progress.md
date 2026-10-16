@@ -44,12 +44,12 @@
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
 | 1-domain-core | guarded `.claude/artifacts/guard/1-domain-core.md` | types, schemas, actions, health, sort, names, reduce, authorize |
-| 1-domain-rest | rebased, report `.claude/artifacts/reports/1-domain-rest.md`, gate running | project, undo, index, tests |
-| 1-api-contract | todo | ApiClient |
+| 1-domain-rest | merged f39f257, guard running | project, undo, index, tests |
+| 1-api-contract | running worker-bee 2026-10-16T18:23:39+03:00 | ApiClient |
 | fix-1-domain-core | todo | setMaxHp floor, copy keeps disabled |
 | 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
-| 2.1-atoms-b | running worker-bee 2026-10-16T18:08:06+03:00 , resumed after rate limit 18:20 | SearchField, NumberField, Checkbox, Radio |
-| 2.1-atoms-c | todo | Swatch, Chip, StatSquare |
+| 2.1-atoms-b | rebased, report `.claude/artifacts/reports/2.1-atoms-b.md`, gate running | SearchField, NumberField, Checkbox, Radio |
+| 2.1-atoms-c | running worker-bee 2026-10-16T18:23:39+03:00 | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | todo | EscalationDie, RoleBlock |
 | fix-2.1 | todo | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
@@ -89,6 +89,11 @@
 
 ## Вопросы владельцу
 
+- 2.1-atoms-b, решения оркестратора 2026-10-16: NumberField без `size`
+  (страница без Sizes); знак только при `min < 0`; `LIMITS` подключает
+  `fix-2.1`; клампинг на blur для положительных ниже `min` принят; Checkbox и
+  Radio с опциональным `label`, типографика строк — в CheckList/RadioList;
+  `condition` проп у Checkbox принят; поведение × в SearchField принято.
 - 1-domain-rest, решения оркестратора 2026-10-16 по 12 вопросам отчёта: все
   приняты. Язык игрока (вопрос 4): документ боя языка не несёт; `play.get`
   в `1-api-contract` возвращает `language` настроек DM, сервер (фаза 3) читает
@@ -122,6 +127,8 @@
 
 ## Отличия от рендеров
 
+- 2.1-atoms-b: focus-ячейки без каретки; NumberField показывает набранный 0
+  чернилами (страница красит falsy значение muted, ячейки с 0 нет).
 - 2.1-atoms-a: focus-ячейки без каретки (реальный фокус делает baselines
   нестабильными); счётчики показывают реальную длину значения, не моковые числа
   страницы; `Description · 500 · error` — реальные 512 символов, поле ~16
