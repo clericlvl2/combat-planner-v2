@@ -2,7 +2,6 @@ import preview from '#.storybook/preview';
 import { IconMenu2 } from '@tabler/icons-react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
-import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { Drawer } from './Drawer.tsx';
@@ -19,6 +18,8 @@ interface DrawerCellProps {
 
 const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout' };
 
+const burgerLabel = 'Open menu';
+
 const openerBar: CSSProperties = { padding: 'calc(var(--cp-layout-status-bar) + 12px) 12px 12px' };
 
 function DrawerCell({
@@ -29,13 +30,12 @@ function DrawerCell({
   onNavigate,
   onClose,
 }: DrawerCellProps) {
-  const { t } = useTranslation('Drawer');
   const [opened, setOpened] = useState(initiallyOpened);
   return (
     <div style={stage}>
       {withOpener ? (
         <div style={openerBar}>
-          <IconButton icon={IconMenu2} aria-label={t('opener')} onClick={() => setOpened(true)} />
+          <IconButton icon={IconMenu2} aria-label={burgerLabel} onClick={() => setOpened(true)} />
         </div>
       ) : null}
       <Drawer
@@ -154,6 +154,45 @@ export const ExtraFocusTrap = meta.story({
     await expect(canvas.getByRole('button', { name: 'Library' })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onNavigate).toHaveBeenCalledWith('library');
+  },
+});
+
+export const ExtraShiftTabFirst = meta.story({
+  name: 'Shift+Tab right after opening stays inside',
+  args: { withOpener: true },
+  play: async ({ canvas }) => {
+    const dialog = canvas.getByRole('dialog');
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+    await userEvent.tab({ shift: true });
+    await expect(dialog.contains(document.activeElement)).toBe(true);
+    await expect(canvas.getByRole('button', { name: 'About' })).toHaveFocus();
+  },
+});
+
+export const ExtraTapTitleThenKeys = meta.story({
+  name: 'Tap on the title or email keeps focus and Escape inside',
+  args: { withOpener: true },
+  play: async ({ args, canvas }) => {
+    const dialog = canvas.getByRole('dialog');
+    await userEvent.click(canvas.getByRole('heading', { name: 'Combat Planner' }));
+    await userEvent.tab({ shift: true });
+    await expect(dialog.contains(document.activeElement)).toBe(true);
+    await userEvent.click(canvas.getByText('dm@ferry.games'));
+    await userEvent.tab({ shift: true });
+    await expect(dialog.contains(document.activeElement)).toBe(true);
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+  },
+});
+
+export const ExtraScrollLock = meta.story({
+  name: 'Page scroll is locked while open',
+  play: async ({ canvas }) => {
+    await expect(getComputedStyle(document.body).overflow).toBe('hidden');
+    await userEvent.keyboard('{Escape}');
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await expect(getComputedStyle(document.body).overflow).not.toBe('hidden');
   },
 });
 

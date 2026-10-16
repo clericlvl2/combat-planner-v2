@@ -1,2 +1,2 @@
 Anatomy CombatsActive
-ExtraEscape ExtraFocusTrap ExtraNavigate ExtraScrimTap
+ExtraEscape ExtraFocusTrap ExtraNavigate ExtraScrimTap ExtraScrollLock

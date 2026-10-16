@@ -1,7 +1,7 @@
 import { FocusTrap, UnstyledButton } from '@mantine/core';
 import { IconBooks, IconInfoCircle, IconSettings, IconSwords, IconUser } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
-import { useId, useLayoutEffect, useRef } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import classes from './Drawer.module.css';
@@ -44,6 +44,7 @@ export function Drawer({
   const { t } = useTranslation('Drawer');
   const titleId = useId();
   const opener = useRef<HTMLElement | null>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     if (!opened) return;
@@ -51,6 +52,22 @@ export function Drawer({
     opener.current = active instanceof HTMLElement ? active : null;
     return () => {
       opener.current?.focus();
+    };
+  }, [opened]);
+
+  useEffect(() => {
+    if (!opened) return;
+    const timer = setTimeout(() => panelRef.current?.focus({ preventScroll: true }));
+    return () => clearTimeout(timer);
+  }, [opened]);
+
+  useEffect(() => {
+    if (!opened) return;
+    const { body } = document;
+    const previous = body.style.overflow;
+    body.style.overflow = 'hidden';
+    return () => {
+      body.style.overflow = previous;
     };
   }, [opened]);
 
@@ -69,16 +86,16 @@ export function Drawer({
   };
 
   return (
-    <FocusTrap active>
-      <div className={classes.root} onKeyDown={handleKeyDown}>
-        <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onClose} />
+    <div className={classes.root}>
+      <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onClose} />
+      <FocusTrap active innerRef={panelRef}>
         <div
           role="dialog"
           aria-modal="true"
           aria-labelledby={titleId}
           tabIndex={-1}
-          data-autofocus=""
           className={classes.panel}
+          onKeyDown={handleKeyDown}
         >
           <h2 id={titleId} className={classes.title}>
             {t('title')}
@@ -105,7 +122,7 @@ export function Drawer({
           </nav>
           <span className={classes.email}>{email}</span>
         </div>
-      </div>
-    </FocusTrap>
+      </FocusTrap>
+    </div>
   );
 }
