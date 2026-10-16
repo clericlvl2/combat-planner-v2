@@ -1,0 +1,10 @@
+{
+  "round": "Round {{round}}",
+  "start": "Start",
+  "damage": "Damage",
+  "heal": "Heal",
+  "temp": "Temp",
+  "max": "Max",
+  "tempAmount": "+{{amount}} temp",
+  "absorbed": "({{amount}} temp)"
+}

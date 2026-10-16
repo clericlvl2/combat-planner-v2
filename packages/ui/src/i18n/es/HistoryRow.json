@@ -1,0 +1,10 @@
+{
+  "round": "Ronda {{round}}",
+  "start": "Inicio",
+  "damage": "Daño",
+  "heal": "Curación",
+  "temp": "Temp.",
+  "max": "Máx.",
+  "tempAmount": "+{{amount}} temp.",
+  "absorbed": "({{amount}} temp.)"
+}

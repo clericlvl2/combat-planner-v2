@@ -1,0 +1,10 @@
+{
+  "round": "Tour {{round}}",
+  "start": "Début",
+  "damage": "Dégâts",
+  "heal": "Soin",
+  "temp": "Temp.",
+  "max": "Max.",
+  "tempAmount": "+{{amount}} temp.",
+  "absorbed": "({{amount}} temp.)"
+}

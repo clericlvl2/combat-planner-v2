@@ -1,0 +1,49 @@
+.root {
+  --history-when: 60px;
+  --history-amount: var(--cp-color-ink);
+
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: var(--history-when) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border-top: 1px solid var(--cp-color-border);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-small);
+  font-variant-numeric: tabular-nums;
+
+  &[data-wide-when] {
+    --history-when: 84px;
+  }
+}
+
+.when {
+  color: var(--cp-color-secondary);
+  white-space: nowrap;
+}
+
+.change {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.kind {
+  display: flex;
+  flex: none;
+}
+
+.amount {
+  min-width: 0;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--history-amount);
+  overflow-wrap: anywhere;
+}
+
+.result {
+  white-space: nowrap;
+}

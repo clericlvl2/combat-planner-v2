@@ -1,0 +1,10 @@
+{
+  "round": "Раунд {{round}}",
+  "start": "Начало",
+  "damage": "Урон",
+  "heal": "Лечение",
+  "temp": "Врем.",
+  "max": "Макс.",
+  "tempAmount": "+{{amount}} врем.",
+  "absorbed": "({{amount}} врем.)"
+}

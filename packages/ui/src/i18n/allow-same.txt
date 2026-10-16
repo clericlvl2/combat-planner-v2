@@ -1,3 +1,7 @@
 RoleBlock.hp
 RadioList.alphabetical
 HpBox.temp
+HistoryRow.temp
+HistoryRow.max
+HistoryRow.tempAmount
+HistoryRow.absorbed
