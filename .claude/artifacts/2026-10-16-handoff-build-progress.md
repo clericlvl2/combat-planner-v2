@@ -52,7 +52,7 @@
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
 | fix-2.1 | guarded `.claude/artifacts/guard/fix-2.1.md` (CRIT 2 documentary P2, no P0–P1) | |
-| 2.2-molecules-a | rebased, report `.claude/artifacts/reports/2.2-molecules-a.md`, gate running | Stepper, Segmented, RadioList |
+| 2.2-molecules-a | merged 770ad71, gate ok `.claude/run/2.2-molecules-a/summary.log`, guard running | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | running worker-bee 2026-10-16T20:16+03:00 | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | running worker-bee 2026-10-16T20:22+03:00 | HpBox, HistoryRow, DefenseLine |
 | 2.2-molecules-d | todo | NoteField, InitiativePopover |
