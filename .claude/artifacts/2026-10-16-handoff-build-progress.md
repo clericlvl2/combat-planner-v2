@@ -81,8 +81,8 @@
 | 2.4-AppPages | todo | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | todo | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
-| 3-server-schema | rebased, report `.claude/artifacts/reports/3-server-schema.md`, gate running | schema, migrations, client-hono, server main |
-| 3-server-actions | todo | combats routes, actions route, link |
+| 3-server-schema | merged 2d0cb4f, guard running | schema, migrations, client-hono, server main |
+| 3-server-actions | running worker-bee 2026-10-16T19:03:14+03:00 | combats routes, actions route, link |
 | 3-server-live | todo | events route, play routes |
 | 3-server-rest | todo | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
