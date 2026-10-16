@@ -1,0 +1,107 @@
+.root {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 58px;
+  min-width: 0;
+  padding: 0 24px;
+  border: none;
+  border-radius: 29px;
+  background: var(--cp-color-ink);
+  color: var(--cp-color-surface);
+  font-family: var(--cp-font-ui);
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-size='S'] {
+    height: 48px;
+    padding: 0 16px;
+    border-radius: var(--mantine-radius-field);
+    font-size: var(--mantine-font-size-small);
+  }
+
+  &[data-heavy] {
+    font-family: var(--cp-font-display);
+    font-size: var(--mantine-font-size-number);
+    font-weight: 700;
+  }
+
+  &[data-full-width] {
+    display: flex;
+    width: 100%;
+  }
+
+  &[data-variant='secondary'] {
+    border: 2px solid var(--cp-color-border);
+    background: var(--cp-color-surface);
+    color: var(--cp-color-ink);
+  }
+
+  &[data-variant='danger'] {
+    background: var(--cp-role-enemy);
+    color: var(--cp-color-surface);
+  }
+
+  &[data-variant='ghost'] {
+    background: transparent;
+    color: var(--cp-color-ink);
+  }
+
+  &:active:not(:disabled),
+  &[data-pressed] {
+    background: var(--cp-color-ink-pressed);
+
+    &[data-variant='secondary'],
+    &[data-variant='ghost'] {
+      background: var(--cp-color-soft);
+    }
+
+    &[data-variant='danger'] {
+      background: var(--cp-state-danger-pressed);
+    }
+  }
+
+  &:disabled,
+  &[data-disabled] {
+    background: var(--cp-color-disabled);
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+
+    &[data-variant='secondary'] {
+      background: var(--cp-color-surface);
+    }
+
+    &[data-variant='ghost'] {
+      background: transparent;
+    }
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+.label {
+  white-space: nowrap;
+}
