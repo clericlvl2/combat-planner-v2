@@ -55,7 +55,7 @@
 | 2.2-molecules-a | guarded `.claude/artifacts/guard/2.2-molecules-a.md` | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | guarded `.claude/artifacts/guard/2.2-molecules-b.md` | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | rebased onto d937d52, report `.claude/artifacts/reports/2.2-molecules-c.md`, re-gate running (first gate ok, master gained 2.2-molecules-d meanwhile) | HpBox, HistoryRow, DefenseLine |
-| 2.2-molecules-d | merged dc0b402, gate ok `.claude/run/2.2-molecules-d/summary.log`, guard running | NoteField, InitiativePopover |
+| 2.2-molecules-d | guarded `.claude/artifacts/guard/2.2-molecules-d.md` | NoteField, InitiativePopover |
 | 2.2-molecules-e | running worker-bee 2026-10-16T20:46+03:00 | Toast, EmptyState |
 | fix-2.2 | todo | |
 | 2.3-organisms-a | todo | Sheet, Dialog |
@@ -247,6 +247,12 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.2-molecules-d, P3 → `fix-2.2`: InitiativePopover `{...rest}` перед
+  `onKeyDown` (InitiativePopover.tsx:80-85); `IconNote` с `aria-label` без
+  `role="img"` (NoteField.tsx:69). P3 отложено: `label?` у NoteField сверх
+  брифа; ключи `NoteField.collapseRow` и `InitiativePopover.anchor` нужны только
+  историям.
 
 - 2.2-molecules-a, P3 → `fix-2.2`: Segmented с `value` вне опций делает все
   сегменты `tabIndex=-1` (Segmented.tsx:47-51, нужен guard
