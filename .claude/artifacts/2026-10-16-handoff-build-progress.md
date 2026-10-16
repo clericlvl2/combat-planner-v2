@@ -53,7 +53,7 @@
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
-| fix-2.1 | running worker-bee 2026-10-16T18:52:07+03:00 | |
+| fix-2.1 | running worker-bee 2026-10-16T18:52:07+03:00 , rework of commit layout after first hand-back | |
 | 2.2-molecules-a | todo | Stepper, Segmented, RadioList |
 | 2.2-molecules-b | todo | CheckList, SwatchRow, CardActions |
 | 2.2-molecules-c | todo | HpBox, HistoryRow, DefenseLine |
@@ -91,6 +91,14 @@
 
 ## Вопросы владельцу
 
+- fix-2.1, решения оркестратора 2026-10-16: удаление `Hello` из
+  `apps/web/src/App.tsx` принято (вне allowed paths, но без этого не собирается);
+  коммит `PhoneFrame` с baseline `Button/ExtraPhoneFrame` падал на
+  `check-commit` — бриф сам задал такую раскладку, агенту разрешено один раз
+  переписать неинтегрированную ветку; «Combat colours» шестой группой
+  ThemeAudit принято; дефолты `LIMITS` без `kind`-пропа приняты; ключи
+  `TextField.email/password` в шести локалях — владельцу на проверку;
+  `combatColors` экспортирует `fix-2.4`.
 - 3-server-schema, решения оркестратора 2026-10-16 по 13 вопросам отчёта: все
   приняты и становятся контрактом для `3-server-actions/live/rest`: `seq` —
   `max(seq)+1` в транзакции; auth через собственные пути Better Auth
@@ -155,6 +163,9 @@
 
 ## Отличия от рендеров
 
+- fix-2.1: ThemeAudit одной колонкой, свотчи 12 px по 4 в ряд (conditions по
+  3), длинные имена токенов с многоточием; TextField `type="email"/"password"`
+  — нет на странице, бокс M 48.
 - 2.1-atoms-d: без карточки-подложки галереи; засечка RoleBlock на крае
   блока (в прототипе нет `position: relative`); focus-кольца RoleBlock
   (снаружи, offset 2) и EscalationDie не показаны в рендере.
