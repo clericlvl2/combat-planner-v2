@@ -62,14 +62,14 @@
 | 2.3-organisms-a | guarded via `fix-2.3-organisms-a`, guard `.claude/artifacts/guard/2.3-organisms-a.md` |
 | fix-2.3-organisms-a | guarded `.claude/artifacts/guard/fix-2.3-organisms-a.md` (P1 closed) | Sheet, Dialog |
 | 2.3-organisms-b | rework 1 → `fix-2.3-organisms-b`, guard `.claude/artifacts/guard/2.3-organisms-b.md` (P1 Drawer Shift+Tab, P1 Menu focus with motion on) |
-| fix-2.3-organisms-b | running worker-bee (agent of 2.3-organisms-b) 2026-10-17T03:40+03:00 | Menu, Drawer |
+| fix-2.3-organisms-b | rebased, report `.claude/artifacts/reports/fix-2.3-organisms-b.md`, gate running | Menu, Drawer |
 | 2.3-organisms-c | guarded `.claude/artifacts/guard/2.3-organisms-c.md` | PageHeader, PlayerHeader |
 | 2.3-organisms-d | guarded `.claude/artifacts/guard/2.3-organisms-d.md` | BottomBar, TurnBar |
 | 2.3-organisms-e | todo | CombatHeader, CombatCard |
 | 2.3-organisms-f | todo | PresetCard, HpHistory |
 | 2.3-organisms-g | guarded `.claude/artifacts/guard/2.3-organisms-g.md` (CRIT 2 fail at P2, story baseline → `fix-2.3`) | ConditionPicker, TagSheet |
 | 2.3-organisms-h | running worker-bee 2026-10-17T04:00+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b) | SortSheet, ShareSheet |
-| 2.3-organisms-i | todo | MessageScreen, PlayerRow |
+| 2.3-organisms-i | running worker-bee 2026-10-17T04:35+03:00 (ahead of e/f: they wait for fix-2.3-organisms-b on master) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | todo | UnitRow |
 | 2.3-UnitForm | todo | UnitForm |
 | 2.3-NumpadSheet | todo | NumpadSheet |
@@ -92,6 +92,13 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- fix-2.3-organisms-b, решения оркестратора 2026-10-17: при обёртке-`target`
+  (CardActions) `data-open` ложится на корень обёртки, кольцо ⋯ рисует
+  собственный `open` CardActions — принято, CombatCard/PresetCard передают
+  CardActions `open`; Menu сам возвращает фокус на источник после выбора,
+  Escape и Tab (Mantine `returnFocus` выключен), тап снаружи закрывает без
+  переноса фокуса — принято.
 
 - fix-3, решения оркестратора 2026-10-17: пустое имя из social-профиля →
   локальная часть email, обрезанная по лимиту — принято; `originCheck?` в
