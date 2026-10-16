@@ -43,7 +43,7 @@
 | -1-renders | guarded — | renders, errata |
 | 0-toolchain | guarded `.claude/artifacts/guard/0-toolchain.md` | workspace, vitest projects, storybook, skeletons, scripts, CLAUDE.md commands |
 | 0.5-reference | guarded `.claude/artifacts/guard/0.5-reference.md` | theme, PhoneFrame, ThemeAudit, Button, check scripts |
-| 1-domain-core | rebased, report `.claude/artifacts/reports/1-domain-core.md`, gate running | types, schemas, actions, health, sort, names, reduce, authorize |
+| 1-domain-core | merged 7e02ae7, guard running | types, schemas, actions, health, sort, names, reduce, authorize |
 | 1-domain-rest | todo | project, undo, index, tests |
 | 1-api-contract | todo | ApiClient |
 | 2.1-atoms-a | running worker-bee 2026-10-16T17:55:06+03:00 | IconButton, ToolButton, TextField, TextArea |
@@ -88,6 +88,11 @@
 
 ## Вопросы владельцу
 
+- 1-domain-core, решения оркестратора 2026-10-16 по 21 вопросу отчёта: все
+  приняты как описано. Отдельно: undo получает лог пятым параметром `apply`
+  (`log: LogEntry[]`), глубина 10 и остановка на claim/release — в
+  `1-domain-rest`; проекция игрока отдаёт юнитов в порядке хода с
+  `healthSegments` и `position`.
 - 0.5-reference, решения оркестратора 2026-10-16 по вопросам отчёта:
   `theme.module.css` рядом с `theme.ts` остаётся; stale baseline `Hello`
   уходит в `fix-2.1` (удалить `Hello` целиком); статус-бар оверлеем в
@@ -135,3 +140,9 @@
   `index.ts` (экспорты собирает `fix-2.4`).
 
 ## Падения гейта
+
+- 1-domain-core, `pnpm test`: три stories-файла упали на импорте «Vitest failed
+  to find the current suite» после rebase (кэш оптимизации Vite в
+  `node_modules/.cache/storybook` перестроился посреди прогона). Повтор прошёл:
+  15 файлов, 224 теста (`.claude/run/1-domain-core/test-rerun.log`). `gate.sh`
+  теперь повторяет `pnpm test` один раз при падении.
