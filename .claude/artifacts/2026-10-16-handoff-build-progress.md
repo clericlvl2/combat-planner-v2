@@ -72,7 +72,7 @@
 | 2.3-organisms-i | guarded after rework 1 (`fix-2.3-organisms-i` guarded), guard `.claude/artifacts/guard/2.3-organisms-i.md` |
 | fix-2.3-organisms-i | guarded `.claude/artifacts/guard/fix-2.3-organisms-i.md` (P3 ×1 report hashes, no action) | MessageScreen, PlayerRow |
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
-| 2.3-UnitForm | merged bea16a0..d377475 (gate `.claude/run/2.3-UnitForm/` green), guard-bee running | UnitForm |
+| 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | running worker-bee 2026-10-17T07:35+03:00 | NumpadSheet |
 | fix-2.3 | todo | |
 | 2.4-api-hooks | running worker-bee 2026-10-17T07:05+03:00 | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
@@ -477,6 +477,16 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.3-UnitForm → `fix-2.3` (finding 2 — первым, поведение): выбранный пресет
+  сбрасывается при смене вкладки и фильтра, кнопка «Add <имя>» отправляет
+  ровно то, что названо (UnitForm.tsx:135, :182-188, :105-117); 9 из 22
+  baselines — пустой телефон (истории закрывают лист до снимка): истории
+  ошибки имени, lockRole, клампа и конца флоу снимают открытый лист, отправка
+  — отдельной Extra-историей; рамка пустого имени в Edit — #E2D8C6, не через
+  `:placeholder-shown` (UnitForm.module.css:23); Stepper `.key:disabled` —
+  фон `minBg #FAF6EE` по странице UnitForm (dc.html:169); мёртвый
+  `data-long` (UnitForm.tsx:260).
 
 - 2.3-UnitRow → `fix-2.3`: `[data-flash]` не красит рамку у мёртвых и
   disabled рядов (UnitRow.module.css:23, порядок страницы active > off >
