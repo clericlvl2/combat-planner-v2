@@ -91,11 +91,11 @@
 | fix-3 | guarded `.claude/artifacts/guard/fix-3.md` | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | guarded `.claude/artifacts/guard/4-web.md` (no P0–P1; CRIT 6 FAIL P3 system-screen swipe; P2 ×1, P3 ×4 → `fix-4-web`) | router, providers, player identity, drawer, smoke e2e |
-| 5-e2e | handed back 5/5 (report `.claude/artifacts/reports/5-e2e.md`; 21 e2e, 1 `test.fail()` sign-out 415), rebased on fix-4, gate + e2e running | auth, combat lifecycle, player, library, account |
+| 5-e2e | merged 73a9dd6..7f9e4d1 (gate green, `pnpm e2e` 21 passed, no listeners, `.claude/run/5-e2e/`), guard-bee running | auth, combat lifecycle, player, library, account |
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4-web | handed back 5/5 (report `.claude/artifacts/reports/fix-4-web.md`), rebased, gate running; e2e after `5-e2e` frees port 3000 | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
-| fix-5 | todo (after `5-e2e`: guard-bee entries → `fix-5` and the e2e defects) | |
+| fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
