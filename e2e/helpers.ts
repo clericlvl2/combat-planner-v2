@@ -53,7 +53,7 @@ export async function createCombat(page: Page, title: string): Promise<string> {
 }
 
 export function unitRows(page: Page) {
-  return page.locator('div[data-unit-role]');
+  return page.locator('div[data-unit-role]:has(> div)');
 }
 
 export function unitRow(page: Page, name: string) {
@@ -101,4 +101,29 @@ export async function initiatives(page: Page): Promise<number[]> {
     .evaluateAll((buttons) =>
       buttons.map((button) => Number.parseInt(button.textContent ?? '', 10)),
     );
+}
+
+export async function rowOrder(page: Page, names: readonly string[]): Promise<string[]> {
+  const texts = await unitRows(page).allTextContents();
+  return texts.map(
+    (text) =>
+      names.filter((name) => text.includes(name)).sort((a, b) => b.length - a.length)[0] ?? '',
+  );
+}
+
+export async function shareLink(page: Page): Promise<string> {
+  await openCombatMenu(page, 'Share');
+  const sheet = page.getByRole('dialog', { name: 'Share with players' });
+  const url = sheet.locator('[data-url]');
+  await expect(url).toHaveText(/\/play\?t=/);
+  return (await url.textContent()) ?? '';
+}
+
+export async function joinAsPlayer(player: Page, link: string, name: string, hero: string) {
+  await player.goto(link);
+  await expect(player.getByRole('heading', { name: 'Who are you playing?' })).toBeVisible();
+  await player.getByLabel('Your name').fill(name);
+  await player.getByRole('checkbox', { name: hero }).check();
+  await player.getByRole('button', { name: 'Join' }).click();
+  await expect(unitRows(player).filter({ hasText: hero })).toHaveAttribute('data-mine', 'true');
 }
