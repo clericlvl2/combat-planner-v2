@@ -1,6 +1,7 @@
 import type { SocialProvider } from '@combat-planner/api/client';
 import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
@@ -12,8 +13,7 @@ export const assignLocation: Redirect = (url) => {
   window.location.assign(url);
 };
 
-export const callbackUrlOf = (provider: SocialProvider): string =>
-  `${window.location.origin}/auth/callback/${provider}`;
+export const signedInUrl = (): string => `${window.location.origin}/combats`;
 
 const providerIcons: Record<SocialProvider, Icon> = {
   google: IconBrandGoogle,
@@ -27,12 +27,23 @@ export interface SocialButtonsProps {
 export function SocialButtons({ onRedirect }: SocialButtonsProps) {
   const { t } = useTranslation('SignIn');
   const { providers, socialSignIn } = useAccount();
+  const [busy, setBusy] = useState(false);
+  const sending = useRef(false);
+  const [failed, setFailed] = useState(false);
   if (!providers || providers.length === 0) return null;
 
   const start = (provider: SocialProvider) => {
-    socialSignIn(provider, callbackUrlOf(provider))
+    if (sending.current) return;
+    sending.current = true;
+    setBusy(true);
+    setFailed(false);
+    socialSignIn(provider, signedInUrl())
       .then(({ url }) => onRedirect(url))
-      .catch(() => {});
+      .catch(() => {
+        sending.current = false;
+        setBusy(false);
+        setFailed(true);
+      });
   };
 
   return (
@@ -49,11 +60,17 @@ export function SocialButtons({ onRedirect }: SocialButtonsProps) {
           size="M"
           fullWidth
           icon={providerIcons[provider]}
+          disabled={busy}
           onClick={() => start(provider)}
         >
           {t(provider)}
         </Button>
       ))}
+      {failed ? (
+        <p className={classes.error} role="alert">
+          {t('socialFailed')}
+        </p>
+      ) : null}
     </>
   );
 }

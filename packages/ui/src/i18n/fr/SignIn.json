@@ -13,5 +13,6 @@
   "signUp": "Créer un compte",
   "enterEmail": "Saisissez votre e-mail",
   "enterPassword": "Saisissez votre mot de passe",
-  "wrongCredentials": "E-mail ou mot de passe incorrect"
+  "wrongCredentials": "E-mail ou mot de passe incorrect",
+  "socialFailed": "Impossible de lancer la connexion. Réessaie."
 }

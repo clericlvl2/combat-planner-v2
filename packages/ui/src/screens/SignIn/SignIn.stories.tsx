@@ -1,9 +1,15 @@
 import preview from '#.storybook/preview';
+import { ApiError } from '@combat-planner/api/client';
+import type { QueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
+import type { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { scenario } from '../../api/scenarios.ts';
 import type { FakeAccount } from '../../api/scenarios.ts';
+import { queryKeys } from '../../hooks/queryKeys.ts';
+import { useToasts } from '../../hooks/useToasts.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { SignIn } from './SignIn.tsx';
 
@@ -27,6 +33,24 @@ function LocationProbe() {
   const { pathname } = useLocation();
   return <span hidden data-location={pathname} />;
 }
+
+function SeedDeletedToast({ children }: { children: ReactNode }) {
+  const { show, t } = useToasts();
+  const shown = useRef(false);
+  useEffect(() => {
+    if (shown.current) return;
+    shown.current = true;
+    show({ message: t('accountDeleted'), kind: 'neutral' });
+  }, [show, t]);
+  return children;
+}
+
+const providersLoaded = async (loaded: Record<string, unknown>) => {
+  const queryClient = loaded.queryClient as QueryClient;
+  await waitFor(() =>
+    expect(queryClient.getQueryState(queryKeys.providers)?.status).toBe('success'),
+  );
+};
 
 const locationOf = (canvasElement: HTMLElement): string | null | undefined =>
   canvasElement.querySelector('[data-location]')?.getAttribute('data-location');
@@ -53,7 +77,8 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ canvas }) => {
+  play: async ({ canvas, loaded }) => {
+    await providersLoaded(loaded);
     await expect(canvas.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Sign in' })).toBeDisabled();
     await expect(canvas.getByRole('link', { name: 'Sign up' })).toHaveAttribute(
@@ -127,7 +152,7 @@ export const Social = meta.story({
     const google = await canvas.findByRole('button', { name: 'Continue with Google' });
     await expect(canvas.getByRole('button', { name: 'Continue with GitHub' })).toBeVisible();
     await userEvent.click(google);
-    const callbackUrl = `${window.location.origin}/auth/callback/google`;
+    const callbackUrl = `${window.location.origin}/combats`;
     await waitFor(() =>
       expect(args.onRedirect).toHaveBeenCalledWith(
         `https://google.example/authorize?${new URLSearchParams({ callbackURL: callbackUrl }).toString()}`,
@@ -150,12 +175,12 @@ export const GoogleOnly = meta.story({
 });
 
 export const AccountDeleted = meta.story({
-  parameters: {
-    reactRouter: reactRouterParameters({
-      location: { path: '/auth/sign-in', state: { accountDeleted: true } },
-      routing: { path: '*', useStoryElement: true },
-    }),
-  },
+  render: (args) => (
+    <SeedDeletedToast>
+      <SignIn {...args} />
+      <LocationProbe />
+    </SeedDeletedToast>
+  ),
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole('status')).toHaveTextContent('Your account was deleted');
     await expect(canvas.getAllByRole('status')).toHaveLength(1);
@@ -169,5 +194,45 @@ export const German = meta.story({
     await expect(canvas.getByRole('heading', { level: 1, name: 'Anmelden' })).toBeVisible();
     await expect(await canvas.findByRole('button', { name: 'Weiter mit GitHub' })).toBeVisible();
     await expect(canvas.getByRole('link', { name: 'Registrieren' })).toBeVisible();
+  },
+});
+
+export const ExtraStaleDeletedState = meta.story({
+  name: 'A stale accountDeleted history state shows no toast',
+  parameters: {
+    reactRouter: reactRouterParameters({
+      location: { path: '/auth/sign-in', state: { accountDeleted: true } },
+      routing: { path: '*', useStoryElement: true },
+    }),
+  },
+  play: async ({ canvas, loaded }) => {
+    await providersLoaded(loaded);
+    await expect(canvas.queryByRole('status')).toBeNull();
+  },
+});
+
+export const ExtraSocialFails = meta.story({
+  name: 'A double tap sends once; a failed social sign-in shows an error',
+  parameters: { scenario: withSocial },
+  play: async ({ args, canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    let fail: (reason: unknown) => void = () => {};
+    const calls: string[] = [];
+    api.auth.socialSignIn = (provider) => {
+      calls.push(provider);
+      return new Promise((_resolve, reject) => {
+        fail = reject;
+      });
+    };
+    const google = await canvas.findByRole('button', { name: 'Continue with Google' });
+    await userEvent.dblClick(google);
+    await expect(calls).toEqual(['google']);
+    await expect(google).toBeDisabled();
+    fail(new ApiError({ status: 422, code: 'invalid' }));
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(
+      'Couldn’t start the sign-in. Try again.',
+    );
+    await expect(args.onRedirect).not.toHaveBeenCalled();
+    await expect(google).toBeEnabled();
   },
 });

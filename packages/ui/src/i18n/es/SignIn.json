@@ -13,5 +13,6 @@
   "signUp": "Regístrate",
   "enterEmail": "Escribe tu correo",
   "enterPassword": "Escribe tu contraseña",
-  "wrongCredentials": "Correo o contraseña incorrectos"
+  "wrongCredentials": "Correo o contraseña incorrectos",
+  "socialFailed": "No se pudo iniciar el inicio de sesión. Inténtalo de nuevo."
 }

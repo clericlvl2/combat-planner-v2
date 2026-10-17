@@ -11,3 +11,12 @@
   height: 2px;
   background: var(--cp-color-border);
 }
+
+.error {
+  margin: 0;
+  color: var(--cp-role-enemy);
+  font-weight: 600;
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-body);
+  text-align: center;
+}

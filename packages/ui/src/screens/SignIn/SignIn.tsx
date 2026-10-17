@@ -1,22 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
-import { useToasts } from '../../hooks/useToasts.ts';
 import { AuthScreen } from '../shared/AuthScreen.tsx';
 import { hasCode } from '../shared/hasCode.ts';
 import { SocialButtons, assignLocation } from '../shared/SocialButtons.tsx';
 import type { Redirect } from '../shared/SocialButtons.tsx';
 import { submitOnEnter } from '../shared/submitOnEnter.ts';
-
-interface SignInState {
-  accountDeleted?: boolean;
-}
-
-const deletedIn = (state: unknown): boolean =>
-  typeof state === 'object' && state !== null && (state as SignInState).accountDeleted === true;
 
 export interface SignInProps {
   onRedirect?: Redirect;
@@ -25,23 +17,13 @@ export interface SignInProps {
 export function SignIn({ onRedirect = assignLocation }: SignInProps) {
   const { t } = useTranslation('SignIn');
   const navigate = useNavigate();
-  const { state } = useLocation();
   const { signIn } = useAccount();
-  const { toasts, show, t: tToast } = useToasts();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailEmpty, setEmailEmpty] = useState(false);
   const [passwordEmpty, setPasswordEmpty] = useState(false);
   const [wrong, setWrong] = useState(false);
   const [sending, setSending] = useState(false);
-
-  const accountDeleted = deletedIn(state);
-  const deletedMessage = tToast('accountDeleted');
-  const deletedShown = toasts.some((toast) => toast.message === deletedMessage);
-
-  useEffect(() => {
-    if (accountDeleted && !deletedShown) show({ message: deletedMessage });
-  }, []);
 
   const ready = email.trim() !== '' && password !== '' && !sending;
 

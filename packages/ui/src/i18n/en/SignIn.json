@@ -13,5 +13,6 @@
   "signUp": "Sign up",
   "enterEmail": "Enter your email",
   "enterPassword": "Enter your password",
-  "wrongCredentials": "Wrong email or password"
+  "wrongCredentials": "Wrong email or password",
+  "socialFailed": "Couldn’t start the sign-in. Try again."
 }

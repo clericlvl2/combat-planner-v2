@@ -13,5 +13,6 @@
   "signUp": "Registrieren",
   "enterEmail": "Gib deine E-Mail ein",
   "enterPassword": "Gib dein Passwort ein",
-  "wrongCredentials": "E-Mail oder Passwort falsch"
+  "wrongCredentials": "E-Mail oder Passwort falsch",
+  "socialFailed": "Die Anmeldung konnte nicht gestartet werden. Versuche es erneut."
 }
