@@ -1,4 +1,4 @@
-import type { Action, PlayerCombat, Viewer } from '@combat-planner/domain';
+import type { Action } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
 import type { DmCombat } from '../src/client.ts';
 import { Hono } from 'hono';
@@ -14,12 +14,14 @@ import {
 } from 'vite-plus/test';
 import { subscriberCount } from '../src/live/registry.ts';
 import { HEARTBEAT_MS, streamCombatEvents } from '../src/live/sse.ts';
+import type { StreamRequest } from '../src/live/sse.ts';
 import type { TestApp } from './helpers.ts';
 import {
   COMBAT_ID,
   DM,
   ENEMY_ID,
   HERO_ID,
+  NOW,
   OTHER_DM,
   PLAYER_ID,
   addUnitAction,
@@ -63,10 +65,8 @@ const PENDING = 'pending';
 const pendingAfterTick = <T>(read: Promise<T>) =>
   Promise.race([read, settled().then(() => PENDING)]);
 
-const streamWith = (viewer: Viewer, load: () => DmCombat | PlayerCombat | undefined) =>
-  new Hono()
-    .get('/', (c) => streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load }))
-    .request('/');
+const streamWith = (request: StreamRequest) =>
+  new Hono().get('/', (c) => streamCombatEvents(c, request)).request('/');
 
 beforeAll(async () => {
   opened = createTestApp();
@@ -214,8 +214,12 @@ describe('streamCombatEvents', () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const failure = new Error('load failed');
     const stream = openSse(
-      await streamWith({ kind: 'dm' }, () => {
-        throw failure;
+      await streamWith({
+        combatId: COMBAT_ID,
+        viewer: { kind: 'dm' },
+        load: () => {
+          throw failure;
+        },
       }),
     );
     expect(subscriberCount(COMBAT_ID)).toBe(0);
@@ -234,11 +238,52 @@ describe('streamCombatEvents', () => {
         throw failure;
       },
     };
-    const viewer: Viewer = { kind: 'player', playerId: PLAYER_ID };
-    const stream = openSse(await streamWith(viewer, () => project(broken, viewer)));
+    const viewer = { kind: 'player', playerId: PLAYER_ID } as const;
+    const stream = openSse(
+      await streamWith({ combatId: COMBAT_ID, viewer, load: () => project(broken, viewer) }),
+    );
     expect(subscriberCount(COMBAT_ID)).toBe(0);
     expect(vi.getTimerCount()).toBe(0);
     expect(await stream.closed()).toBe(true);
     expect(logged).toHaveBeenCalledWith(failure);
+  });
+
+  it('sends a player stream its projection and refuses a DmCombat loader at compile time', async () => {
+    const combat: DmCombat = {
+      id: COMBAT_ID,
+      title: 'Goblin ambush',
+      description: '',
+      color: 3,
+      status: 'setup',
+      round: 1,
+      escalation: 0,
+      activeUnitId: null,
+      lastPlayedAt: null,
+      linkGeneration: 2,
+      version: 7,
+      players: {},
+      createdAt: NOW,
+      updatedAt: NOW,
+      units: [],
+      undo: null,
+    };
+    const viewer = { kind: 'player', playerId: PLAYER_ID } as const;
+    const projected = project(combat, viewer);
+    const app = new Hono()
+      .get('/', (c) =>
+        streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load: () => projected }),
+      )
+      .get('/dm-document', (c) =>
+        // @ts-expect-error a DmCombat never reaches a player stream
+        streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load: () => combat }),
+      );
+    const stream = openSse(await app.request('/'));
+    expect(await stream.event()).toEqual({
+      id: String(combat.version),
+      event: { type: 'document', version: combat.version, document: projected },
+    });
+    expect(projected).not.toHaveProperty('linkGeneration');
+    await stream.cancel();
+    await settled();
   });
 });

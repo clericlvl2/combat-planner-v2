@@ -8,11 +8,12 @@ export const HEARTBEAT_MS = 15_000;
 
 const LAST_EVENT_ID = 'Last-Event-ID';
 
-export interface StreamRequest {
-  combatId: CombatId;
-  viewer: Viewer;
-  load: () => DmCombat | PlayerCombat | undefined;
-}
+type DmViewer = Extract<Viewer, { kind: 'dm' }>;
+type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
+
+export type StreamRequest =
+  | { combatId: CombatId; viewer: DmViewer; load: () => DmCombat | undefined }
+  | { combatId: CombatId; viewer: PlayerViewer; load: () => PlayerCombat | undefined };
 
 const toMessage = (event: ApiEvent) => ({
   event: event.type,
