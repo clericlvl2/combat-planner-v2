@@ -96,12 +96,18 @@
 | fix-4-web | guarded `.claude/artifacts/guard/fix-4-web.md` (P3 ×5, deferred to the owner list) | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
 | fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
-| fix-5-e2e | merged 45b3029..319db19 (gate green, `pnpm e2e` 21 passed, no listeners), guard-bee running | combat lifecycle, player, library, account |
+| fix-5-e2e | guarded `.claude/artifacts/guard/fix-5-e2e.md` (P2 hypothesis shared port 3000 → owner; P3 ×6 → owner list) | combat lifecycle, player, library, account |
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
 | fix-6 | running worker-bee 2026-10-17T17:34+03:00 (Opus 5.5 xhigh) | secrets, Dockerfile, compose, README |
 
 ## Вопросы владельцу
 
+- e2e: `playwright.config.ts` uses a fixed port 3000 with
+  `reuseExistingServer: false`, so parallel worktrees can test against each
+  other's server (guard fix-5-e2e P2, hypothesis). Proposal: take the port from
+  `E2E_PORT`, or a free port per run, and print the port in the gate log.
+  `CLAUDE.md` fixes the agent ports, so this is the owner's call. The
+  orchestrator runs e2e serially and waits for a free port.
 - 4-web guard: `package.json` `e2e` keeps `--pass-with-no-tests`
   (CLAUDE.md Commands), so a zero-test run passes the phase gate. Proposal:
   drop the flag now that specs exist.
