@@ -11,9 +11,11 @@
 .git
 .claude
 .idea
-.env
-.env.*
+**/.env
+**/.env.*
 !.env.example
+**/*.test.ts
+**/*.test.tsx
 data
 **/*.db
 **/*.db-*

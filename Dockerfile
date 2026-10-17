@@ -11,6 +11,8 @@ WORKDIR /app
 FROM base AS build
 COPY . .
 RUN pnpm install --frozen-lockfile
+ARG VITE_SOURCE_URL
+ARG VITE_DONATE_URL
 RUN pnpm build
 
 FROM base AS prod-deps
@@ -28,7 +30,6 @@ ENV NODE_ENV=production \
   DATABASE_PATH=/data/combat-planner.db \
   STATIC_ROOT=/app/apps/web/dist
 WORKDIR /app
-COPY --from=prod-deps /app/package.json /app/pnpm-workspace.yaml ./
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=prod-deps /app/apps/server ./apps/server
 COPY --from=prod-deps /app/packages/api ./packages/api
