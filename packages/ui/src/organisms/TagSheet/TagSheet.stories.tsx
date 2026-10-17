@@ -16,6 +16,7 @@ interface TagSheetCellProps {
   onDone?: () => void;
   onClose?: () => void;
   withReopen?: boolean;
+  hidden?: readonly TagSheetTag[];
 }
 
 const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout' };
@@ -41,6 +42,7 @@ function TagSheetCell({
   onDone,
   onClose,
   withReopen = false,
+  hidden = [],
 }: TagSheetCellProps) {
   const [tags, setTags] = useState<readonly TagSheetTag[]>(library);
   const [value, setValue] = useState<string[]>([...initial]);
@@ -63,10 +65,14 @@ function TagSheetCell({
           onChange?.(next);
         }}
         onCreate={(name) => {
-          const id = name.toLocaleLowerCase();
-          setTags([{ id, name }, ...tags]);
-          setValue([...value, id]);
+          const reused = hidden.find(
+            (tag) => tag.name.toLocaleLowerCase() === name.toLocaleLowerCase(),
+          );
+          const tag = reused ?? { id: name.toLocaleLowerCase(), name };
+          setTags([tag, ...tags]);
+          setValue([...value, tag.id]);
           onCreate?.(name);
+          return reused === undefined;
         }}
         onDone={() => {
           setOpened(false);
@@ -178,6 +184,20 @@ export const ExtraFlowCreate = meta.story({
   },
 });
 
+export const ExtraReusedTagNotNew = meta.story({
+  name: 'Create that reuses an existing tag shows no new badge',
+  args: { ...assignArgs, hidden: [{ id: 'veterans', name: 'Veterans', count: 0 }] },
+  play: async ({ args, canvas }) => {
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search or create' }), 'VETERANS');
+    await userEvent.click(canvas.getByRole('button', { name: 'Create “VETERANS”' }));
+    await expect(args.onCreate).toHaveBeenCalledWith('VETERANS');
+    const veterans = canvas.getByRole('checkbox', { name: /^Veterans/ });
+    await expect(veterans).not.toHaveAccessibleName(/new/);
+    await expect(veterans).toBeChecked();
+    await expect(veterans.closest('label')).not.toHaveAttribute('data-new');
+  },
+});
+
 export const ExtraFilterNeverCreates = meta.story({
   name: 'Filter mode never offers Create',
   args: filterArgs,
@@ -269,9 +289,9 @@ export const ExtraSearchResets = meta.story({
 
 export const ExtraShowPresetsCount = meta.story({
   name: 'An active filter shows the preset count',
-  args: { ...filterArgs, initial: ['orcs'], presetCount: 0 },
+  args: { ...filterArgs, initial: ['orcs'], presetCount: 7 },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Show 0 presets' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Show 7 presets' })).toBeVisible();
     await expect(canvas.queryByRole('button', { name: 'Show all' })).toBeNull();
   },
 });

@@ -19,7 +19,7 @@ interface TagSheetBaseProps {
   tags: readonly TagSheetTag[];
   value: readonly string[];
   onChange: (value: string[]) => void;
-  onCreate?: (name: string) => void;
+  onCreate?: (name: string) => boolean | void;
   onDone: () => void;
   onClose: () => void;
   presetName?: string;
@@ -58,8 +58,7 @@ export function TagSheet({
   const create =
     !filter && onCreate
       ? (name: string) => {
-          onCreate(name);
-          setCreated([...created, normalize(name)]);
+          if (onCreate(name) !== false) setCreated([...created, normalize(name)]);
           setQuery('');
         }
       : undefined;
