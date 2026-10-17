@@ -1,6 +1,5 @@
 {
   "cancel": "Cancel",
-  "opener": "Clear combat",
   "restartTitle": "Restart combat?",
   "restartBody": "Units and claims stay. Initiative, HP, temp HP, conditions, disabled state, HP history, round and escalation die reset.",
   "restart": "Restart",

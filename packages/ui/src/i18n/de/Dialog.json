@@ -1,6 +1,5 @@
 {
   "cancel": "Abbrechen",
-  "opener": "Kampf leeren",
   "restartTitle": "Kampf neu starten?",
   "restartBody": "Einheiten und Zuordnungen bleiben. Initiative, TP, temporäre TP, Zustände, Deaktivierung, TP-Verlauf, Runde und Eskalationswürfel werden zurückgesetzt.",
   "restart": "Neu starten",

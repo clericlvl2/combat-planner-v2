@@ -116,7 +116,7 @@ function DialogCell({
       {withOpener ? (
         <div style={{ padding: 'calc(var(--cp-layout-status-bar) + 12px) 12px 12px' }}>
           <Button variant="secondary" size="S" onClick={() => setOpened(true)}>
-            {t('opener')}
+            Clear combat
           </Button>
         </div>
       ) : null}
@@ -149,7 +149,7 @@ function OverSheetCell({ onConfirm, onCancel, onSheetClose }: DialogCellProps) {
     <div style={stage}>
       <Sheet
         opened={sheetOpened}
-        title={t('opener')}
+        title="Clear combat"
         onClose={() => {
           setSheetOpened(false);
           onSheetClose?.();
@@ -368,11 +368,15 @@ export const ExtraOverSheet = meta.story({
 export const ExtraScrollLock = meta.story({
   name: 'Page scroll is locked while open',
   args: { opened: false, withOpener: true },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     const before = document.body.style.overflow;
     await userEvent.click(canvas.getByRole('button', { name: 'Clear combat' }));
     await canvas.findByRole('alertdialog');
     await expect(getComputedStyle(document.body).overflow).toBe('hidden');
+    await expect(document.body).toHaveAttribute('data-scroll-locked');
+    const wheel = new WheelEvent('wheel', { deltaY: 120, bubbles: true, cancelable: true });
+    canvasElement.dispatchEvent(wheel);
+    await expect(wheel.defaultPrevented).toBe(true);
     await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
     await expect(document.body.style.overflow).toBe(before);
   },
@@ -385,6 +389,18 @@ export const ExtraOneUnit = meta.story({
     await expect(
       canvas.getByText('The only unit is removed and every player claim is released.'),
     ).toBeVisible();
+  },
+});
+
+export const ExtraEmptyFr = meta.story({
+  name: 'Clear with no units, fr',
+  globals: { locale: 'fr' },
+  args: { units: 0 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByText('0 unité est retirée et chaque attribution de joueur est libérée.'),
+    ).toBeVisible();
+    await expect(canvas.queryByText(/L’unique unité/)).toBeNull();
   },
 });
 

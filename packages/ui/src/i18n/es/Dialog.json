@@ -1,6 +1,5 @@
 {
   "cancel": "Cancelar",
-  "opener": "Vaciar combate",
   "restartTitle": "¿Reiniciar el combate?",
   "restartBody": "Las unidades y las reclamaciones se mantienen. Se reinician iniciativa, PG, PG temporales, estados, desactivación, historial de PG, ronda y dado de escalada.",
   "restart": "Reiniciar",
