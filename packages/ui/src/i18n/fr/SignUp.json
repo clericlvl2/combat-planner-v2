@@ -1,0 +1,18 @@
+{
+  "title": "Créer un compte",
+  "subtitle": "Gratuit. Les joueurs n’ont pas besoin de compte.",
+  "displayName": "Nom affiché",
+  "displayNamePlaceholder": "Ce que voient les joueurs",
+  "email": "E-mail",
+  "emailPlaceholder": "you@example.com",
+  "password": "Mot de passe",
+  "passwordPlaceholder": "Au moins 8 caractères",
+  "submit": "Créer un compte",
+  "haveAccount": "Déjà un compte ?",
+  "signIn": "Se connecter",
+  "enterName": "Saisissez un nom affiché",
+  "enterEmail": "Saisissez votre e-mail",
+  "invalidEmail": "Saisissez un e-mail valide",
+  "tooShort": "Au moins 8 caractères",
+  "emailTaken": "Cet e-mail a déjà un compte"
+}

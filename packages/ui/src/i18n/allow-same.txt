@@ -12,3 +12,4 @@ UnitForm.defaultName
 NumpadSheet.temp
 SignIn.emailPlaceholder
 SignIn.passwordPlaceholder
+SignUp.emailPlaceholder

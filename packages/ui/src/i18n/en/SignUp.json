@@ -1,0 +1,18 @@
+{
+  "title": "Create account",
+  "subtitle": "Free. Players don’t need an account.",
+  "displayName": "Display name",
+  "displayNamePlaceholder": "How players see you",
+  "email": "Email",
+  "emailPlaceholder": "you@example.com",
+  "password": "Password",
+  "passwordPlaceholder": "At least 8 characters",
+  "submit": "Create account",
+  "haveAccount": "Have an account?",
+  "signIn": "Sign in",
+  "enterName": "Enter a display name",
+  "enterEmail": "Enter your email",
+  "invalidEmail": "Enter a valid email",
+  "tooShort": "At least 8 characters",
+  "emailTaken": "This email already has an account"
+}

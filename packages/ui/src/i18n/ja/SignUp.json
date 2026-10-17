@@ -1,0 +1,18 @@
+{
+  "title": "アカウント作成",
+  "subtitle": "無料です。プレイヤーにアカウントは不要です。",
+  "displayName": "表示名",
+  "displayNamePlaceholder": "プレイヤーに表示される名前",
+  "email": "メールアドレス",
+  "emailPlaceholder": "you@example.com",
+  "password": "パスワード",
+  "passwordPlaceholder": "8文字以上",
+  "submit": "アカウントを作成",
+  "haveAccount": "アカウントをお持ちの場合は",
+  "signIn": "ログイン",
+  "enterName": "表示名を入力してください",
+  "enterEmail": "メールアドレスを入力してください",
+  "invalidEmail": "正しいメールアドレスを入力してください",
+  "tooShort": "8文字以上にしてください",
+  "emailTaken": "このメールアドレスはすでに登録されています"
+}

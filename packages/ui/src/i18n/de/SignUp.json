@@ -1,0 +1,18 @@
+{
+  "title": "Konto erstellen",
+  "subtitle": "Kostenlos. Spieler brauchen kein Konto.",
+  "displayName": "Anzeigename",
+  "displayNamePlaceholder": "So sehen dich die Spieler",
+  "email": "E-Mail",
+  "emailPlaceholder": "you@example.com",
+  "password": "Passwort",
+  "passwordPlaceholder": "Mindestens 8 Zeichen",
+  "submit": "Konto erstellen",
+  "haveAccount": "Schon ein Konto?",
+  "signIn": "Anmelden",
+  "enterName": "Gib einen Anzeigenamen ein",
+  "enterEmail": "Gib deine E-Mail ein",
+  "invalidEmail": "Gib eine gültige E-Mail ein",
+  "tooShort": "Mindestens 8 Zeichen",
+  "emailTaken": "Für diese E-Mail gibt es schon ein Konto"
+}
