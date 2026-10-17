@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { signIn, signUp } from './helpers.ts';
+
+function patchResponse(page: Page, path: string) {
+  return page.waitForResponse(
+    (response) =>
+      response.request().method() === 'PATCH' && new URL(response.url()).pathname === path,
+  );
+}
 
 test('the language switches at once and stays after a reload', async ({ page }) => {
   await signUp(page);
@@ -8,11 +16,15 @@ test('the language switches at once and stays after a reload', async ({ page }) 
   const languages = page.getByRole('radiogroup', { name: 'Language' });
   await expect(languages.getByRole('radio', { name: 'English' })).toBeChecked();
 
+  const saved = patchResponse(page, '/api/settings');
   await languages.getByRole('radio', { name: 'Deutsch' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
   await expect(
     page.getByRole('radiogroup', { name: 'Sprache' }).getByRole('radio', { name: 'Deutsch' }),
   ).toBeChecked();
+  const response = await saved;
+  expect(response.ok()).toBe(true);
+  expect(await response.json()).toMatchObject({ language: 'de' });
 
   await page.reload();
   await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
@@ -31,12 +43,17 @@ test('the display name is renamed and kept after a reload', async ({ page }) => 
   const name = page.getByRole('textbox', { name: 'Display name' });
   await expect(name).toHaveValue('Dana');
 
+  const saved = patchResponse(page, '/api/account');
   await name.fill('Dana the Bold');
   await name.press('Enter');
   await name.blur();
-  await expect(name).toHaveValue('Dana the Bold');
+  const response = await saved;
+  expect(response.ok()).toBe(true);
 
   await page.reload();
+  const session = await page.request.get('/api/auth/get-session');
+  expect(session.ok()).toBe(true);
+  expect(await session.json()).toMatchObject({ user: { name: 'Dana the Bold' } });
   await expect(page.getByRole('textbox', { name: 'Display name' })).toHaveValue('Dana the Bold');
 });
 
