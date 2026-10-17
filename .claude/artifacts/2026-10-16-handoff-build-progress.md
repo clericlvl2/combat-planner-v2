@@ -25,7 +25,7 @@
 | 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
 | 4 | web | 4-web, fix-4-overlays, fix-4, fix-4-web | phase-4 |
 | 5 | e2e | 5-e2e, fix-5, fix-5-e2e | |
-| 6 | docker | 6-docker | |
+| 6 | docker | 6-docker, fix-6 | |
 
 ## Текущий шаг
 
@@ -97,7 +97,8 @@
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
 | fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
 | fix-5-e2e | handed back 4/4 (report `.claude/artifacts/reports/fix-5-e2e.md`, repeat-each 5: 70/70), gate running | combat lifecycle, player, library, account |
-| 6-docker | merged 63e0843..44f4f04 (regate green, `.claude/run/6-docker/`), guard-bee running | Dockerfile, compose, README |
+| 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
+| fix-6 | todo | secrets, Dockerfile, compose, README |
 
 ## Вопросы владельцу
 
