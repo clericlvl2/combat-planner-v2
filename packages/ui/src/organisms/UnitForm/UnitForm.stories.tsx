@@ -277,7 +277,7 @@ export const MinimumValues = meta.story({
   name: 'Minimum values',
   args: { mode: 'edit', value: { ...vashti, maxHp: LIMITS.maxHp.min, tempHp: 0 } },
   play: async ({ canvas }) => {
-    const decrease = canvas.getAllByRole('button', { name: 'Decrease' });
+    const decrease = canvas.getAllByRole('button', { name: /^Decrease / });
     await expect(decrease[0]).toBeDisabled();
     await expect(decrease[1]).toBeDisabled();
     await expect(decrease[2]).toBeEnabled();
@@ -342,7 +342,7 @@ export const ExtraSubmitTypedValues = meta.story({
     await typeNumber(canvas, 'Armor Class', '17');
     await typeNumber(canvas, 'Physical Defense', '15');
     await typeNumber(canvas, 'Mental Defense', '16');
-    const increase = canvas.getAllByRole('button', { name: 'Increase' });
+    const increase = canvas.getAllByRole('button', { name: /^Increase / });
     await userEvent.click(increase[increase.length - 1] ?? document.body);
     await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Calls the storm');
     await userEvent.click(canvas.getByRole('button', { name: 'Add unit' }));

@@ -106,7 +106,7 @@ export function Stepper({
         component="button"
         type="button"
         className={classes.key}
-        aria-label={t('decrease')}
+        aria-label={label ? t('decreaseField', { label }) : t('decrease')}
         aria-controls={inputId}
         disabled={atMin}
         onClick={() => commit(base - step)}
@@ -134,7 +134,7 @@ export function Stepper({
         component="button"
         type="button"
         className={classes.key}
-        aria-label={t('increase')}
+        aria-label={label ? t('increaseField', { label }) : t('increase')}
         aria-controls={inputId}
         disabled={atMax}
         onClick={() => commit(base + step)}

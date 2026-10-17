@@ -1,6 +1,8 @@
 {
   "decrease": "Diminuer",
   "increase": "Augmenter",
+  "decreaseField": "Diminuer {{label}}",
+  "increaseField": "Augmenter {{label}}",
   "value": "Valeur",
   "maxHp": "PV max",
   "initBonus": "Bonus d’initiative"

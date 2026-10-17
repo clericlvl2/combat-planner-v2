@@ -1,6 +1,8 @@
 {
   "decrease": "Уменьшить",
   "increase": "Увеличить",
+  "decreaseField": "Уменьшить: {{label}}",
+  "increaseField": "Увеличить: {{label}}",
   "value": "Значение",
   "maxHp": "Макс. ОЗ",
   "initBonus": "Бонус инициативы"

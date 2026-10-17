@@ -73,9 +73,9 @@ export const WithLabelMin = meta.story({
   name: 'With label · min',
   args: { labelKey: 'maxHp', value: LIMITS.maxHp.min },
   play: async ({ args, canvas }) => {
-    const decrease = canvas.getByRole('button', { name: 'Decrease' });
+    const decrease = canvas.getByRole('button', { name: 'Decrease Max HP' });
     await expect(decrease).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Increase' })).toBeEnabled();
+    await expect(canvas.getByRole('button', { name: 'Increase Max HP' })).toBeEnabled();
     await userEvent.click(decrease, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('1');
@@ -86,9 +86,9 @@ export const WithLabelMax = meta.story({
   name: 'With label · max',
   args: { labelKey: 'maxHp', value: LIMITS.maxHp.max },
   play: async ({ args, canvas }) => {
-    const increase = canvas.getByRole('button', { name: 'Increase' });
+    const increase = canvas.getByRole('button', { name: 'Increase Max HP' });
     await expect(increase).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Decrease' })).toBeEnabled();
+    await expect(canvas.getByRole('button', { name: 'Decrease Max HP' })).toBeEnabled();
     await userEvent.click(increase, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('999');
@@ -167,8 +167,8 @@ export const ExtraDisabled = meta.story({
   name: 'Disabled',
   args: { labelKey: 'maxHp', value: 40, disabled: true },
   play: async ({ args, canvas }) => {
-    const decrease = canvas.getByRole('button', { name: 'Decrease' });
-    const increase = canvas.getByRole('button', { name: 'Increase' });
+    const decrease = canvas.getByRole('button', { name: 'Decrease Max HP' });
+    const increase = canvas.getByRole('button', { name: 'Increase Max HP' });
     await expect(decrease).toBeDisabled();
     await expect(increase).toBeDisabled();
     await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toBeDisabled();
@@ -182,10 +182,10 @@ export const ExtraKeys = meta.story({
   name: 'Keys step by one',
   args: { labelKey: 'maxHp', value: 40 },
   play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase Max HP' }));
     await expect(args.onChange).toHaveBeenLastCalledWith(41);
-    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Decrease Max HP' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Decrease Max HP' }));
     await expect(args.onChange).toHaveBeenLastCalledWith(39);
     await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('39');
   },
@@ -243,7 +243,7 @@ export const ExtraUnsigned = meta.story({
     const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
     await expect(field).toHaveValue('15');
     await expect(field).toHaveAttribute('inputmode', 'text');
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase Init bonus' }));
     await expect(args.onChange).toHaveBeenLastCalledWith(16);
     await expect(field).toHaveValue('16');
     await userEvent.clear(field);
@@ -260,8 +260,8 @@ export const ExtraEmpty = meta.story({
     const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
     await expect(field).toHaveValue('—');
     await expect(field).not.toHaveAttribute('aria-valuenow');
-    await expect(canvas.getByRole('button', { name: 'Decrease' })).toBeEnabled();
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await expect(canvas.getByRole('button', { name: 'Decrease Init bonus' })).toBeEnabled();
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase Init bonus' }));
     await expect(args.onChange).toHaveBeenLastCalledWith(1);
     await expect(field).toHaveValue('1');
     await expect(field).toHaveAttribute('aria-valuenow', '1');
@@ -274,7 +274,7 @@ export const ExtraEmptyDecrease = meta.story({
   play: async ({ args, canvas }) => {
     const field = canvas.getByRole('spinbutton', { name: 'Init bonus' });
     await expect(field).toHaveValue('—');
-    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Decrease Init bonus' }));
     await expect(args.onChange).toHaveBeenLastCalledWith(-1);
     await expect(field).toHaveValue('−1');
     await expect(field).toHaveAttribute('aria-valuenow', '-1');
@@ -287,6 +287,7 @@ export const ExtraLocaleRu = meta.story({
   args: { labelKey: 'maxHp', value: 40 },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('spinbutton', { name: 'Макс. ОЗ' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Уменьшить' })).toBeEnabled();
+    await expect(canvas.getByRole('button', { name: 'Уменьшить: Макс. ОЗ' })).toBeEnabled();
+    await expect(canvas.getByRole('button', { name: 'Увеличить: Макс. ОЗ' })).toBeEnabled();
   },
 });

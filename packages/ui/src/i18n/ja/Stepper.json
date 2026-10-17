@@ -1,6 +1,8 @@
 {
   "decrease": "減らす",
   "increase": "増やす",
+  "decreaseField": "{{label}}を減らす",
+  "increaseField": "{{label}}を増やす",
   "value": "数値",
   "maxHp": "最大HP",
   "initBonus": "イニシアチブ修正"

@@ -1,6 +1,8 @@
 {
   "decrease": "Verringern",
   "increase": "Erhöhen",
+  "decreaseField": "{{label}} verringern",
+  "increaseField": "{{label}} erhöhen",
   "value": "Wert",
   "maxHp": "Max. TP",
   "initBonus": "Initiativebonus"
