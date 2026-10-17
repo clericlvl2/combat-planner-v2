@@ -13,5 +13,6 @@
   "doneTags_one": "Listo · {{count}} etiqueta",
   "doneTags_few": "Listo · {{count}} etiquetas",
   "doneTags_many": "Listo · {{count}} etiquetas",
-  "doneTags_other": "Listo · {{count}} etiquetas"
+  "doneTags_other": "Listo · {{count}} etiquetas",
+  "new": "nuevo"
 }

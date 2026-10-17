@@ -13,5 +13,6 @@
   "doneTags_one": "完了 · {{count}}個のタグ",
   "doneTags_few": "完了 · {{count}}個のタグ",
   "doneTags_many": "完了 · {{count}}個のタグ",
-  "doneTags_other": "完了 · {{count}}個のタグ"
+  "doneTags_other": "完了 · {{count}}個のタグ",
+  "new": "新規"
 }

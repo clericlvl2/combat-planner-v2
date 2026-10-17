@@ -15,6 +15,7 @@ interface TagSheetCellProps {
   onCreate?: (name: string) => void;
   onDone?: () => void;
   onClose?: () => void;
+  withReopen?: boolean;
 }
 
 const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout' };
@@ -39,19 +40,24 @@ function TagSheetCell({
   onCreate,
   onDone,
   onClose,
+  withReopen = false,
 }: TagSheetCellProps) {
   const [tags, setTags] = useState<readonly TagSheetTag[]>(library);
   const [value, setValue] = useState<string[]>([...initial]);
   const [opened, setOpened] = useState(true);
   return (
     <div style={stage}>
+      {withReopen ? (
+        <button type="button" onClick={() => setOpened(true)}>
+          Reopen
+        </button>
+      ) : null}
       <TagSheet
         opened={opened}
-        mode={mode}
+        {...(mode === 'filter' ? { mode, presetCount: presetCount ?? 0 } : { mode })}
         tags={tags}
         value={value}
         presetName={presetName}
-        presetCount={presetCount}
         onChange={(next) => {
           setValue(next);
           onChange?.(next);
@@ -163,7 +169,11 @@ export const ExtraFlowCreate = meta.story({
     await expect(args.onCreate).toHaveBeenCalledOnce();
     await expect(args.onCreate).toHaveBeenCalledWith('Elite');
     await expect(search).toHaveValue('');
-    await expect(canvas.getByRole('checkbox', { name: 'Elite' })).toBeChecked();
+    const elite = canvas.getByRole('checkbox', { name: 'Elite new' });
+    await expect(elite).toBeChecked();
+    await expect(elite.closest('label')).toHaveAttribute('data-new');
+    const list = canvas.getByRole('group', { name: 'Tags · Orc Berserker' });
+    await expect(within(list).getAllByRole('checkbox')[0]).toBe(elite);
     await expect(canvas.getByRole('button', { name: 'Done · 3 tags' })).toBeVisible();
   },
 });
@@ -228,12 +238,41 @@ export const ExtraDone = meta.story({
 
 export const ExtraClose = meta.story({
   name: 'Close and Escape call onClose only',
-  args: filterArgs,
+  args: { ...filterArgs, withReopen: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
     await expect(args.onClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await userEvent.click(canvas.getByRole('button', { name: 'Reopen' }));
+    const sheet = await canvas.findByRole('dialog', { name: 'Filter by tag' });
+    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onClose).toHaveBeenCalledTimes(2);
     await expect(args.onDone).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+  },
+});
+
+export const ExtraSearchResets = meta.story({
+  name: 'Search resets when the sheet closes',
+  args: { ...filterArgs, withReopen: true },
+  play: async ({ canvas }) => {
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search tags' }), 'gob');
+    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await userEvent.click(canvas.getByRole('button', { name: 'Reopen' }));
+    const search = await canvas.findByRole('searchbox', { name: 'Search tags' });
+    await expect(search).toHaveValue('');
+    await expect(canvas.getAllByRole('checkbox')).toHaveLength(8);
+  },
+});
+
+export const ExtraShowPresetsCount = meta.story({
+  name: 'An active filter shows the preset count',
+  args: { ...filterArgs, initial: ['orcs'], presetCount: 0 },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Show 0 presets' })).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: 'Show all' })).toBeNull();
   },
 });
 

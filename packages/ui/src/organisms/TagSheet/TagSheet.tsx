@@ -1,5 +1,5 @@
 import { LIMITS } from '@combat-planner/domain';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { SearchField } from '../../atoms/SearchField/SearchField.tsx';
@@ -14,9 +14,8 @@ export interface TagSheetTag {
   count?: number;
 }
 
-export interface TagSheetProps {
+interface TagSheetBaseProps {
   opened: boolean;
-  mode: TagSheetMode;
   tags: readonly TagSheetTag[];
   value: readonly string[];
   onChange: (value: string[]) => void;
@@ -24,9 +23,11 @@ export interface TagSheetProps {
   onDone: () => void;
   onClose: () => void;
   presetName?: string;
-  presetCount?: number;
   maxLength?: number;
 }
+
+export type TagSheetProps = TagSheetBaseProps &
+  ({ mode: 'filter'; presetCount: number } | { mode: 'assign'; presetCount?: undefined });
 
 const normalize = (text: string) => text.trim().toLocaleLowerCase();
 
@@ -45,16 +46,33 @@ export function TagSheet({
 }: TagSheetProps) {
   const { t } = useTranslation('TagSheet');
   const [query, setQuery] = useState('');
+  const [created, setCreated] = useState<readonly string[]>([]);
   const filter = mode === 'filter';
-  const needle = normalize(query);
-  const hasMatch = needle === '' || tags.some((tag) => normalize(tag.name).includes(needle));
+
+  useEffect(() => {
+    if (opened) return;
+    setQuery('');
+    setCreated([]);
+  }, [opened]);
+
   const create =
-    !filter && !hasMatch && onCreate
+    !filter && onCreate
       ? (name: string) => {
           onCreate(name);
+          setCreated([...created, normalize(name)]);
           setQuery('');
         }
       : undefined;
+
+  const isCreated = (tag: TagSheetTag) => created.includes(normalize(tag.name));
+  const options = [...tags.filter(isCreated), ...tags.filter((tag) => !isCreated(tag))].map(
+    (tag) => ({
+      value: tag.id,
+      label: tag.name,
+      count: tag.count,
+      badge: isCreated(tag) ? t('new') : undefined,
+    }),
+  );
 
   const title = filter
     ? t('filterTitle')
@@ -63,7 +81,7 @@ export function TagSheet({
       : t('tags');
 
   const doneLabel = filter
-    ? value.length > 0 && presetCount !== undefined
+    ? value.length > 0
       ? t('showPresets', { count: presetCount })
       : t('showAll')
     : value.length > 0
@@ -83,12 +101,13 @@ export function TagSheet({
     >
       <SearchField
         value={query}
-        onChange={(next) => setQuery(next.slice(0, maxLength))}
+        onChange={setQuery}
+        maxLength={maxLength}
         placeholder={filter ? t('searchTags') : t('searchOrCreate')}
       />
       <CheckList
         aria-label={title}
-        options={tags.map((tag) => ({ value: tag.id, label: tag.name, count: tag.count }))}
+        options={options}
         values={value}
         onChange={onChange}
         query={query}

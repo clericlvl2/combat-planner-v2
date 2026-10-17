@@ -13,5 +13,6 @@
   "doneTags_one": "Done · {{count}} tag",
   "doneTags_few": "Done · {{count}} tags",
   "doneTags_many": "Done · {{count}} tags",
-  "doneTags_other": "Done · {{count}} tags"
+  "doneTags_other": "Done · {{count}} tags",
+  "new": "new"
 }

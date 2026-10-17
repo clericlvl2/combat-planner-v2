@@ -13,5 +13,6 @@
   "doneTags_one": "Terminé · {{count}} étiquette",
   "doneTags_few": "Terminé · {{count}} étiquettes",
   "doneTags_many": "Terminé · {{count}} étiquettes",
-  "doneTags_other": "Terminé · {{count}} étiquettes"
+  "doneTags_other": "Terminé · {{count}} étiquettes",
+  "new": "nouveau"
 }

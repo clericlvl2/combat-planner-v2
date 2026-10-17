@@ -13,5 +13,6 @@
   "doneTags_one": "Fertig · {{count}} Schlagwort",
   "doneTags_few": "Fertig · {{count}} Schlagwörter",
   "doneTags_many": "Fertig · {{count}} Schlagwörter",
-  "doneTags_other": "Fertig · {{count}} Schlagwörter"
+  "doneTags_other": "Fertig · {{count}} Schlagwörter",
+  "new": "neu"
 }
