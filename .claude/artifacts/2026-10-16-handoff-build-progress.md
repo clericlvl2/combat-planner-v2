@@ -80,7 +80,7 @@
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | running worker-bee 2026-10-17T11:50+03:00 (parallel with fix-2.3) | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
-| 2.4-AppPages | reported `.claude/artifacts/reports/2.4-AppPages.md`, gate running | SignIn, SignUp, Settings, Account, About |
+| 2.4-AppPages | merged 85b5cdf..4992dbc (gate `.claude/run/2.4-AppPages/` green), guard-bee running | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
