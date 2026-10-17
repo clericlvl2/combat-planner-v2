@@ -127,3 +127,41 @@ export async function joinAsPlayer(player: Page, link: string, name: string, her
   await player.getByRole('button', { name: 'Join' }).click();
   await expect(unitRows(player).filter({ hasText: hero })).toHaveAttribute('data-mine', 'true');
 }
+
+export async function createPreset(
+  page: Page,
+  name: string,
+  type: UnitType,
+  tags: readonly string[],
+): Promise<void> {
+  await page.getByRole('button', { name: 'New preset' }).click();
+  const form = page.getByRole('dialog', { name: 'New preset' });
+  await form.getByLabel('Name').fill(name);
+  await form.getByRole('radiogroup', { name: 'Type' }).getByRole('radio', { name: type }).click();
+  if (tags.length > 0) {
+    await form.getByRole('button', { name: 'Add tag' }).click();
+    const sheet = page.getByRole('dialog', { name: `Tags · ${name}` });
+    for (const tag of tags) {
+      await sheet.getByRole('searchbox', { name: 'Search or create' }).fill(tag);
+      const create = sheet.getByRole('button', { name: `Create “${tag}”` });
+      const existing = sheet.getByRole('checkbox', { name: new RegExp(`^${tag}\\b`) });
+      await expect(create.or(existing)).toBeVisible();
+      if (await create.isVisible()) await create.click();
+      else await existing.check();
+      await expect(existing).toBeChecked();
+    }
+    await sheet.getByRole('button', { name: /^Done/ }).click();
+    await expect(sheet).toBeHidden();
+  }
+  await form.getByRole('button', { name: 'Create', exact: true }).click();
+  await expect(form).toBeHidden();
+}
+
+export async function presetNames(page: Page): Promise<string[]> {
+  return page
+    .locator('article')
+    .getByRole('button', { name: /^Actions: / })
+    .evaluateAll((buttons) =>
+      buttons.map((button) => (button.getAttribute('aria-label') ?? '').replace(/^Actions: /, '')),
+    );
+}

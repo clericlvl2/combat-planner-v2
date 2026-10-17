@@ -43,6 +43,7 @@ test('a DM runs a combat and a player follows the turn order', async ({ page, br
     await player.getByRole('checkbox', { name: 'Aria' }).check();
     await player.getByRole('button', { name: 'Join' }).click();
     await expect(player.getByText('Round 2')).toBeVisible();
+    await expect(player.getByRole('heading', { name: 'Who are you playing?' })).toBeHidden();
     await expect(player.getByText('Aria')).toBeVisible();
     await expect(player.getByText('You', { exact: true })).toBeVisible();
   } finally {
