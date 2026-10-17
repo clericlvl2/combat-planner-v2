@@ -90,14 +90,18 @@
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
 | fix-3 | guarded `.claude/artifacts/guard/fix-3.md` | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
-| 4-web | merged c5fbf28..7d80d4c (gate and `pnpm e2e` 1 passed, `.claude/run/4-web/`), guard-bee running | router, providers, player identity, drawer, smoke e2e |
+| 4-web | guarded `.claude/artifacts/guard/4-web.md` (no P0–P1; CRIT 6 FAIL P3 system-screen swipe; P2 ×1, P3 ×4 → `fix-4-web`) | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | running worker-bee a5e1868 2026-10-17T16:35+03:00 (Opus 5.5 medium; parallel with `fix-4`, paths `e2e/**` only) | auth, combat lifecycle, player, library, account |
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
+| fix-4-web | todo | swipe, router test, locale, teardown |
 | fix-4 | handed back 10/10 (report `.claude/artifacts/reports/fix-4.md`), rebased, gate running `.claude/run/fix-4/` | |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
 
+- 4-web guard: `package.json` `e2e` keeps `--pass-with-no-tests`
+  (CLAUDE.md Commands), so a zero-test run passes the phase gate. Proposal:
+  drop the flag now that specs exist.
 - 4-web: the root `package.json` has no `version`, so About shows `0.0.0`.
   Routed to `6-docker`, which sets `"version": "1.0.0"`. The `VITE_SOURCE_URL`
   and `VITE_DONATE_URL` defaults are placeholders
@@ -672,6 +676,19 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 4-web → `fix-4-web` (`apps/web/**`, `e2e/teardown.ts`,
+  `packages/ui/src/organisms/MessageScreen/**`):
+  - P2: the swipe over a Sheet or Dialog scrim opens the Drawer above the
+    modal (`pages.tsx:58-69`).
+  - P3: system screens inside DM routes accept the swipe. Orchestrator
+    decision: `MessageScreen` root carries `data-system-screen`, and the app
+    refuses a swipe while one is mounted.
+  - P3: the errorElement test only checks config (`router.test.ts:166-169`).
+  - P3: the browser language is not restored after leaving DM or player routes
+    (`pages.tsx:48-56`).
+  - P3: teardown removes only a directory the config created itself
+    (`e2e/teardown.ts:4-5`).
 
 - fix-4-overlays → `5-e2e`: P2 — no test opens and closes a Sheet and then
   clicks beneath it (Sheet.stories.tsx:571-582 covers only a Sheet never
