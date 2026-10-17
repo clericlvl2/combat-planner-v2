@@ -2,9 +2,10 @@ import { LIMITS, rolledInitiative } from '@combat-planner/domain';
 import { Popover } from '@mantine/core';
 import { IconDice5 } from '@tabler/icons-react';
 import { useEffect, useRef } from 'react';
-import type { HTMLAttributes, KeyboardEvent, ReactNode } from 'react';
+import type { HTMLAttributes, KeyboardEvent, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
+import { PopoverFrame } from '../../organisms/Menu/Menu.tsx';
 import { Stepper } from '../Stepper/Stepper.tsx';
 import classes from './InitiativePopover.module.css';
 
@@ -20,9 +21,12 @@ export interface InitiativePopoverProps extends Omit<
   open: boolean;
   onClose: () => void;
   anchor?: ReactNode;
+  triggerRef?: RefObject<HTMLElement | null>;
 }
 
 const MINUS = '−';
+
+const PANEL_WIDTH = 240;
 
 function signed(value: number): string {
   return value < 0 ? `${MINUS}${Math.abs(value)}` : `+${value}`;
@@ -42,6 +46,7 @@ export function InitiativePopover({
   open,
   onClose,
   anchor,
+  triggerRef,
   className,
   onKeyDown,
   ...rest
@@ -51,14 +56,17 @@ export function InitiativePopover({
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const triggerRefRef = useRef(triggerRef);
+  triggerRefRef.current = triggerRef;
 
   useEffect(() => {
     if (!open || !inline) return;
     const handlePointerDown = (event: PointerEvent) => {
       const panelNode = panelRef.current;
-      if (panelNode && event.target instanceof Node && !panelNode.contains(event.target)) {
-        onCloseRef.current();
-      }
+      if (!panelNode || !(event.target instanceof Node)) return;
+      if (panelNode.contains(event.target)) return;
+      if (triggerRefRef.current?.current?.contains(event.target)) return;
+      onCloseRef.current();
     };
     document.addEventListener('pointerdown', handlePointerDown);
     return () => document.removeEventListener('pointerdown', handlePointerDown);
@@ -78,31 +86,33 @@ export function InitiativePopover({
   };
 
   const panel = (
-    <div
-      {...rest}
-      ref={inline ? panelRef : undefined}
-      role="dialog"
-      aria-label={title}
-      className={className ? `${classes.panel} ${className}` : classes.panel}
-      onKeyDown={handleKeyDown}
-    >
-      <span className={classes.title}>
-        {title} <span className={classes.bonus}>({signed(bonus)})</span>
-      </span>
-      <div className={classes.steps}>
-        <Stepper
-          className={classes.stepper}
-          value={value}
-          signed={false}
-          min={LIMITS.initiative.min}
-          max={LIMITS.initiative.max}
-          size="M"
-          onChange={onSet}
-        />
-      </div>
-      <Button size="S" fullWidth icon={IconDice5} onClick={handleRoll}>
-        {t('roll', { bonus: signed(bonus) })}
-      </Button>
+    <div ref={inline ? panelRef : undefined} className={classes.host}>
+      <PopoverFrame
+        {...rest}
+        role="dialog"
+        aria-label={title}
+        width={PANEL_WIDTH}
+        className={className}
+        onKeyDown={handleKeyDown}
+      >
+        <span className={classes.title}>
+          {title} <span className={classes.bonus}>({signed(bonus)})</span>
+        </span>
+        <div className={classes.steps}>
+          <Stepper
+            className={classes.stepper}
+            value={value}
+            signed={false}
+            min={LIMITS.initiative.min}
+            max={LIMITS.initiative.max}
+            size="M"
+            onChange={onSet}
+          />
+        </div>
+        <Button size="S" fullWidth icon={IconDice5} onClick={handleRoll}>
+          {t('roll', { bonus: signed(bonus) })}
+        </Button>
+      </PopoverFrame>
     </div>
   );
 

@@ -10,9 +10,10 @@ import type { InitiativePopoverProps } from './InitiativePopover.tsx';
 
 type TapTarget = 'plus' | 'roll';
 
-interface InitiativePopoverCellProps extends Omit<InitiativePopoverProps, 'anchor'> {
+interface InitiativePopoverCellProps extends Omit<InitiativePopoverProps, 'anchor' | 'triggerRef'> {
   tap?: TapTarget;
   withAnchor?: boolean;
+  withTrigger?: boolean;
 }
 
 const stage = {
@@ -35,10 +36,12 @@ function InitiativePopoverCell({
   onClose,
   tap,
   withAnchor = false,
+  withTrigger = false,
   ...props
 }: InitiativePopoverCellProps) {
   const { t } = useTranslation('InitiativePopover');
   const stageRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(initialValue);
   const [open, setOpen] = useState(initialOpen);
 
@@ -49,10 +52,18 @@ function InitiativePopoverCell({
 
   return (
     <div ref={stageRef} style={stage}>
+      {withTrigger ? (
+        <span ref={triggerRef} style={{ display: 'inline-flex', alignSelf: 'flex-start' }}>
+          <Button variant="secondary" size="S" onClick={() => setOpen(!open)}>
+            {t('anchor')}
+          </Button>
+        </span>
+      ) : null}
       <InitiativePopover
         {...props}
         value={value}
         open={open}
+        triggerRef={withTrigger ? triggerRef : undefined}
         anchor={
           withAnchor ? (
             <Button variant="secondary" size="S" onClick={() => setOpen(true)}>
@@ -253,6 +264,19 @@ export const ExtraKeyDownComposed = meta.story({
     await expect(args.onKeyDown).toHaveBeenCalledOnce();
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(canvas.queryByRole('dialog')).toBeNull();
+  },
+});
+
+export const ExtraTriggerCloses = meta.story({
+  name: 'Tapping its own trigger closes the popover',
+  args: { value: 15, bonus: 3, withTrigger: true },
+  play: async ({ args, canvas }) => {
+    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+    await expect(args.onClose).not.toHaveBeenCalled();
+    await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
+    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
   },
 });
 
