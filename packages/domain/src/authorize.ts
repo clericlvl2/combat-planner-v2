@@ -29,17 +29,19 @@ const findUnit = (combat: Combat, unitId: UnitId): Unit | DomainError =>
   combat.units.find((unit) => unit.id === unitId) ??
   new DomainError('notFound', `Unit ${unitId} is not in this combat`);
 
-const authorizeClaim = (combat: Combat, unitId: UnitId): true | DomainError => {
+const authorizeClaim = (combat: Combat, unitId: UnitId, playerId: string): true | DomainError => {
   const unit = findUnit(combat, unitId);
   if (unit instanceof DomainError) return unit;
   if (unit.role !== 'hero') return forbidden('Only a hero can be claimed');
-  if (unit.claimedBy !== null) return forbidden('This hero is already claimed');
+  if (unit.claimedBy !== null && unit.claimedBy !== playerId) {
+    return forbidden('This hero is already claimed');
+  }
   return true;
 };
 
 const authorizePlayer = (combat: Combat, action: Action, playerId: string): true | DomainError => {
   if (!isPlayerAction(action)) return forbidden(`A player does not send ${action.type}`);
-  if (action.type === 'claimUnit') return authorizeClaim(combat, action.unitId);
+  if (action.type === 'claimUnit') return authorizeClaim(combat, action.unitId, playerId);
   const unit = findUnit(combat, action.unitId);
   if (unit instanceof DomainError) return unit;
   if (unit.claimedBy !== playerId) return forbidden('A player acts only on their own heroes');

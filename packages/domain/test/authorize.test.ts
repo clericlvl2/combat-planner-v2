@@ -152,12 +152,7 @@ describe('authorize', () => {
       expect(isPlayerAction(build(table(), payload))).toBe(
         PLAYER_ACTION_TYPES.includes(type as never),
       );
-      const expected =
-        type === 'claimUnit'
-          ? 'forbidden'
-          : isPlayerAction(build(table(), payload))
-            ? true
-            : 'forbidden';
+      const expected = isPlayerAction(build(table(), payload)) ? true : 'forbidden';
       expect(verdict(table(), payload, PLAYER)).toBe(expected);
     }
   });
@@ -303,9 +298,20 @@ describe('Unit actions, Player on own Hero', () => {
 describe('Claims', () => {
   it('A unit is claimed by at most one player.', () => {
     expect(codeOf(table(), onUnit('claimUnit', id(2)), PLAYER)).toBe('forbidden');
-    expect(codeOf(table(), onUnit('claimUnit', id(1)), PLAYER)).toBe('forbidden');
     const next = ok(run(table(), onUnit('claimUnit', id(3)), PLAYER)).combat;
     expect(u(next, 3).claimedBy).toBe(PLAYER_ID);
+  });
+
+  it('A player who claims an own hero again changes the display name; Done with a changed name sends one such claim.', () => {
+    const { combat: next, patch } = ok(
+      run(table(), { type: 'claimUnit', unitId: id(1), displayName: 'Аня' }, PLAYER),
+    );
+    expect(u(next, 1).claimedBy).toBe(PLAYER_ID);
+    expect(next.players).toEqual({ [PLAYER_ID]: 'Аня' });
+    expect(next.units.map((unit) => unit.claimedBy)).toEqual(
+      table().units.map((unit) => unit.claimedBy),
+    );
+    expect(patch).toBeNull();
   });
 
   it('A player claims and releases heroes on the Heroes screen, and releases one hero through Release claim in the expanded row.', () => {
@@ -316,7 +322,7 @@ describe('Claims', () => {
     expect(u(released, 1).claimedBy).toBe(PLAYER_ID);
   });
 
-  it('claimUnit only on an unclaimed hero', () => {
+  it('claimUnit only on an unclaimed or own hero', () => {
     expect(codeOf(table(), onUnit('claimUnit', id(4)), PLAYER)).toBe('forbidden');
     expect(codeOf(table(), onUnit('claimUnit', id(9)), PLAYER)).toBe('notFound');
     expect(verdict(table(), onUnit('claimUnit', id(3)), OTHER_PLAYER)).toBe(true);
