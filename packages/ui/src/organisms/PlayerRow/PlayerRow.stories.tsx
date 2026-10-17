@@ -679,3 +679,23 @@ export const ExtraLocaleEs = meta.story({
     await expect(within(canvasElement).getByRole('button', { name: 'Editar' })).toBeVisible();
   },
 });
+
+export const ExtraFlash = meta.story({
+  name: 'The flash border marks a changed row, not dead or active ones',
+  args: { flash: true },
+  render: (args) => (
+    <div style={{ display: 'grid' }}>
+      <PlayerRowCell {...args} data-testid="own" />
+      <PlayerRowCell {...args} unit={goblin} mine={false} data-testid="dead" />
+      <PlayerRowCell {...args} unit={orc} mine={false} active data-testid="active" />
+      <PlayerRowCell {...args} unit={orc} mine={false} flash={false} data-testid="still" />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
+    await expect(canvas.getByTestId('own')).toHaveAttribute('data-flash');
+    await expect(border('own')).not.toBe(border('still'));
+    await expect(border('dead')).toBe(border('still'));
+    await expect(border('active')).toBe('rgb(35, 31, 28)');
+  },
+});

@@ -26,6 +26,7 @@ export interface PlayerRowProps extends Omit<
   setup?: boolean;
   conditionsOpen?: boolean;
   moreOpen?: boolean;
+  flash?: boolean;
   onToggle: () => void;
   onInitiative: (event: MouseEvent<HTMLButtonElement>) => void;
   onHp: () => void;
@@ -48,6 +49,7 @@ export function PlayerRow({
   setup = false,
   conditionsOpen = false,
   moreOpen = false,
+  flash = false,
   onToggle,
   onInitiative,
   onHp,
@@ -91,6 +93,7 @@ export function PlayerRow({
 
   return (
     <div
+      data-flash={flash || undefined}
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-mine={mine || undefined}

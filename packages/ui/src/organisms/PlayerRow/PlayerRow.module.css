@@ -25,6 +25,10 @@
   &[data-expanded] {
     border-color: var(--cp-color-ink);
   }
+
+  &[data-flash]:not([data-dead], [data-active]) {
+    border-color: var(--cp-health-bloodied);
+  }
 }
 
 .root[data-expanded] > .role {
