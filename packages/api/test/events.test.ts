@@ -1,4 +1,5 @@
-import type { Action, Viewer } from '@combat-planner/domain';
+import type { Action, PlayerCombat, Viewer } from '@combat-planner/domain';
+import { project } from '@combat-planner/domain';
 import type { DmCombat } from '../src/client.ts';
 import { Hono } from 'hono';
 import {
@@ -62,7 +63,7 @@ const PENDING = 'pending';
 const pendingAfterTick = <T>(read: Promise<T>) =>
   Promise.race([read, settled().then(() => PENDING)]);
 
-const streamWith = (viewer: Viewer, load: () => DmCombat | undefined) =>
+const streamWith = (viewer: Viewer, load: () => DmCombat | PlayerCombat | undefined) =>
   new Hono()
     .get('/', (c) => streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load }))
     .request('/');
@@ -233,7 +234,8 @@ describe('streamCombatEvents', () => {
         throw failure;
       },
     };
-    const stream = openSse(await streamWith({ kind: 'player', playerId: PLAYER_ID }, () => broken));
+    const viewer: Viewer = { kind: 'player', playerId: PLAYER_ID };
+    const stream = openSse(await streamWith(viewer, () => project(broken, viewer)));
     expect(subscriberCount(COMBAT_ID)).toBe(0);
     expect(vi.getTimerCount()).toBe(0);
     expect(await stream.closed()).toBe(true);

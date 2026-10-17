@@ -3,7 +3,14 @@ import { DomainError, apply } from '@combat-planner/domain';
 import type { DmCombat } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import { broadcastDocument } from '../live/registry.ts';
-import { appendLogEntry, dmDocument, findLogEntry, loadLog, markUndone, nextSeq } from './log.ts';
+import {
+  appendLogEntry,
+  dmDocument,
+  findLogEntry,
+  markUndone,
+  nextSeq,
+  undoWindow,
+} from './log.ts';
 import type { Transaction } from './store.ts';
 import { findCombatRow, saveCombat } from './store.ts';
 
@@ -68,7 +75,7 @@ const run = (
       `Action version ${action.version} does not match combat version ${combat.version}`,
     );
   }
-  const log = action.type === 'undo' ? loadLog(tx, combatId) : [];
+  const log = action.type === 'undo' ? undoWindow(tx, combatId) : [];
   const result = apply(combat, action, viewer, now, log);
   if (result instanceof DomainError) return rejected(result.code, result.message);
   saveCombat(tx, result.combat);

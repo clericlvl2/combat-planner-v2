@@ -1,6 +1,6 @@
 import type { ActionId, Combat, CombatId, LogEntry } from '@combat-planner/domain';
-import { undoSummary } from '@combat-planner/domain';
-import { and, asc, eq, max } from 'drizzle-orm';
+import { LIMITS, undoSummary } from '@combat-planner/domain';
+import { and, desc, eq, max } from 'drizzle-orm';
 import type { DmCombat } from '../client.ts';
 import { actionLog } from '../db/schema.ts';
 import type { Executor } from './store.ts';
@@ -12,36 +12,53 @@ export const nextSeq = (db: Executor, combatId: CombatId): number =>
     .where(eq(actionLog.combatId, combatId))
     .get()?.last ?? 0) + 1;
 
+const entryColumns = {
+  action: actionLog.action,
+  author: actionLog.author,
+  at: actionLog.at,
+  patch: actionLog.patch,
+  undoneBy: actionLog.undoneBy,
+};
+
+const LOG_PAGE = LIMITS.undoDepth + 1;
+
 export const findLogEntry = (
   db: Executor,
   combatId: CombatId,
   actionId: ActionId,
 ): LogEntry | undefined =>
   db
-    .select({
-      action: actionLog.action,
-      author: actionLog.author,
-      at: actionLog.at,
-      patch: actionLog.patch,
-      undoneBy: actionLog.undoneBy,
-    })
+    .select(entryColumns)
     .from(actionLog)
     .where(and(eq(actionLog.combatId, combatId), eq(actionLog.actionId, actionId)))
     .get();
 
-export const loadLog = (db: Executor, combatId: CombatId): LogEntry[] =>
-  db
-    .select({
-      action: actionLog.action,
-      author: actionLog.author,
-      at: actionLog.at,
-      patch: actionLog.patch,
-      undoneBy: actionLog.undoneBy,
-    })
-    .from(actionLog)
-    .where(eq(actionLog.combatId, combatId))
-    .orderBy(asc(actionLog.seq))
-    .all();
+function* newestFirst(db: Executor, combatId: CombatId): Generator<LogEntry> {
+  for (let read = 0; ; read += LOG_PAGE) {
+    const page = db
+      .select(entryColumns)
+      .from(actionLog)
+      .where(eq(actionLog.combatId, combatId))
+      .orderBy(desc(actionLog.seq))
+      .limit(LOG_PAGE)
+      .offset(read)
+      .all();
+    yield* page;
+    if (page.length < LOG_PAGE) return;
+  }
+}
+
+export const undoWindow = (db: Executor, combatId: CombatId): LogEntry[] => {
+  const window: LogEntry[] = [];
+  let depth = 0;
+  for (const entry of newestFirst(db, combatId)) {
+    window.push(entry);
+    if (entry.action.type === 'undo') continue;
+    depth += 1;
+    if (entry.patch === null || entry.undoneBy === null || depth > LIMITS.undoDepth) break;
+  }
+  return window.toReversed();
+};
 
 export const appendLogEntry = (
   db: Executor,
@@ -77,5 +94,5 @@ export const markUndone = (
 
 export const dmDocument = (db: Executor, combat: Combat): DmCombat => ({
   ...combat,
-  undo: undoSummary(combat, loadLog(db, combat.id)),
+  undo: undoSummary(combat, undoWindow(db, combat.id)),
 });

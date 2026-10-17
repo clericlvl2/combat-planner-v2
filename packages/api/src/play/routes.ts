@@ -8,7 +8,6 @@ import type { ApiAppEnv } from '../app.ts';
 import type { LinkToken, PlayView } from '../client.ts';
 import { linkTokenSchema } from '../client.ts';
 import { dispatch } from '../combats/dispatch.ts';
-import { dmDocument } from '../combats/log.ts';
 import { NOT_FOUND, findCombatRow, nowIso } from '../combats/store.ts';
 import { verifyLink } from '../link/token.ts';
 import { streamCombatEvents } from '../live/sse.ts';
@@ -100,12 +99,13 @@ export const playApp = new Hono<ApiAppEnv>()
     if ('status' in resolved) return c.json(resolved.body, resolved.status);
     const db = c.get('db');
     const combatId = resolved.combat.id;
+    const viewer = playerViewer(playerId);
     return streamCombatEvents(c, {
       combatId,
-      viewer: playerViewer(playerId),
+      viewer,
       load: () => {
         const combat = findCombatRow(db, combatId)?.document;
-        return combat && dmDocument(db, combat);
+        return combat && project(combat, viewer);
       },
     });
   });
