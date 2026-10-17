@@ -50,6 +50,23 @@ export function createI18n(locale: Locale): I18n {
   return instance;
 }
 
+export interface LanguageRoot {
+  lang: string;
+}
+
+export function followLanguage(i18n: I18n, root: LanguageRoot): () => void {
+  const previous = root.lang;
+  const apply = (language: string) => {
+    root.lang = language;
+  };
+  apply(i18n.language);
+  i18n.on('languageChanged', apply);
+  return () => {
+    i18n.off('languageChanged', apply);
+    root.lang = previous;
+  };
+}
+
 const transitionComponents = [
   'Affix',
   'Autocomplete',
@@ -107,6 +124,8 @@ export function UiProvider({ motion, locale, children }: UiProviderProps) {
       delete root.dataset.motion;
     };
   }, [motion]);
+
+  useLayoutEffect(() => followLanguage(i18n, document.documentElement), [i18n]);
 
   return (
     <MotionContext.Provider value={motion}>
