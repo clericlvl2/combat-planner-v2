@@ -27,6 +27,7 @@ export interface CombatCardProps extends Omit<
   lastPlayedDays?: number | null;
   expanded: boolean;
   menuOpen?: boolean;
+  duplicateDisabled?: boolean;
   onOpen: () => void;
   onToggle: () => void;
   onEdit: () => void;
@@ -38,6 +39,10 @@ export interface CombatCardProps extends Omit<
 
 const MENU_WIDTH = 240;
 
+const DAYS_PER_WEEK = 7;
+
+const WEEKS_FROM_DAYS = 14;
+
 export function CombatCard({
   title,
   description,
@@ -48,6 +53,7 @@ export function CombatCard({
   lastPlayedDays,
   expanded,
   menuOpen = false,
+  duplicateDisabled = false,
   onOpen,
   onToggle,
   onEdit,
@@ -71,7 +77,9 @@ export function CombatCard({
           ? t('today')
           : lastPlayedDays === 1
             ? t('yesterday')
-            : t('daysAgo', { count: lastPlayedDays });
+            : lastPlayedDays < WEEKS_FROM_DAYS
+              ? t('daysAgo', { count: lastPlayedDays })
+              : t('weeksAgo', { count: Math.floor(lastPlayedDays / DAYS_PER_WEEK) });
   const meta = [
     active && round !== null ? t('round', { round }) : null,
     t('units', { count: units }),
@@ -80,7 +88,7 @@ export function CombatCard({
     .filter((part) => part !== null)
     .join(' · ');
   const items: MenuItem[] = [
-    { id: 'duplicate', icon: IconCopy, label: t('duplicate') },
+    { id: 'duplicate', icon: IconCopy, label: t('duplicate'), disabled: duplicateDisabled },
     { id: 'delete', icon: IconTrash, label: t('delete'), tone: 'danger', divider: true },
   ];
   const Chevron = expanded ? IconChevronUp : IconChevronDown;

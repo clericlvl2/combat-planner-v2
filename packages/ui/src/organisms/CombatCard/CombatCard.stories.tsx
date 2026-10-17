@@ -346,3 +346,31 @@ export const ExtraLastPlayed = meta.story({
     await expect(canvas.getByText('1 unit · Never played')).toBeVisible();
   },
 });
+
+export const ExtraWeeksAgo = meta.story({
+  name: 'Last played from 14 days shows weeks',
+  render: (args) => (
+    <>
+      <CombatCardCell {...args} lastPlayedDays={13} />
+      <CombatCardCell {...args} lastPlayedDays={14} />
+      <CombatCardCell {...args} lastPlayedDays={30} />
+    </>
+  ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Round 3 · 6 units · 13 days ago')).toBeVisible();
+    await expect(canvas.getByText('Round 3 · 6 units · 2 weeks ago')).toBeVisible();
+    await expect(canvas.getByText('Round 3 · 6 units · 4 weeks ago')).toBeVisible();
+  },
+});
+
+export const ExtraDuplicateDisabled = meta.story({
+  name: 'Duplicate disabled at the combat limit',
+  args: { expanded: true, menuOpen: true, duplicateDisabled: true },
+  play: async ({ args, canvas }) => {
+    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    await expect(duplicate).toBeDisabled();
+    await userEvent.click(duplicate, { pointerEventsCheck: 0 });
+    await expect(args.onMenuSelect).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('menuitem', { name: 'Delete' })).toBeEnabled();
+  },
+});
