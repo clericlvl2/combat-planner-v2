@@ -1,9 +1,10 @@
 import { Modal } from '@mantine/core';
 import { IconChevronLeft, IconX } from '@tabler/icons-react';
-import { Children, Fragment, isValidElement, useEffect, useRef } from 'react';
-import type { ReactElement, ReactNode } from 'react';
+import { Children, Fragment, isValidElement, useCallback, useRef } from 'react';
+import type { ReactElement, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
+import { useMotion } from '../../provider.tsx';
 import classes from './Sheet.module.css';
 
 export interface SheetProps {
@@ -15,6 +16,7 @@ export interface SheetProps {
   children: ReactNode;
   actions?: ReactNode;
   opened: boolean;
+  initialFocus?: RefObject<HTMLElement | null>;
 }
 
 function isFragment(node: ReactNode): node is ReactElement<{ children?: ReactNode }> {
@@ -36,22 +38,30 @@ export function Sheet({
   children,
   actions,
   opened,
+  initialFocus,
 }: SheetProps) {
   const { t } = useTranslation('Sheet');
+  const motion = useMotion();
   const actionList = flattenActions(actions);
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const focusSection = () => sheetRef.current?.focus({ preventScroll: true });
+  const initialFocusRef = useRef(initialFocus);
+  initialFocusRef.current = initialFocus;
 
-  useEffect(() => {
-    if (!opened) return;
-    const timer = setTimeout(() => sheetRef.current?.focus({ preventScroll: true }));
+  const attachSheet = useCallback((sheet: HTMLElement | null) => {
+    if (!sheet) return;
+    const target = initialFocusRef.current?.current;
+    if (target) {
+      target.setAttribute('data-autofocus', '');
+      return;
+    }
+    const timer = setTimeout(() => sheet.focus({ preventScroll: true }));
     return () => clearTimeout(timer);
-  }, [opened]);
+  }, []);
+
   return (
     <Modal.Root
       opened={opened}
       onClose={onClose}
-      onEnterTransitionEnd={focusSection}
+      transitionProps={motion === 'off' ? { duration: 0 } : undefined}
       withinPortal={false}
       classNames={{
         root: classes.root,
@@ -63,8 +73,8 @@ export function Sheet({
       }}
     >
       <Modal.Overlay data-scrim="" />
-      <Modal.Content ref={sheetRef} aria-label={header === undefined ? undefined : title}>
-        <div className={classes.header}>
+      <Modal.Content ref={attachSheet} aria-label={header === undefined ? undefined : title}>
+        <div className={classes.header} data-autofocus={initialFocus ? undefined : ''}>
           {onBack ? (
             <IconButton
               icon={IconChevronLeft}

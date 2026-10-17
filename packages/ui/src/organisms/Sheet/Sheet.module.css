@@ -8,6 +8,7 @@
   position: fixed;
   inset: 0;
   background: color-mix(in srgb, var(--cp-color-ink) 50%, transparent);
+  backface-visibility: hidden;
 }
 
 .inner {
@@ -41,6 +42,9 @@
   color: var(--cp-color-ink);
   box-shadow: none;
   pointer-events: all;
+  transform: scale(1);
+  transform-origin: center center;
+  backface-visibility: hidden;
 
   &:focus {
     outline: none;

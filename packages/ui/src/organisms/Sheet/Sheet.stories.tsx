@@ -1,7 +1,7 @@
 import preview from '#.storybook/preview';
 import { LIMITS } from '@combat-planner/domain';
-import { useState } from 'react';
-import type { CSSProperties, JSX } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import type { CSSProperties, JSX, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { Button } from '../../atoms/Button/Button.tsx';
@@ -27,6 +27,7 @@ interface SheetCellProps {
   back?: boolean;
   opened?: boolean;
   withOpener?: boolean;
+  focusPrimary?: boolean;
   header?: boolean;
   actionsAs?: 'list' | 'fragment' | 'none';
   onClose?: () => void;
@@ -146,6 +147,7 @@ function SheetCell({
   back = false,
   opened: initiallyOpened = true,
   withOpener = false,
+  focusPrimary = false,
   header = false,
   actionsAs = 'list',
   onClose,
@@ -155,6 +157,15 @@ function SheetCell({
 }: SheetCellProps) {
   const { t } = useTranslation('Sheet');
   const [opened, setOpened] = useState(initiallyOpened);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const primaryRef = useMemo<RefObject<HTMLElement | null>>(
+    () => ({
+      get current() {
+        return stageRef.current?.querySelector<HTMLElement>('[data-variant="primary"]') ?? null;
+      },
+    }),
+    [],
+  );
   const Content = samples[sample];
   const secondaryButton = secondary ? (
     <Button key="secondary" variant="secondary" size="M" fullWidth onClick={onSecondary}>
@@ -184,7 +195,7 @@ function SheetCell({
     none: undefined,
   }[actionsAs];
   return (
-    <div style={stage}>
+    <div style={stage} ref={stageRef}>
       {withOpener ? (
         <div style={{ padding: 'calc(var(--cp-layout-status-bar) + 12px) 12px 12px' }}>
           <Button variant="secondary" size="S" onClick={() => setOpened(true)}>
@@ -194,6 +205,7 @@ function SheetCell({
       ) : null}
       <Sheet
         opened={opened}
+        initialFocus={focusPrimary ? primaryRef : undefined}
         title={title ?? t('sortCombats')}
         header={
           header ? (
@@ -496,5 +508,62 @@ export const ExtraDoneTagsRu = meta.story({
   args: { sample: 'tags', titleKey: 'tags', primaryKey: 'doneTags', tagCount: 3 },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: 'Готово · 3 тега' })).toBeVisible();
+  },
+});
+
+const recordFocus = () => {
+  const targets: string[] = [];
+  const record = (event: FocusEvent) => {
+    const target = event.target as HTMLElement;
+    targets.push(
+      target.getAttribute('aria-label') ?? target.getAttribute('role') ?? target.textContent ?? '',
+    );
+  };
+  document.addEventListener('focusin', record);
+  return { targets, stop: () => document.removeEventListener('focusin', record) };
+};
+
+export const ExtraMotionOnNoCloseFocus = meta.story({
+  name: 'Motion on: focus never rests on Close while the sheet enters',
+  args: { opened: false, withOpener: true },
+  parameters: { motion: 'on' },
+  play: async ({ canvas }) => {
+    const focus = recordFocus();
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+    const sheet = await canvas.findByRole('dialog', { name: 'Sort combats' });
+    await waitFor(() => expect(sheet).toHaveFocus());
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    focus.stop();
+    await expect(sheet).toHaveFocus();
+    await expect(focus.targets).not.toContain('Close');
+    await expect(focus.targets).toEqual(['Sort', 'dialog']);
+  },
+});
+
+export const ExtraInitialFocus = meta.story({
+  name: 'initialFocus wins over the section',
+  args: { opened: false, withOpener: true, focusPrimary: true },
+  parameters: { motion: 'on' },
+  play: async ({ canvas }) => {
+    const focus = recordFocus();
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+    const done = await canvas.findByRole('button', { name: 'Done' });
+    await waitFor(() => expect(done).toHaveFocus());
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    focus.stop();
+    await expect(done).toHaveFocus();
+    await expect(focus.targets).toEqual(['Sort', 'Done']);
+  },
+});
+
+export const ExtraMotionOffNoTransition = meta.story({
+  name: 'Motion off: the sheet opens without a transition',
+  args: { opened: false, withOpener: true },
+  play: async ({ canvas }) => {
+    await expect(document.documentElement.dataset.motion).toBe('off');
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+    const sheet = await canvas.findByRole('dialog', { name: 'Sort combats' });
+    await expect(sheet.style.transitionDuration).not.toBe('200ms');
+    await waitFor(() => expect(sheet).toHaveFocus());
   },
 });

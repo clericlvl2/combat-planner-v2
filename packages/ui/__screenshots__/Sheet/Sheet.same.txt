@@ -1,2 +1,4 @@
 Anatomy RadioSortCombats
-ExtraEscape ExtraScrimTap
+ExtraCloseButton ExtraEscape ExtraScrimTap
+ExtraInitialFocus ExtraMotionOnFocus
+ExtraMotionOffNoTransition ExtraMotionOnNoCloseFocus
