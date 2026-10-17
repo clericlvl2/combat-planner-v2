@@ -198,8 +198,12 @@ export function Library() {
       }),
     );
 
-  const failedTagOf = (ids: readonly TagId[]): string | undefined =>
-    ids.map((id) => failedTags.current.get(id)).find((name) => name !== undefined);
+  const failedTagOf = (ids: readonly TagId[]): string | undefined => {
+    for (const tag of queryClient.getQueryData<Tag[]>(queryKeys.tags) ?? []) {
+      failedTags.current.delete(tag.id);
+    }
+    return ids.map((id) => failedTags.current.get(id)).find((name) => name !== undefined);
+  };
 
   const submit = async (value: PresetFormValue) => {
     if (form === null || pending) return;

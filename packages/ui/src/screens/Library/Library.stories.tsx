@@ -776,6 +776,31 @@ export const ExtraFailedTagSave = meta.story({
   },
 });
 
+export const ExtraFailedTagListedLater = meta.story({
+  name: 'A failed tag that the tag list shows later no longer blocks Save',
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    await openCreate(canvas);
+    api.failNext('invalid');
+    await createEliteTag(canvas);
+    await expect(await canvas.findByText('Couldn’t create the tag Elite')).toBeVisible();
+    const [elite] = callsOf(loaded, 'tags.create').at(-1)!.args as [{ id: string; name: string }];
+    await api.tags.create(elite);
+    const tags = await openSheet(canvas, canvas.getByRole('button', { name: 'Add tag' }), /^Tags/);
+    await userEvent.type(within(tags).getByRole('searchbox'), 'Champion');
+    await userEvent.click(within(tags).getByRole('button', { name: 'Create “Champion”' }));
+    await userEvent.click(within(tags).getByRole('button', { name: /^Done/ }));
+    await waitFor(() => expect(canvas.queryByRole('dialog', { name: /^Tags/ })).toBeNull());
+    await waitFor(() => expect(callsOf(loaded, 'tags.create')).toHaveLength(3));
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(callsOf(loaded, 'presets.create')).toHaveLength(1));
+    const [champion] = callsOf(loaded, 'tags.create').at(-1)!.args as [{ id: string }];
+    const [preset] = callsOf(loaded, 'presets.create')[0]!.args as [{ tags: string[] }];
+    await expect(preset.tags).toEqual([elite.id, champion.id]);
+    await expect(await canvas.findByText('Orc Warchief added to Library')).toBeVisible();
+  },
+});
+
 export const ExtraDuplicateAtLimit = meta.story({
   name: 'Duplicate is disabled at the preset limit',
   parameters: { scenario: fullLibraryScenario },
