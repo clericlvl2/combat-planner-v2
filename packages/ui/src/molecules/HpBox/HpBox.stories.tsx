@@ -348,9 +348,6 @@ export const ExtraKeyboard = meta.story({
 export const ExtraReadOnly = meta.story({
   name: 'Read-only enemy for a player',
   args: { viewer: 'player', status: 'wounded', hp: undefined, maxHp: undefined, onClick: fn() },
-  render: (args) => (
-    <HpBoxCell {...args} onClick={args.viewer === 'dm' ? args.onClick : undefined} />
-  ),
   play: async ({ args, canvas, canvasElement }) => {
     await expect(canvas.queryByRole('button')).toBeNull();
     await userEvent.click(boxOf(canvasElement));

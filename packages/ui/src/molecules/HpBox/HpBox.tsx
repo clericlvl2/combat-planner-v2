@@ -83,7 +83,7 @@ export function HpBox({
     'data-segments': dm ? segments : undefined,
     'data-off': off || undefined,
   };
-  if (!onClick) {
+  if (!onClick || !numbers) {
     return (
       <div {...rest} {...shared}>
         {content}
