@@ -8,7 +8,7 @@ export type OauthProvider = z.infer<typeof oauthProviderSchema>;
 
 export const apiEnvSchema = z.object({
   betterAuthSecret: z.string().min(1),
-  betterAuthUrl: z.url(),
+  betterAuthUrl: z.url().optional(),
   linkSecret: z.string().min(1),
   trustedOrigins: z.array(z.string().min(1)).optional(),
   google: oauthProviderSchema.optional(),

@@ -290,6 +290,23 @@ describe('trusted origins', () => {
     expect((await signIn(trusted)).status).toBe(200);
     expect((await signIn('http://evil.example')).status).toBe(403);
   });
+
+  it('admit sign-up from the request origin and reject any other without betterAuthUrl', async () => {
+    const requestOrigin = 'http://planner.test:8080';
+    const app = createAuthApp(
+      createAuth({ db: opened.db, env: { ...env, betterAuthUrl: undefined }, originCheck: true }),
+    );
+    const signUpFrom = (origin: string, email: string) =>
+      app.request(`${requestOrigin}/sign-up/email`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', origin },
+        body: JSON.stringify({ email, password: PASSWORD, name: 'Petra' }),
+      });
+    expect((await signUpFrom('http://evil.example', 'foreign-origin@example.com')).status).toBe(
+      403,
+    );
+    expect((await signUpFrom(requestOrigin, 'request-origin@example.com')).status).toBe(200);
+  });
 });
 
 describe('social sign-in', () => {
