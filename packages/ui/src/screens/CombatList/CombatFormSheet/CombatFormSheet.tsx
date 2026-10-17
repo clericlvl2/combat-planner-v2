@@ -31,9 +31,17 @@ export interface CombatFormSheetProps {
   onSubmit: (value: CombatFormValue) => void;
   onClose: () => void;
   opened: boolean;
+  pending?: boolean;
 }
 
-export function CombatFormSheet({ mode, value, onSubmit, onClose, opened }: CombatFormSheetProps) {
+export function CombatFormSheet({
+  mode,
+  value,
+  onSubmit,
+  onClose,
+  opened,
+  pending = false,
+}: CombatFormSheetProps) {
   const { t } = useTranslation('CombatFormSheet');
   const [title, setTitle] = useState(value.title);
   const [description, setDescription] = useState(value.description);
@@ -54,7 +62,7 @@ export function CombatFormSheet({ mode, value, onSubmit, onClose, opened }: Comb
         <Button
           variant="primary"
           fullWidth
-          disabled={!valid}
+          disabled={!valid || pending}
           onClick={() => onSubmit({ title: trimmed, description: description.trim(), color })}
         >
           {mode === 'create' ? t('create') : t('save')}

@@ -160,3 +160,14 @@ export const ExtraJapaneseNew = meta.story({
     await expect(canvas.getByRole('button', { name: '作成' })).toBeEnabled();
   },
 });
+
+export const ExtraPending = meta.story({
+  name: 'Create stays disabled while the request is in flight',
+  args: { mode: 'edit', value: ambush, pending: true },
+  play: async ({ args, canvas }) => {
+    const save = canvas.getByRole('button', { name: 'Save' });
+    await expect(save).toBeDisabled();
+    await userEvent.click(save, { pointerEventsCheck: 0 });
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+});
