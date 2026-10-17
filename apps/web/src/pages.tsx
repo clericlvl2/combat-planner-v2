@@ -2,15 +2,20 @@ import type { LinkToken } from '@combat-planner/api/client';
 import type { CombatId, PlayerId } from '@combat-planner/domain';
 import {
   CombatScreen,
+  Drawer,
   LinkExpired,
   NotFound,
   PlayerView,
   UnexpectedError,
+  useAccount,
   useSettings,
 } from '@combat-planner/ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Outlet, useLoaderData, useNavigate } from 'react-router';
+import { Outlet, useLoaderData, useLocation, useNavigate } from 'react-router';
+import { watchEdgeSwipe } from './edgeSwipe.ts';
+import type { SwipeEvent } from './edgeSwipe.ts';
+import { sectionOf } from './sections.ts';
 
 export interface CombatRouteData {
   combatId: CombatId;
@@ -50,11 +55,37 @@ function DmLocale() {
   return null;
 }
 
+const outsideModal = ({ target }: SwipeEvent): boolean =>
+  !(target instanceof Element && target.closest('[aria-modal="true"]'));
+
+function SwipeDrawer() {
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const { session } = useAccount();
+  const [opened, setOpened] = useState(false);
+
+  useEffect(
+    () => watchEdgeSwipe(document, { onSwipe: () => setOpened(true), canStart: outsideModal }),
+    [],
+  );
+
+  return (
+    <Drawer
+      opened={opened}
+      current={sectionOf(pathname)}
+      email={session?.email ?? ''}
+      onNavigate={(section) => void navigate(`/${section}`)}
+      onClose={() => setOpened(false)}
+    />
+  );
+}
+
 export function DmPages() {
   return (
     <>
       <DmLocale />
       <Outlet />
+      <SwipeDrawer />
     </>
   );
 }
