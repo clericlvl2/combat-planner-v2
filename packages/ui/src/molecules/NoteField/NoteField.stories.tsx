@@ -9,6 +9,7 @@ import type { NoteFieldProps } from './NoteField.tsx';
 interface NoteFieldCellProps extends NoteFieldProps {
   withCollapse?: boolean;
   withUnmount?: boolean;
+  withRemove?: boolean;
 }
 
 const stage = {
@@ -30,6 +31,7 @@ function NoteFieldCell({
   collapsed: initialCollapsed = false,
   withCollapse = false,
   withUnmount = false,
+  withRemove = false,
   ...props
 }: NoteFieldCellProps) {
   const { t } = useTranslation('NoteField');
@@ -53,12 +55,17 @@ function NoteFieldCell({
         <NoteField key="collapsed" value={value} onChange={onChange} collapsed />
       )}
       {withUnmount ? (
+        <button type="button" onClick={() => setMounted(false)}>
+          Swap to the collapsed instance
+        </button>
+      ) : null}
+      {withRemove ? (
         <button
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setMounted(false)}
         >
-          Swap to the collapsed instance
+          Remove the row
         </button>
       ) : null}
       {withCollapse ? (
@@ -233,7 +240,7 @@ export const ExtraFlowCollapseSaves = meta.story({
 });
 
 export const ExtraSaveOnUnmount = meta.story({
-  name: 'Unmounting the editing instance saves the draft',
+  name: 'Tapping the host collapse saves the draft before the swap',
   args: { value: '', withUnmount: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
@@ -244,6 +251,18 @@ export const ExtraSaveOnUnmount = meta.story({
     await expect(args.onChange).toHaveBeenCalledWith('Hex on Orc Berserker');
     await expect(canvas.queryByRole('textbox')).toBeNull();
     await expect(await canvas.findByText('Hex on Orc Berserker')).toBeVisible();
+  },
+});
+
+export const ExtraHostRemovalDoesNotSave = meta.story({
+  name: 'The host removing the editing instance does not save',
+  args: { value: '', withRemove: true },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Hex on Orc Berserker');
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove the row' }));
+    await expect(canvas.queryByRole('textbox')).toBeNull();
+    await expect(args.onChange).not.toHaveBeenCalled();
   },
 });
 

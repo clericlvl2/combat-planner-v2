@@ -177,11 +177,7 @@ function PlayerRowCell({
         }}
       />
       {hostCollapse ? (
-        <button
-          type="button"
-          onMouseDown={(event) => event.preventDefault()}
-          onClick={() => setExpanded(false)}
-        >
+        <button type="button" onClick={() => setExpanded(false)}>
           Collapse from the host
         </button>
       ) : null}
@@ -460,7 +456,7 @@ export const ExtraCollapseSavesNote = meta.story({
 });
 
 export const ExtraHostCollapseSavesNote = meta.story({
-  name: 'A host collapse while editing saves the note',
+  name: 'A host collapse tap while editing saves the note',
   args: { expanded: true, hostCollapse: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Note: Concentrating on Hex' }));
