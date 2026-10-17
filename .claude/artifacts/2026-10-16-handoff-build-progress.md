@@ -78,7 +78,7 @@
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
-| 2.4-PlayerView | running worker-bee, resumed after the session limit (Heroes) | Heroes, TurnOrder |
+| 2.4-PlayerView | reported `.claude/artifacts/reports/2.4-PlayerView.md`, gate running | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
@@ -93,6 +93,20 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-PlayerView, решения оркестратора 2026-10-17: Heroes на `Checkbox`
+  (CheckList не умеет блокировать опцию), claim по Join, далее сразу —
+  принято; один `useCombat` в PlayerView, Heroes/TurnOrder на пропсах —
+  принято; язык DM через `changeLanguage` — принято; вывод событий DM из
+  документов — принято с ограничениями (disable своего героя читается как
+  удаление, удаление последнего юнита — как Clear). → `fix-2.4` (P1, до тега
+  `phase-2`): потеря данных — Edit своей карточки игроком перезаписывает
+  `initiativeBonus` нулём, а поповер инициативы показывает +0. Решение:
+  `project` отдаёт своему герою `initiativeBonus` (domain `PlayerUnit`,
+  тест видимости обходит поле), правка таблицы «Visibility for players» в
+  vision между фазами (строка «Initiative bonus»: Own Hero ✓). Также в
+  `fix-2.4`: `useCombat` отдаёт `refetch`; `PlayerRow` получает проп `flash`;
+  claims при Join — последовательно, каждая на версии из ответа предыдущей.
 
 - 2.4-AppPages, решения оркестратора 2026-10-17: тост «Your account was
   deleted» из стора без дубля — принято; About по списку плана (две
@@ -461,6 +475,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.4-PlayerView: Join/Done по vision вместо «Join as …», чекбоксы; тост
+  «… was just taken»; PV-F2.2 +0 вместо +2 (до `fix-2.4`); пункт «Heroes»;
+  PV-F5.5 — экран CombatDeleted.
 
 - 2.4-AppPages: Sign in / Create account тусклые до валидной формы; поле
   Display name в Sign up и Account; нет строки «Signed in with email» (до
