@@ -16,3 +16,4 @@ SignUp.emailPlaceholder
 About.version
 About.rulesValue
 About.sourceValue
+PlayerHeader.menu

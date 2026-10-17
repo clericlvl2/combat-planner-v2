@@ -1,13 +1,11 @@
 import { UnstyledButton } from '@mantine/core';
-import { IconDots, IconUsers } from '@tabler/icons-react';
+import { IconDots, IconSwitchHorizontal } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EscalationDie } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { Menu } from '../Menu/Menu.tsx';
 import classes from './PlayerHeader.module.css';
-
-export type PlayerHeaderMenuItem = 'heroes';
 
 export interface PlayerHeaderProps extends Omit<
   ComponentPropsWithoutRef<'header'>,
@@ -51,7 +49,7 @@ export function PlayerHeader({
             opened={menuOpened}
             width={MENU_WIDTH}
             aria-label={t('menuLabel')}
-            items={[{ id: 'heroes', icon: IconUsers, label: t('heroes') }]}
+            items={[{ id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') }]}
             onSelect={() => onHeroes?.()}
             onClose={() => onMenuClose?.()}
             target={

@@ -1,7 +1,7 @@
 {
   "round": "Tour {{round}}",
   "setup": "Préparation",
-  "menu": "Plus",
+  "menu": "Menu",
   "menuLabel": "Menu du joueur",
   "heroes": "Héros"
 }

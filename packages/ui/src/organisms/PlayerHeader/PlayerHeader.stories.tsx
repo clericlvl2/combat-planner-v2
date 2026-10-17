@@ -124,6 +124,7 @@ export const ExtraMenuOpens = meta.story({
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
     const heroes = await canvas.findByRole('menuitem', { name: 'Heroes' });
     await waitFor(() => expect(heroes).toHaveFocus());
+    await expect(heroes.querySelector('.tabler-icon-switch-horizontal')).not.toBeNull();
     await userEvent.click(heroes);
     await expect(args.onHeroes).toHaveBeenCalledOnce();
     await expect(args.onMenuClose).toHaveBeenCalledOnce();
@@ -147,6 +148,15 @@ export const ExtraKeyboard = meta.story({
     await expect(args.onHeroes).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
     await waitFor(() => expect(menu).toHaveFocus());
+  },
+});
+
+export const ExtraLocaleFr = meta.story({
+  name: 'Locale fr: the menu caption reads Menu',
+  globals: { locale: 'fr' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('button', { name: 'Menu' })).toBeVisible();
+    await expect(canvas.queryByText('Plus')).toBeNull();
   },
 });
 
