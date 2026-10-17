@@ -21,7 +21,7 @@
 | 2.1 | атомы | 2.1-atoms-a…d, fix-2.1 | |
 | 2.2 | молекулы | 2.2-molecules-a…e, fix-2.2 | |
 | 2.3 | организмы | 2.3-organisms-a…i, 2.3-UnitRow, 2.3-UnitForm, 2.3-NumpadSheet, fix-2.3 | |
-| 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4 | |
+| 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4-core, fix-2.4 | |
 | 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
 | 4 | web | 4-web | |
 | 5 | e2e | 5-e2e | |
@@ -82,7 +82,8 @@
 | 2.4-Library | running worker-bee 2026-10-17T13:30+03:00 | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
-| fix-2.4 | todo | |
+| fix-2.4-core | todo, brief ready, next builder slot (Opus xhigh: domain, API, hooks) | project, api contract, FakeApiClient, hooks |
+| fix-2.4 | todo, after fix-2.4-core and the 2.4-Library / 2.4-CombatScreen guards (UI half) | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
