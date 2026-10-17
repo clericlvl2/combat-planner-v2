@@ -3,6 +3,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_SOURCE_URL: ${VITE_SOURCE_URL:-}
+        VITE_DONATE_URL: ${VITE_DONATE_URL:-}
     ports:
       - '3000:3000'
     env_file: .env
