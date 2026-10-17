@@ -1,9 +1,11 @@
 import preview from '#.storybook/preview';
 import type { FakeAccount } from '../../api/scenarios.ts';
 import { scenario } from '../../api/scenarios.ts';
+import type { QueryClient } from '@tanstack/react-query';
 import { Route, Routes, useLocation, useNavigate } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import { queryKeys } from '../../hooks/queryKeys.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { About } from '../About/About.tsx';
 import { Account } from '../Account/Account.tsx';
@@ -199,8 +201,9 @@ export const APF17 = meta.story({
   parameters: { ...authPage('/auth/sign-in'), scenario: oauthOff },
   render: () => <SignIn onRedirect={onRedirect} />,
   play: async ({ canvas, loaded }) => {
+    const queryClient = loaded.queryClient as QueryClient;
     await waitFor(() =>
-      expect(fakeApiOf(loaded).calls.map((call) => call.method)).toContain('auth.providers'),
+      expect(queryClient.getQueryState(queryKeys.providers)?.status).toBe('success'),
     );
     await expect(canvas.queryByRole('button', { name: /Continue with/ })).toBeNull();
     await expect(canvas.queryByText('or')).toBeNull();
