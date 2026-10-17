@@ -1,0 +1,56 @@
+.root {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--cp-color-background);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+}
+
+.content {
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  margin: 0;
+  padding: 0 8px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: var(--mantine-line-height-snug);
+  text-transform: uppercase;
+}
+
+.note {
+  margin: 0;
+  padding: 0 8px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-body);
+}
+
+.card {
+  box-sizing: border-box;
+  padding: 8px;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-card);
+  background: var(--cp-color-surface);
+}
