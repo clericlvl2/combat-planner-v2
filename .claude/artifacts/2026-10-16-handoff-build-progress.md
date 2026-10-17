@@ -90,13 +90,21 @@
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
 | fix-3 | guarded `.claude/artifacts/guard/fix-3.md` | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
-| 4-web | running worker-bee ab415a6 2026-10-17T15:51+03:00 (Opus 5.5 medium) | router, providers, player identity, drawer, smoke e2e |
+| 4-web | handed back 4/5 (report `.claude/artifacts/reports/4-web.md`); `smoke e2e` uncommitted, blocked by P0 Sheet root over the viewport → `fix-4-overlays`, then resume the same agent | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
+| fix-4-overlays | running worker-bee (Opus 5.5 medium) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4 | running worker-bee ac057a5 2026-10-17T15:52+03:00 (Opus 5.5 xhigh, parallel with `4-web`, disjoint paths) | |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
 
+- 4-web: the root `package.json` has no `version`, so About shows `0.0.0`.
+  Routed to `6-docker`, which sets `"version": "1.0.0"`. The `VITE_SOURCE_URL`
+  and `VITE_DONATE_URL` defaults are placeholders
+  (`github.com/combat-planner/combat-planner`, `ko-fi.com/combatplanner`).
+  Owner: the real URLs?
+- 4-web: the edge swipe opens an app-level Drawer, not the screen's own. A
+  system screen inside a DM route still accepts the swipe.
 - fix-2.4: `check-commit` red with 15 cross-folder problems, accepted as with
   fix-2.3 39671d9. A `Sheet` change shifts the baselines of 8 sheet consumers.
   `SignIn`/`Account`/`UnexpectedError`/`PlayerView` shift the `SignUp`,
