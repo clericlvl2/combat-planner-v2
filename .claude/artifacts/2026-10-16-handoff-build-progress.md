@@ -99,7 +99,7 @@
 | fix-5-e2e | guarded `.claude/artifacts/guard/fix-5-e2e.md` (P2 hypothesis shared port 3000 → owner; P3 ×6 → owner list) | combat lifecycle, player, library, account |
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
 | fix-6 | guarded `.claude/artifacts/guard/fix-6.md` (P3 ×7, owner list) | secrets, Dockerfile, compose, README |
-| fix-6-zero-config | todo (owner request 2026-10-18: one-command start; plan `.claude/plans/2026-10-18-one-command-start.md`) | secrets, node version, compose, README |
+| fix-6-zero-config | running worker-bee 2026-10-18T00:05+03:00 (Opus 5.5 xhigh) (owner request 2026-10-18: one-command start; plan `.claude/plans/2026-10-18-one-command-start.md`) | secrets, node version, compose, README |
 
 ## Вопросы владельцу
 
