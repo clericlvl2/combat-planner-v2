@@ -706,6 +706,43 @@ export const ExtraReadOnlyWithoutCallbacks = meta.story({
   },
 });
 
+export const ExtraReadOnlyEveryTapWithoutCallbacks = meta.story({
+  name: 'A read-only row with every flag set survives every tap without callbacks',
+  args: { active: false },
+  render: () => (
+    <div style={screen}>
+      <UnitRow
+        unit={unitOf({ ...orcSeed, conditions: ['staggered'], note: 'Hex until round 4' })}
+        readOnly
+        expanded
+        initiativeOpen
+        conditionsOpen
+        historyOpen
+        menuOpen
+        data-testid="row"
+      />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const errors: unknown[] = [];
+    const record = (event: ErrorEvent) => errors.push(event.error);
+    window.addEventListener('error', record);
+    const row = canvas.getByTestId('row');
+    await expect(canvas.queryByRole('button')).toBeNull();
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+    await expect(canvas.queryByRole('menu')).toBeNull();
+    for (const target of [row, ...row.querySelectorAll<HTMLElement>('*')]) {
+      await userEvent.click(target, { pointerEventsCheck: 0 });
+    }
+    row.focus();
+    await userEvent.keyboard('{Enter} ');
+    window.removeEventListener('error', record);
+    await expect(errors).toEqual([]);
+    await expect(canvas.queryByRole('textbox')).toBeNull();
+    await expect(row).not.toHaveAttribute('data-expanded');
+  },
+});
+
 export const ExtraDisabledOpensHp = meta.story({
   name: 'Disabled unit still opens HP and offers Enable',
   args: { active: false, unit: shadowArcher, expanded: true },
