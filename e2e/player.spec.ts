@@ -3,8 +3,10 @@ import type { BrowserContext, Page } from '@playwright/test';
 import {
   addUnit,
   createCombat,
+  initiatives,
   joinAsPlayer,
   newPlayerContext,
+  rowInitiatives,
   rowOrder,
   shareLink,
   signUp,
@@ -40,6 +42,8 @@ test('a player claims a hero and sees the turn order after Start', async ({ page
   await joinAsPlayer(player, link, 'Pat', 'Aria');
   await expect(player.getByRole('heading', { level: 1, name: 'Setup' })).toBeVisible();
   await expect(player.getByText('Waiting for the DM to start the combat')).toBeVisible();
+  await expect(unitRows(player).filter({ hasText: 'Aria' })).toContainText('You');
+  await expect(unitRows(player).getByRole('img', { name: 'No initiative' })).toHaveCount(3);
 
   await page
     .getByRole('dialog', { name: 'Share with players' })
@@ -52,10 +56,16 @@ test('a player claims a hero and sees the turn order after Start', async ({ page
   await expect(player.getByRole('heading', { level: 1, name: 'Round 1' })).toBeVisible();
   await expect(player.getByText('Waiting for the DM to start the combat')).toBeHidden();
   await expect(unitRows(player)).toHaveCount(3);
-  const dmOrder = await rowOrder(page, NAMES);
-  expect(await rowOrder(player, NAMES)).toEqual(dmOrder);
+  await expect(unitRows(player).getByRole('img', { name: 'No initiative' })).toHaveCount(0);
   await expect(unitRows(player).first()).toHaveAttribute('data-active', 'true');
-  await expect(unitRows(player).filter({ hasText: 'Aria' })).toContainText('You');
+  const dmOrder = await rowOrder(page, NAMES);
+  const dmValues = await initiatives(page);
+  expect(dmValues).toHaveLength(3);
+  for (const value of dmValues) expect(value).toBeGreaterThanOrEqual(1);
+  expect(dmValues).toEqual([...dmValues].sort((a, b) => b - a));
+  expect([...dmOrder].sort()).toEqual([...NAMES].sort());
+  expect(await rowOrder(player, NAMES)).toEqual(dmOrder);
+  expect(await rowInitiatives(player)).toEqual(dmValues);
 
   await page.getByRole('button', { name: /^Next turn/ }).click();
   await expect(unitRows(player).nth(1)).toHaveAttribute('data-active', 'true');
@@ -71,8 +81,8 @@ test('a player damages their own hero and the DM sees it without a reload', asyn
     .click();
   await page.getByRole('button', { name: /Start combat/ }).click();
   await expect(player.getByRole('heading', { level: 1, name: 'Round 1' })).toBeVisible();
-  const dmUrl = page.url();
   await expect(unitRow(page, 'Aria').getByRole('button', { name: '10 /10' })).toBeVisible();
+  await page.evaluate(() => Reflect.set(window, 'e2eNoReload', true));
 
   const ownRow = unitRows(player).filter({ hasText: 'Aria' });
   await ownRow.getByRole('button', { name: /^10 \/10/ }).click();
@@ -84,13 +94,14 @@ test('a player damages their own hero and the DM sees it without a reload', asyn
   await expect(ownRow.getByRole('button', { name: /^7 \/10/ })).toBeVisible();
 
   await expect(unitRow(page, 'Aria').getByRole('button', { name: '7 /10' })).toBeVisible();
-  expect(page.url()).toBe(dmUrl);
+  expect(await page.evaluate(() => Reflect.get(window, 'e2eNoReload'))).toBe(true);
 });
 
 test('a reissued link expires the old one and releases the claim', async ({ page }) => {
   const link = await prepareCombat(page, 'Crypt');
   await joinAsPlayer(player, link, 'Pat', 'Aria');
   const sheet = page.getByRole('dialog', { name: 'Share with players' });
+  await expect(unitRow(page, 'Aria').getByText('Pat', { exact: true })).toHaveCount(1);
 
   await sheet.getByRole('button', { name: 'Revoke and reissue link' }).click();
   const confirm = page.getByRole('alertdialog', { name: 'Revoke the link?' });

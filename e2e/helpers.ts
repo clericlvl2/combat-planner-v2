@@ -103,6 +103,17 @@ export async function initiatives(page: Page): Promise<number[]> {
     );
 }
 
+export async function rowInitiatives(page: Page): Promise<number[]> {
+  return unitRows(page).evaluateAll((rows) =>
+    rows.map((row) =>
+      Number.parseInt(
+        (row.querySelector(':scope > [data-unit-role]')?.textContent ?? '').replace('\u2212', '-'),
+        10,
+      ),
+    ),
+  );
+}
+
 export async function rowOrder(page: Page, names: readonly string[]): Promise<string[]> {
   const texts = await unitRows(page).allTextContents();
   return texts.map(
