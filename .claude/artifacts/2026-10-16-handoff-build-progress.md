@@ -24,12 +24,12 @@
 | 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4-core, fix-2.4 | phase-2 |
 | 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
 | 4 | web | 4-web, fix-4-overlays, fix-4, fix-4-web | phase-4 |
-| 5 | e2e | 5-e2e, fix-5, fix-5-e2e | |
-| 6 | docker | 6-docker, fix-6 | |
+| 5 | e2e | 5-e2e, fix-5, fix-5-e2e | phase-5 |
+| 6 | docker | 6-docker, fix-6 | phase-6 |
 
 ## Текущий шаг
 
-Фаза 2 закрыта тегом `phase-2` (гейт `fix-2.4` на дереве master, отличие только в `.claude/artifacts/**`, служит фазовым гейтом). Фаза 4 закрыта тегом `phase-4` на 63e0843: гейт `fix-4-web` прошёл на этом коде, `pnpm e2e` — 21 passed. Фазовый гейт на master 32dcae5 (весь код слит; `.claude/run/phase-6/`): check, test, visual, storybook-build, build, check-скрипты зелёные, `pnpm e2e` 21 passed, слушателей нет. Ждёт guard `fix-5`, затем теги `phase-5` и `phase-6`.
+Фаза 2 закрыта тегом `phase-2` (гейт `fix-2.4` на дереве master, отличие только в `.claude/artifacts/**`, служит фазовым гейтом). Фаза 4 закрыта тегом `phase-4` на 63e0843: гейт `fix-4-web` прошёл на этом коде, `pnpm e2e` — 21 passed. Фазовый гейт на master 32dcae5 (весь код слит; `.claude/run/phase-6/`): check, test, visual, storybook-build, build, check-скрипты зелёные, `pnpm e2e` 21 passed, слушателей нет. Фазы 5 и 6 закрыты тегами `phase-5` и `phase-6` на этом дереве кода. Все пачки в статусе guarded.
 Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Фазы 2.1 и 2.2 закрыты (`fix-2.2` проверен). Идёт фаза 2.3 (организмы, брифы
 готовы) параллельно с фазой 3 (`3-server-rest`, затем `fix-3`). С 2026-10-17
 вместо Fable 5.1 — Opus 5.5 (план, «Решения владельца»). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
@@ -49,7 +49,7 @@
 | 1-api-contract | guarded `.claude/artifacts/guard/1-api-contract.md`, P1 ×2 closed by fix-1-api-contract | ApiClient |
 | fix-1-api-contract | guarded `.claude/artifacts/guard/fix-1-api-contract.md` | ApiClient |
 | fix-1-domain-core | guarded `.claude/artifacts/guard/fix-1-domain-core.md` | setMaxHp floor, copy keeps disabled |
-| 2.1-atoms-a | rework 1 → fix-2.1, guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
+| 2.1-atoms-a | guarded via `fix-2.1` (the P1 TextField height is closed at TextField.module.css:44-52, `.claude/artifacts/guard/fix-2.1.md:6`); first guard guard `.claude/artifacts/guard/2.1-atoms-a.md` (P1 TextField wrapped height) | IconButton, ToolButton, TextField, TextArea |
 | 2.1-atoms-b | guarded `.claude/artifacts/guard/2.1-atoms-b.md` | SearchField, NumberField, Checkbox, Radio |
 | 2.1-atoms-c | guarded `.claude/artifacts/guard/2.1-atoms-c.md` | Swatch, Chip, StatSquare |
 | 2.1-atoms-d | guarded `.claude/artifacts/guard/2.1-atoms-d.md` (P2 → fix-2.1) | EscalationDie, RoleBlock |
@@ -95,7 +95,7 @@
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4-web | guarded `.claude/artifacts/guard/fix-4-web.md` (P3 ×5, deferred to the owner list) | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
-| fix-5 | merged 6e084d0..ae4bddd (gate green except the accepted check-commit item, `pnpm e2e` 21 passed without `test.fail()`, no listeners), guard-bee running | |
+| fix-5 | guarded `.claude/artifacts/guard/fix-5.md` (P3 ×7, owner list) | |
 | fix-5-e2e | guarded `.claude/artifacts/guard/fix-5-e2e.md` (P2 hypothesis shared port 3000 → owner; P3 ×6 → owner list) | combat lifecycle, player, library, account |
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
 | fix-6 | guarded `.claude/artifacts/guard/fix-6.md` (P3 ×7, owner list) | secrets, Dockerfile, compose, README |
