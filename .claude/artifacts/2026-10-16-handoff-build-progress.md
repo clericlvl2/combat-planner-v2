@@ -76,7 +76,7 @@
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
 | fix-2.3 | guarded `.claude/artifacts/guard/fix-2.3.md` (no P0–P1; documentary P2 closed by the guard's per-unit file:line list; P3 ×7 → `fix-2.4`) | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
-| 2.4-CombatScreen | running worker-bee 2026-10-17T13:30+03:00 | CombatScreen |
+| 2.4-CombatScreen | reported `.claude/artifacts/reports/2.4-CombatScreen.md`, rebase conflict in `Toast.json` (both added `presetAdded`) back to the agent | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | guarded `.claude/artifacts/guard/2.4-PlayerView.md` (P2 ×1, P3 ×8 → `fix-2.4`) | Heroes, TurnOrder |
 | 2.4-Library | merged b31aef2..c19a023 (gate `.claude/run/2.4-Library/` green), guard-bee running | Library |
@@ -94,6 +94,19 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-CombatScreen, решения оркестратора 2026-10-17: пропсы `random` и
+  `origin` — приняты; полное имя юнита во второй строке TurnBar — принято;
+  CS-F2.4 с ходом Brother Tomas (блок на 99 только при переходе раунда) —
+  принято. Владельцу: fr «tour» и для раунда, и для хода (CombatHeader fr) —
+  двусмысленно, предложение «manche» для раунда. → `fix-2.4` (с правкой
+  `packages/api` и hooks): Undo по серверу — документ DM несёт
+  `undo: { action, unitName } | null` (новейшая отменяемая запись лога, с
+  действиями игроков; claim/release и REST не отменяются), `undoDisabled` и
+  «Undid: …» берутся из него, сессионный стек в CombatScreen удаляется;
+  `useCombat().dispatch` разрешается `{ applied: boolean }` (409 и сеть —
+  `false`, успешный Retry — `true` у исходного вызова), вспышка ряда только
+  при `applied`; `useCombatLink` из `screens/CombatScreen` в `hooks/`.
 
 - 2.4-Library, решения оркестратора 2026-10-17: новый ключ
   `Toast.presetAdded` по vision — принято, `fix-2.4-core` убирает
@@ -503,6 +516,11 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.4-CombatScreen: полное имя во второй строке TurnBar; CS-F2.4 ход Tomas;
+  CS-F7.1/F7.2 урон 12 до меню (Undo до `fix-2.4` только по сессии); кольца
+  фокуса после play; CS-F3.9 прокрутка тела NumpadSheet; CS-F6.6 ряд
+  остаётся раскрытым; CS-F8.2 99 юнитов; тост «added to Library»; без Redo.
 
 - 2.4-Library: копия пресета наверх; шаг бонуса инициативы и защиты 0–99;
   Create неактивна до имени; LB-F4.7 без строки Create; порядок и счётчики
