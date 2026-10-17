@@ -16,4 +16,8 @@
     outline: 3px solid var(--cp-state-tap-marker);
     outline-offset: -3px;
   }
+
+  &[data-tap] > span:first-child {
+    outline: none;
+  }
 }

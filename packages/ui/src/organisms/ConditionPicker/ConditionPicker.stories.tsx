@@ -77,7 +77,12 @@ export const TapAddingWeakened = meta.story({
   args: { initial: ['dazed', 'staggered'] },
   play: async ({ canvas, canvasElement }) => {
     await markTap(canvasElement, 'weakened');
-    await expect(canvas.getByRole('checkbox', { name: 'weakened' })).not.toBeChecked();
+    const weakened = canvas.getByRole('checkbox', { name: 'weakened' });
+    await expect(weakened).not.toBeChecked();
+    const row = weakened.closest('label');
+    const mark = weakened.parentElement;
+    await expect(row && getComputedStyle(row).outlineStyle).toBe('solid');
+    await expect(mark && getComputedStyle(mark).outlineStyle).toBe('none');
   },
 });
 
