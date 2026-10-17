@@ -526,6 +526,9 @@ export const ExtraSheetEscapeMotionOn = meta.story({
     await expect(close).toHaveFocus();
     await userEvent.tab({ shift: true });
     await expect(list).toHaveFocus();
+    await expect(list.scrollTop).toBe(0);
+    await userEvent.keyboard('{PageDown}');
+    await waitFor(() => expect(list.scrollTop).toBeGreaterThan(0));
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());

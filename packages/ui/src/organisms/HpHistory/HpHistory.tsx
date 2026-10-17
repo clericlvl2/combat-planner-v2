@@ -2,7 +2,7 @@ import type { HpHistoryEntry } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
 import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useId } from 'react';
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HistoryRow } from '../../molecules/HistoryRow/HistoryRow.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
@@ -37,6 +37,26 @@ interface HpHistoryListProps extends HpHistoryBaseProps {
   inset: boolean;
 }
 
+const KEY_SCROLL_STEP = 40;
+
+function scrollDelta(key: string, node: HTMLElement): number | null {
+  if (key === 'ArrowDown') return KEY_SCROLL_STEP;
+  if (key === 'ArrowUp') return -KEY_SCROLL_STEP;
+  if (key === 'PageDown') return node.clientHeight;
+  if (key === 'PageUp') return -node.clientHeight;
+  if (key === 'End') return node.scrollHeight;
+  if (key === 'Home') return -node.scrollHeight;
+  return null;
+}
+
+function handleListKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+  const node = event.currentTarget;
+  const delta = scrollDelta(event.key, node);
+  if (delta === null) return;
+  event.preventDefault();
+  node.scrollTop += delta;
+}
+
 function HpHistoryList({ entries, maxHp, id, label, inset }: HpHistoryListProps) {
   const { t } = useTranslation('HpHistory');
   const long = entries.length > HP_HISTORY_VISIBLE_ROWS;
@@ -51,6 +71,7 @@ function HpHistoryList({ entries, maxHp, id, label, inset }: HpHistoryListProps)
           aria-label={label}
           data-long={long || undefined}
           tabIndex={long ? 0 : undefined}
+          onKeyDown={long ? handleListKeyDown : undefined}
         >
           {entries.map((entry, index) => (
             <HistoryRow key={`${entry.at}-${index}`} role="listitem" entry={entry} maxHp={maxHp} />
