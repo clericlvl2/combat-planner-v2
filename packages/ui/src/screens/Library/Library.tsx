@@ -138,6 +138,7 @@ export function Library() {
   const [deleteId, setDeleteId] = useState<PresetId | null>(null);
   const [pending, setPending] = useState(false);
   const tagCreates = useRef(new Map<TagId, Promise<Tag>>());
+  const failedTags = useRef(new Map<TagId, string>());
   const signedOut = error instanceof ApiError && error.code === 'unauthorized';
 
   useEffect(() => {
@@ -181,20 +182,35 @@ export function Library() {
     const created = createTag(tag);
     tagCreates.current.set(tag.id, created);
     created.catch((reason: unknown) => {
+      tagCreates.current.delete(tag.id);
+      failedTags.current.set(tag.id, tag.name);
       if (reason instanceof ApiError && reason.code === 'network') return;
       show({ message: t('tagFailed', { name: tag.name }), kind: 'error' });
     });
     return tag;
   };
 
-  const awaitTags = (ids: readonly TagId[]) =>
-    Promise.all(ids.flatMap((id) => tagCreates.current.get(id) ?? []));
+  const settleTags = (ids: readonly TagId[]) =>
+    Promise.all(
+      ids.flatMap((id) => {
+        const created = tagCreates.current.get(id);
+        return created ? [created.catch(() => undefined)] : [];
+      }),
+    );
+
+  const failedTagOf = (ids: readonly TagId[]): string | undefined =>
+    ids.map((id) => failedTags.current.get(id)).find((name) => name !== undefined);
 
   const submit = async (value: PresetFormValue) => {
     if (form === null || pending) return;
     setPending(true);
     try {
-      await awaitTags(value.tags);
+      await settleTags(value.tags);
+      const failedTag = failedTagOf(value.tags);
+      if (failedTag !== undefined) {
+        show({ message: t('tagFailed', { name: failedTag }), kind: 'error' });
+        return;
+      }
       if (form.mode === 'create') {
         await create({ id: form.id, ...value });
         setForm(null);

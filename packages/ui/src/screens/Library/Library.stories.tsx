@@ -756,6 +756,26 @@ export const ExtraTagRetryThenSave = meta.story({
   },
 });
 
+export const ExtraFailedTagSave = meta.story({
+  name: 'Save after a dismissed tag Retry shows the error and is not stuck',
+  play: async ({ canvas, loaded }) => {
+    await openCreate(canvas);
+    fakeApiOf(loaded).failNext('network');
+    await createEliteTag(canvas);
+    await userEvent.click(await canvas.findByRole('button', { name: 'Dismiss' }));
+    await waitFor(() => expect(canvas.queryByRole('button', { name: 'Retry' })).toBeNull());
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await expect(await canvas.findByText('Couldn’t create the tag Elite')).toBeVisible();
+    await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
+    await userEvent.click(canvas.getByRole('button', { name: 'Remove Elite' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await waitFor(() => expect(callsOf(loaded, 'presets.create')).toHaveLength(1));
+    const [preset] = callsOf(loaded, 'presets.create')[0]!.args as [{ tags: string[] }];
+    await expect(preset.tags).toEqual([]);
+    await expect(await canvas.findByText('Orc Warchief added to Library')).toBeVisible();
+  },
+});
+
 export const ExtraDuplicateAtLimit = meta.story({
   name: 'Duplicate is disabled at the preset limit',
   parameters: { scenario: fullLibraryScenario },
