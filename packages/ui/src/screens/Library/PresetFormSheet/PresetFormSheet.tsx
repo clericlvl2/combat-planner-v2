@@ -54,6 +54,7 @@ export interface PresetFormSheetProps {
   onSubmit: (value: PresetFormValue) => void;
   onCreateTag: (name: string) => TagSheetTag;
   onClose: () => void;
+  pending?: boolean;
 }
 
 export function PresetFormSheet({
@@ -64,6 +65,7 @@ export function PresetFormSheet({
   onSubmit,
   onCreateTag,
   onClose,
+  pending = false,
 }: PresetFormSheetProps) {
   const { t } = useTranslation('PresetFormSheet');
   const [draft, setDraft] = useState<PresetFormValue>(value);
@@ -85,13 +87,15 @@ export function PresetFormSheet({
     setDraft((current) => ({ ...current, [key]: next }));
   };
 
-  const createTag = (name: string) => {
+  const createTag = (name: string): boolean => {
     const tag = onCreateTag(name);
+    const reused = known.some((item) => item.id === tag.id);
     setCreated((current) => [...current.filter((item) => item.id !== tag.id), tag]);
     setSheetTags((current) => {
       const base = current ?? draft.tags;
       return base.includes(tag.id) ? base : [...base, tag.id];
     });
+    return !reused;
   };
 
   return (
@@ -104,7 +108,7 @@ export function PresetFormSheet({
           <Button
             variant="primary"
             fullWidth
-            disabled={!valid}
+            disabled={!valid || pending}
             onClick={() => onSubmit({ ...draft, name: trimmed })}
           >
             {mode === 'create' ? t('create') : t('save')}

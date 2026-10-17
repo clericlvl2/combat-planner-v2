@@ -212,3 +212,34 @@ export const ExtraJapaneseNew = meta.story({
     await expect(canvas.getByRole('button', { name: '作成' })).toBeEnabled();
   },
 });
+
+export const ExtraReusedTagNotNew = meta.story({
+  name: 'Create that reuses an existing tag shows no new badge',
+  args: {
+    value: berserker,
+    onCreateTag: fn(
+      (name: string) =>
+        tags.find((tag) => tag.name.toLowerCase() === name.toLowerCase()) ?? createdTag(name),
+    ),
+  },
+  play: async ({ args, canvas }) => {
+    const sheet = await openTags(canvas);
+    await userEvent.type(within(sheet).getByRole('searchbox'), 'VETERANS');
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Create “VETERANS”' }));
+    await expect(args.onCreateTag).toHaveBeenCalledWith('VETERANS');
+    const veterans = within(sheet).getByRole('checkbox', { name: /^Veterans/ });
+    await expect(veterans).toBeChecked();
+    await expect(veterans).not.toHaveAccessibleName(/new/);
+  },
+});
+
+export const ExtraPending = meta.story({
+  name: 'Save stays disabled while the request is in flight',
+  args: { mode: 'edit', value: berserker, pending: true },
+  play: async ({ args, canvas }) => {
+    const save = canvas.getByRole('button', { name: 'Save' });
+    await expect(save).toBeDisabled();
+    await userEvent.click(save, { pointerEventsCheck: 0 });
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+});
