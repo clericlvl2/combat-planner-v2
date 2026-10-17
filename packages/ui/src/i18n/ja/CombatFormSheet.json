@@ -1,0 +1,12 @@
+{
+  "newCombat": "新しい戦闘",
+  "editCombat": "戦闘を編集",
+  "title": "タイトル",
+  "titlePlaceholder": "新しい戦闘",
+  "titleRequired": "タイトルを入力してください",
+  "description": "説明",
+  "descriptionPlaceholder": "任意",
+  "color": "色",
+  "create": "作成",
+  "save": "保存"
+}

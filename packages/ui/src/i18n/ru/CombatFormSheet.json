@@ -1,0 +1,12 @@
+{
+  "newCombat": "Новое сражение",
+  "editCombat": "Изменить сражение",
+  "title": "Название",
+  "titlePlaceholder": "Новое сражение",
+  "titleRequired": "Введите название",
+  "description": "Описание",
+  "descriptionPlaceholder": "Необязательно",
+  "color": "Цвет",
+  "create": "Создать",
+  "save": "Сохранить"
+}

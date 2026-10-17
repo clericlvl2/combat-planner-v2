@@ -1,0 +1,12 @@
+{
+  "newCombat": "Nouveau combat",
+  "editCombat": "Modifier le combat",
+  "title": "Titre",
+  "titlePlaceholder": "Nouveau combat",
+  "titleRequired": "Saisis un titre",
+  "description": "Descriptif",
+  "descriptionPlaceholder": "Facultatif",
+  "color": "Couleur",
+  "create": "Créer",
+  "save": "Enregistrer"
+}

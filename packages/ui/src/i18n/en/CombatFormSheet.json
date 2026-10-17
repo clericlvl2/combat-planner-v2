@@ -1,0 +1,12 @@
+{
+  "newCombat": "New combat",
+  "editCombat": "Edit combat",
+  "title": "Title",
+  "titlePlaceholder": "New combat",
+  "titleRequired": "Enter a title",
+  "description": "Description",
+  "descriptionPlaceholder": "Optional",
+  "color": "Color",
+  "create": "Create",
+  "save": "Save"
+}

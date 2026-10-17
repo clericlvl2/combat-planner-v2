@@ -1,0 +1,12 @@
+{
+  "newCombat": "Neuer Kampf",
+  "editCombat": "Kampf bearbeiten",
+  "title": "Titel",
+  "titlePlaceholder": "Neuer Kampf",
+  "titleRequired": "Gib einen Titel ein",
+  "description": "Beschreibung",
+  "descriptionPlaceholder": "Freiwillige Angabe",
+  "color": "Farbe",
+  "create": "Erstellen",
+  "save": "Speichern"
+}
