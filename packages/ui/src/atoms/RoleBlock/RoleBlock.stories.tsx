@@ -243,6 +243,22 @@ export const ExtraFocus = meta.story({
   },
 });
 
+export const ExtraFill = meta.story({
+  name: 'fill takes the row height',
+  args: { unitRole: 'enemy', top: { kind: 'initiative', value: 17 }, fill: true },
+  render: (args: RoleBlockProps) => (
+    <div style={{ display: 'flex', height: 64, width: 300, background: 'var(--cp-color-surface)' }}>
+      <RoleBlock {...args} />
+      <RoleBlock {...args} fill={false} data-testid="intrinsic" />
+    </div>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const filled = canvasElement.querySelector<HTMLElement>('[data-fill]');
+    await expect(filled?.getBoundingClientRect().height).toBe(64);
+    await expect(canvas.getByTestId('intrinsic').getBoundingClientRect().height).toBe(80);
+  },
+});
+
 export const ExtraLocaleDe = meta.story({
   name: 'Locale de',
   globals: { locale: 'de' },

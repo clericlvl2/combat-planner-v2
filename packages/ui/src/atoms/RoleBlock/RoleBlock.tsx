@@ -17,6 +17,7 @@ export interface RoleBlockProps extends Omit<HTMLAttributes<HTMLElement>, 'child
   mine?: boolean;
   dead?: boolean;
   disabled?: boolean;
+  fill?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -33,6 +34,7 @@ export function RoleBlock({
   mine = false,
   dead = false,
   disabled = false,
+  fill = false,
   onClick,
   className,
   ...rest
@@ -60,6 +62,7 @@ export function RoleBlock({
     'data-unit-role': unitRole,
     'data-active': active || undefined,
     'data-inactive': dead || disabled || undefined,
+    'data-fill': fill || undefined,
   };
   if (!onClick) {
     return (

@@ -22,6 +22,11 @@
     cursor: pointer;
   }
 
+  &[data-fill] {
+    min-height: 0;
+    align-self: stretch;
+  }
+
   &[data-unit-role='hero'] {
     background: var(--cp-role-hero);
   }
