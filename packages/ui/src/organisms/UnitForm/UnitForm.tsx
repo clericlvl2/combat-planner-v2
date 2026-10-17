@@ -32,6 +32,7 @@ export interface UnitFormProps {
   onSubmit: (draft: UnitDraft) => void;
   onCancel: () => void;
   lockRole?: boolean;
+  lockMaxHp?: boolean;
   presets?: readonly Preset[];
   tags?: readonly TagSheetTag[];
   combatTitle?: string;
@@ -93,6 +94,7 @@ export function UnitForm({
   onSubmit,
   onCancel,
   lockRole = false,
+  lockMaxHp = false,
   presets,
   tags = [],
   combatTitle,
@@ -154,7 +156,7 @@ export function UnitForm({
     ...current,
     name: preset.name,
     role: lockRole ? current.role : preset.role,
-    maxHp: preset.maxHp,
+    maxHp: lockMaxHp ? current.maxHp : preset.maxHp,
     ac: preset.ac,
     pd: preset.pd,
     md: preset.md,
@@ -366,6 +368,7 @@ export function UnitForm({
                   min={field.range.min}
                   max={field.range.max}
                   value={draft[field.key]}
+                  disabled={lockMaxHp && field.key === 'maxHp'}
                   onChange={(next) => updateNumber(field.key, next)}
                 />
               ))}

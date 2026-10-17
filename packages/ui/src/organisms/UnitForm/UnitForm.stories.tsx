@@ -12,6 +12,7 @@ interface UnitFormCellProps {
   mode?: UnitFormMode;
   value?: Partial<UnitDraft>;
   lockRole?: boolean;
+  lockMaxHp?: boolean;
   library?: boolean;
   roleCounts?: Partial<Record<Role, number>>;
   hint?: UnitFormHint;
@@ -113,6 +114,7 @@ function UnitFormCell({
   mode = 'add',
   value,
   lockRole,
+  lockMaxHp,
   library = true,
   roleCounts,
   hint,
@@ -128,6 +130,7 @@ function UnitFormCell({
         mode={mode}
         value={value}
         lockRole={lockRole}
+        lockMaxHp={lockMaxHp}
         presets={library ? presets : undefined}
         tags={tags}
         combatTitle="Ambush at the Ferry"
@@ -437,6 +440,21 @@ export const ExtraLockRole = meta.story({
     await expect(hero).toBeChecked();
     await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
     await expect(args.onSubmit).toHaveBeenCalledWith(vashti);
+  },
+});
+
+export const ExtraLockMaxHp = meta.story({
+  name: 'lockMaxHp keeps max HP for a player Edit',
+  args: { mode: 'edit', value: vashti, lockMaxHp: true },
+  play: async ({ canvas, args }) => {
+    const maxHp = canvas.getByRole('spinbutton', { name: 'Max HP' });
+    await expect(maxHp).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: 'Increase Max HP' })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: 'Decrease Max HP' })).toBeDisabled();
+    await expect(canvas.getByRole('spinbutton', { name: 'Armor Class' })).toBeEnabled();
+    await userEvent.click(canvas.getByRole('button', { name: 'Increase Armor Class' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
+    await expect(args.onSubmit).toHaveBeenCalledWith({ ...vashti, ac: vashti.ac + 1 });
   },
 });
 
