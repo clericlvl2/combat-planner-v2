@@ -1,0 +1,103 @@
+import type { ApiClient, Session } from '@combat-planner/api/client';
+import type { PlayerId } from '@combat-planner/domain';
+import { About, Account, CombatList, Library, Settings, SignIn, SignUp } from '@combat-planner/ui';
+import type { QueryClient } from '@tanstack/react-query';
+import { createBrowserRouter, redirect } from 'react-router';
+import type { LoaderFunctionArgs, RouteObject } from 'react-router';
+import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
+import type { CombatRouteData, PlayerRouteData } from './pages.tsx';
+
+export const SIGN_IN_PATH = '/auth/sign-in';
+export const HOME_PATH = '/combats';
+
+const SESSION_KEY = ['session'] as const;
+
+export interface AboutLinks {
+  version: string;
+  sourceUrl: string;
+  donateUrl: string;
+}
+
+export interface AppRouteOptions {
+  api: ApiClient;
+  queryClient: QueryClient;
+  playerId: () => PlayerId;
+  about: AboutLinks;
+}
+
+const unreachable = (): undefined => undefined;
+
+export function createRoutes({
+  api,
+  queryClient,
+  playerId,
+  about,
+}: AppRouteOptions): RouteObject[] {
+  const cachedSession = (): Promise<Session | null | undefined> =>
+    queryClient
+      .ensureQueryData({ queryKey: SESSION_KEY, queryFn: () => api.auth.session() })
+      .catch(unreachable);
+
+  const freshSession = (): Promise<Session | null | undefined> =>
+    queryClient
+      .fetchQuery({ queryKey: SESSION_KEY, queryFn: () => api.auth.session(), staleTime: 0 })
+      .catch(unreachable);
+
+  const requireSession = async () => {
+    if ((await cachedSession()) === null) throw redirect(SIGN_IN_PATH);
+    return null;
+  };
+
+  const requireGuest = async () => {
+    if (await freshSession()) throw redirect(HOME_PATH);
+    return null;
+  };
+
+  const combatData = ({ params }: LoaderFunctionArgs): CombatRouteData => ({
+    combatId: params.id ?? '',
+  });
+
+  const playerData = ({ params, request }: LoaderFunctionArgs): PlayerRouteData => ({
+    combatId: params.id ?? '',
+    token: new URL(request.url).searchParams.get('t') || null,
+    playerId: playerId(),
+  });
+
+  return [
+    {
+      id: 'root',
+      path: '/',
+      errorElement: <RouteError />,
+      children: [
+        { id: 'home', index: true, loader: () => redirect(HOME_PATH) },
+        {
+          id: 'dm',
+          loader: requireSession,
+          element: <DmPages />,
+          children: [
+            { id: 'combats', path: 'combats', element: <CombatList /> },
+            { id: 'combat', path: 'combats/:id', loader: combatData, element: <CombatPage /> },
+            { id: 'library', path: 'library', element: <Library /> },
+            { id: 'settings', path: 'settings', element: <Settings /> },
+            { id: 'account', path: 'account', element: <Account /> },
+            { id: 'about', path: 'about', element: <About {...about} /> },
+          ],
+        },
+        { id: 'play', path: 'combats/:id/play', loader: playerData, element: <PlayerPage /> },
+        {
+          id: 'auth',
+          loader: requireGuest,
+          children: [
+            { id: 'sign-in', path: 'auth/sign-in', element: <SignIn /> },
+            { id: 'sign-up', path: 'auth/sign-up', element: <SignUp /> },
+          ],
+        },
+        { id: 'not-found', path: '*', element: <NotFoundPage /> },
+      ],
+    },
+  ];
+}
+
+export function createAppRouter(options: AppRouteOptions) {
+  return createBrowserRouter(createRoutes(options));
+}
