@@ -187,7 +187,7 @@ export const NewEmpty = meta.story({
     );
     await expect(canvas.getByRole('radio', { name: 'Enemy' })).toBeChecked();
     await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('10');
-    await expect(canvas.getByRole('spinbutton', { name: 'Initiative bonus' })).toHaveValue('0');
+    await expect(canvas.getByRole('spinbutton', { name: 'Initiative bonus' })).toHaveValue('+0');
   },
 });
 
