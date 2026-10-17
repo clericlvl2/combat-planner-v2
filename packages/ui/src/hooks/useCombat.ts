@@ -22,6 +22,7 @@ import type {
   PlayerViewer,
   SourceEnd,
 } from './combat.ts';
+import { toastStoreOf } from './toasts.ts';
 import { useToasts } from './useToasts.ts';
 
 export interface CombatState<Document extends CombatDocument> {
@@ -81,6 +82,7 @@ export function useCombat(
         refetch: () => refreshEntry(queryClient, key, source),
         show,
         t,
+        generation: toastStoreOf(queryClient).generation,
       }),
     [source, queryClient, key, show, t],
   );

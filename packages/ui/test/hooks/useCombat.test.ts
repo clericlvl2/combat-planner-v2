@@ -17,6 +17,7 @@ import {
   writeDocument,
 } from '../../src/hooks/combat.ts';
 import type { CombatEntry } from '../../src/hooks/combat.ts';
+import { toastStoreOf } from '../../src/hooks/toasts.ts';
 import type { CombatState } from '../../src/hooks/useCombat.ts';
 import { COMBAT_ID, ENEMY_ID, PLAYER_ID, TOKEN, combat } from '../api/fixtures.ts';
 import { flush, harness, translate } from './helpers.ts';
@@ -173,6 +174,7 @@ describe('createDispatcher', () => {
       refetch: () => refreshEntry(context.queryClient, key, source),
       show: context.show,
       t: translate,
+      generation: () => 0,
     });
     await expect(dispatch(damage(1))).resolves.toEqual({ applied: true, version: 2 });
     expect(setQueryData).not.toHaveBeenCalled();
@@ -191,6 +193,7 @@ describe('createDispatcher', () => {
       refetch: () => refreshEntry(context.queryClient, key, source),
       show: context.show,
       t: translate,
+      generation: () => 0,
     });
     await expect(dispatch(damage(1))).resolves.toEqual({ applied: false });
     expect(context.queryClient.getQueryData<CombatEntry>(key)?.document.version).toBe(3);
@@ -204,7 +207,7 @@ describe('createDispatcher', () => {
       .mockResolvedValueOnce({ version: 2 });
     const refetch = vi.fn(async () => {});
     const show = vi.fn((_input: unknown) => 'toast-1');
-    const dispatch = createDispatcher({ send, refetch, show, t: translate });
+    const dispatch = createDispatcher({ send, refetch, show, t: translate, generation: () => 0 });
     const action = damage(1);
     const sent = dispatch(action);
     await flush();
@@ -230,6 +233,7 @@ describe('createDispatcher', () => {
       refetch: async () => {},
       show,
       t: translate,
+      generation: () => 0,
     });
     await expect(dispatch(damage(1))).resolves.toEqual({ applied: false });
     expect(show).toHaveBeenCalledWith({
@@ -245,6 +249,7 @@ describe('createDispatcher', () => {
       refetch: async () => {},
       show,
       t: translate,
+      generation: () => 0,
     });
     const sent = dispatch(damage(1));
     await flush();
@@ -258,7 +263,13 @@ describe('createDispatcher', () => {
       .fn<(action: Action) => Promise<{ version: number }>>()
       .mockRejectedValue(new ApiError({ status: 0, code: 'network' }));
     const show = vi.fn((_input: unknown) => 'toast-1');
-    const dispatch = createDispatcher({ send, refetch: async () => {}, show, t: translate });
+    const dispatch = createDispatcher({
+      send,
+      refetch: async () => {},
+      show,
+      t: translate,
+      generation: () => 0,
+    });
     const sent = dispatch(damage(1));
     await flush();
     const [[first]] = show.mock.calls as [
@@ -279,7 +290,13 @@ describe('createDispatcher', () => {
       .mockResolvedValueOnce({ version: 2 })
       .mockResolvedValueOnce({ version: 3 });
     const show = vi.fn((_input: unknown) => 'toast-1');
-    const dispatch = createDispatcher({ send, refetch: async () => {}, show, t: translate });
+    const dispatch = createDispatcher({
+      send,
+      refetch: async () => {},
+      show,
+      t: translate,
+      generation: () => 0,
+    });
     const retryShown = vi.fn();
     let result: unknown = 'pending';
     void dispatch(damage(1), retryShown).then((value) => {
@@ -301,6 +318,35 @@ describe('createDispatcher', () => {
     expect(retryShown).toHaveBeenCalledTimes(1);
   });
 
+  it('shows no Retry and no toast when the send fails after a session change', async () => {
+    const context = harness({ combats: [combat()] });
+    const toastStore = toastStoreOf(context.queryClient);
+    let fail: (error: unknown) => void = () => {};
+    const send = vi.fn(
+      () =>
+        new Promise<{ version: number }>((_resolve, reject) => {
+          fail = reject;
+        }),
+    );
+    const refetch = vi.fn(async () => {});
+    const dispatch = createDispatcher({
+      send,
+      refetch,
+      show: context.show,
+      t: translate,
+      generation: toastStore.generation,
+    });
+    const retryShown = vi.fn();
+    const sent = dispatch(damage(1), retryShown);
+    toastStore.clear();
+    fail(new ApiError({ status: 0, code: 'network' }));
+    await expect(sent).resolves.toEqual({ applied: false });
+    expect(context.toasts).toEqual([]);
+    expect(retryShown).not.toHaveBeenCalled();
+    expect(refetch).not.toHaveBeenCalled();
+    expect(send).toHaveBeenCalledTimes(1);
+  });
+
   it('resolves not applied on a rejection without a toast', async () => {
     const show = vi.fn((_input: unknown) => 'toast-1');
     const dispatch = createDispatcher({
@@ -308,6 +354,7 @@ describe('createDispatcher', () => {
       refetch: async () => {},
       show,
       t: translate,
+      generation: () => 0,
     });
     await expect(dispatch(damage(1))).resolves.toEqual({ applied: false });
     expect(show).not.toHaveBeenCalled();

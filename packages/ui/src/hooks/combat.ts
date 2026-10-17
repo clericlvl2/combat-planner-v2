@@ -144,18 +144,27 @@ export interface DispatcherOptions {
   refetch: () => Promise<void>;
   show: (input: ToastInput) => string;
   t: Translate;
+  generation: () => number;
 }
 
 const NOT_APPLIED: DispatchResult = { applied: false };
 
 export type Dispatch = (action: Action, onRetryShown?: () => void) => Promise<DispatchResult>;
 
-export function createDispatcher({ send, refetch, show, t }: DispatcherOptions): Dispatch {
+export function createDispatcher({
+  send,
+  refetch,
+  show,
+  t,
+  generation,
+}: DispatcherOptions): Dispatch {
   const dispatch: Dispatch = async (action, onRetryShown) => {
+    const sentIn = generation();
     try {
       const { version } = await send(action);
       return { applied: true, version };
     } catch (error) {
+      if (generation() !== sentIn) return NOT_APPLIED;
       if (error instanceof ApiError && error.code === 'version') await refetch().catch(() => {});
       return new Promise<DispatchResult>((resolve) => {
         let retried = false;
