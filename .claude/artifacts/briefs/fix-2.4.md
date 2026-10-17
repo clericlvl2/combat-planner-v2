@@ -53,6 +53,14 @@ extra paths it names.
 11. `UnitForm`: `lockMaxHp` (player Edit; orchestrator decision 3a).
 12. `HpHistory`: PageDown keeps one row of overlap (or native scrolling).
 13. `NumpadSheet`: remove the dead `close` key; `.same.txt` and stale groups.
+13a. `Toast` (molecule): the preset story uses `presetAdded`; `presetSaved`
+    removed from the six `Toast.json` files; baseline regenerated.
+13b. `SignUp` and the fake together: `FakeApiClient.auth.signUp` answers a
+    taken e-mail with `emailTaken` (`packages/ui/src/api/FakeApiClient.ts`,
+    allowed in this unit) and SignUp maps `emailTaken` to «This email already
+    has an account», other `invalid` to a generic error; AP-F1.5 and
+    «Sign Up Errors» stay green. Commit `fix(ui): SignUp`; the SignUp item in
+    unit 15 is then done.
 14. `shared` (`fix(ui): shared`): move
     `AuthScreen`, `SocialButtons`, `ScreenToast`, `submitOnEnter`, `hasCode`,
     `PageScreen`, `PageSection` into `packages/ui/src/screens/shared/`;
@@ -60,7 +68,8 @@ extra paths it names.
     unchanged.
 15. One unit per screen, `fix(ui): <Screen>`, applying the guard items routed
     to it, the new `kind` toasts (icons from `kind`, no text matching), the
-    `refetch`-based `CantReachServer` on a failed first load, Create and Save
+    `refetch`-based `CantReachServer` on a failed first load, an
+    `ended.type === 'unauthorized'` → navigate to `/auth/sign-in`, Create and Save
     buttons disabled while in flight with one client id per opened form, and
     `duplicateDisabled` at the limit:
     - `CombatList`: CombatFormSheet with exit transition (`opened`), Retry

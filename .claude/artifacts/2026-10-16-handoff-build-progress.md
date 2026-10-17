@@ -82,7 +82,7 @@
 | 2.4-Library | guarded `.claude/artifacts/guard/2.4-Library.md` (P2 ×2, P3 ×5 → `fix-2.4`) | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
-| fix-2.4-core | running worker-bee (Opus xhigh) 2026-10-17T14:45+03:00 | project, api contract, FakeApiClient, hooks |
+| fix-2.4-core | reported `.claude/artifacts/reports/fix-2.4-core.md`, rebased, gate running | project, api contract, FakeApiClient, hooks |
 | fix-2.4 | brief drafted, dispatch after fix-2.4-core merges and the 2.4-CombatScreen guard | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
@@ -94,6 +94,17 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- fix-2.4-core, решения оркестратора 2026-10-17: экспорт `applyHp` из
+  `packages/domain/src/index.ts` — принято; `method` по последнему
+  `account.updatedAt` (точнее — колонка в `session` и миграция) — принято;
+  мутация с Retry ждёт Retry или закрытия тоста (при motion off — до ×) —
+  принято; кэш скрывается только при `unauthorized`/`forbidden`/`notFound` —
+  принято; трейлер Fable 5.1 по CLAUDE.md — принято. Владельцу: перевод
+  `Toast.limitReached`. → `fix-2.4`: `Toast.presetSaved` убирается вместе с
+  историей Toast (`presetAdded`); фейк отвечает `emailTaken` одновременно с
+  SignUp; экраны используют `unauthorized`, `kind`, `refetch`, `method`,
+  `round`/`createdAt`.
 
 - 2.4-CombatScreen, решения оркестратора 2026-10-17: пропсы `random` и
   `origin` — приняты; полное имя юнита во второй строке TurnBar — принято;
