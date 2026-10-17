@@ -8,13 +8,18 @@ import {
   Settings,
   SignIn,
   SignUp,
+  UnexpectedError,
   createQueryClient,
   scenario,
 } from '@combat-planner/ui';
+import { createElement } from 'react';
 import type { ReactElement } from 'react';
-import { createMemoryRouter } from 'react-router';
+import { renderToString } from 'react-dom/server';
+import { RouterProvider, createMemoryRouter } from 'react-router';
+import type { RouteObject } from 'react-router';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
+import { AppProviders } from './providers.tsx';
 import { createRoutes } from './router.tsx';
 
 const PLAYER_ID: PlayerId = '01JA0000000000000000000000';
@@ -33,12 +38,28 @@ afterEach(() => {
   for (const router of routers.splice(0)) router.dispose();
 });
 
-async function open(path: string, signedIn: boolean): Promise<MemoryRouter> {
+const throwing: RouteObject = {
+  id: 'throwing',
+  path: 'throwing',
+  loader: () => {
+    throw new Error('route failed');
+  },
+};
+
+async function open(
+  path: string,
+  signedIn: boolean,
+  extraRoutes: RouteObject[] = [],
+): Promise<MemoryRouter> {
   const api = new FakeApiClient({ scenario: signedIn ? scenario() : scenario({ session: null }) });
-  const router = createMemoryRouter(
-    createRoutes({ api, queryClient: createQueryClient(), playerId: () => PLAYER_ID, about }),
-    { initialEntries: [path] },
-  );
+  const routes = createRoutes({
+    api,
+    queryClient: createQueryClient(),
+    playerId: () => PLAYER_ID,
+    about,
+  });
+  routes[0]?.children?.unshift(...extraRoutes);
+  const router = createMemoryRouter(routes, { initialEntries: [path] });
   routers.push(router);
   await new Promise<void>((resolve) => {
     const settled = () => router.state.initialized && router.state.navigation.state === 'idle';
@@ -54,6 +75,16 @@ async function open(path: string, signedIn: boolean): Promise<MemoryRouter> {
   });
   return router;
 }
+
+const render = (router: MemoryRouter): string =>
+  renderToString(
+    createElement(AppProviders, {
+      api: new FakeApiClient({ scenario: scenario() }),
+      queryClient: createQueryClient(),
+      locale: 'en',
+      children: createElement(RouterProvider, { router }),
+    }),
+  );
 
 const leaf = (router: MemoryRouter) => {
   const match = router.state.matches.at(-1);
@@ -163,8 +194,19 @@ describe('router', () => {
     },
   );
 
-  it('shows UnexpectedError for a route error', async () => {
-    const router = await open('/', true);
-    expect(router.routes[0]?.errorElement).toMatchObject({ type: RouteError });
+  it('renders RouteError as UnexpectedError when a route throws', async () => {
+    const router = await open('/throwing', true, [throwing]);
+    expect(router.state.errors).toEqual({ root: new Error('route failed') });
+    const html = render(router);
+    expect(html).toContain('data-system-screen');
+    expect(html).toContain('Something went wrong');
+    expect(html).toContain('Reload the page. Your last saved changes are safe.');
+    expect(html).toContain('>Reload<');
+  });
+
+  it('maps RouteError to UnexpectedError with a reload action', () => {
+    const element = RouteError() as ReactElement<{ onReload: unknown }>;
+    expect(element.type).toBe(UnexpectedError);
+    expect(element.props.onReload).toBeTypeOf('function');
   });
 });
