@@ -59,23 +59,23 @@ test('the preset sort changes the order and survives a reload', async ({ page })
   await expect(sort.getByRole('radio', { name: 'Newest first' })).toBeChecked();
   await sort.getByRole('radio', { name: 'A–Z' }).click();
   await expect(sort).toBeHidden();
-  expect(await presetNames(page)).toEqual(['Aria', 'Orc Shaman', 'Wolf', 'Zed Orc']);
+  await expect.poll(() => presetNames(page)).toEqual(['Aria', 'Orc Shaman', 'Wolf', 'Zed Orc']);
   await expect(page.getByRole('button', { name: 'A–Z' })).toBeVisible();
 
   await page.reload();
   await expect(page.locator('article')).toHaveCount(4);
-  expect(await presetNames(page)).toEqual(['Aria', 'Orc Shaman', 'Wolf', 'Zed Orc']);
+  await expect.poll(() => presetNames(page)).toEqual(['Aria', 'Orc Shaman', 'Wolf', 'Zed Orc']);
   await expect(page.getByRole('button', { name: 'A–Z' })).toBeVisible();
 
   await page.getByRole('button', { name: 'A–Z' }).click();
   await expect(sort.getByRole('radio', { name: 'A–Z' })).toBeChecked();
   await sort.getByRole('radio', { name: 'By type' }).click();
   await expect(sort).toBeHidden();
-  expect(await presetNames(page)).toEqual(['Wolf', 'Zed Orc', 'Orc Shaman', 'Aria']);
+  await expect.poll(() => presetNames(page)).toEqual(['Wolf', 'Zed Orc', 'Orc Shaman', 'Aria']);
 
   await page.reload();
   await expect(page.locator('article')).toHaveCount(4);
-  expect(await presetNames(page)).toEqual(['Wolf', 'Zed Orc', 'Orc Shaman', 'Aria']);
+  await expect.poll(() => presetNames(page)).toEqual(['Wolf', 'Zed Orc', 'Orc Shaman', 'Aria']);
   await expect(page.getByRole('button', { name: 'By type' })).toBeVisible();
 });
 
