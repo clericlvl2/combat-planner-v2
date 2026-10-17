@@ -678,6 +678,17 @@
 
 ## Замечания guard-bee P2–P3, отложены
 
+- 5-e2e → `fix-5`:
+  - P1 functional: sign-out never signs out. `hono-client.ts:442` posts
+    `sign-out` without a body or `Content-Type`, so Better Auth answers 415.
+    `Account.tsx` swallows the rejection with no toast. `fix-5` sends a JSON
+    body and shows the error toast on failure; the `test.fail()` in
+    `e2e/auth.spec.ts` is removed, and the wrong-password test signs out
+    through the UI.
+  - `<html lang>` follows the interface locale (orchestrator decision: needed
+    for screen readers and the CJK font fallback; set by `UiProvider`, where
+    the language switches).
+
 - fix-4 → `fix-5`:
   - P2 CombatScreen.tsx:332, :207-214: Undo on the «X removed» toast labels
     the removal but undoes whatever is newest. It must undo the removal or
