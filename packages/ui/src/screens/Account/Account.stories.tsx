@@ -222,3 +222,16 @@ export const ExtraEmptyNameAfterEarlierBlur = meta.story({
     await expect(await canvas.findByText('Enter a display name')).toBeVisible();
   },
 });
+
+export const ExtraSignOutFailed = meta.story({
+  name: 'A failed sign-out shows the error toast and stays on Account',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    await canvas.findByText('dm@ferry.games');
+    fakeApiOf(loaded).failNext('invalid');
+    await userEvent.click(canvas.getByRole('button', { name: 'Sign out' }));
+    await expect(await canvas.findByText('Couldn’t sign out. Try again.')).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: 'Retry' })).toBeNull();
+    await expect(probeOf(canvasElement).location).toBe('/account');
+    await expect(canvas.getByText('dm@ferry.games')).toBeVisible();
+  },
+});

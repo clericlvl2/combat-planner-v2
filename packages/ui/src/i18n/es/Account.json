@@ -8,6 +8,7 @@
   "displayName": "Nombre visible",
   "enterName": "Escribe un nombre visible",
   "signOut": "Cerrar sesión",
+  "signOutFailed": "No se pudo cerrar la sesión. Inténtalo de nuevo.",
   "dangerZone": "Zona de peligro",
   "deleteAccount": "Eliminar cuenta",
   "deleteNote": "Elimina todos los combates, plantillas y enlaces de jugadores."

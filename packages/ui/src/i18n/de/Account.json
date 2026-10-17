@@ -8,6 +8,7 @@
   "displayName": "Anzeigename",
   "enterName": "Gib einen Anzeigenamen ein",
   "signOut": "Abmelden",
+  "signOutFailed": "Abmelden fehlgeschlagen. Versuche es erneut.",
   "dangerZone": "Gefahrenzone",
   "deleteAccount": "Konto löschen",
   "deleteNote": "Löscht alle Kämpfe, Vorlagen und Spielerlinks."
