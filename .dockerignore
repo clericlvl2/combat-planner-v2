@@ -16,7 +16,7 @@
 !.env.example
 **/*.test.ts
 **/*.test.tsx
-data
+**/data
 **/*.db
 **/*.db-*
 docs
