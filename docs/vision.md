@@ -72,6 +72,8 @@ Has every action listed under Features.
 - A unit is claimed by at most one player.
 - A player claims and releases heroes on the Heroes screen, and releases one hero
   through Release claim in the expanded row.
+- A player who claims an own hero again changes the display name; Done with a
+  changed name sends one such claim.
 - The DM releases any claim through Release claim in the unit menu.
 - Removing the unit releases the claim.
 - Clear releases every claim.
