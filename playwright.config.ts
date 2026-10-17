@@ -5,11 +5,17 @@ import { defineConfig, devices } from '@playwright/test';
 const PORT = 3000;
 const baseURL = `http://localhost:${PORT}`;
 
-process.env.COMBAT_PLANNER_E2E_DIR ??= path.join(
-  os.tmpdir(),
-  `combat-planner-e2e-${Date.now().toString(36)}`,
-);
-const dataDir = process.env.COMBAT_PLANNER_E2E_DIR;
+const CREATED_DIR: unique symbol = Symbol.for('combat-planner.e2e.created-dir');
+
+const createDataDir = (): string => {
+  const dir = path.join(os.tmpdir(), `combat-planner-e2e-${Date.now().toString(36)}`);
+  process.env.COMBAT_PLANNER_E2E_DIR = dir;
+  const e2eGlobal: typeof globalThis & { [CREATED_DIR]?: string } = globalThis;
+  e2eGlobal[CREATED_DIR] = dir;
+  return dir;
+};
+
+const dataDir = process.env.COMBAT_PLANNER_E2E_DIR || createDataDir();
 
 export default defineConfig({
   testDir: 'e2e',
