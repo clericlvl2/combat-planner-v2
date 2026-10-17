@@ -90,7 +90,7 @@
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
 | fix-3 | guarded `.claude/artifacts/guard/fix-3.md` | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
-| 4-web | rebased on 130f90d (unit 5 files stashed and restored), agent resumed for `smoke e2e` | router, providers, player identity, drawer, smoke e2e |
+| 4-web | handed back 5/5 (report `.claude/artifacts/reports/4-web.md`), rebased on f43b706, gate + e2e running `.claude/run/4-web/` | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
 | fix-4-overlays | merged 1e3fcd1..130f90d (gate `.claude/run/fix-4-overlays/` green), guard-bee running |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4 | running worker-bee ac057a5 2026-10-17T15:52+03:00 (Opus 5.5 xhigh, parallel with `4-web`, disjoint paths) | |

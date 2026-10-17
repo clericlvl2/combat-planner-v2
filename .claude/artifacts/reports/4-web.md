@@ -4,6 +4,30 @@
 
 ## Commits
 
+- 0fe6914 feat(web): router
+- a936dbd feat(web): providers
+- 230b52e feat(web): player identity
+- 2c968f0 feat(web): drawer
+- 4bf464a test(e2e): smoke e2e
+
+## Checks run (after resume, on 130f90d)
+
+- `pnpm install --frozen-lockfile`, `COMBAT_PLANNER_NO_DOCKER=1 pnpm check`: passed.
+- `pnpm test`: passed, 2098 tests.
+- `pnpm build`: passed.
+- `pnpm e2e`: passed, 1 test, against the built server.
+  - DM: sign up, create a combat, add the Hero «Aria», Start, Next turn (round 2).
+  - Player, in a second context: open the Share link, enter «Pat», check Aria, Join.
+  - The player sees Round 2, Aria and «You».
+  - The spec passed unchanged after the Sheet fix.
+- `pnpm storybook:build`: passed, before the rebase.
+- `bash scripts/check-commit.sh master..HEAD`: passed, 5 commits.
+
+Question 1 is resolved by 130f90d. Nothing is left undone.
+
+## First hand-back (4 of 5 units), kept for reference
+
+
 - b3dad41 feat(web): router
 - fcf850d feat(web): providers
 - e8f800e feat(web): player identity
