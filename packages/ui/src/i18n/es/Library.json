@@ -6,5 +6,6 @@
   "emptyTitle": "Aún no hay plantillas",
   "emptyBody": "Crea una aquí o guarda cualquier unidad de un combate en la Biblioteca.",
   "noResultsBody": "Ninguna plantilla coincide con «{{query}}».",
-  "limitReached": "Límite de plantillas alcanzado"
+  "limitReached": "Límite de plantillas alcanzado",
+  "tagFailed": "No se pudo crear la etiqueta {{name}}"
 }

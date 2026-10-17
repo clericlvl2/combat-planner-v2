@@ -1,9 +1,13 @@
 import preview from '#.storybook/preview';
-import { useEffect, useRef } from 'react';
+import type { ApiErrorCode } from '@combat-planner/api/client';
+import { useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { useApi } from '../../api/ApiProvider.tsx';
+import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { Library, PRESET_SORT_KEY } from './Library.tsx';
@@ -43,6 +47,15 @@ function SeedToast({ name }: { name: string }) {
     show({ message: t('presetAdded', { name }) });
   }, [show, t, name]);
   return null;
+}
+
+function FailFirstCall({ code, children }: { code: ApiErrorCode; children: ReactNode }) {
+  const api = useApi();
+  useState(() => {
+    if (api instanceof FakeApiClient) api.failNext(code);
+    return code;
+  });
+  return children;
 }
 
 const togglePrefix = 'Actions: ';
@@ -651,5 +664,107 @@ export const ExtraRussian = meta.story({
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole('heading', { name: 'Библиотека' })).toBeVisible();
     await expect(await canvas.findByText('Капитан стражи переправы Святослав Огнев')).toBeVisible();
+  },
+});
+
+export const ExtraFirstLoadFails = meta.story({
+  name: 'A failed first load shows Can’t reach the server with Try again',
+  render: () => (
+    <FailFirstCall code="network">
+      <Library />
+      <LocationProbe />
+    </FailFirstCall>
+  ),
+  play: async ({ canvas, loaded }) => {
+    await userEvent.click(await canvas.findByRole('button', { name: 'Try again' }));
+    await ready(canvas);
+    await expect(callsOf(loaded, 'presets.list')).toHaveLength(2);
+  },
+});
+
+export const ExtraSignedOut = meta.story({
+  name: 'An unauthorized first load goes to sign-in',
+  render: () => (
+    <FailFirstCall code="unauthorized">
+      <Library />
+      <LocationProbe />
+    </FailFirstCall>
+  ),
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(locationOf(canvasElement)).toBe('/auth/sign-in'));
+  },
+});
+
+export const ExtraCreateRetry = meta.story({
+  name: 'Create is disabled in flight; Retry creates once with the same id',
+  play: async ({ canvas, loaded }) => {
+    await openCreate(canvas);
+    await fillCreate(canvas);
+    fakeApiOf(loaded).failNext('network');
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await expect(await canvas.findByRole('button', { name: 'Create' })).toBeDisabled();
+    await userEvent.click(await canvas.findByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(canvas.queryByRole('dialog', { name: 'New preset' })).toBeNull());
+    const created = callsOf(loaded, 'presets.create');
+    await expect(created).toHaveLength(2);
+    const [first] = created[0]!.args as [{ id: string }];
+    const [second] = created[1]!.args as [{ id: string }];
+    await expect(second.id).toBe(first.id);
+    const toast = await canvas.findByRole('status');
+    await expect(toast).toHaveTextContent('Orc Warchief added to Library');
+    await expect(toast.querySelector('.tabler-icon-check')).not.toBeNull();
+  },
+});
+
+const createEliteTag = async (canvas: Canvas) => {
+  const name = canvas.getByRole('textbox', { name: 'Name' });
+  await userEvent.click(name);
+  await userEvent.type(name, 'Orc Warchief');
+  const tags = await openSheet(canvas, canvas.getByRole('button', { name: 'Add tag' }), /^Tags/);
+  await userEvent.type(within(tags).getByRole('searchbox'), 'Elite');
+  await userEvent.click(within(tags).getByRole('button', { name: 'Create “Elite”' }));
+  await userEvent.click(within(tags).getByRole('button', { name: 'Done · 1 tag' }));
+  await waitFor(() => expect(canvas.queryByRole('dialog', { name: /^Tags/ })).toBeNull());
+};
+
+export const ExtraTagCreateAwaited = meta.story({
+  name: 'Save waits for the new tag; a failed tag shows an error and keeps the form',
+  play: async ({ canvas, loaded }) => {
+    await openCreate(canvas);
+    fakeApiOf(loaded).failNext('invalid');
+    await createEliteTag(canvas);
+    await expect(await canvas.findByText('Couldn’t create the tag Elite')).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
+    await expect(canvas.getByRole('dialog', { name: 'New preset' })).toBeVisible();
+  },
+});
+
+export const ExtraTagRetryThenSave = meta.story({
+  name: 'Save after a tag Retry sends the preset with the created tag',
+  play: async ({ canvas, loaded }) => {
+    await openCreate(canvas);
+    fakeApiOf(loaded).failNext('network');
+    await createEliteTag(canvas);
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
+    await userEvent.click(await canvas.findByRole('button', { name: 'Retry' }));
+    await waitFor(() => expect(callsOf(loaded, 'presets.create')).toHaveLength(1));
+    const [tag] = callsOf(loaded, 'tags.create').at(-1)!.args as [{ id: string }];
+    const [preset] = callsOf(loaded, 'presets.create')[0]!.args as [{ tags: string[] }];
+    await expect(preset.tags).toEqual([tag.id]);
+  },
+});
+
+export const ExtraDuplicateAtLimit = meta.story({
+  name: 'Duplicate is disabled at the preset limit',
+  parameters: { scenario: fullLibraryScenario },
+  play: async ({ canvas, loaded }) => {
+    await expand(canvas, 'Goblin 1');
+    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    await expect(duplicate).toBeDisabled();
+    await userEvent.click(duplicate, { pointerEventsCheck: 0 });
+    await expect(callsOf(loaded, 'presets.duplicate')).toHaveLength(0);
   },
 });

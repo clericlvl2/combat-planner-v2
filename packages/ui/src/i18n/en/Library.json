@@ -6,5 +6,6 @@
   "emptyTitle": "No presets yet",
   "emptyBody": "Create one here, or save any unit from a combat to the Library.",
   "noResultsBody": "No preset matches “{{query}}”.",
-  "limitReached": "Preset limit reached"
+  "limitReached": "Preset limit reached",
+  "tagFailed": "Couldn’t create the tag {{name}}"
 }

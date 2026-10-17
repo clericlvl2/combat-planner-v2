@@ -1,30 +1,26 @@
-import type { Preset, PresetId, Role, Tag } from '@combat-planner/domain';
-import { LIMITS, duplicateName, normalizeTag } from '@combat-planner/domain';
+import { ApiError } from '@combat-planner/api/client';
+import type { Preset, PresetId, Role, Tag, TagId } from '@combat-planner/domain';
+import { LIMITS, normalizeTag } from '@combat-planner/domain';
 import {
-  IconAlertTriangle,
-  IconBookmark,
   IconBooks,
-  IconCopy,
   IconPlus,
   IconSearchOff,
   IconSortDescending,
   IconTags,
   IconTrash,
-  IconWifiOff,
 } from '@tabler/icons-react';
-import type { Icon } from '@tabler/icons-react';
-import { useRef, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { ulid } from 'ulid';
+import { queryKeys } from '../../hooks/queryKeys.ts';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { usePresets } from '../../hooks/usePresets.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
-import type { ToastItem } from '../../hooks/toasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
-import type { ToastTone } from '../../molecules/Toast/Toast.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import { Drawer } from '../../organisms/Drawer/Drawer.tsx';
@@ -35,6 +31,8 @@ import { SortSheet, presetSorts } from '../../organisms/SortSheet/SortSheet.tsx'
 import type { PresetSort } from '../../organisms/SortSheet/SortSheet.tsx';
 import { TagSheet } from '../../organisms/TagSheet/TagSheet.tsx';
 import type { TagSheetTag } from '../../organisms/TagSheet/TagSheet.tsx';
+import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
+import { toastLook } from '../shared/toastLook.ts';
 import { PresetFormSheet, emptyPresetForm } from './PresetFormSheet/PresetFormSheet.tsx';
 import type { PresetFormValue } from './PresetFormSheet/PresetFormSheet.tsx';
 import classes from './Library.module.css';
@@ -49,17 +47,7 @@ const TAGS_TOOL = 'tags';
 
 const typeOrder: Record<Role, number> = { enemy: 0, ally: 1, hero: 2 };
 
-type ToastKind = 'added' | 'duplicated' | 'deleted';
-
-const toastLooks: Record<ToastKind | 'failed' | 'other', { icon: Icon; tone: ToastTone }> = {
-  added: { icon: IconBookmark, tone: 'success' },
-  duplicated: { icon: IconCopy, tone: 'success' },
-  deleted: { icon: IconTrash, tone: 'neutral' },
-  failed: { icon: IconWifiOff, tone: 'error' },
-  other: { icon: IconAlertTriangle, tone: 'warning' },
-};
-
-type Form = { mode: 'create' } | { mode: 'edit'; id: PresetId };
+type Form = { mode: 'create'; id: PresetId } | { mode: 'edit'; id: PresetId };
 
 export function readPresetSort(): PresetSort {
   try {
@@ -132,7 +120,8 @@ export function Library() {
   const { t: tDialog } = useTranslation('Dialog');
   const { t: tToast } = useTranslation('Toast');
   const navigate = useNavigate();
-  const { presets, create, update, duplicate, remove } = usePresets();
+  const queryClient = useQueryClient();
+  const { presets, error, create, update, duplicate, remove } = usePresets();
   const { tags, create: createTag } = useTags();
   const { session } = useAccount();
   const { toasts, show, dismiss } = useToasts();
@@ -147,7 +136,13 @@ export function Library() {
   const [form, setForm] = useState<Form | null>(null);
   const [formKey, setFormKey] = useState(0);
   const [deleteId, setDeleteId] = useState<PresetId | null>(null);
-  const toastKinds = useRef(new Map<string, ToastKind>());
+  const [pending, setPending] = useState(false);
+  const tagCreates = useRef(new Map<TagId, Promise<Tag>>());
+  const signedOut = error instanceof ApiError && error.code === 'unauthorized';
+
+  useEffect(() => {
+    if (signedOut) void navigate('/auth/sign-in');
+  }, [signedOut, navigate]);
 
   const locale = i18n.language;
   const all = presets ?? [];
@@ -178,45 +173,46 @@ export function Library() {
     writePresetSort(next);
   };
 
-  const rememberToast = (kind: ToastKind, message: string) => {
-    toastKinds.current.set(message, kind);
-  };
-
   const tagFor = (name: string): Tag => {
     const trimmed = name.trim();
     const existing = allTags.find((tag) => normalizeTag(tag.name) === normalizeTag(trimmed));
     if (existing) return existing;
     const tag: Tag = { id: ulid(), name: trimmed };
-    createTag(tag).catch(() => {});
+    const created = createTag(tag);
+    tagCreates.current.set(tag.id, created);
+    created.catch((reason: unknown) => {
+      if (reason instanceof ApiError && reason.code === 'network') return;
+      show({ message: t('tagFailed', { name: tag.name }), kind: 'error' });
+    });
     return tag;
   };
 
+  const awaitTags = (ids: readonly TagId[]) =>
+    Promise.all(ids.flatMap((id) => tagCreates.current.get(id) ?? []));
+
   const submit = async (value: PresetFormValue) => {
-    if (form === null) return;
+    if (form === null || pending) return;
+    setPending(true);
     try {
+      await awaitTags(value.tags);
       if (form.mode === 'create') {
-        await create({ id: ulid(), ...value });
+        await create({ id: form.id, ...value });
         setForm(null);
-        const message = tToast('presetAdded', { name: value.name });
-        rememberToast('added', message);
-        show({ message });
+        show({ message: tToast('presetAdded', { name: value.name }), kind: 'success' });
       } else {
         await update(form.id, value);
         setForm(null);
       }
     } catch {
       return;
+    } finally {
+      setPending(false);
     }
   };
 
   const duplicatePreset = (preset: Preset) => {
     setMenuId(null);
     setExpandedId(null);
-    const copyName = duplicateName(
-      preset.name,
-      all.map((item) => item.name),
-    );
-    rememberToast('duplicated', tToast('presetDuplicated', { name: copyName }));
     duplicate(preset.id, ulid()).catch(() => {});
   };
 
@@ -224,7 +220,6 @@ export function Library() {
     if (deleting === undefined) return;
     setDeleteId(null);
     setExpandedId(null);
-    rememberToast('deleted', tToast('deleted', { title: deleting.name }));
     remove(deleting.id).catch(() => {});
   };
 
@@ -232,17 +227,16 @@ export function Library() {
     void navigate(`/${section}`);
   };
 
-  const lookOf = (toast: ToastItem) => {
-    if (toast.action) return toastLooks.failed;
-    const kind = toastKinds.current.get(toast.message);
-    if (kind) return toastLooks[kind];
-    const added = all.some(
-      (preset) => tToast('presetAdded', { name: preset.name }) === toast.message,
-    );
-    return added ? toastLooks.added : toastLooks.other;
-  };
-
   const toast = toasts[0];
+
+  if (presets === undefined && error !== null) {
+    if (signedOut) return null;
+    return (
+      <CantReachServer
+        onRetry={() => void queryClient.refetchQueries({ queryKey: queryKeys.presets })}
+      />
+    );
+  }
 
   return (
     <div className={classes.root}>
@@ -284,6 +278,7 @@ export function Library() {
             tags={preset.tags.map(tagName).filter((name) => name !== '')}
             expanded={expandedId === preset.id}
             menuOpened={menuId === preset.id}
+            duplicateDisabled={atLimit}
             onToggle={() => {
               setMenuId(null);
               setExpandedId((current) => (current === preset.id ? null : preset.id));
@@ -314,12 +309,12 @@ export function Library() {
         icon={IconPlus}
         disabled={!loaded || atLimit}
         hint={atLimit ? t('limitReached') : undefined}
-        onClick={() => openForm({ mode: 'create' })}
+        onClick={() => openForm({ mode: 'create', id: ulid() })}
       />
       {toast ? (
         <Toast
           key={toast.id}
-          {...lookOf(toast)}
+          {...toastLook(toast.kind)}
           message={toast.message}
           action={toast.action}
           duration={toast.duration}
@@ -350,6 +345,7 @@ export function Library() {
         <PresetFormSheet
           key={formKey}
           opened
+          pending={pending}
           mode={form.mode}
           value={editing ? formValueOf(editing) : emptyPresetForm}
           tags={sheetTags}
