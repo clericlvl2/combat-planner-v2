@@ -1,0 +1,16 @@
+{
+  "title": "Acerca de",
+  "version": "Versión",
+  "rules": "Reglas",
+  "rulesValue": "13th Age",
+  "source": "Código fuente",
+  "sourceValue": "GitHub",
+  "description": "Gestor de combates para 13th Age: iniciativa, PG, estados y el dado de escalada, con una vista en directo para los jugadores.",
+  "privacy": "Privacidad",
+  "privacyNote": "Tu correo, tus combates y tus plantillas se guardan solo para que la app funcione. Sin anuncios, sin rastreo, no se vende nada.",
+  "donate": "Donar",
+  "donateValue": "Apoyar el proyecto",
+  "credits": "Créditos",
+  "creditsNote": "Iconos: Tabler Icons. Fuentes: Unbounded, Rubik y Noto Sans JP.",
+  "disclaimer": "Sin relación con Pelgrane Press."
+}

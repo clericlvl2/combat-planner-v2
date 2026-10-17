@@ -1,0 +1,16 @@
+{
+  "title": "Über",
+  "version": "Version",
+  "rules": "Regeln",
+  "rulesValue": "13th Age",
+  "source": "Quellcode",
+  "sourceValue": "GitHub",
+  "description": "Kampf-Tracker für 13th Age: Initiative, TP, Zustände und Eskalationswürfel, mit einer Live-Ansicht für die Spieler.",
+  "privacy": "Datenschutz",
+  "privacyNote": "Deine E-Mail, Kämpfe und Vorlagen werden nur für den Betrieb der App gespeichert. Keine Werbung, kein Tracking, nichts wird verkauft.",
+  "donate": "Spenden",
+  "donateValue": "Projekt unterstützen",
+  "credits": "Danksagungen",
+  "creditsNote": "Icons: Tabler Icons. Schriften: Unbounded, Rubik und Noto Sans JP.",
+  "disclaimer": "Nicht mit Pelgrane Press verbunden."
+}

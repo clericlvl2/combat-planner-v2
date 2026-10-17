@@ -1,0 +1,16 @@
+{
+  "title": "О приложении",
+  "version": "Версия",
+  "rules": "Правила",
+  "rulesValue": "13th Age",
+  "source": "Исходный код",
+  "sourceValue": "GitHub",
+  "description": "Трекер боя для 13th Age: инициатива, ОЗ, состояния и кубик эскалации, с живым экраном для игроков.",
+  "privacy": "Конфиденциальность",
+  "privacyNote": "Ваша почта, бои и заготовки хранятся только для работы приложения. Без рекламы и слежки, ничего не продаётся.",
+  "donate": "Поддержать",
+  "donateValue": "Поддержать проект",
+  "credits": "Благодарности",
+  "creditsNote": "Иконки: Tabler Icons. Шрифты: Unbounded, Rubik и Noto Sans JP.",
+  "disclaimer": "Не связано с Pelgrane Press."
+}

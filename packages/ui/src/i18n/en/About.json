@@ -1,0 +1,16 @@
+{
+  "title": "About",
+  "version": "Version",
+  "rules": "Rules",
+  "rulesValue": "13th Age",
+  "source": "Source",
+  "sourceValue": "GitHub",
+  "description": "Combat tracker for 13th Age: initiative, HP, conditions and the escalation die, with a live view for players.",
+  "privacy": "Privacy",
+  "privacyNote": "Your email, combats and presets are stored only to run the app. No ads, no tracking, nothing is sold.",
+  "donate": "Donate",
+  "donateValue": "Support the project",
+  "credits": "Credits",
+  "creditsNote": "Icons: Tabler Icons. Fonts: Unbounded, Rubik and Noto Sans JP.",
+  "disclaimer": "Not affiliated with Pelgrane Press."
+}
