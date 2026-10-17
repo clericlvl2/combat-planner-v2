@@ -131,7 +131,9 @@ const damageOrc = async (canvas: Canvas, canvasElement: HTMLElement, amount: str
 
 const openShare = async (canvas: Canvas) => {
   await pickMenu(canvas, 'Share');
-  return canvas.findByRole('dialog', { name: 'Share with players' });
+  const sheet = await canvas.findByRole('dialog', { name: 'Share with players' });
+  await waitFor(() => expect(document.activeElement).toBe(sheet));
+  return sheet;
 };
 
 const scrollList = async (canvasElement: HTMLElement) => {
@@ -155,9 +157,25 @@ const offlineLoader: Loader = ({ parameters }) => {
   return { api };
 };
 
-const slowLoader: Loader = ({ parameters }) => ({
-  api: new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 40 }),
-});
+const heldLoader: Loader = ({ parameters }) => {
+  const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+  const send = api.combats.dispatch.bind(api.combats);
+  let release = () => {};
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  api.combats.dispatch = async (id, action) => {
+    await held;
+    return send(id, action);
+  };
+  return { api, release };
+};
+
+const releaseOf = (loaded: Record<string, unknown>): (() => void) => {
+  const { release } = loaded;
+  if (typeof release !== 'function') throw new Error('heldLoader is missing');
+  return release as () => void;
+};
 
 const setupRolls = [19, 17, 12, 12, 7];
 
@@ -844,12 +862,14 @@ export const ExtraRetry = meta.story({
 
 export const ExtraNoChangeBeforeDocument = meta.story({
   name: 'Extra: nothing changes before the document comes back',
-  loaders: [slowLoader],
-  play: async ({ canvas, canvasElement }) => {
+  loaders: [heldLoader],
+  play: async ({ canvas, canvasElement, loaded }) => {
     const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
     await typeAmount(sheet, '12');
     await userEvent.click(within(sheet).getByRole('button', { name: 'Damage' }));
     await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
+    await expect(await rowOf(canvasElement, names.orc)).not.toHaveAttribute('data-flash');
+    releaseOf(loaded)();
     await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
   },
 });
