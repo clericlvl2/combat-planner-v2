@@ -96,7 +96,7 @@
 | fix-4-web | guarded `.claude/artifacts/guard/fix-4-web.md` (P3 ×5, deferred to the owner list) | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
 | fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
-| fix-5-e2e | running worker-bee a1bda23 2026-10-17T17:15+03:00 (Opus 5.5 medium) | combat lifecycle, player, library, account |
+| fix-5-e2e | handed back 4/4 (report `.claude/artifacts/reports/fix-5-e2e.md`, repeat-each 5: 70/70), gate running | combat lifecycle, player, library, account |
 | 6-docker | merged 63e0843..44f4f04 (regate green, `.claude/run/6-docker/`), guard-bee running | Dockerfile, compose, README |
 
 ## Вопросы владельцу
