@@ -1,7 +1,6 @@
 {
   "dismiss": "Fermer",
   "show": "Afficher la notification",
-  "presetSaved": "{{name}} enregistré dans la Bibliothèque",
   "unitCap": "Ce combat compte déjà {{limit}} unités",
   "limitReached": "Limite atteinte",
   "linkCopied": "Lien copié",

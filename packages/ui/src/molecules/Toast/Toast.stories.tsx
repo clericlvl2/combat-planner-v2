@@ -54,7 +54,7 @@ function ToastCell({
   const { t } = useTranslation('Toast');
   const [open, setOpen] = useState(!deferred);
   const messages: Record<ToastKind, string> = {
-    preset: t('presetSaved', { name: unitName }),
+    preset: t('presetAdded', { name: unitName }),
     cap: t('unitCap', { limit: LIMITS.unitsPerCombat }),
     link: t('linkCopied'),
     failed: t('serverUnreachable'),
@@ -141,7 +141,7 @@ export const RuErrorAction = meta.story({
 
 export const LongUnitName = meta.story({
   name: 'Long unit name',
-  args: { kind: 'preset', message: 'Brother Tomas of the Silver Lantern Order saved to Library' },
+  args: { kind: 'preset', message: 'Brother Tomas of the Silver Lantern Order added to Library' },
 });
 
 export const ExtraAction = meta.story({
