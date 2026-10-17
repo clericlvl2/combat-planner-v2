@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { MessageScreen } from '../../organisms/MessageScreen/MessageScreen.tsx';
 
 export interface CombatDeletedProps {
-  combatTitle: string;
+  combatTitle: string | null;
 }
 
 export function CombatDeleted({ combatTitle }: CombatDeletedProps) {
@@ -11,7 +11,11 @@ export function CombatDeleted({ combatTitle }: CombatDeletedProps) {
   return (
     <MessageScreen
       icon={IconTrash}
-      title={t('title', { ns: 'CombatDeleted', title: combatTitle })}
+      title={
+        combatTitle
+          ? t('title', { ns: 'CombatDeleted', title: combatTitle })
+          : t('combatDeletedTitle', { ns: 'MessageScreen' })
+      }
       body={t('combatDeletedBody', { ns: 'MessageScreen' })}
     />
   );

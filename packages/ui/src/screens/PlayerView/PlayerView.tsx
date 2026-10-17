@@ -84,12 +84,12 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
 
   if (ended?.type === 'linkRevoked') return <LinkExpired />;
   if (ended?.type === 'deleted') {
-    return <CombatDeleted combatTitle={ended.title || (combat?.title ?? seenTitle ?? '')} />;
+    return <CombatDeleted combatTitle={ended.title || (combat?.title ?? seenTitle)} />;
   }
   if (combat === undefined) {
     if (error === null) return null;
     if (error instanceof ApiError && error.code === 'linkRevoked') return <LinkExpired />;
-    if (error instanceof ApiError && error.code === 'notFound' && seenTitle !== null) {
+    if (error instanceof ApiError && error.code === 'notFound') {
       return <CombatDeleted combatTitle={seenTitle} />;
     }
     if (error instanceof ApiError && error.code === 'network') {

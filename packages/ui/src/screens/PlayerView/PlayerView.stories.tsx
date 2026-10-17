@@ -1,4 +1,5 @@
 import preview from '#.storybook/preview';
+import type { ApiErrorCode } from '@combat-planner/api/client';
 import type { Action } from '@combat-planner/domain';
 import type { Loader } from '@storybook/react-vite';
 import { focusManager } from '@tanstack/react-query';
@@ -55,12 +56,16 @@ const setupScenario = playerScenario(ferryCombat({ status: 'setup' }));
 const orcTurn = playerScenario(ferryCombat({ active: 'orc' }));
 const ownTurn = playerScenario(ferryCombat({ active: 'vashti' }));
 
-const offlineLoader: Loader = ({ parameters }) => {
-  const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
-  api.failNext('network');
-  api.play.subscribe = () => () => {};
-  return { api };
-};
+const firstLoadFails =
+  (code: ApiErrorCode): Loader =>
+  ({ parameters }) => {
+    const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+    api.failNext(code);
+    api.play.subscribe = () => () => {};
+    return { api };
+  };
+
+const offlineLoader = firstLoadFails('network');
 
 const heldEndLoader: Loader = ({ parameters }) => {
   const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
@@ -504,6 +509,18 @@ export const ExtraCantReachServer = meta.story({
     await expect(await canvas.findByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(canvas.getByRole('heading', { name: 'Can’t reach the server' })).toBeVisible();
     await expect(canvas.queryByRole('heading', { name: 'Round 3' })).toBeNull();
+  },
+});
+
+export const ExtraDeletedOnFirstLoad = meta.story({
+  name: 'Extra: a 404 on the first load shows Combat deleted without a title',
+  loaders: [firstLoadFails('notFound')],
+  play: async ({ canvas }) => {
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: 'This combat was deleted' }),
+    ).toBeVisible();
+    await expect(canvas.getByText('The DM deleted it. Ask them for a new link.')).toBeVisible();
+    await expect(canvas.queryByRole('button')).toBeNull();
   },
 });
 
