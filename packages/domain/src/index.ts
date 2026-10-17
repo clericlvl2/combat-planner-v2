@@ -128,13 +128,21 @@ export type { DomainErrorCode } from './errors.ts';
 export {
   NEXT_TURN_BLOCK_REASONS,
   apply,
+  applyHp,
   copyCombat,
   nextTurnBlockReason,
   nextTurnTarget,
   presetFromUnit,
   rolledInitiative,
 } from './reduce.ts';
-export type { Applied, ApplyResult, NextTurnBlockReason, NextTurnTarget, Patch } from './reduce.ts';
+export type {
+  Applied,
+  ApplyResult,
+  HpFields,
+  NextTurnBlockReason,
+  NextTurnTarget,
+  Patch,
+} from './reduce.ts';
 export { applyUndo, undoTarget } from './undo.ts';
 export type { LogEntry, UndoableEntry, Undone } from './undo.ts';
 export { PLAYER_ACTION_TYPES, authorize, isPlayerAction } from './authorize.ts';

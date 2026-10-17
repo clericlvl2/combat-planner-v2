@@ -32,10 +32,15 @@ const playerUnit = (unit: Unit, position: number, playerId: PlayerId): PlayerUni
     pd: unit.pd,
     md: unit.md,
   };
-  if (unit.claimedBy === playerId) {
-    return { ...friendlyColumns, note: unit.note, hpHistory: unit.hpHistory };
-  }
   if (unit.role === 'enemy') return everyColumn;
+  if (unit.claimedBy === playerId) {
+    return {
+      ...friendlyColumns,
+      initiativeBonus: unit.initiativeBonus,
+      note: unit.note,
+      hpHistory: unit.hpHistory,
+    };
+  }
   return friendlyColumns;
 };
 

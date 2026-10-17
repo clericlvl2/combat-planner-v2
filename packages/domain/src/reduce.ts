@@ -142,30 +142,43 @@ const withEntry = (
   return { ...unit, hpHistory: [...unit.hpHistory, entry] };
 };
 
-const damageUnit = (unit: Unit, amount: number, context: HistoryContext): Unit => {
-  const absorbed = Math.min(unit.tempHp, amount);
-  const hp = Math.max(unit.hp - (amount - absorbed), -unit.maxHp);
-  return withEntry(
-    { ...unit, hp, tempHp: unit.tempHp - absorbed },
-    'damage',
-    amount,
-    absorbed,
-    unit.hp,
-    context,
-  );
+export type HpFields = Pick<Unit, 'hp' | 'tempHp' | 'maxHp'>;
+
+export const applyHp = <T extends HpFields>(unit: T, kind: HpHistoryKind, amount: number): T => {
+  switch (kind) {
+    case 'damage': {
+      const absorbed = Math.min(unit.tempHp, amount);
+      return {
+        ...unit,
+        hp: Math.max(unit.hp - (amount - absorbed), -unit.maxHp),
+        tempHp: unit.tempHp - absorbed,
+      };
+    }
+    case 'heal':
+      return { ...unit, hp: Math.min(unit.hp + amount, unit.maxHp) };
+    case 'temp':
+      return { ...unit, tempHp: amount };
+    case 'max':
+      return { ...unit, maxHp: amount, hp: Math.max(Math.min(unit.hp, amount), -amount) };
+  }
 };
 
-const healUnit = (unit: Unit, amount: number, context: HistoryContext): Unit => {
-  const hp = Math.min(unit.hp + amount, unit.maxHp);
-  return withEntry({ ...unit, hp }, 'heal', amount, 0, unit.hp, context);
-};
+const HP_PREVIOUS = {
+  damage: 'hp',
+  heal: 'hp',
+  temp: 'tempHp',
+  max: 'maxHp',
+} as const satisfies Record<HpHistoryKind, keyof HpFields>;
 
-const setTempHpOf = (unit: Unit, amount: number, context: HistoryContext): Unit =>
-  withEntry({ ...unit, tempHp: amount }, 'temp', amount, 0, unit.tempHp, context);
-
-const setMaxHpOf = (unit: Unit, amount: number, context: HistoryContext): Unit => {
-  const hp = Math.max(Math.min(unit.hp, amount), -amount);
-  return withEntry({ ...unit, maxHp: amount, hp }, 'max', amount, 0, unit.maxHp, context);
+const changeHp = (
+  unit: Unit,
+  kind: HpHistoryKind,
+  amount: number,
+  context: HistoryContext,
+): Unit => {
+  const next = applyHp(unit, kind, amount);
+  const absorbed = kind === 'damage' ? unit.tempHp - next.tempHp : 0;
+  return withEntry(next, kind, amount, absorbed, unit[HP_PREVIOUS[kind]], context);
 };
 
 const restartedUnit = (unit: Unit): Unit => ({
@@ -299,8 +312,8 @@ const editUnit = (combat: Combat, action: ActionOf<'editUnit'>, now: string): St
       note: action.note,
       claimedBy: action.role === 'hero' ? unit.claimedBy : null,
     };
-    if (action.maxHp !== unit.maxHp) next = setMaxHpOf(next, action.maxHp, context);
-    if (action.tempHp !== unit.tempHp) next = setTempHpOf(next, action.tempHp, context);
+    if (action.maxHp !== unit.maxHp) next = changeHp(next, 'max', action.maxHp, context);
+    if (action.tempHp !== unit.tempHp) next = changeHp(next, 'temp', action.tempHp, context);
     return next;
   });
 
@@ -410,13 +423,21 @@ const step = (
         initiative: rolledInitiative(action.roll, unit.initiativeBonus),
       }));
     case 'damage':
-      return updateUnit(combat, action.unitId, (unit) => damageUnit(unit, action.amount, context));
+      return updateUnit(combat, action.unitId, (unit) =>
+        changeHp(unit, 'damage', action.amount, context),
+      );
     case 'heal':
-      return updateUnit(combat, action.unitId, (unit) => healUnit(unit, action.amount, context));
+      return updateUnit(combat, action.unitId, (unit) =>
+        changeHp(unit, 'heal', action.amount, context),
+      );
     case 'setTempHp':
-      return updateUnit(combat, action.unitId, (unit) => setTempHpOf(unit, action.amount, context));
+      return updateUnit(combat, action.unitId, (unit) =>
+        changeHp(unit, 'temp', action.amount, context),
+      );
     case 'setMaxHp':
-      return updateUnit(combat, action.unitId, (unit) => setMaxHpOf(unit, action.amount, context));
+      return updateUnit(combat, action.unitId, (unit) =>
+        changeHp(unit, 'max', action.amount, context),
+      );
     case 'toggleCondition':
       return toggleCondition(combat, action);
     case 'editNote':

@@ -152,6 +152,7 @@ export const playerUnitSchema = z.object({
   conditions: conditionsSchema,
   position: z.number().int().positive(),
   initiative: initiativeSchema.nullable(),
+  initiativeBonus: initiativeBonusSchema.optional(),
   claimedBy: ulidSchema.nullable().optional(),
   hp: hpSchema.optional(),
   tempHp: tempHpSchema.optional(),

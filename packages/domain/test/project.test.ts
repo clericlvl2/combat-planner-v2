@@ -126,11 +126,11 @@ const EVERY_COLUMN = [
   'initiative',
 ];
 const FRIENDLY_COLUMNS = [...EVERY_COLUMN, 'claimedBy', 'hp', 'tempHp', 'maxHp', 'ac', 'pd', 'md'];
-const OWN_COLUMN = [...FRIENDLY_COLUMNS, 'note', 'hpHistory'];
+const OWN_COLUMN = [...FRIENDLY_COLUMNS, 'initiativeBonus', 'note', 'hpHistory'];
 
 const columnOf = (unit: Unit): string[] => {
-  if (unit.claimedBy === PLAYER_ID) return OWN_COLUMN;
   if (unit.role === 'enemy') return EVERY_COLUMN;
+  if (unit.claimedBy === PLAYER_ID) return OWN_COLUMN;
   return FRIENDLY_COLUMNS;
 };
 
@@ -209,6 +209,14 @@ describe('project', () => {
       );
     }
     expect(pu(unclaimed, 1).claimedBy).toBeNull();
+  });
+
+  it('shows an enemy claimed by the player as Enemy', () => {
+    const claimedEnemy = project(
+      { ...combat, units: [{ ...enemy, claimedBy: PLAYER_ID }] },
+      PLAYER,
+    );
+    expect(Object.keys(pu(claimedEnemy, 4)).sort()).toEqual([...EVERY_COLUMN].sort());
   });
 });
 
@@ -351,6 +359,19 @@ describe('Visibility for players', () => {
     expect('note' in enemyUnit).toBe(false);
   });
 
+  it('Initiative bonus | Own Hero', () => {
+    expect(ownUnit.initiativeBonus).toBe(2);
+  });
+
+  it('Initiative bonus | Other Hero, Ally', () => {
+    expect('initiativeBonus' in otherUnit).toBe(false);
+    expect('initiativeBonus' in allyUnit).toBe(false);
+  });
+
+  it('Initiative bonus | Enemy', () => {
+    expect('initiativeBonus' in enemyUnit).toBe(false);
+  });
+
   it('HP history | Own Hero', () => {
     expect(ownUnit.hpHistory).toEqual([ENTRY]);
   });
@@ -366,10 +387,13 @@ describe('Visibility for players', () => {
 });
 
 describe('project of a combat without claims', () => {
-  it('leaves initiativeBonus and disabled out of every column', () => {
-    const projected: Combat = { ...combat, units: [own, other, ally, enemy] };
+  it('sends initiativeBonus to the own hero only and disabled to no unit', () => {
+    const projected: Combat = {
+      ...combat,
+      units: [own, other, ally, enemy, { ...enemy, id: id(6), claimedBy: PLAYER_ID }],
+    };
     for (const unit of project(projected, PLAYER).units) {
-      expect('initiativeBonus' in unit).toBe(false);
+      expect('initiativeBonus' in unit).toBe(unit.id === own.id);
       expect('disabled' in unit).toBe(false);
     }
   });

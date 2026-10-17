@@ -185,11 +185,12 @@ describe('Unit actions, Player on own Hero', () => {
 
   it('Edit in the form', () => {
     const edited = ok(
-      run(table(), { type: 'editUnit', unitId: id(1), ...form, name: 'Анна', maxHp: 12 }, PLAYER),
+      run(table(), { type: 'editUnit', unitId: id(1), ...form, name: 'Анна', ac: 12 }, PLAYER),
     ).combat;
     expect(u(edited, 1)).toMatchObject({
       name: 'Анна',
-      maxHp: 12,
+      ac: 12,
+      maxHp: 10,
       role: 'hero',
       claimedBy: PLAYER_ID,
     });
@@ -254,6 +255,16 @@ describe('Unit actions, Player on own Hero', () => {
     expect(codeOf(table(), { type: 'setMaxHp', unitId: id(1), amount: 20 }, PLAYER)).toBe(
       'forbidden',
     );
+  });
+
+  it("rejects a player's Edit that changes max HP", () => {
+    expect(codeOf(table(), { type: 'editUnit', unitId: id(1), ...form, maxHp: 12 }, PLAYER)).toBe(
+      'forbidden',
+    );
+    expect(verdict(table(), { type: 'editUnit', unitId: id(1), ...form, maxHp: 12 }, DM)).toBe(
+      true,
+    );
+    expect(verdict(table(), { type: 'editUnit', unitId: id(1), ...form }, PLAYER)).toBe(true);
   });
 
   it('Toggle condition: picker', () => {

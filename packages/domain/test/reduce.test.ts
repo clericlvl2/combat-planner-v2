@@ -3,6 +3,7 @@ import {
   DomainError,
   LIMITS,
   apply,
+  applyHp,
   copyCombat,
   defenseSchema,
   nextTurnBlockReason,
@@ -12,7 +13,15 @@ import {
   rolledInitiative,
   unitSchema,
 } from '../src/index.ts';
-import type { Action, Applied, ApplyResult, Combat, Unit, Viewer } from '../src/index.ts';
+import type {
+  Action,
+  Applied,
+  ApplyResult,
+  Combat,
+  HpHistoryKind,
+  Unit,
+  Viewer,
+} from '../src/index.ts';
 import { DM, LATER, NOW, PLAYER_ID, id, makeCombat, makeUnit } from './fixtures.ts';
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
@@ -819,6 +828,42 @@ describe('Rules', () => {
     const next = go(combat, { type: 'editUnit', unitId: id(1), ...form, ac: 0, pd: 99, md: 99 });
     expect(u(next, 1)).toMatchObject({ ac: 0, pd: 99, md: 99 });
     expect(presetFromUnit(makeUnit({ initiativeBonus: -7 }), id(50), NOW).initiativeBonus).toBe(-7);
+  });
+});
+
+describe('applyHp', () => {
+  it('computes the HP fields the matching action stores, without a combat', () => {
+    const health = { hp: 6, maxHp: 10, tempHp: 3 };
+    expect(applyHp(health, 'damage', 5)).toEqual({ hp: 4, maxHp: 10, tempHp: 0 });
+    expect(applyHp(health, 'damage', 99)).toEqual({ hp: -10, maxHp: 10, tempHp: 0 });
+    expect(applyHp(health, 'heal', 50)).toEqual({ hp: 10, maxHp: 10, tempHp: 3 });
+    expect(applyHp(health, 'temp', 0)).toEqual({ hp: 6, maxHp: 10, tempHp: 0 });
+    expect(applyHp(health, 'max', 4)).toEqual({ hp: 4, maxHp: 4, tempHp: 3 });
+    expect(applyHp({ hp: -8, maxHp: 10, tempHp: 0 }, 'max', 4)).toEqual({
+      hp: -4,
+      maxHp: 4,
+      tempHp: 0,
+    });
+    expect(health).toEqual({ hp: 6, maxHp: 10, tempHp: 3 });
+  });
+
+  it('matches apply for damage, heal, setTempHp and setMaxHp', () => {
+    const unit = makeUnit({ id: id(1), hp: 6, maxHp: 10, tempHp: 3 });
+    const cases = [
+      ['damage', 'damage'],
+      ['heal', 'heal'],
+      ['temp', 'setTempHp'],
+      ['max', 'setMaxHp'],
+    ] as const satisfies readonly (readonly [HpHistoryKind, Action['type']])[];
+    for (const [kind, type] of cases) {
+      const stored = u(go(one(unit), { type, unitId: id(1), amount: 4 }), 1);
+      const { hp, maxHp, tempHp } = applyHp(unit, kind, 4);
+      expect({ hp: stored.hp, maxHp: stored.maxHp, tempHp: stored.tempHp }).toEqual({
+        hp,
+        maxHp,
+        tempHp,
+      });
+    }
   });
 });
 
