@@ -1,6 +1,8 @@
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { LIMITS } from '@combat-planner/domain';
+import { describe, expect, expectTypeOf, it, vi } from 'vite-plus/test';
 import { combatListActions, listCombats } from '../../src/hooks/combatList.ts';
 import { queryKeys } from '../../src/hooks/queryKeys.ts';
+import type { CombatList } from '../../src/hooks/useCombatList.ts';
 import { COMBAT_ID, combat } from '../api/fixtures.ts';
 import { flush, harness } from './helpers.ts';
 
@@ -36,24 +38,67 @@ describe('combatListActions', () => {
     await actions.duplicate(COMBAT_ID, '01ARZ3NDEKTSV4RRFFQ69G5FF1');
     await actions.remove(COMBAT_ID);
     expect(context.toasts).toEqual([
-      { message: 'duplicated {"title":"Засада гоблинов"}' },
-      { message: 'deleted {"title":"Засада гоблинов"}' },
+      { message: 'duplicated {"title":"Засада гоблинов"}', kind: 'success' },
+      { message: 'deleted {"title":"Засада гоблинов"}', kind: 'neutral' },
     ]);
   });
 
   it('a network failure shows serverUnreachable with a Retry that resends the same request', async () => {
     const { actions, context, invalidate } = await setup();
     context.api.failNext('network');
-    await expect(actions.remove(COMBAT_ID)).rejects.toMatchObject({ code: 'network' });
+    const removed = actions.remove(COMBAT_ID);
+    await flush();
     expect(invalidate).not.toHaveBeenCalled();
     const [toast] = context.toasts;
-    expect(toast).toMatchObject({ message: 'serverUnreachable', action: { label: 'retry' } });
+    expect(toast).toMatchObject({
+      message: 'serverUnreachable',
+      kind: 'error',
+      action: { label: 'retry' },
+    });
     toast?.action?.onAction();
-    await flush();
+    toast?.onDismiss?.();
+    await expect(removed).resolves.toBeUndefined();
     expect(context.api.calls.filter((call) => call.method === 'combats.remove')).toEqual([
       { method: 'combats.remove', args: [COMBAT_ID] },
       { method: 'combats.remove', args: [COMBAT_ID] },
     ]);
     await expect(context.api.combats.list()).resolves.toEqual([]);
+  });
+
+  it('Retry resolves the original create with the created combat', async () => {
+    const { actions, context } = await setup();
+    context.api.failNext('network');
+    const created = actions.create({ id: NEW_ID, title: 'Bridge', description: '', color: 7 });
+    await flush();
+    context.toasts[0]?.action?.onAction();
+    context.toasts[0]?.onDismiss?.();
+    await expect(created).resolves.toMatchObject({ id: NEW_ID, title: 'Bridge' });
+  });
+
+  it('a dismissed Retry toast rejects the original call with the network error', async () => {
+    const { actions, context } = await setup();
+    context.api.failNext('network');
+    const created = actions.create({ id: NEW_ID, title: 'Bridge', description: '', color: 7 });
+    await flush();
+    context.toasts[0]?.onDismiss?.();
+    await expect(created).rejects.toMatchObject({ code: 'network' });
+    expect(context.api.calls.filter((call) => call.method === 'combats.create')).toHaveLength(1);
+  });
+
+  it('a limit rejection shows "limit reached"', async () => {
+    const context = harness({
+      combats: Array.from({ length: LIMITS.combatsPerDm }, (_, index) =>
+        combat({ id: `01ARZ3NDEKTSV4RRFFQ69G${String(index).padStart(4, '0')}` }),
+      ),
+    });
+    const actions = combatListActions(context.api, context);
+    await expect(
+      actions.duplicate('01ARZ3NDEKTSV4RRFFQ69G0000', '01ARZ3NDEKTSV4RRFFQ69J0000'),
+    ).rejects.toMatchObject({ code: 'limit' });
+    expect(context.toasts).toEqual([{ message: 'limitReached', kind: 'warning' }]);
+  });
+
+  it('exposes refetch', () => {
+    expectTypeOf<CombatList['refetch']>().toEqualTypeOf<() => Promise<void>>();
   });
 });

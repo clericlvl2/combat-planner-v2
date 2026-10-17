@@ -2,15 +2,13 @@ import type { ConnectionState } from '@combat-planner/api/client';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { useApi } from '../api/ApiProvider.tsx';
-import { useMotion } from '../provider.tsx';
-import { reconnectingToastDelay, watchConnection } from './connection.ts';
+import { shareConnectionWatch } from './connection.ts';
 import { queryKeys } from './queryKeys.ts';
 import { useToasts } from './useToasts.ts';
 
 export function useConnection(): ConnectionState {
   const { connection } = useApi();
   const queryClient = useQueryClient();
-  const motion = useMotion();
   const { show, dismiss, t } = useToasts();
 
   const subscribe = useCallback(
@@ -22,16 +20,16 @@ export function useConnection(): ConnectionState {
 
   useEffect(
     () =>
-      watchConnection({
+      shareConnectionWatch(queryClient, {
         connection,
-        delay: reconnectingToastDelay(motion),
-        showReconnecting: () => show({ message: t('reconnecting'), duration: null }),
+        showReconnecting: () =>
+          show({ message: t('reconnecting'), kind: 'warning', duration: null }),
         dismiss,
         onReconnected: () => {
           void queryClient.invalidateQueries({ queryKey: queryKeys.combat });
         },
       }),
-    [connection, motion, show, dismiss, t, queryClient],
+    [connection, show, dismiss, t, queryClient],
   );
 
   return state;

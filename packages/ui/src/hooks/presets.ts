@@ -23,7 +23,7 @@ export function presetActions(api: ApiClient, context: MutationContext): PresetA
     send: (id: PresetId, _name: string | undefined) => api.presets.remove(id),
     invalidate,
     success: (_result, [, name]) =>
-      name === undefined ? null : { message: t('deleted', { title: name }) },
+      name === undefined ? null : { message: t('deleted', { title: name }), kind: 'neutral' },
   });
 
   return {
@@ -39,7 +39,10 @@ export function presetActions(api: ApiClient, context: MutationContext): PresetA
     duplicate: mutation(context, {
       send: (id: PresetId, newId: PresetId) => api.presets.duplicate(id, newId),
       invalidate,
-      success: (copy) => ({ message: t('presetDuplicated', { name: copy.name }) }),
+      success: (copy) => ({
+        message: t('presetDuplicated', { name: copy.name }),
+        kind: 'success',
+      }),
     }),
   };
 }

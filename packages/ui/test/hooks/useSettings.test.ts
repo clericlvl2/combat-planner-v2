@@ -20,13 +20,14 @@ const setup = () => {
 };
 
 describe('settingsActions', () => {
-  it('applies the locale before the server answers and invalidates the settings', async () => {
+  it('applies the locale before the server answers and invalidates the settings and the session', async () => {
     const { actions, context, events, invalidate } = setup();
     const pending = actions.update({ language: 'ja' });
     expect(events).toEqual(['apply ja']);
     await expect(pending).resolves.toEqual({ language: 'ja' });
     expect(invalidate.mock.calls.map(([filters]) => filters?.queryKey)).toEqual([
       queryKeys.settings,
+      queryKeys.session,
     ]);
     await expect(context.api.settings.get()).resolves.toEqual({ language: 'ja' });
   });
@@ -34,11 +35,12 @@ describe('settingsActions', () => {
   it('restores the previous locale on failure and Retry applies it again', async () => {
     const { actions, context, events, invalidate } = setup();
     context.api.failNext('network');
-    await expect(actions.update({ language: 'ru' })).rejects.toMatchObject({ code: 'network' });
+    const updated = actions.update({ language: 'ru' });
+    await flush();
     expect(events).toEqual(['apply ru', 'apply en']);
     expect(invalidate).not.toHaveBeenCalled();
     context.toasts[0]?.action?.onAction();
-    await flush();
+    await expect(updated).resolves.toEqual({ language: 'ru' });
     expect(events).toEqual(['apply ru', 'apply en', 'apply ru']);
     await expect(context.api.settings.get()).resolves.toEqual({ language: 'ru' });
   });

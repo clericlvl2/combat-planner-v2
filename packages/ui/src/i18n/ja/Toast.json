@@ -3,6 +3,7 @@
   "show": "通知を表示",
   "presetSaved": "{{name}} をライブラリに保存しました",
   "unitCap": "この戦闘にはすでに {{limit}} ユニットいます",
+  "limitReached": "上限に達しました",
   "linkCopied": "リンクをコピーしました",
   "serverUnreachable": "サーバーに接続できません。変更はありません。",
   "retry": "再試行",

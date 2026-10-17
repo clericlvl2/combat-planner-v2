@@ -1,19 +1,23 @@
 import { ApiError } from '@combat-planner/api/client';
 import type { ApiEndEvent } from '@combat-planner/api/client';
 import type { Action, Combat } from '@combat-planner/domain';
-import { describe, expect, it, vi } from 'vite-plus/test';
+import { LIMITS } from '@combat-planner/domain';
+import { describe, expect, expectTypeOf, it, vi } from 'vite-plus/test';
 import {
   combatKey,
   createDispatcher,
   dmSource,
-  fetchEntry,
+  endOf,
+  entryFetcher,
   mergeEntry,
   playerSource,
   refreshEntry,
   subscribeEntry,
+  visibleEntry,
   writeDocument,
 } from '../../src/hooks/combat.ts';
 import type { CombatEntry } from '../../src/hooks/combat.ts';
+import type { CombatState } from '../../src/hooks/useCombat.ts';
 import { COMBAT_ID, ENEMY_ID, PLAYER_ID, TOKEN, combat } from '../api/fixtures.ts';
 import { flush, harness, translate } from './helpers.ts';
 
@@ -63,15 +67,39 @@ describe('combat sources', () => {
     const context = harness({ combats: [combat()] });
     const key = combatKey(COMBAT_ID, DM);
     const source = dmSource(context.api, COMBAT_ID);
-    context.queryClient.setQueryData(key, await fetchEntry(context.queryClient, key, source));
-    await fetchEntry(context.queryClient, key, source);
+    const fetchEntry = entryFetcher(context.queryClient, key, source);
+    context.queryClient.setQueryData(key, await fetchEntry());
+    await fetchEntry();
     expect(context.api.calls.map((call) => call.method)).toEqual(['combats.open', 'combats.get']);
+  });
+
+  it('opens the combat again on every entry, also with a cached document', async () => {
+    const context = harness({ combats: [combat()] });
+    const key = combatKey(COMBAT_ID, DM);
+    const source = dmSource(context.api, COMBAT_ID);
+    context.queryClient.setQueryData(key, await entryFetcher(context.queryClient, key, source)());
+    const first = context.queryClient.getQueryData<CombatEntry<Combat>>(key)?.document;
+    await new Promise((resolve) => setTimeout(resolve, 2));
+    context.queryClient.setQueryData(key, await entryFetcher(context.queryClient, key, source)());
+    const second = context.queryClient.getQueryData<CombatEntry<Combat>>(key)?.document;
+    expect(context.api.calls.map((call) => call.method)).toEqual(['combats.open', 'combats.open']);
+    expect(second?.lastPlayedAt).not.toBe(first?.lastPlayedAt);
+  });
+
+  it('opens again after a failed first open', async () => {
+    const context = harness({ combats: [combat()] });
+    const key = combatKey(COMBAT_ID, DM);
+    const fetchEntry = entryFetcher(context.queryClient, key, dmSource(context.api, COMBAT_ID));
+    context.api.failNext('network');
+    await expect(fetchEntry()).rejects.toMatchObject({ code: 'network' });
+    await fetchEntry();
+    expect(context.api.calls.map((call) => call.method)).toEqual(['combats.open', 'combats.open']);
   });
 
   it('the player reads play.get with the token and keeps the DM language', async () => {
     const context = harness({ combats: [combat()], settings: { language: 'ru' } });
     const source = playerSource(context.api, PLAYER, TOKEN);
-    const loaded = await fetchEntry(context.queryClient, combatKey(COMBAT_ID, PLAYER), source);
+    const loaded = await entryFetcher(context.queryClient, combatKey(COMBAT_ID, PLAYER), source)();
     expect(loaded.language).toBe('ru');
     expect(loaded.document.units.find((unit) => unit.id === ENEMY_ID)).not.toHaveProperty('hp');
     expect(context.api.calls).toEqual([{ method: 'play.get', args: [TOKEN, PLAYER_ID] }]);
@@ -89,6 +117,42 @@ describe('combat sources', () => {
     expect(context.queryClient.getQueryData<CombatEntry>(key)?.document.version).toBe(2);
     await context.api.combats.remove(COMBAT_ID);
     expect(ended).toEqual([{ type: 'deleted', title: 'Засада гоблинов' }]);
+  });
+
+  it('reports an unauthorized end when the session expires', () => {
+    const context = harness({ combats: [combat()] });
+    const ended: ApiEndEvent[] = [];
+    subscribeEntry(
+      context.queryClient,
+      combatKey(COMBAT_ID, DM),
+      dmSource(context.api, COMBAT_ID),
+      (event) => ended.push(event),
+    );
+    context.api.expireSession();
+    expect(ended).toEqual([{ type: 'unauthorized' }]);
+  });
+
+  it('shows no document after a refetch fails for another session', () => {
+    const cached = entry(4);
+    expect(visibleEntry(cached, null)).toBe(cached);
+    expect(visibleEntry(cached, new ApiError({ status: 0, code: 'network' }))).toBe(cached);
+    for (const code of ['unauthorized', 'forbidden', 'notFound'] as const) {
+      expect(visibleEntry(cached, new ApiError({ status: 404, code }))).toBeUndefined();
+    }
+  });
+
+  it('forgets the end when the combat, the viewer or the token changes', () => {
+    const context = harness({ combats: [combat()] });
+    const dm = dmSource(context.api, COMBAT_ID);
+    const ended = { source: dm, event: { type: 'linkRevoked' } } as const;
+    expect(endOf(ended, dm)).toEqual({ type: 'linkRevoked' });
+    expect(endOf(ended, dmSource(context.api, ENEMY_ID))).toBeNull();
+    expect(endOf(ended, playerSource(context.api, PLAYER, TOKEN))).toBeNull();
+    expect(endOf(null, dm)).toBeNull();
+  });
+
+  it('exposes refetch', () => {
+    expectTypeOf<CombatState<Combat>['refetch']>().toEqualTypeOf<() => Promise<void>>();
   });
 });
 
@@ -125,7 +189,7 @@ describe('createDispatcher', () => {
     });
     await dispatch(damage(1));
     expect(context.queryClient.getQueryData<CombatEntry>(key)?.document.version).toBe(3);
-    expect(context.toasts).toEqual([{ message: 'combatChanged' }]);
+    expect(context.toasts).toEqual([{ message: 'combatChanged', kind: 'warning' }]);
   });
 
   it('on network shows serverUnreachable with a Retry that resends the same action id', async () => {
@@ -141,6 +205,7 @@ describe('createDispatcher', () => {
     expect(refetch).not.toHaveBeenCalled();
     expect(show).toHaveBeenCalledWith({
       message: 'serverUnreachable',
+      kind: 'error',
       action: { label: 'retry', onAction: expect.any(Function) },
     });
     const [[toast]] = show.mock.calls as [[{ action: { onAction: () => void } }]];
@@ -149,5 +214,20 @@ describe('createDispatcher', () => {
     expect(send.mock.calls).toEqual([[action], [action]]);
     expect(send.mock.calls[1]?.[0].id).toBe(action.id);
     expect(show).toHaveBeenCalledTimes(1);
+  });
+
+  it('on limit shows the unit cap toast', async () => {
+    const show = vi.fn((_input: unknown) => 'toast-1');
+    const dispatch = createDispatcher({
+      send: () => Promise.reject(new ApiError({ status: 422, code: 'limit' })),
+      refetch: async () => {},
+      show,
+      t: translate,
+    });
+    await dispatch(damage(1));
+    expect(show).toHaveBeenCalledWith({
+      message: `unitCap ${JSON.stringify({ limit: LIMITS.unitsPerCombat })}`,
+      kind: 'warning',
+    });
   });
 });

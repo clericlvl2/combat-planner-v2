@@ -3,6 +3,7 @@
   "show": "Hinweis zeigen",
   "presetSaved": "{{name}} in der Bibliothek gespeichert",
   "unitCap": "Dieser Kampf hat bereits {{limit}} Einheiten",
+  "limitReached": "Limit erreicht",
   "linkCopied": "Link kopiert",
   "serverUnreachable": "Server nicht erreichbar. Nichts wurde geändert.",
   "retry": "Wiederholen",

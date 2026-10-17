@@ -31,14 +31,14 @@ export function combatListActions(api: ApiClient, context: MutationContext): Com
     send: (id: CombatId, _title: string | undefined) => api.combats.remove(id),
     invalidate,
     success: (_result, [, title]) =>
-      title === undefined ? null : { message: t('deleted', { title }) },
+      title === undefined ? null : { message: t('deleted', { title }), kind: 'neutral' },
   });
   const duplicate = mutation(context, {
     send: (id: CombatId, newId: CombatId, _title: string | undefined) =>
       api.combats.duplicate(id, newId),
     invalidate,
     success: (_copy, [, , title]) =>
-      title === undefined ? null : { message: t('duplicated', { title }) },
+      title === undefined ? null : { message: t('duplicated', { title }), kind: 'success' },
   });
 
   return {

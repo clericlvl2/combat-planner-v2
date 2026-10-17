@@ -3,6 +3,7 @@
   "show": "Show toast",
   "presetSaved": "{{name}} saved to Library",
   "unitCap": "This combat already has {{limit}} units",
+  "limitReached": "Limit reached",
   "linkCopied": "Link copied",
   "serverUnreachable": "Couldn’t reach the server. Nothing changed.",
   "retry": "Retry",

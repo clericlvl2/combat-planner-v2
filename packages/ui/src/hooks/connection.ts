@@ -1,14 +1,8 @@
 import type { ConnectionApi, ConnectionState } from '@combat-planner/api/client';
-import type { Motion } from '../provider.tsx';
-
-export const RECONNECTING_TOAST_AFTER_MS = 10_000;
-
-export const reconnectingToastDelay = (motion: Motion): number =>
-  motion === 'off' ? 0 : RECONNECTING_TOAST_AFTER_MS;
+import type { QueryClient } from '@tanstack/react-query';
 
 export interface WatchConnectionOptions {
   connection: ConnectionApi;
-  delay: number;
   showReconnecting: () => string;
   dismiss: (id: string) => void;
   onReconnected: () => void;
@@ -16,19 +10,12 @@ export interface WatchConnectionOptions {
 
 export function watchConnection({
   connection,
-  delay,
   showReconnecting,
   dismiss,
   onReconnected,
 }: WatchConnectionOptions): () => void {
   let previous: ConnectionState = connection.state();
-  let timer: ReturnType<typeof setTimeout> | undefined;
   let toastId: string | null = null;
-
-  const clearTimer = () => {
-    if (timer !== undefined) clearTimeout(timer);
-    timer = undefined;
-  };
 
   const hideToast = () => {
     if (toastId === null) return;
@@ -38,18 +25,9 @@ export function watchConnection({
 
   const enter = (state: ConnectionState) => {
     if (state === 'reconnecting') {
-      if (timer !== undefined || toastId !== null) return;
-      if (delay === 0) {
-        toastId = showReconnecting();
-        return;
-      }
-      timer = setTimeout(() => {
-        timer = undefined;
-        toastId = showReconnecting();
-      }, delay);
+      toastId ??= showReconnecting();
       return;
     }
-    clearTimer();
     hideToast();
     if (state === 'connected' && previous === 'reconnecting') onReconnected();
   };
@@ -62,7 +40,43 @@ export function watchConnection({
 
   return () => {
     unsubscribe();
-    clearTimer();
     hideToast();
   };
+}
+
+interface SharedWatch {
+  users: number;
+  latest: WatchConnectionOptions;
+  stop: () => void;
+}
+
+const sharedWatches = new WeakMap<QueryClient, SharedWatch>();
+
+const release = (queryClient: QueryClient, shared: SharedWatch) => {
+  shared.users -= 1;
+  if (shared.users > 0) return;
+  shared.stop();
+  if (sharedWatches.get(queryClient) === shared) sharedWatches.delete(queryClient);
+};
+
+export function shareConnectionWatch(
+  queryClient: QueryClient,
+  options: WatchConnectionOptions,
+): () => void {
+  const existing = sharedWatches.get(queryClient);
+  if (existing && existing.latest.connection === options.connection) {
+    existing.users += 1;
+    existing.latest = options;
+    return () => release(queryClient, existing);
+  }
+  existing?.stop();
+  const shared: SharedWatch = { users: 1, latest: options, stop: () => {} };
+  shared.stop = watchConnection({
+    connection: options.connection,
+    showReconnecting: () => shared.latest.showReconnecting(),
+    dismiss: (id) => shared.latest.dismiss(id),
+    onReconnected: () => shared.latest.onReconnected(),
+  });
+  sharedWatches.set(queryClient, shared);
+  return () => release(queryClient, shared);
 }

@@ -4,12 +4,11 @@ import type {
   Session,
   SignInInput,
   SignUpInput,
+  SocialProvider,
 } from '@combat-planner/api/client';
 import { mutation } from './mutations.ts';
 import type { MutationContext } from './mutations.ts';
 import { queryKeys } from './queryKeys.ts';
-
-export type SocialProvider = Parameters<ApiClient['auth']['socialSignIn']>[0];
 
 export interface AccountActions {
   signIn: (input: SignInInput) => Promise<Session>;
@@ -24,24 +23,18 @@ export const getSession = (api: ApiClient): Promise<Session | null> => api.auth.
 
 export const getProviders = (api: ApiClient): Promise<SocialProvider[]> => api.auth.providers();
 
-export const SESSION_SCOPED_KEYS = [
-  queryKeys.session,
-  queryKeys.combats,
-  queryKeys.presets,
-  queryKeys.tags,
-  queryKeys.settings,
-] as const;
-
 export function accountActions(api: ApiClient, context: MutationContext): AccountActions {
   const { t } = context;
   return {
     signIn: mutation(context, {
       send: (input: SignInInput) => api.auth.signIn(input),
-      invalidate: SESSION_SCOPED_KEYS,
+      invalidate: [],
+      clearCache: true,
     }),
     signUp: mutation(context, {
       send: (input: SignUpInput) => api.auth.signUp(input),
-      invalidate: SESSION_SCOPED_KEYS,
+      invalidate: [],
+      clearCache: true,
     }),
     socialSignIn: mutation(context, {
       send: (provider: SocialProvider, callbackUrl: string) =>
@@ -50,7 +43,8 @@ export function accountActions(api: ApiClient, context: MutationContext): Accoun
     }),
     signOut: mutation(context, {
       send: () => api.auth.signOut(),
-      invalidate: SESSION_SCOPED_KEYS,
+      invalidate: [],
+      clearCache: true,
     }),
     update: mutation(context, {
       send: (patch: AccountPatch) => api.account.update(patch),
@@ -58,8 +52,9 @@ export function accountActions(api: ApiClient, context: MutationContext): Accoun
     }),
     remove: mutation(context, {
       send: () => api.account.remove(),
-      invalidate: SESSION_SCOPED_KEYS,
-      success: () => ({ message: t('accountDeleted') }),
+      invalidate: [],
+      clearCache: true,
+      success: () => ({ message: t('accountDeleted'), kind: 'neutral' }),
     }),
   };
 }

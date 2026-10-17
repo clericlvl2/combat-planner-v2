@@ -1,20 +1,25 @@
 import { ApiError } from '@combat-planner/api/client';
 import type { QueryClient } from '@tanstack/react-query';
 import { toastDuration } from '../molecules/Toast/Toast.tsx';
-import type { ToastAction } from '../molecules/Toast/Toast.tsx';
+import type { ToastAction, ToastTone } from '../molecules/Toast/Toast.tsx';
 import type { Motion } from '../provider.tsx';
 
 export type { ToastAction };
 
+export type ToastKind = ToastTone;
+
 export interface ToastInput {
   message: string;
+  kind?: ToastKind;
   action?: ToastAction;
   duration?: number | null;
+  onDismiss?: () => void;
 }
 
 export interface ToastItem {
   id: string;
   message: string;
+  kind: ToastKind;
   action?: ToastAction;
   duration: number | null;
 }
@@ -37,12 +42,23 @@ export const pushToast = (stack: readonly ToastItem[], toast: ToastItem): ToastI
 export const removeToast = (stack: readonly ToastItem[], id: string): ToastItem[] =>
   stack.filter((item) => item.id !== id);
 
-export const errorToast = (error: unknown, t: Translate, retry: () => void): ToastInput | null => {
+export const errorToast = (
+  error: unknown,
+  t: Translate,
+  retry: () => void,
+  limitMessage?: string,
+): ToastInput | null => {
   if (!(error instanceof ApiError)) return null;
   if (error.code === 'network') {
-    return { message: t('serverUnreachable'), action: { label: t('retry'), onAction: retry } };
+    return {
+      message: t('serverUnreachable'),
+      kind: 'error',
+      action: { label: t('retry'), onAction: retry },
+    };
   }
-  if (error.code === 'version') return { message: t('combatChanged') };
+  if (error.code === 'version') return { message: t('combatChanged'), kind: 'warning' };
+  if (error.code === 'limit')
+    return { message: limitMessage ?? t('limitReached'), kind: 'warning' };
   return null;
 };
 
@@ -58,6 +74,7 @@ export function createToastStore(): ToastStore {
   let counter = 0;
   const listeners = new Set<() => void>();
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
+  const dismissListeners = new Map<string, () => void>();
 
   const publish = (next: readonly ToastItem[]) => {
     stack = next;
@@ -69,6 +86,9 @@ export function createToastStore(): ToastStore {
     if (timer !== undefined) clearTimeout(timer);
     timers.delete(id);
     if (stack.some((item) => item.id === id)) publish(removeToast(stack, id));
+    const onDismiss = dismissListeners.get(id);
+    dismissListeners.delete(id);
+    onDismiss?.();
   };
 
   return {
@@ -83,7 +103,16 @@ export function createToastStore(): ToastStore {
       counter += 1;
       const id = `toast-${counter}`;
       const duration = durationOf(input);
-      publish(pushToast(stack, { id, message: input.message, action: input.action, duration }));
+      if (input.onDismiss) dismissListeners.set(id, input.onDismiss);
+      publish(
+        pushToast(stack, {
+          id,
+          message: input.message,
+          kind: input.kind ?? 'neutral',
+          action: input.action,
+          duration,
+        }),
+      );
       if (startsTimer(duration, motion)) {
         timers.set(
           id,

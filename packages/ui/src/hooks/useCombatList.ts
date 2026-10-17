@@ -1,6 +1,6 @@
 import type { CombatSummary } from '@combat-planner/api/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useApi } from '../api/ApiProvider.tsx';
 import { combatListActions, listCombats } from './combatList.ts';
 import type { CombatListActions } from './combatList.ts';
@@ -11,6 +11,7 @@ export interface CombatList extends CombatListActions {
   combats: CombatSummary[] | undefined;
   status: 'pending' | 'error' | 'success';
   error: Error | null;
+  refetch: () => Promise<void>;
 }
 
 export function useCombatList(): CombatList {
@@ -22,5 +23,15 @@ export function useCombatList(): CombatList {
     () => combatListActions(api, { queryClient, show, t }),
     [api, queryClient, show, t],
   );
-  return { combats: query.data, status: query.status, error: query.error, ...actions };
+  const { refetch } = query;
+  const reload = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+  return {
+    combats: query.data,
+    status: query.status,
+    error: query.error,
+    refetch: reload,
+    ...actions,
+  };
 }

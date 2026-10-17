@@ -31,7 +31,7 @@ export function settingsActions(
           throw error;
         }
       },
-      invalidate: [queryKeys.settings],
+      invalidate: [queryKeys.settings, queryKeys.session],
     }),
   };
 }

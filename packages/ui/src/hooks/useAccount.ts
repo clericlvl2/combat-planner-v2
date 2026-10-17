@@ -1,9 +1,9 @@
-import type { Session } from '@combat-planner/api/client';
+import type { Session, SocialProvider } from '@combat-planner/api/client';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useApi } from '../api/ApiProvider.tsx';
 import { accountActions, getProviders, getSession } from './account.ts';
-import type { AccountActions, SocialProvider } from './account.ts';
+import type { AccountActions } from './account.ts';
 import { queryKeys } from './queryKeys.ts';
 import { useToasts } from './useToasts.ts';
 

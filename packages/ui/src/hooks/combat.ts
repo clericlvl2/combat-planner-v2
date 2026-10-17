@@ -7,6 +7,7 @@ import type {
   Unsubscribe,
   VersionResult,
 } from '@combat-planner/api/client';
+import { LIMITS } from '@combat-planner/domain';
 import type { Action, Combat, CombatId, PlayerCombat, Viewer } from '@combat-planner/domain';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import { queryKeys } from './queryKeys.ts';
@@ -81,15 +82,38 @@ export const writeDocument = <Document extends CombatDocument>(
   return { document, language: current?.language ?? null };
 };
 
-export const fetchEntry = async <Document extends CombatDocument>(
+export const entryFetcher = <Document extends CombatDocument>(
   queryClient: QueryClient,
   key: QueryKey,
   source: CombatSource<Document>,
-): Promise<CombatEntry<Document>> => {
-  const current = queryClient.getQueryData<CombatEntry<Document>>(key);
-  const loaded = current === undefined ? await source.load() : await source.reload();
-  return mergeEntry(queryClient.getQueryData<CombatEntry<Document>>(key), loaded);
+): (() => Promise<CombatEntry<Document>>) => {
+  let entered = false;
+  return async () => {
+    const loaded = entered ? await source.reload() : await source.load();
+    entered = true;
+    return mergeEntry(queryClient.getQueryData<CombatEntry<Document>>(key), loaded);
+  };
 };
+
+const SESSION_LOST_CODES: ReadonlySet<ApiError['code']> = new Set([
+  'unauthorized',
+  'forbidden',
+  'notFound',
+]);
+
+export const visibleEntry = <Document extends CombatDocument>(
+  entry: CombatEntry<Document> | undefined,
+  error: Error | null,
+): CombatEntry<Document> | undefined =>
+  error instanceof ApiError && SESSION_LOST_CODES.has(error.code) ? undefined : entry;
+
+export interface SourceEnd {
+  source: CombatSource;
+  event: ApiEndEvent;
+}
+
+export const endOf = (ended: SourceEnd | null, source: CombatSource): ApiEndEvent | null =>
+  ended !== null && ended.source === source ? ended.event : null;
 
 export const refreshEntry = async <Document extends CombatDocument>(
   queryClient: QueryClient,
@@ -130,9 +154,14 @@ export function createDispatcher({
       await send(action);
     } catch (error) {
       if (error instanceof ApiError && error.code === 'version') await refetch().catch(() => {});
-      const toast = errorToast(error, t, () => {
-        void dispatch(action);
-      });
+      const toast = errorToast(
+        error,
+        t,
+        () => {
+          void dispatch(action);
+        },
+        t('unitCap', { limit: LIMITS.unitsPerCombat }),
+      );
       if (toast) show(toast);
     }
   };

@@ -47,19 +47,18 @@ describe('presetActions', () => {
     await actions.duplicate(GOBLIN.id, COPY_ID);
     await actions.remove(GOBLIN.id);
     expect(context.toasts).toEqual([
-      { message: 'presetDuplicated {"name":"Goblin 2"}' },
-      { message: 'deleted {"title":"Goblin"}' },
+      { message: 'presetDuplicated {"name":"Goblin 2"}', kind: 'success' },
+      { message: 'deleted {"title":"Goblin"}', kind: 'neutral' },
     ]);
   });
 
   it('a network failure offers Retry with the same preset', async () => {
     const { actions, context } = await setup();
     context.api.failNext('network');
-    await expect(actions.duplicate(GOBLIN.id, COPY_ID)).rejects.toMatchObject({
-      code: 'network',
-    });
-    context.toasts[0]?.action?.onAction();
+    const duplicated = actions.duplicate(GOBLIN.id, COPY_ID);
     await flush();
+    context.toasts[0]?.action?.onAction();
+    await expect(duplicated).resolves.toMatchObject({ id: COPY_ID, name: 'Goblin 2' });
     expect(
       context.api.calls.filter((call) => call.method === 'presets.duplicate').map((c) => c.args),
     ).toEqual([

@@ -1,18 +1,20 @@
 import type { ApiEndEvent, LinkToken, Locale } from '@combat-planner/api/client';
 import type { Action, Combat, CombatId, PlayerCombat } from '@combat-planner/domain';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApi } from '../api/ApiProvider.tsx';
 import {
   combatKey,
   createDispatcher,
   dmSource,
-  fetchEntry,
+  endOf,
+  entryFetcher,
   playerSource,
   refreshEntry,
   subscribeEntry,
+  visibleEntry,
 } from './combat.ts';
-import type { CombatDocument, CombatSource, DmViewer, PlayerViewer } from './combat.ts';
+import type { CombatDocument, CombatSource, DmViewer, PlayerViewer, SourceEnd } from './combat.ts';
 import { useToasts } from './useToasts.ts';
 
 export interface CombatState<Document extends CombatDocument> {
@@ -22,6 +24,7 @@ export interface CombatState<Document extends CombatDocument> {
   error: Error | null;
   ended: ApiEndEvent | null;
   dispatch: (action: Action) => Promise<void>;
+  refetch: () => Promise<void>;
 }
 
 export function useCombat(id: CombatId, viewer: DmViewer): CombatState<Combat>;
@@ -52,10 +55,17 @@ export function useCombat(
     [id, playerId],
   );
 
-  const query = useQuery({ queryKey: key, queryFn: () => fetchEntry(queryClient, key, source) });
-  const [ended, setEnded] = useState<ApiEndEvent | null>(null);
+  const fetchEntry = useMemo(
+    () => entryFetcher(queryClient, key, source),
+    [queryClient, key, source],
+  );
+  const query = useQuery({ queryKey: key, queryFn: fetchEntry });
+  const [ended, setEnded] = useState<SourceEnd | null>(null);
 
-  useEffect(() => subscribeEntry(queryClient, key, source, setEnded), [queryClient, key, source]);
+  useEffect(
+    () => subscribeEntry(queryClient, key, source, (event) => setEnded({ source, event })),
+    [queryClient, key, source],
+  );
 
   const dispatch = useMemo(
     () =>
@@ -68,12 +78,19 @@ export function useCombat(
     [source, queryClient, key, show, t],
   );
 
+  const { refetch } = query;
+  const reload = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
+  const entry = visibleEntry(query.data, query.error);
   return {
-    combat: query.data?.document,
-    language: query.data?.language ?? null,
+    combat: entry?.document,
+    language: entry?.language ?? null,
     status: query.status,
     error: query.error,
-    ended,
+    ended: endOf(ended, source),
     dispatch,
+    refetch: reload,
   };
 }

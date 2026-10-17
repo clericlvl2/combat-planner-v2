@@ -14,7 +14,7 @@ import type { ToastItem } from '../../src/hooks/toasts.ts';
 
 const t = (key: string) => `t:${key}`;
 const action = { label: 'Undo', onAction: () => {} };
-const item = (id: string): ToastItem => ({ id, message: id, duration: 4000 });
+const item = (id: string): ToastItem => ({ id, message: id, kind: 'neutral', duration: 4000 });
 
 afterEach(() => {
   vi.useRealTimers();
@@ -59,6 +59,30 @@ describe('createToastStore', () => {
     expect(listener).toHaveBeenCalledTimes(4);
   });
 
+  it('gives every item a kind, neutral by default', () => {
+    const store = createToastStore();
+    store.show({ message: 'Link copied', kind: 'success' }, 'off');
+    store.show({ message: 'Ogre removed' }, 'off');
+    expect(store.toasts().map(({ message, kind }) => ({ message, kind }))).toEqual([
+      { message: 'Ogre removed', kind: 'neutral' },
+      { message: 'Link copied', kind: 'success' },
+    ]);
+  });
+
+  it('calls onDismiss once when the toast is dismissed or times out', () => {
+    vi.useFakeTimers();
+    const store = createToastStore();
+    const dismissed = vi.fn();
+    const timedOut = vi.fn();
+    const id = store.show({ message: 'Retry me', onDismiss: dismissed, duration: null }, 'on');
+    store.show({ message: 'Gone soon', onDismiss: timedOut }, 'on');
+    store.dismiss(id);
+    store.dismiss(id);
+    expect(dismissed).toHaveBeenCalledTimes(1);
+    vi.advanceTimersByTime(4000);
+    expect(timedOut).toHaveBeenCalledTimes(1);
+  });
+
   it('keeps a null-duration toast until dismissed', () => {
     vi.useFakeTimers();
     const store = createToastStore();
@@ -98,7 +122,11 @@ describe('errorToast', () => {
   it('maps network to serverUnreachable with a Retry that calls back', () => {
     const retry = vi.fn();
     const toast = errorToast(new ApiError({ status: 0, code: 'network' }), t, retry);
-    expect(toast).toMatchObject({ message: 't:serverUnreachable', action: { label: 't:retry' } });
+    expect(toast).toMatchObject({
+      message: 't:serverUnreachable',
+      kind: 'error',
+      action: { label: 't:retry' },
+    });
     toast?.action?.onAction();
     expect(retry).toHaveBeenCalledTimes(1);
   });
@@ -106,6 +134,16 @@ describe('errorToast', () => {
   it('maps version to combatChanged without a button', () => {
     expect(errorToast(new ApiError({ status: 409, code: 'version' }), t, () => {})).toEqual({
       message: 't:combatChanged',
+      kind: 'warning',
+    });
+  });
+
+  it('maps limit to "limit reached" or the given cap copy', () => {
+    const limit = new ApiError({ status: 422, code: 'limit' });
+    expect(errorToast(limit, t, () => {})).toEqual({ message: 't:limitReached', kind: 'warning' });
+    expect(errorToast(limit, t, () => {}, 'This combat already has 99 units')).toEqual({
+      message: 'This combat already has 99 units',
+      kind: 'warning',
     });
   });
 
