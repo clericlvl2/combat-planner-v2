@@ -1,0 +1,3 @@
+:root {
+  --cp-layout-status-bar: env(safe-area-inset-top, 0px);
+}

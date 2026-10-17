@@ -6,7 +6,10 @@ import {
   NotFound,
   PlayerView,
   UnexpectedError,
+  useSettings,
 } from '@combat-planner/ui';
+import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Outlet, useLoaderData, useNavigate } from 'react-router';
 
 export interface CombatRouteData {
@@ -37,8 +40,23 @@ export function PlayerPage() {
   );
 }
 
+function DmLocale() {
+  const { settings } = useSettings();
+  const { i18n } = useTranslation();
+  const language = settings?.language;
+  useEffect(() => {
+    if (language !== undefined && i18n.language !== language) void i18n.changeLanguage(language);
+  }, [language, i18n]);
+  return null;
+}
+
 export function DmPages() {
-  return <Outlet />;
+  return (
+    <>
+      <DmLocale />
+      <Outlet />
+    </>
+  );
 }
 
 export function NotFoundPage() {
