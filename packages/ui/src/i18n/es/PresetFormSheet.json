@@ -1,0 +1,21 @@
+{
+  "newPreset": "Nueva plantilla",
+  "editPreset": "Editar plantilla",
+  "name": "Nombre",
+  "namePlaceholder": "{{role}} 1",
+  "nameRequired": "Escribe un nombre",
+  "type": "Tipo",
+  "hero": "Héroe",
+  "enemy": "Enemigo",
+  "ally": "Aliado",
+  "maxHp": "PG máx.",
+  "ac": "Clase de armadura",
+  "pd": "Defensa física",
+  "md": "Defensa mental",
+  "initiativeBonus": "Bono de iniciativa",
+  "tags": "Etiquetas",
+  "addTag": "Añadir etiqueta",
+  "removeTag": "Quitar {{name}}",
+  "create": "Crear",
+  "save": "Guardar"
+}

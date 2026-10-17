@@ -1,0 +1,35 @@
+.roles {
+  flex: none;
+}
+
+.roles button[role='radio'] {
+  height: 48px;
+}
+
+.steppers {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+}
+
+.tags {
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.caption {
+  color: var(--cp-color-secondary);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

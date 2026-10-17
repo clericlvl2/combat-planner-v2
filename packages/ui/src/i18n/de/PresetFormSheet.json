@@ -1,0 +1,21 @@
+{
+  "newPreset": "Neue Vorlage",
+  "editPreset": "Vorlage bearbeiten",
+  "name": "Bezeichnung",
+  "namePlaceholder": "{{role}} 1",
+  "nameRequired": "Gib einen Namen ein",
+  "type": "Typ",
+  "hero": "Held",
+  "enemy": "Feind",
+  "ally": "Verbündeter",
+  "maxHp": "Max. TP",
+  "ac": "Rüstungsklasse",
+  "pd": "Körperliche Verteidigung",
+  "md": "Mentale Verteidigung",
+  "initiativeBonus": "Initiativebonus",
+  "tags": "Schlagwörter",
+  "addTag": "Schlagwort hinzufügen",
+  "removeTag": "{{name}} entfernen",
+  "create": "Erstellen",
+  "save": "Speichern"
+}

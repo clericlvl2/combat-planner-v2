@@ -1,0 +1,21 @@
+{
+  "newPreset": "Nouveau modèle",
+  "editPreset": "Modifier le modèle",
+  "name": "Nom",
+  "namePlaceholder": "{{role}} 1",
+  "nameRequired": "Saisissez un nom",
+  "type": "Catégorie",
+  "hero": "Héros",
+  "enemy": "Ennemi",
+  "ally": "Allié",
+  "maxHp": "PV max",
+  "ac": "Classe d’armure",
+  "pd": "Défense physique",
+  "md": "Défense mentale",
+  "initiativeBonus": "Bonus d’initiative",
+  "tags": "Étiquettes",
+  "addTag": "Ajouter une étiquette",
+  "removeTag": "Retirer {{name}}",
+  "create": "Créer",
+  "save": "Enregistrer"
+}

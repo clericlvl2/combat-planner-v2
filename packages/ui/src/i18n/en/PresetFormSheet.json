@@ -1,0 +1,21 @@
+{
+  "newPreset": "New preset",
+  "editPreset": "Edit preset",
+  "name": "Name",
+  "namePlaceholder": "{{role}} 1",
+  "nameRequired": "Enter a name",
+  "type": "Type",
+  "hero": "Hero",
+  "enemy": "Enemy",
+  "ally": "Ally",
+  "maxHp": "Max HP",
+  "ac": "Armor Class",
+  "pd": "Physical Defense",
+  "md": "Mental Defense",
+  "initiativeBonus": "Initiative bonus",
+  "tags": "Tags",
+  "addTag": "Add tag",
+  "removeTag": "Remove {{name}}",
+  "create": "Create",
+  "save": "Save"
+}
