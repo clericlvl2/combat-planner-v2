@@ -23,6 +23,7 @@ export interface PresetCardProps extends Omit<ComponentPropsWithoutRef<'article'
   onEdit: () => void;
   onMore: () => void;
   menuOpened?: boolean;
+  duplicateDisabled?: boolean;
   onMenuClose?: () => void;
   onDuplicate?: () => void;
   onDelete?: () => void;
@@ -40,6 +41,7 @@ export function PresetCard({
   onEdit,
   onMore,
   menuOpened = false,
+  duplicateDisabled = false,
   onMenuClose,
   onDuplicate,
   onDelete,
@@ -50,7 +52,7 @@ export function PresetCard({
   const actionsId = useId();
   const menuOpen = expanded && menuOpened;
   const items: MenuItem[] = [
-    { id: 'duplicate', icon: IconCopy, label: t('duplicate') },
+    { id: 'duplicate', icon: IconCopy, label: t('duplicate'), disabled: duplicateDisabled },
     { id: 'delete', icon: IconTrash, label: t('delete'), tone: 'danger', divider: true },
   ];
   const Chevron = expanded ? IconChevronUp : IconChevronDown;

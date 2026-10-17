@@ -343,3 +343,15 @@ export const ExtraLocaleJa = meta.story({
     await expect(canvas.getByRole('button', { name: '編集' })).toBeVisible();
   },
 });
+
+export const ExtraDuplicateDisabled = meta.story({
+  name: 'Duplicate disabled at the preset limit',
+  args: { expanded: true, menuOpened: true, duplicateDisabled: true },
+  play: async ({ args, canvas }) => {
+    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    await expect(duplicate).toBeDisabled();
+    await userEvent.click(duplicate, { pointerEventsCheck: 0 });
+    await expect(args.onDuplicate).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('menuitem', { name: 'Delete' })).toBeEnabled();
+  },
+});
