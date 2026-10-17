@@ -14,6 +14,7 @@ export function NotFound({ onGoToCombats }: NotFoundProps) {
       title={t('title')}
       body={t('body')}
       actionLabel={t('goToCombats')}
+      actionVariant="primary"
       onAction={onGoToCombats}
     />
   );

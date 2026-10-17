@@ -12,8 +12,11 @@ const meta = preview.meta({
 export const Default = meta.story({
   play: async ({ args, canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Go to combats' }));
-    await expect(args.onGoToCombats).toHaveBeenCalledOnce();
+    await expect(canvas.getByRole('button', { name: 'Go to combats' })).toHaveAttribute(
+      'data-variant',
+      'primary',
+    );
+    await expect(args.onGoToCombats).not.toHaveBeenCalled();
   },
 });
 
@@ -53,6 +56,14 @@ export const ExtraKeyboardEnter = meta.story({
     await userEvent.tab();
     await expect(canvas.getByRole('button', { name: 'Go to combats' })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
+    await expect(args.onGoToCombats).toHaveBeenCalledOnce();
+  },
+});
+
+export const ExtraTapAction = meta.story({
+  name: 'Tap on the action',
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Go to combats' }));
     await expect(args.onGoToCombats).toHaveBeenCalledOnce();
   },
 });
