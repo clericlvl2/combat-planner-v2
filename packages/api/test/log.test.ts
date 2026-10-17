@@ -24,7 +24,9 @@ import {
 import { openSse } from './sse.ts';
 
 const SEEDED = 300;
-const ROW_BOUND = 2 * (LIMITS.undoDepth + 1);
+const LOG_PAGE = LIMITS.undoDepth + 1;
+const WORST_CASE_ENTRIES = 3 * LIMITS.undoDepth + 1;
+const ROW_BOUND = Math.ceil(WORST_CASE_ENTRIES / LOG_PAGE) * LOG_PAGE;
 
 let opened: TestApp;
 let dm: ReturnType<typeof withUser>;
@@ -105,7 +107,7 @@ const countLogReads = () => {
   return reads;
 };
 
-const expectBoundedSummary = async () => {
+const readBoundedSummary = async () => {
   const combat = await fetchCombat(dm);
   const expected = undoSummary(combat, fullLog());
   const reads = countLogReads();
@@ -114,8 +116,10 @@ const expectBoundedSummary = async () => {
   expect(document.undo).toEqual(expected);
   expect(reads.statements).toBeGreaterThan(0);
   expect(reads.rows).toBeLessThanOrEqual(ROW_BOUND);
-  return document.undo;
+  return { undo: document.undo, reads };
 };
+
+const expectBoundedSummary = async () => (await readBoundedSummary()).undo;
 
 beforeAll(async () => {
   opened = createTestApp();
@@ -168,6 +172,16 @@ describe('undo summary over a long log', () => {
     const undone = Array.from({ length: LIMITS.undoDepth }, (_, index) => damage(index + 1));
     for (const action of [...undone].reverse()) undoOf(action);
     expect(await expectBoundedSummary()).toBeNull();
+  });
+
+  it('reads the third page when ten undone entries and their undos precede ten more', async () => {
+    const older = Array.from({ length: LIMITS.undoDepth }, (_, index) => damage(index + 1));
+    for (const action of [...older].reverse()) undoOf(action);
+    const newer = Array.from({ length: LIMITS.undoDepth }, (_, index) => damage(index + 1));
+    for (const action of [...newer].reverse()) undoOf(action);
+    const { undo, reads } = await readBoundedSummary();
+    expect(undo).toBeNull();
+    expect(reads).toEqual({ statements: 3, rows: ROW_BOUND });
   });
 });
 
