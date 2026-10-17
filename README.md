@@ -5,28 +5,43 @@ from a phone. Players follow the combat on their own phones through a link or QR
 code. Many DMs can use one server; each has a private account and library. Free,
 funded by donations, self-hostable.
 
-## Requirements
+## Quick start
 
-- Node 24, version pinned in `.nvmrc`: `nvm use`.
-- pnpm 10.34.7, pinned in `package.json` `packageManager`: `corepack enable`.
-
-Every shell runs `source ~/.nvm/nvm.sh && nvm use` first. All commands run from the
-repository root.
-
-## Development
+With Docker Compose 2.24 or later:
 
 ```sh
-pnpm install --frozen-lockfile
-cp .env.example .env
+docker compose up --build
+```
+
+Then open http://localhost:3000.
+
+Without Docker, with pnpm 10 (`corepack enable` or `npm i -g pnpm`); pnpm downloads
+Node 24 itself, as pinned by `useNodeVersion` in `pnpm-workspace.yaml`:
+
+```sh
+pnpm install
 pnpm dev
 ```
 
-`pnpm dev` starts the web app on http://localhost:5173 (`/api` is proxied to the
-server) and the server on http://localhost:3000. Without `BETTER_AUTH_SECRET` and
-`LINK_SECRET` in `.env` the server generates random values for the run. Google and
-GitHub sign-in stay off while neither their client id nor their secret is set; set
-both values of a pair or neither, because with only one of them the server refuses
-to start and names the missing variable.
+Then open http://localhost:5173.
+
+Neither way needs a `.env` file. On the first start the server generates
+`BETTER_AUTH_SECRET` and `LINK_SECRET` and stores them in `secrets.json` next to the
+database: `/data` in the `data` volume under Docker, `apps/server/data/` without
+Docker. Back up that directory as a whole: a database restored without its
+`secrets.json` signs every user out and breaks every player link.
+
+All commands run from the repository root.
+
+## Development
+
+Optional settings go into `.env` at the repository root; `.env.example` lists them.
+
+- `pnpm dev` starts the web app on http://localhost:5173, with `/api` proxied to the
+  server, and the server on http://localhost:3000.
+- Google and GitHub sign-in stay off while neither their client id nor their secret
+  is set. Set both values of a pair or neither: with only one of them the server
+  refuses to start and names the missing variable.
 
 ## Storybook
 
@@ -52,44 +67,29 @@ Library, `PV` PlayerView. Story `CLF12` is step 2 of flow `CL-F1`; its render is
 
 ## Production
 
-1. Copy the example configuration:
+The image runs with `NODE_ENV=production`. Every setting below is optional and goes
+into `.env`, which compose reads when it exists. The server refuses to start on a
+wrong value and names the variable, readable with `docker compose logs app`.
 
-   ```sh
-   cp .env.example .env
-   ```
-
-2. Set the secrets. Replace the `BETTER_AUTH_SECRET` and `LINK_SECRET` placeholders
-   in `.env` with two different values, each the output of:
-
-   ```sh
-   openssl rand -hex 32
-   ```
-
-3. Build and start:
-
-   ```sh
-   docker compose up --build
-   ```
-
-- The image runs with `NODE_ENV=production`. The server then refuses to start while
-  `BETTER_AUTH_SECRET` or `LINK_SECRET` is missing, shorter than 32 characters, or
-  still equal to its `.env.example` placeholder: it exits with a message that names
-  the variable, readable with `docker compose logs app`.
-- `BETTER_AUTH_URL` is the public URL of the app; `BETTER_AUTH_TRUSTED_ORIGINS`
-  lists further allowed origins, comma-separated.
+- `PORT` is the published host port, 3000 by default; the container listens on 3000.
+- `BETTER_AUTH_URL` is the public URL of the app, to set for https or a reverse
+  proxy. Then the server accepts requests only from that origin and the
+  comma-separated `BETTER_AUTH_TRUSTED_ORIGINS`; without it, from the origin each
+  request was sent to.
+- `BETTER_AUTH_SECRET` and `LINK_SECRET` set in `.env` take precedence over
+  `secrets.json`. Each needs at least 32 characters, for example the output of
+  `openssl rand -hex 32`.
 - Google and GitHub sign-in: set both `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`,
-  or neither; the same for `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`. A provider
-  with neither value stays off; with only one of them the server refuses to start
-  and names the missing variable.
-- OAuth callback URLs to register with the providers:
-  `<BETTER_AUTH_URL>/api/auth/callback/google` and
-  `<BETTER_AUTH_URL>/api/auth/callback/github`.
+  or neither; the same for `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`. Callback
+  URLs to register with the providers: `<public URL>/api/auth/callback/google` and
+  `<public URL>/api/auth/callback/github`.
 - The About page links, `VITE_SOURCE_URL` and `VITE_DONATE_URL`, are build
-  arguments: compose reads them from `.env` and the build bakes them into the web
-  bundle, so a change takes effect with the next `docker compose up --build`. An
-  empty value keeps the default link.
-- The app listens on port 3000. The SQLite database is `/data/combat-planner.db`.
-  The server runs as the `node` user, uid 1000, so `/data` needs a named volume,
-  as the `data` volume in `docker-compose.yml`, or a host directory writable by
-  uid 1000.
+  arguments: the build bakes them into the web bundle, so a change takes effect with
+  the next `docker compose up --build`. An empty value keeps the default link.
+- The database is `/data/combat-planner.db` and the secrets `/data/secrets.json`.
+  The server refuses to start on an unreadable or broken `secrets.json` and names
+  its path and the server uid instead of generating new secrets.
+- A host directory bind-mounted at `/data` must be writable by uid 1000, or the
+  service sets `user: "${UID}:${GID}"` with `UID` and `GID` from `id -u` and `id -g`
+  in `.env`.
 - Health check: `GET /api/health` answers `{"status":"ok"}`.
