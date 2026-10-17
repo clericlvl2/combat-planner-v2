@@ -111,13 +111,23 @@ export const Anatomy = meta.story({
       'aria-expanded',
       'false',
     );
-    await expect(canvas.getByRole('button', { name: 'Set escalation die' })).toHaveTextContent(
+    await expect(canvas.getByRole('button', { name: /^Set escalation die/ })).toHaveTextContent(
       'Escalation 2',
     );
     await expect(canvas.getByRole('button', { name: 'Menu' })).toHaveAttribute(
       'aria-haspopup',
       'menu',
     );
+  },
+});
+
+export const ExtraDieNameCarriesValue = meta.story({
+  name: 'The die’s accessible name carries its value',
+  args: { escalation: 4 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByRole('button', { name: 'Set escalation die, escalation 4' }),
+    ).toBeVisible();
   },
 });
 
@@ -142,7 +152,7 @@ export const EscalationOpen = meta.story({
   name: 'Escalation open',
   args: { open: 'escalation' },
   play: async ({ canvas }) => {
-    const die = canvas.getByRole('button', { name: 'Set escalation die' });
+    const die = canvas.getByRole('button', { name: /^Set escalation die/ });
     await expect(die).toHaveAttribute('data-open');
     await expect(die).toHaveAttribute('aria-expanded', 'true');
     const faces = await canvas.findByRole('group', { name: 'Escalation die' });
@@ -216,7 +226,7 @@ export const ExtraEachControlFiresItsOwnCallback = meta.story({
     await expect(args.onRound).toHaveBeenCalledOnce();
     await expect(args.onEscalation).not.toHaveBeenCalled();
     await expect(args.onMenu).not.toHaveBeenCalled();
-    await userEvent.click(canvas.getByRole('button', { name: 'Set escalation die' }));
+    await userEvent.click(canvas.getByRole('button', { name: /^Set escalation die/ }));
     await expect(args.onEscalation).toHaveBeenCalledOnce();
     await expect(args.onRound).toHaveBeenCalledOnce();
     await expect(args.onMenu).not.toHaveBeenCalled();
@@ -226,7 +236,7 @@ export const ExtraEachControlFiresItsOwnCallback = meta.story({
     await expect(args.onRound).toHaveBeenCalledOnce();
     await expect(args.onBack).toHaveBeenCalledOnce();
     await expect(canvas.getByRole('button', { name: 'Menu' })).toHaveAttribute('data-open');
-    await expect(canvas.getByRole('button', { name: 'Set escalation die' })).not.toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: /^Set escalation die/ })).not.toHaveAttribute(
       'data-open',
     );
   },
@@ -246,7 +256,7 @@ export const ExtraFlowTapRound = meta.story({
 export const ExtraFlowTapDie = meta.story({
   name: 'Flow: tap die opens the face picker',
   play: async ({ args, canvas }) => {
-    const die = canvas.getByRole('button', { name: 'Set escalation die' });
+    const die = canvas.getByRole('button', { name: /^Set escalation die/ });
     await userEvent.click(die);
     await expect(args.onEscalation).toHaveBeenCalledOnce();
     await expect(die).toHaveAttribute('data-open');
@@ -292,6 +302,68 @@ export const ExtraRoundMax = meta.story({
   },
 });
 
+export const ExtraRoundEnter = meta.story({
+  name: 'Enter in the round field commits, closes and returns focus',
+  args: { open: 'round' },
+  play: async ({ args, canvas }) => {
+    const field = await canvas.findByRole('spinbutton');
+    await waitFor(() => expect(field).toHaveFocus());
+    await userEvent.clear(field);
+    await userEvent.type(field, '5{Enter}');
+    await expect(args.onRoundChange).toHaveBeenCalledOnce();
+    await expect(args.onRoundChange).toHaveBeenCalledWith(5);
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('spinbutton')).toBeNull());
+    await expect(canvas.getByRole('button', { name: 'Edit round, round 5' })).toHaveFocus();
+  },
+});
+
+export const ExtraRoundEscapeDiscards = meta.story({
+  name: 'Escape in the round field closes without committing',
+  args: { open: 'round' },
+  play: async ({ args, canvas }) => {
+    const field = await canvas.findByRole('spinbutton');
+    await waitFor(() => expect(field).toHaveFocus());
+    await userEvent.clear(field);
+    await userEvent.type(field, '50');
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onRoundChange).not.toHaveBeenCalled();
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('spinbutton')).toBeNull());
+    await expect(canvas.getByRole('button', { name: 'Edit round, round 3' })).toHaveFocus();
+  },
+});
+
+export const ExtraRoundBoundKeepsKeyboard = meta.story({
+  name: 'Reaching a bound by + keeps keyboard control',
+  args: { round: 98, open: 'round' },
+  play: async ({ args, canvas }) => {
+    const increase = await canvas.findByRole('button', { name: 'Increase' });
+    increase.focus();
+    await userEvent.keyboard('{Enter}');
+    await expect(args.onRoundChange).toHaveBeenCalledWith(99);
+    await expect(increase).toBeDisabled();
+    const field = canvas.getByRole('spinbutton');
+    await waitFor(() => expect(field).toHaveFocus());
+    await userEvent.keyboard('{Enter}');
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('spinbutton')).toBeNull());
+    await expect(canvas.getByRole('button', { name: 'Edit round, round 99' })).toHaveFocus();
+  },
+});
+
+export const ExtraUndoDisabled = meta.story({
+  name: 'Undo is disabled with nothing to undo',
+  args: { open: 'menu', undoDisabled: true },
+  play: async ({ args, canvas }) => {
+    const undo = await canvas.findByRole('menuitem', { name: 'Undo' });
+    await expect(undo).toBeDisabled();
+    await userEvent.click(undo, { pointerEventsCheck: 0 });
+    await expect(args.onMenuSelect).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('menuitem', { name: 'Share' })).toBeEnabled();
+  },
+});
+
 export const ExtraOutsideTap = meta.story({
   name: 'Tap outside closes the popover without a change',
   args: { open: 'round' },
@@ -305,7 +377,7 @@ export const ExtraOutsideTap = meta.story({
 });
 
 async function pickFaceWithKeyboard({ args, canvas }: PlayContext) {
-  const die = canvas.getByRole('button', { name: 'Set escalation die' });
+  const die = canvas.getByRole('button', { name: /^Set escalation die/ });
   die.focus();
   await userEvent.keyboard('{Enter}');
   await expect(args.onEscalation).toHaveBeenCalledOnce();
@@ -324,7 +396,7 @@ async function pickFaceWithKeyboard({ args, canvas }: PlayContext) {
 export const ExtraFacePickerKeyboard = meta.story({
   name: 'Keyboard: arrows move across faces, Enter sets the die',
   play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Set escalation die' })).toHaveTextContent(
+    await expect(canvas.getByRole('button', { name: /^Set escalation die/ })).toHaveTextContent(
       'Escalation 2',
     );
     await pickFaceWithKeyboard({ args, canvas });
@@ -349,7 +421,7 @@ export const ExtraFaceEscape = meta.story({
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onEscalationChange).not.toHaveBeenCalled();
     await waitFor(() =>
-      expect(canvas.getByRole('button', { name: 'Set escalation die' })).toHaveFocus(),
+      expect(canvas.getByRole('button', { name: /^Set escalation die/ })).toHaveFocus(),
     );
   },
 });

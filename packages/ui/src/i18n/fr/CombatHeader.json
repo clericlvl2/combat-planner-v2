@@ -3,7 +3,7 @@
   "round": "Tour",
   "editRound": "Modifier le tour, tour {{round}}",
   "setup": "Préparation",
-  "setEscalation": "Régler le dé d’escalade",
+  "setEscalation": "Régler le dé d’escalade, escalade {{value}}",
   "escalationTitle": "Dé d’escalade",
   "escalationFace": "Escalade {{value}}",
   "escalationHint": "Tour suivant l’augmente de 1 à chaque tour, jusqu’à {{max}}",

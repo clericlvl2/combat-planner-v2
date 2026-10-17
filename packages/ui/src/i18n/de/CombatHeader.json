@@ -3,7 +3,7 @@
   "round": "Runde",
   "editRound": "Runde bearbeiten, Runde {{round}}",
   "setup": "Vorbereitung",
-  "setEscalation": "Eskalationswürfel setzen",
+  "setEscalation": "Eskalationswürfel setzen, Eskalation {{value}}",
   "escalationTitle": "Eskalationswürfel",
   "escalationFace": "Eskalation {{value}}",
   "escalationHint": "„Nächster Zug“ erhöht ihn jede Runde um 1, bis {{max}}",

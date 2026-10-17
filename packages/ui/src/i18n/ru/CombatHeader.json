@@ -3,7 +3,7 @@
   "round": "Раунд",
   "editRound": "Изменить раунд, раунд {{round}}",
   "setup": "Подготовка",
-  "setEscalation": "Задать кубик эскалации",
+  "setEscalation": "Задать кубик эскалации, эскалация {{value}}",
   "escalationTitle": "Кубик эскалации",
   "escalationFace": "Эскалация {{value}}",
   "escalationHint": "«Следующий ход» повышает его на 1 каждый раунд, до {{max}}",

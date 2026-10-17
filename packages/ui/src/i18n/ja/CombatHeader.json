@@ -3,7 +3,7 @@
   "round": "ラウンド",
   "editRound": "ラウンドを編集、ラウンド{{round}}",
   "setup": "準備中",
-  "setEscalation": "エスカレーションダイスを設定",
+  "setEscalation": "エスカレーションダイスを設定、エスカレーション{{value}}",
   "escalationTitle": "エスカレーションダイス",
   "escalationFace": "エスカレーション{{value}}",
   "escalationHint": "「次のターン」で毎ラウンド1ずつ上がり、最大{{max}}",

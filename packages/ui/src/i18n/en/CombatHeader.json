@@ -3,7 +3,7 @@
   "round": "Round",
   "editRound": "Edit round, round {{round}}",
   "setup": "Setup",
-  "setEscalation": "Set escalation die",
+  "setEscalation": "Set escalation die, escalation {{value}}",
   "escalationTitle": "Escalation die",
   "escalationFace": "Escalation {{value}}",
   "escalationHint": "Next turn raises it by 1 each round, up to {{max}}",

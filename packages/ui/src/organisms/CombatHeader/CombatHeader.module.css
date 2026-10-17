@@ -114,13 +114,6 @@
   flex: none;
 }
 
-.die {
-  &[data-open] [data-tile] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
-  }
-}
-
 .escalationHint {
   color: var(--cp-color-secondary);
   font-size: var(--mantine-font-size-meta);
@@ -134,9 +127,9 @@
 
 .face {
   box-sizing: border-box;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
   flex: none;
   width: 40px;
   height: 40px;
@@ -169,17 +162,28 @@
   }
 }
 
-.slot {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+.face .faceDie {
+  flex: 1;
+  color: inherit;
 
-.pip {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: currentColor;
+  & [data-tile] {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  & [data-pip] {
+    width: 6px;
+    height: 6px;
+    background: currentColor;
+  }
+
+  & > span:last-child {
+    display: none;
+  }
 }
 
 .menu {

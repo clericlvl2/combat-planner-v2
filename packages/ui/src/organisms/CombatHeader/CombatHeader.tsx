@@ -47,6 +47,7 @@ export interface CombatHeaderProps extends Omit<
   onRoundChange?: (round: number) => void;
   onEscalationChange?: (value: EscalationValue) => void;
   onMenuSelect: (action: CombatMenuAction) => void;
+  undoDisabled?: boolean;
 }
 
 const MENU_WIDTH = 240;
@@ -59,19 +60,10 @@ const ESCALATION_SHIFT = 62;
 
 const FOCUS_FRAMES = 30;
 
-const escalationValues: readonly EscalationValue[] = [0, 1, 2, 3, 4, 5, 6];
-
-const pipSlots: Record<EscalationValue, readonly number[]> = {
-  0: [],
-  1: [4],
-  2: [2, 6],
-  3: [2, 4, 6],
-  4: [0, 2, 6, 8],
-  5: [0, 2, 4, 6, 8],
-  6: [0, 2, 3, 5, 6, 8],
-};
-
-const slots = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
+const escalationValues = Array.from(
+  { length: LIMITS.escalation.max - LIMITS.escalation.min + 1 },
+  (_, index) => (LIMITS.escalation.min + index) as EscalationValue,
+);
 
 function focusWhenReady(panel: HTMLElement, selector: string, framesLeft: number) {
   const node = panel.querySelector<HTMLElement>(selector);
@@ -96,6 +88,7 @@ interface HeaderPopoverProps {
   initialFocus: string;
   label: string;
   onClose: () => void;
+  onEscape?: () => void;
   target: ReactElement;
   children: ReactNode;
 }
@@ -108,6 +101,7 @@ function HeaderPopover({
   initialFocus,
   label,
   onClose,
+  onEscape,
   target,
   children,
 }: HeaderPopoverProps) {
@@ -115,6 +109,8 @@ function HeaderPopover({
   const closedRef = useRef(false);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const onEscapeRef = useRef(onEscape);
+  onEscapeRef.current = onEscape;
 
   const close = useCallback(() => {
     if (closedRef.current) return;
@@ -139,6 +135,7 @@ function HeaderPopover({
       if (!inPanel && !onSource) return;
       event.preventDefault();
       event.stopPropagation();
+      onEscapeRef.current?.();
       close();
       focusSource(sourceRef.current);
     };
@@ -152,7 +149,16 @@ function HeaderPopover({
 
   const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
     const next = event.relatedTarget;
-    if (!opened || !(next instanceof Node)) return;
+    if (!opened) return;
+    if (!(next instanceof Node)) {
+      setTimeout(() => {
+        const panel = panelRef.current;
+        if (!panel?.isConnected || closedRef.current) return;
+        if (document.activeElement !== document.body) return;
+        panel.querySelector<HTMLElement>(initialFocus)?.focus({ preventScroll: true });
+      });
+      return;
+    }
     if (panelRef.current?.contains(next)) return;
     if (sourceRef.current?.contains(next)) return;
     close();
@@ -222,7 +228,6 @@ function FacePicker({ value, onPick }: FacePickerProps) {
       onKeyDown={handleKeyDown}
     >
       {escalationValues.map((face) => {
-        const filled = pipSlots[face];
         const selected = face === value;
         return (
           <UnstyledButton
@@ -236,11 +241,7 @@ function FacePicker({ value, onPick }: FacePickerProps) {
             aria-label={t('escalationFace', { value: face })}
             onClick={() => onPick(face)}
           >
-            {slots.map((slot) => (
-              <span key={slot} className={classes.slot} aria-hidden="true">
-                {filled.includes(slot) ? <span className={classes.pip} /> : null}
-              </span>
-            ))}
+            <EscalationDie className={classes.faceDie} value={face} readOnly aria-hidden="true" />
           </UnstyledButton>
         );
       })}
@@ -261,12 +262,14 @@ export function CombatHeader({
   onRoundChange,
   onEscalationChange,
   onMenuSelect,
+  undoDisabled = false,
   className,
   ...rest
 }: CombatHeaderProps) {
   const { t } = useTranslation('CombatHeader');
   const roundRef = useRef<HTMLButtonElement | null>(null);
   const dieRef = useRef<HTMLSpanElement | null>(null);
+  const discardRoundRef = useRef(false);
   const setup = round === null;
   const roundOpen = !setup && open === 'round';
   const escalationOpen = !setup && open === 'escalation';
@@ -274,11 +277,22 @@ export function CombatHeader({
 
   const items: MenuItem[] = [
     { id: 'addUnit', icon: IconUserPlus, label: t('addUnit') },
-    { id: 'undo', icon: IconArrowBackUp, label: t('undo') },
+    { id: 'undo', icon: IconArrowBackUp, label: t('undo'), disabled: undoDisabled },
     { id: 'share', icon: IconShare, label: t('share') },
     ...(setup ? [] : [{ id: 'restart', icon: IconRefresh, label: t('restart'), divider: true }]),
     { id: 'clear', icon: IconTrash, label: t('clear'), tone: 'danger', divider: setup },
   ];
+
+  useEffect(() => {
+    if (roundOpen) discardRoundRef.current = false;
+  }, [roundOpen]);
+
+  const handleRoundKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== 'Enter' || !(event.target instanceof HTMLInputElement)) return;
+    event.preventDefault();
+    onClose();
+    focusSource(roundRef.current);
+  };
 
   const roundLabel = (
     <>
@@ -310,6 +324,9 @@ export function CombatHeader({
                 initialFocus='input[role="spinbutton"]'
                 label={t('round')}
                 onClose={onClose}
+                onEscape={() => {
+                  discardRoundRef.current = true;
+                }}
                 target={
                   <UnstyledButton
                     ref={roundRef}
@@ -326,13 +343,15 @@ export function CombatHeader({
                   </UnstyledButton>
                 }
               >
-                <PopoverFrame title={t('round')} width={ROUND_WIDTH}>
+                <PopoverFrame title={t('round')} width={ROUND_WIDTH} onKeyDown={handleRoundKeyDown}>
                   <Stepper
                     value={round}
                     min={LIMITS.round.min}
                     max={LIMITS.round.max}
                     signed={false}
-                    onChange={(next) => onRoundChange?.(next)}
+                    onChange={(next) => {
+                      if (!discardRoundRef.current) onRoundChange?.(next);
+                    }}
                   />
                   <span className={classes.roundHint}>{t('roundHint', LIMITS.round)}</span>
                 </PopoverFrame>
@@ -354,12 +373,12 @@ export function CombatHeader({
             target={
               <span ref={dieRef} className={classes.dieSlot}>
                 <EscalationDie
-                  className={classes.die}
                   value={escalation}
-                  aria-label={t('setEscalation')}
+                  aria-label={t('setEscalation', { value: escalation })}
                   aria-haspopup="dialog"
                   aria-expanded={escalationOpen}
                   data-open={escalationOpen || undefined}
+                  data-tap={escalationOpen || undefined}
                   onClick={() => onEscalation()}
                 />
               </span>

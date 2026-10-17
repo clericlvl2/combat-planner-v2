@@ -3,7 +3,7 @@
   "round": "Ronda",
   "editRound": "Editar ronda, ronda {{round}}",
   "setup": "Preparación",
-  "setEscalation": "Fijar dado de escalada",
+  "setEscalation": "Fijar dado de escalada, escalada {{value}}",
   "escalationTitle": "Dado de escalada",
   "escalationFace": "Escalada {{value}}",
   "escalationHint": "Siguiente turno lo sube 1 cada ronda, hasta {{max}}",
