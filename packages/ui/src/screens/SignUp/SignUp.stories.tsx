@@ -96,6 +96,24 @@ export const SignUpErrors = meta.story({
   },
 });
 
+export const ExtraInvalidIsNotTaken = meta.story({
+  name: 'A rejected sign-up that is not a taken email shows a generic error',
+  play: async ({ canvas, loaded }) => {
+    await fill(canvas, 'Ferry DM', 'new@ferry.games', 'longer-password');
+    fakeApiOf(loaded).failNext('invalid');
+    await userEvent.click(canvas.getByRole('button', { name: 'Create account' }));
+    await expect(
+      await canvas.findByText('Couldn’t create the account. Check the fields and try again'),
+    ).toBeVisible();
+    await expect(canvas.queryByText('This email already has an account')).toBeNull();
+    await expect(canvas.getByRole('button', { name: 'Create account' })).toBeEnabled();
+    await userEvent.type(canvas.getByLabelText('Password'), '!');
+    await expect(
+      canvas.queryByText('Couldn’t create the account. Check the fields and try again'),
+    ).toBeNull();
+  },
+});
+
 export const Created = meta.story({
   play: async ({ canvas, canvasElement, loaded }) => {
     await fill(canvas, 'Ferry DM', 'new@ferry.games', 'longer-password');

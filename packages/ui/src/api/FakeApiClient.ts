@@ -394,7 +394,7 @@ export class FakeApiClient implements ApiClient {
       this.run('auth.signUp', [input], () => {
         if (input.password.length < 8) throw fail('invalid', 'Password too short');
         if (this.accounts.some((account) => account.email === input.email)) {
-          throw fail('invalid', 'User already exists');
+          throw fail('emailTaken', 'User already exists');
         }
         const account: FakeAccount = { userId: ulid(), language: 'en', ...input };
         this.accounts.push(account);

@@ -14,5 +14,6 @@
   "enterEmail": "Gib deine E-Mail ein",
   "invalidEmail": "Gib eine gültige E-Mail ein",
   "tooShort": "Mindestens 8 Zeichen",
-  "emailTaken": "Für diese E-Mail gibt es schon ein Konto"
+  "emailTaken": "Für diese E-Mail gibt es schon ein Konto",
+  "failed": "Das Konto konnte nicht erstellt werden. Prüfe die Felder und versuche es erneut"
 }

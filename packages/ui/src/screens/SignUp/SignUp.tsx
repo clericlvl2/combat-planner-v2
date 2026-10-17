@@ -31,6 +31,7 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
   const [touched, setTouched] = useState<ReadonlySet<Field>>(new Set());
   const [takenEmail, setTakenEmail] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   const name = displayName.trim();
   const address = email.trim();
@@ -50,7 +51,13 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
       : touched.has('email') && !emailValid
         ? t('invalidEmail')
         : undefined;
-  const passwordError = touched.has('password') && !passwordValid ? t('tooShort') : undefined;
+  const passwordError =
+    touched.has('password') && !passwordValid ? t('tooShort') : failed ? t('failed') : undefined;
+
+  const edit = (set: (value: string) => void) => (value: string) => {
+    setFailed(false);
+    set(value);
+  };
 
   const submit = () => {
     if (!ready) return;
@@ -59,7 +66,8 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
       .then(() => navigate('/combats'))
       .catch((error: unknown) => {
         setSending(false);
-        if (hasCode(error, 'invalid')) setTakenEmail(address);
+        if (hasCode(error, 'emailTaken')) setTakenEmail(address);
+        else if (hasCode(error, 'invalid')) setFailed(true);
       });
   };
 
@@ -81,7 +89,7 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
         maxLength={LIMITS.displayName}
         value={displayName}
         error={nameError}
-        onChange={setDisplayName}
+        onChange={edit(setDisplayName)}
         onBlur={() => touch('displayName')}
         onKeyDown={onEnter}
       />
@@ -93,7 +101,7 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
         placeholder={t('emailPlaceholder')}
         value={email}
         error={emailError}
-        onChange={setEmail}
+        onChange={edit(setEmail)}
         onBlur={() => touch('email')}
         onKeyDown={onEnter}
       />
@@ -105,7 +113,7 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
         placeholder={t('passwordPlaceholder')}
         value={password}
         error={passwordError}
-        onChange={setPassword}
+        onChange={edit(setPassword)}
         onBlur={() => touch('password')}
         onKeyDown={onEnter}
       />

@@ -14,5 +14,6 @@
   "enterEmail": "Escribe tu correo",
   "invalidEmail": "Escribe un correo válido",
   "tooShort": "Al menos 8 caracteres",
-  "emailTaken": "Este correo ya tiene una cuenta"
+  "emailTaken": "Este correo ya tiene una cuenta",
+  "failed": "No se pudo crear la cuenta. Revisa los campos e inténtalo de nuevo"
 }

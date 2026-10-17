@@ -14,5 +14,6 @@
   "enterEmail": "Saisissez votre e-mail",
   "invalidEmail": "Saisissez un e-mail valide",
   "tooShort": "Au moins 8 caractères",
-  "emailTaken": "Cet e-mail a déjà un compte"
+  "emailTaken": "Cet e-mail a déjà un compte",
+  "failed": "Impossible de créer le compte. Vérifie les champs et réessaie"
 }

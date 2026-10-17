@@ -14,5 +14,6 @@
   "enterEmail": "Enter your email",
   "invalidEmail": "Enter a valid email",
   "tooShort": "At least 8 characters",
-  "emailTaken": "This email already has an account"
+  "emailTaken": "This email already has an account",
+  "failed": "Couldn’t create the account. Check the fields and try again"
 }
