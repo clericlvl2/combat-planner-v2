@@ -14,6 +14,10 @@ const browserOptimizeDeps = {
     'react-qr-code',
     '@mantine/hooks',
     '@storybook/addon-vitest/internal/setup-file',
+    '@tanstack/react-query',
+    'react-router',
+    'storybook-addon-remix-react-router',
+    'ulid',
   ],
 };
 
