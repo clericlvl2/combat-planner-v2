@@ -29,7 +29,7 @@
 
 ## Текущий шаг
 
-Фаза 2 закрыта тегом `phase-2` (гейт `fix-2.4` на дереве master, отличие только в `.claude/artifacts/**`, служит фазовым гейтом). Следующая — `4-web`, затем `fix-4`.
+Фаза 2 закрыта тегом `phase-2` (гейт `fix-2.4` на дереве master, отличие только в `.claude/artifacts/**`, служит фазовым гейтом). Идут `4-web` и `fix-4` параллельно (пути не пересекаются).
 Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Фазы 2.1 и 2.2 закрыты (`fix-2.2` проверен). Идёт фаза 2.3 (организмы, брифы
 готовы) параллельно с фазой 3 (`3-server-rest`, затем `fix-3`). С 2026-10-17
 вместо Fable 5.1 — Opus 5.5 (план, «Решения владельца»). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
@@ -92,7 +92,7 @@
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | running worker-bee ab415a6 2026-10-17T15:51+03:00 (Opus 5.5 medium) | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
-| fix-4 | todo (after `4-web`; brief from «Замечания guard-bee» entries → `fix-4`) | |
+| fix-4 | running worker-bee ac057a5 2026-10-17T15:52+03:00 (Opus 5.5 xhigh, parallel with `4-web`, disjoint paths) | |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
