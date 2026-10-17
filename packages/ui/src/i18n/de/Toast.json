@@ -17,5 +17,6 @@
   "dmCleared": "Die Spielleitung hat den Kampf geleert",
   "dmReleased": "Die Spielleitung hat {{hero}} freigegeben. Wähle einen Helden.",
   "dmRemoved": "Die Spielleitung hat {{hero}} entfernt. Wähle einen Helden.",
-  "heroTaken": "{{hero}} wurde gerade vergeben"
+  "heroTaken": "{{hero}} wurde gerade vergeben",
+  "presetAdded": "{{name}} zur Bibliothek hinzugefügt"
 }

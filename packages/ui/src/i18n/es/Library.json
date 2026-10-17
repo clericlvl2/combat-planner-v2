@@ -1,0 +1,10 @@
+{
+  "title": "Biblioteca",
+  "search": "Buscar plantillas",
+  "sort": "Ordenar",
+  "tags": "Etiquetas",
+  "emptyTitle": "Aún no hay plantillas",
+  "emptyBody": "Crea una aquí o guarda cualquier unidad de un combate en la Biblioteca.",
+  "noResultsBody": "Ninguna plantilla coincide con «{{query}}».",
+  "limitReached": "Límite de plantillas alcanzado"
+}
