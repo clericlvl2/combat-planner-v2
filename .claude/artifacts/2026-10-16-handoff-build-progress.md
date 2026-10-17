@@ -91,7 +91,7 @@
 | fix-3 | guarded `.claude/artifacts/guard/fix-3.md` | live, auth |
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | guarded `.claude/artifacts/guard/4-web.md` (no P0–P1; CRIT 6 FAIL P3 system-screen swipe; P2 ×1, P3 ×4 → `fix-4-web`) | router, providers, player identity, drawer, smoke e2e |
-| 5-e2e | running worker-bee a5e1868 2026-10-17T16:35+03:00 (Opus 5.5 medium; parallel with `fix-4`, paths `e2e/**` only) | auth, combat lifecycle, player, library, account |
+| 5-e2e | handed back 5/5 (report `.claude/artifacts/reports/5-e2e.md`; 21 e2e, 1 `test.fail()` sign-out 415), rebased on fix-4, gate + e2e running | auth, combat lifecycle, player, library, account |
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4-web | running worker-bee afb4a3c 2026-10-17T16:44+03:00 (Opus 5.5 medium) | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
