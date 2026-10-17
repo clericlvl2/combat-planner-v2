@@ -3,5 +3,6 @@
   "startCombat": "Start combat",
   "rollsMissingInitiative": "Rolls missing initiative",
   "everyUnitDisabled": "Every unit is disabled",
-  "lastRound": "Round {{round}} is the last"
+  "lastRound": "Round {{round}} is the last",
+  "addUnitFirst": "Add a unit first"
 }

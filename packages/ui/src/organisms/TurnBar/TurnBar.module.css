@@ -70,7 +70,8 @@
   font-size: var(--mantine-font-size-small);
   font-weight: 500;
 
-  .button:disabled & {
+  .button:disabled &,
+  .button[data-disabled] & {
     color: var(--cp-color-secondary);
   }
 }

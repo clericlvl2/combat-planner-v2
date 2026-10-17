@@ -3,5 +3,6 @@
   "startCombat": "Начать бой",
   "rollsMissingInitiative": "Бросает недостающую инициативу",
   "everyUnitDisabled": "Все юниты отключены",
-  "lastRound": "Раунд {{round}} — последний"
+  "lastRound": "Раунд {{round}} — последний",
+  "addUnitFirst": "Сначала добавьте юнита"
 }

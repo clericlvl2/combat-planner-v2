@@ -3,5 +3,6 @@
   "startCombat": "Commencer le combat",
   "rollsMissingInitiative": "Lance l’initiative manquante",
   "everyUnitDisabled": "Toutes les unités sont désactivées",
-  "lastRound": "Le tour {{round}} est le dernier"
+  "lastRound": "Le tour {{round}} est le dernier",
+  "addUnitFirst": "Ajoutez d’abord une unité"
 }

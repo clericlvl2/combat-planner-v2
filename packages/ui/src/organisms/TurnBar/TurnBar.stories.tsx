@@ -7,7 +7,7 @@ import type { TurnBarProps } from './TurnBar.tsx';
 
 const longestName = 'W'.repeat(LIMITS.unitName);
 
-type ReasonKey = 'everyUnitDisabled' | 'lastRound';
+type ReasonKey = 'everyUnitDisabled' | 'lastRound' | 'addUnitFirst';
 
 interface TurnBarCellProps extends Omit<TurnBarProps, 'reason'> {
   reasonKey?: ReasonKey;
@@ -105,6 +105,29 @@ export const FrBlocked = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('button', { name: /Tour suivant/ })).toBeDisabled();
     await expect(canvas.getByText('Toutes les unités sont désactivées')).toBeVisible();
+  },
+});
+
+export const ExtraBlockedNoUnits = meta.story({
+  name: 'Blocked: no units yet',
+  args: { mode: 'start', disabled: true, reasonKey: 'addUnitFirst', onClick: fn() },
+  play: async ({ args, canvas }) => {
+    const button = canvas.getByRole('button', { name: /Start combat/ });
+    await expect(button).toBeDisabled();
+    await expect(canvas.getByText('Add a unit first')).toBeVisible();
+    await expect(canvas.queryByText('Rolls missing initiative')).toBeNull();
+    await userEvent.click(button, { pointerEventsCheck: 0 });
+    await expect(args.onClick).not.toHaveBeenCalled();
+  },
+});
+
+export const ExtraDataDisabledLine = meta.story({
+  name: 'data-disabled greys the second line',
+  args: { mode: 'next', nextName: 'Brother Tomas' },
+  render: (args) => <TurnBarCell {...args} data-disabled="" />,
+  play: async ({ canvas }) => {
+    const line = canvas.getByText('Brother Tomas');
+    await expect(getComputedStyle(line).color).toBe('rgb(95, 87, 77)');
   },
 });
 

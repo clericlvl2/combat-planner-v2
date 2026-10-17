@@ -3,5 +3,6 @@
   "startCombat": "Empezar combate",
   "rollsMissingInitiative": "Tira la iniciativa que falta",
   "everyUnitDisabled": "Todas las unidades están desactivadas",
-  "lastRound": "La ronda {{round}} es la última"
+  "lastRound": "La ronda {{round}} es la última",
+  "addUnitFirst": "Primero añade una unidad"
 }
