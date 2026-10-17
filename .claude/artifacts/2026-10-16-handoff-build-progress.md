@@ -82,7 +82,7 @@
 | 2.4-Library | reported `.claude/artifacts/reports/2.4-Library.md`, gate running | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
-| fix-2.4-core | running worker-bee (Opus xhigh) 2026-10-17T14:20+03:00 | project, api contract, FakeApiClient, hooks |
+| fix-2.4-core | todo, brief ready, dispatch after 2.4-Library merges (needs `Toast.presetAdded`) | project, api contract, FakeApiClient, hooks |
 | fix-2.4 | todo, after fix-2.4-core and the 2.4-Library / 2.4-CombatScreen guards (UI half) | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
