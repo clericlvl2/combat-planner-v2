@@ -49,6 +49,7 @@ import type {
 export const RECONNECTING_AFTER_MS = 10_000;
 export const REOPEN_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 15_000] as const;
 export const EVENT_SOURCE_CLOSED = 2;
+export const PROBE_TIMEOUT_MS = 5_000;
 
 export interface MessageEventLike {
   type: string;
@@ -239,7 +240,7 @@ export function createHonoApiClient({
   function openStream<Document extends DmCombat | PlayerCombat>(
     url: string,
     documentSchema: z.ZodType<Document>,
-    refetch: () => Promise<Document>,
+    refetch: (signal?: AbortSignal) => Promise<Document>,
     onDocument: DocumentListener<Document>,
     onEnd: EndListener,
   ): Unsubscribe {
@@ -252,10 +253,23 @@ export function createHonoApiClient({
     let title = '';
     let opened = false;
     let closed = false;
-    let probing = false;
     let reopens = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let reopenTimer: ReturnType<typeof setTimeout> | undefined;
+    let probeController: AbortController | undefined;
+    let probeTimer: ReturnType<typeof setTimeout> | undefined;
+
+    const settleProbe = () => {
+      if (probeTimer !== undefined) clearTimeout(probeTimer);
+      probeTimer = undefined;
+      probeController = undefined;
+    };
+
+    const cancelProbe = () => {
+      const controller = probeController;
+      settleProbe();
+      controller?.abort();
+    };
 
     const close = () => {
       closed = true;
@@ -263,6 +277,7 @@ export function createHonoApiClient({
       if (reopenTimer !== undefined) clearTimeout(reopenTimer);
       timer = undefined;
       reopenTimer = undefined;
+      cancelProbe();
       source.close();
       connection.untrack(stream);
     };
@@ -302,15 +317,23 @@ export function createHonoApiClient({
     };
 
     const probe = () => {
-      if (probing) return;
-      probing = true;
-      refetch().then(
+      if (probeController) return;
+      const controller = new AbortController();
+      const current = () => probeController === controller;
+      probeController = controller;
+      probeTimer = setTimeout(() => {
+        cancelProbe();
+        reopenIfClosed();
+      }, PROBE_TIMEOUT_MS);
+      refetch(controller.signal).then(
         () => {
-          probing = false;
+          if (!current()) return;
+          settleProbe();
           reopenIfClosed();
         },
         (error: unknown) => {
-          probing = false;
+          if (!current()) return;
+          settleProbe();
           const ending = endOf(error);
           if (ending) end(ending);
           else reopenIfClosed();
@@ -363,6 +386,19 @@ export function createHonoApiClient({
     return close;
   }
 
+  const getCombat = (id: CombatId, signal?: AbortSignal) =>
+    json(() => client.combats[':id'].$get({ param: { id } }, { init: { signal } }), dmCombatSchema);
+
+  const getPlay = (token: LinkToken, playerId: PlayerId, signal?: AbortSignal) =>
+    json(
+      () =>
+        client.play[':id'].$get(
+          { param: { id: combatIdOf(token) }, query: { t: token } },
+          { ...playerHeaders(playerId), init: { signal } },
+        ),
+      playViewSchema,
+    );
+
   const combats: ApiClient['combats'] = {
     list: () => json(() => client.combats.$get(), combatSummarySchema.array()),
     create: (input) => json(() => client.combats.$post({ json: input }), combatSchema),
@@ -375,7 +411,7 @@ export function createHonoApiClient({
         combatSchema,
       ),
     open: (id) => json(() => client.combats[':id'].open.$post({ param: { id } }), dmCombatSchema),
-    get: (id) => json(() => client.combats[':id'].$get({ param: { id } }), dmCombatSchema),
+    get: (id) => getCombat(id),
     dispatch: (id, action) =>
       json(
         () => client.combats[':id'].actions.$post({ param: { id }, json: action }),
@@ -385,22 +421,14 @@ export function createHonoApiClient({
       openStream(
         `${baseUrl}/combats/${id}/events`,
         dmCombatSchema,
-        () => combats.get(id),
+        (signal) => getCombat(id, signal),
         onDocument,
         onEnd,
       ),
   };
 
   const play: ApiClient['play'] = {
-    get: (token, playerId) =>
-      json(
-        () =>
-          client.play[':id'].$get(
-            { param: { id: combatIdOf(token) }, query: { t: token } },
-            playerHeaders(playerId),
-          ),
-        playViewSchema,
-      ),
+    get: (token, playerId) => getPlay(token, playerId),
     dispatch: (token, playerId, action) =>
       json(
         () =>
@@ -415,7 +443,7 @@ export function createHonoApiClient({
       return openStream(
         `${baseUrl}/play/${combatIdOf(token)}/events?${query.toString()}`,
         playerCombatSchema,
-        async () => (await play.get(token, playerId)).combat,
+        async (signal) => (await getPlay(token, playerId, signal)).combat,
         onDocument,
         onEnd,
       );

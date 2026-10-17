@@ -5,6 +5,7 @@ import type { ConnectionState, DmCombat, EndListener } from '../src/client.ts';
 import {
   createHonoApiClient,
   EVENT_SOURCE_CLOSED,
+  PROBE_TIMEOUT_MS,
   RECONNECTING_AFTER_MS,
   REOPEN_DELAYS_MS,
 } from '../src/hono-client.ts';
@@ -64,6 +65,18 @@ function stubFetch(status: number, body: unknown) {
     });
   };
   return { fetch: fetch as typeof globalThis.fetch, seen };
+}
+
+function hangingFetch({ honorAbort }: { honorAbort: boolean }) {
+  const signals: AbortSignal[] = [];
+  const fetch = ((input: string | URL | Request, init?: RequestInit) => {
+    const { signal } = new Request(input, init);
+    signals.push(signal);
+    return new Promise<Response>((_resolve, reject) => {
+      if (honorAbort) signal.addEventListener('abort', () => reject(signal.reason));
+    });
+  }) as typeof globalThis.fetch;
+  return { fetch, signals };
 }
 
 const failingFetch = (async () => {
@@ -483,6 +496,118 @@ describe('createHonoApiClient stream probe', () => {
       unsubscribe();
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(ended).not.toHaveBeenCalled();
+    });
+
+    const settle = async () => {
+      for (let turn = 0; turn < 10; turn += 1) await vi.advanceTimersByTimeAsync(0);
+    };
+
+    const restBody = () => {
+      const combat = combatAt(1);
+      if (kind === 'dm') return combat;
+      return {
+        combatId,
+        playerId,
+        language: 'en',
+        combat: project(combat, { kind: 'player', playerId }),
+      };
+    };
+
+    it('reopens a refused stream after the REST probe answers 200', async () => {
+      vi.useFakeTimers();
+      const { fetch, seen } = stubFetch(200, restBody());
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      const unsubscribe = streams[kind](client, ended);
+      const first = StubEventSource.instances[0]!;
+      first.open();
+      first.emit('error');
+      await settle();
+      expect(seen).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(REOPEN_DELAYS_MS.at(-1)!);
+      expect(StubEventSource.instances).toHaveLength(1);
+      first.refuse();
+      await settle();
+      expect(seen).toHaveLength(2);
+      await vi.advanceTimersByTimeAsync(REOPEN_DELAYS_MS[0] - 1);
+      expect(StubEventSource.instances).toHaveLength(1);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(StubEventSource.instances).toHaveLength(2);
+      expect(first.closed).toBe(true);
+      expect(ended).not.toHaveBeenCalled();
+      unsubscribe();
+      expect(vi.getTimerCount()).toBe(0);
+    });
+
+    it('leaves no timer or source when unsubscribed while the reopen timer is pending', async () => {
+      vi.useFakeTimers();
+      const { fetch, seen } = stubFetch(502, { message: 'Bad gateway' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      const unsubscribe = streams[kind](client, ended);
+      const source = StubEventSource.instances[0]!;
+      source.open();
+      source.refuse();
+      await settle();
+      expect(seen).toHaveLength(1);
+      expect(vi.getTimerCount()).toBe(2);
+      unsubscribe();
+      expect(vi.getTimerCount()).toBe(0);
+      await vi.advanceTimersByTimeAsync(RECONNECTING_AFTER_MS + REOPEN_DELAYS_MS.at(-1)!);
+      expect(StubEventSource.instances).toHaveLength(1);
+      expect(source.closed).toBe(true);
+      expect(seen).toHaveLength(1);
+      expect(ended).not.toHaveBeenCalled();
+      expect(client.connection.state()).toBe('offline');
+    });
+
+    it('aborts the probe fetch and leaves no timer or source when unsubscribed while the probe is pending', async () => {
+      vi.useFakeTimers();
+      const { fetch, signals } = hangingFetch({ honorAbort: true });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      const unsubscribe = streams[kind](client, ended);
+      const source = StubEventSource.instances[0]!;
+      source.open();
+      source.refuse();
+      await settle();
+      expect(signals).toHaveLength(1);
+      expect(signals[0]!.aborted).toBe(false);
+      unsubscribe();
+      expect(signals[0]!.aborted).toBe(true);
+      expect(vi.getTimerCount()).toBe(0);
+      await settle();
+      await vi.advanceTimersByTimeAsync(PROBE_TIMEOUT_MS + REOPEN_DELAYS_MS.at(-1)!);
+      expect(StubEventSource.instances).toHaveLength(1);
+      expect(source.closed).toBe(true);
+      expect(signals).toHaveLength(1);
+      expect(ended).not.toHaveBeenCalled();
+      expect(client.connection.state()).toBe('offline');
+    });
+
+    it('times out a probe that never answers and counts it as a failed reopen', async () => {
+      vi.useFakeTimers();
+      const { fetch, signals } = hangingFetch({ honorAbort: false });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      const unsubscribe = streams[kind](client, ended);
+      StubEventSource.instances[0]!.open();
+      for (const [attempt, delay] of REOPEN_DELAYS_MS.slice(0, 2).entries()) {
+        StubEventSource.instances[attempt]!.refuse();
+        await settle();
+        expect(signals).toHaveLength(attempt + 1);
+        await vi.advanceTimersByTimeAsync(PROBE_TIMEOUT_MS - 1);
+        expect(signals[attempt]!.aborted).toBe(false);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(signals[attempt]!.aborted).toBe(true);
+        await vi.advanceTimersByTimeAsync(delay - 1);
+        expect(StubEventSource.instances).toHaveLength(attempt + 1);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(StubEventSource.instances).toHaveLength(attempt + 2);
+      }
+      expect(ended).not.toHaveBeenCalled();
+      unsubscribe();
+      expect(vi.getTimerCount()).toBe(0);
     });
   });
 });
