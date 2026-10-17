@@ -1,0 +1,22 @@
+{
+  "undoStart": "Отменено: начало боя",
+  "undoNextTurn": "Отменено: следующий ход",
+  "undoEditRound": "Отменено: раунд изменён на {{round}}",
+  "undoSetEscalation": "Отменено: кубик эскалации изменён на {{value}}",
+  "undoRestart": "Отменено: перезапуск боя",
+  "undoClear": "Отменено: очистка боя",
+  "undoAddUnit": "Отменено: добавление {{name}}",
+  "undoEditUnit": "Отменено: правка {{name}}",
+  "undoDuplicateUnit": "Отменено: копия {{name}}",
+  "undoRemoveUnit": "Отменено: удаление {{name}}",
+  "undoDisable": "Отменено: отключение {{name}}",
+  "undoEnable": "Отменено: включение {{name}}",
+  "undoSetInitiative": "Отменено: инициатива {{value}} для {{name}}",
+  "undoRollInitiative": "Отменено: бросок инициативы для {{name}}",
+  "undoDamage": "Отменено: {{amount}} урона по {{name}}",
+  "undoHeal": "Отменено: лечение {{amount}} для {{name}}",
+  "undoSetTempHp": "Отменено: {{amount}} врем. ОЗ для {{name}}",
+  "undoSetMaxHp": "Отменено: макс. ОЗ {{amount}} для {{name}}",
+  "undoToggleCondition": "Отменено: {{condition}} у {{name}}",
+  "undoEditNote": "Отменено: заметка для {{name}}"
+}

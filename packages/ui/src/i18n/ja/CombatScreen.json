@@ -1,0 +1,22 @@
+{
+  "undoStart": "取り消し：戦闘開始",
+  "undoNextTurn": "取り消し：次のターン",
+  "undoEditRound": "取り消し：ラウンドを {{round}} に変更",
+  "undoSetEscalation": "取り消し：エスカレーションダイスを {{value}} に変更",
+  "undoRestart": "取り消し：戦闘の再開始",
+  "undoClear": "取り消し：戦闘のクリア",
+  "undoAddUnit": "取り消し：{{name}} の追加",
+  "undoEditUnit": "取り消し：{{name}} の編集",
+  "undoDuplicateUnit": "取り消し：{{name}} の複製",
+  "undoRemoveUnit": "取り消し：{{name}} の削除",
+  "undoDisable": "取り消し：{{name}} の無効化",
+  "undoEnable": "取り消し：{{name}} の有効化",
+  "undoSetInitiative": "取り消し：{{name}} のイニシアチブ {{value}}",
+  "undoRollInitiative": "取り消し：{{name}} のイニシアチブロール",
+  "undoDamage": "取り消し：{{name}} への {{amount}} ダメージ",
+  "undoHeal": "取り消し：{{name}} の {{amount}} 回復",
+  "undoSetTempHp": "取り消し：{{name}} の一時HP {{amount}}",
+  "undoSetMaxHp": "取り消し：{{name}} の最大HP {{amount}}",
+  "undoToggleCondition": "取り消し：{{name}} の {{condition}}",
+  "undoEditNote": "取り消し：{{name}} のメモ"
+}

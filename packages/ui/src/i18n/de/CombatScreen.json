@@ -1,0 +1,22 @@
+{
+  "undoStart": "Rückgängig: Kampfbeginn",
+  "undoNextTurn": "Rückgängig: nächster Zug",
+  "undoEditRound": "Rückgängig: Runde auf {{round}} gesetzt",
+  "undoSetEscalation": "Rückgängig: Eskalationswürfel auf {{value}} gesetzt",
+  "undoRestart": "Rückgängig: Neustart des Kampfes",
+  "undoClear": "Rückgängig: Kampf geleert",
+  "undoAddUnit": "Rückgängig: {{name}} hinzugefügt",
+  "undoEditUnit": "Rückgängig: Bearbeitung von {{name}}",
+  "undoDuplicateUnit": "Rückgängig: Kopie von {{name}}",
+  "undoRemoveUnit": "Rückgängig: {{name}} entfernt",
+  "undoDisable": "Rückgängig: {{name}} deaktiviert",
+  "undoEnable": "Rückgängig: {{name}} aktiviert",
+  "undoSetInitiative": "Rückgängig: Initiative {{value}} für {{name}}",
+  "undoRollInitiative": "Rückgängig: Initiativewurf für {{name}}",
+  "undoDamage": "Rückgängig: {{amount}} Schaden an {{name}}",
+  "undoHeal": "Rückgängig: {{amount}} Heilung für {{name}}",
+  "undoSetTempHp": "Rückgängig: {{amount}} Temp. TP für {{name}}",
+  "undoSetMaxHp": "Rückgängig: Max. TP {{amount}} für {{name}}",
+  "undoToggleCondition": "Rückgängig: {{condition}} bei {{name}}",
+  "undoEditNote": "Rückgängig: Notiz zu {{name}}"
+}

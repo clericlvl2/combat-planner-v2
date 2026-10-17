@@ -1,0 +1,22 @@
+{
+  "undoStart": "Undid: start of the combat",
+  "undoNextTurn": "Undid: next turn",
+  "undoEditRound": "Undid: round set to {{round}}",
+  "undoSetEscalation": "Undid: escalation die set to {{value}}",
+  "undoRestart": "Undid: restart of the combat",
+  "undoClear": "Undid: clearing the combat",
+  "undoAddUnit": "Undid: {{name}} added",
+  "undoEditUnit": "Undid: edit of {{name}}",
+  "undoDuplicateUnit": "Undid: copy of {{name}}",
+  "undoRemoveUnit": "Undid: {{name}} removed",
+  "undoDisable": "Undid: {{name}} disabled",
+  "undoEnable": "Undid: {{name}} enabled",
+  "undoSetInitiative": "Undid: initiative {{value}} for {{name}}",
+  "undoRollInitiative": "Undid: initiative roll for {{name}}",
+  "undoDamage": "Undid: {{amount}} damage to {{name}}",
+  "undoHeal": "Undid: {{amount}} healing on {{name}}",
+  "undoSetTempHp": "Undid: {{amount}} temp HP on {{name}}",
+  "undoSetMaxHp": "Undid: max HP {{amount}} on {{name}}",
+  "undoToggleCondition": "Undid: {{condition}} on {{name}}",
+  "undoEditNote": "Undid: note on {{name}}"
+}

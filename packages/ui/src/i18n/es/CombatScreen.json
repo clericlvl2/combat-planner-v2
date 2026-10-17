@@ -1,0 +1,22 @@
+{
+  "undoStart": "Deshecho: inicio del combate",
+  "undoNextTurn": "Deshecho: siguiente turno",
+  "undoEditRound": "Deshecho: ronda fijada en {{round}}",
+  "undoSetEscalation": "Deshecho: dado de escalada fijado en {{value}}",
+  "undoRestart": "Deshecho: reinicio del combate",
+  "undoClear": "Deshecho: combate vaciado",
+  "undoAddUnit": "Deshecho: {{name}} añadido",
+  "undoEditUnit": "Deshecho: edición de {{name}}",
+  "undoDuplicateUnit": "Deshecho: copia de {{name}}",
+  "undoRemoveUnit": "Deshecho: {{name}} eliminado",
+  "undoDisable": "Deshecho: {{name}} desactivado",
+  "undoEnable": "Deshecho: {{name}} activado",
+  "undoSetInitiative": "Deshecho: iniciativa {{value}} de {{name}}",
+  "undoRollInitiative": "Deshecho: tirada de iniciativa de {{name}}",
+  "undoDamage": "Deshecho: {{amount}} de daño a {{name}}",
+  "undoHeal": "Deshecho: {{amount}} de curación a {{name}}",
+  "undoSetTempHp": "Deshecho: {{amount}} PG temp. de {{name}}",
+  "undoSetMaxHp": "Deshecho: PG máx. {{amount}} de {{name}}",
+  "undoToggleCondition": "Deshecho: {{condition}} en {{name}}",
+  "undoEditNote": "Deshecho: nota de {{name}}"
+}
