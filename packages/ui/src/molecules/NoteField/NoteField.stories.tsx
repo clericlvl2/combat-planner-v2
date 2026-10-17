@@ -8,6 +8,7 @@ import type { NoteFieldProps } from './NoteField.tsx';
 
 interface NoteFieldCellProps extends NoteFieldProps {
   withCollapse?: boolean;
+  withUnmount?: boolean;
 }
 
 const stage = {
@@ -28,22 +29,38 @@ function NoteFieldCell({
   onChange,
   collapsed: initialCollapsed = false,
   withCollapse = false,
+  withUnmount = false,
   ...props
 }: NoteFieldCellProps) {
   const { t } = useTranslation('NoteField');
   const [value, setValue] = useState(initialValue);
   const [collapsed, setCollapsed] = useState(initialCollapsed);
+  const [mounted, setMounted] = useState(true);
   return (
     <div style={stage}>
-      <NoteField
-        {...props}
-        value={value}
-        collapsed={collapsed}
-        onChange={(next) => {
-          setValue(next);
-          onChange(next);
-        }}
-      />
+      {mounted ? (
+        <NoteField
+          key="expanded"
+          {...props}
+          value={value}
+          collapsed={collapsed}
+          onChange={(next) => {
+            setValue(next);
+            onChange(next);
+          }}
+        />
+      ) : (
+        <NoteField key="collapsed" value={value} onChange={onChange} collapsed />
+      )}
+      {withUnmount ? (
+        <button
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => setMounted(false)}
+        >
+          Swap to the collapsed instance
+        </button>
+      ) : null}
       {withCollapse ? (
         <button
           type="button"
@@ -212,6 +229,21 @@ export const ExtraFlowCollapseSaves = meta.story({
     await expect(args.onChange).toHaveBeenCalledWith('Hex on Orc Berserker');
     await expect(canvas.queryByRole('textbox')).toBeNull();
     await expect(canvas.getByText('Hex on Orc Berserker')).toBeVisible();
+  },
+});
+
+export const ExtraSaveOnUnmount = meta.story({
+  name: 'Unmounting the editing instance saves the draft',
+  args: { value: '', withUnmount: true },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
+    await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Hex on Orc Berserker');
+    await expect(args.onChange).not.toHaveBeenCalled();
+    await userEvent.click(canvas.getByRole('button', { name: 'Swap to the collapsed instance' }));
+    await expect(args.onChange).toHaveBeenCalledOnce();
+    await expect(args.onChange).toHaveBeenCalledWith('Hex on Orc Berserker');
+    await expect(canvas.queryByRole('textbox')).toBeNull();
+    await expect(await canvas.findByText('Hex on Orc Berserker')).toBeVisible();
   },
 });
 

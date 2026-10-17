@@ -56,6 +56,8 @@ export function NoteField({
     if (collapsed) commitRef.current();
   }, [collapsed]);
 
+  useEffect(() => () => commitRef.current(), []);
+
   const handleKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
     if (event.key !== 'Enter' || event.shiftKey || event.nativeEvent.isComposing) return;
     event.preventDefault();
