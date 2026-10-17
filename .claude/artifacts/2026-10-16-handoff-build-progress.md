@@ -108,8 +108,8 @@
 - fix-2.4: a returning player's rename is sent as `releaseUnit` + `claimUnit`
   of the own hero, because the domain has no rename and forbids re-claiming an
   own hero (`authorize.ts:35`). Owner: allow re-claim as rename? The guard
-  (fix-2.4 P2) shows the pair nulls the DM's Undo and races; `fix-4` adds
-  `renameUnit` (orchestrator decision, between phases into vision).
+  (fix-2.4 P2) shows the pair nulls the DM's Undo and races; orchestrator
+  decision: a re-claim of an own hero renames (vision Claims, fa60bcf), `fix-4`.
 - fix-2.4: `UndoSummary.action` carries the full `Action`, not just the type,
   so «Undid: 12 damage to …» can show the amount. Accepted.
 - fix-2.4: toast icons come from `kind` (success, neutral, warning, error) in
@@ -670,9 +670,8 @@
     dispatch blocks the action queue until its Retry toast settles; later
     taps wait, then burst (double Next turn).
   - P2 Heroes.tsx:127-137: rename as release + claim nulls the DM's Undo and
-    races another claimer. The fix depends on the owner question «rename»;
-    until then, `fix-4` adds a domain `renameUnit` player action, which is
-    undo-neutral.
+    races another claimer. Orchestrator decision: `authorize` accepts a
+    re-claim of an own hero as a rename, and Heroes sends one `claimUnit`.
   - P3: a stale `link.get` error closes Share on retry
     (CombatScreen.tsx:148-158).
   - P3: a rejected tag create blocks Save silently (Library.tsx:176-210).
