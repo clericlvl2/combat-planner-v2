@@ -124,17 +124,6 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
     return true;
   };
 
-  const rename = async (claimName: string, unit: PlayerUnit): Promise<boolean> => {
-    const released = await dispatch({
-      id: ulid(),
-      version: combat.version,
-      type: 'releaseUnit',
-      unitId: unit.id,
-    });
-    if (!released.applied) return false;
-    return join(claimName, released.version, [unit.id]);
-  };
-
   const submit = () => {
     if (!ready || displayName === null || submitting.current) return;
     const own = picked.find((unit) => stateOf(unit) === 'own');
@@ -145,7 +134,7 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
           picked.filter((unit) => stateOf(unit) === 'chosen').map((unit) => unit.id),
         )
       : own && displayName !== storedName
-        ? rename(displayName, own)
+        ? join(displayName, combat.version, [own.id])
         : Promise.resolve(true);
     submitting.current = true;
     void work.then((done) => {

@@ -203,10 +203,16 @@ export const ExtraReturningRename = meta.story({
     await userEvent.type(name, 'Мика');
     await userEvent.click(canvas.getByRole('button', { name: 'Done' }));
     await waitFor(() => expect(canvasElement.querySelector('[data-done]')).not.toBeNull());
-    await expect(sentBy(api, MIKA)).toEqual([
-      expect.objectContaining({ type: 'releaseUnit', unitId: unitIds.vashti }),
-      expect.objectContaining({ type: 'claimUnit', unitId: unitIds.vashti, displayName: 'Мика' }),
-    ]);
+    const sent = sentBy(api, MIKA);
+    await expect(sent).toHaveLength(1);
+    await expect(sent[0]).toMatchObject({
+      type: 'claimUnit',
+      unitId: unitIds.vashti,
+      displayName: 'Мика',
+    });
     await expect(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' })).toBeChecked();
+    const { combat } = await api.play.get(TOKEN, MIKA);
+    await expect(combat.players[MIKA]).toBe('Мика');
+    await expect(combat.units.find((unit) => unit.id === unitIds.vashti)?.claimedBy).toBe(MIKA);
   },
 });
