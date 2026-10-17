@@ -2,12 +2,14 @@ import { spawn } from 'node:child_process';
 import type { ChildProcess } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import {
+  copyFileSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -27,8 +29,20 @@ interface Started {
 
 type Variables = Record<string, string | undefined>;
 
-const mainPath = path.join(import.meta.dirname, 'main.ts');
+const serverDirectory = path.join(import.meta.dirname, '..');
 const directory = mkdtempSync(path.join(tmpdir(), 'combat-planner-main-'));
+
+const relocatedMain = (root: string): string => {
+  const source = path.join(root, 'apps', 'server', 'src');
+  mkdirSync(source, { recursive: true });
+  for (const name of ['package.json', 'node_modules'])
+    symlinkSync(path.join(serverDirectory, name), path.join(root, 'apps', 'server', name));
+  for (const name of ['main.ts', 'app.ts'])
+    copyFileSync(path.join(import.meta.dirname, name), path.join(source, name));
+  return path.join(source, 'main.ts');
+};
+
+const mainPath = relocatedMain(path.join(directory, 'repository'));
 const staticRoot = path.join(directory, 'dist');
 const LISTENING = /server listening on (http:\/\/localhost:\d+)/;
 const HEX_SECRET = /^[0-9a-f]{64}$/;
@@ -55,7 +69,7 @@ const freshDatabase = (): string => {
 const secretsOf = (databasePath: string): string =>
   path.join(path.dirname(databasePath), 'secrets.json');
 
-const spawnServer = (variables: Variables) => {
+const spawnServer = (variables: Variables, main = mainPath) => {
   const env: Record<string, string> = {
     PATH: process.env.PATH ?? '',
     PORT: '0',
@@ -66,7 +80,7 @@ const spawnServer = (variables: Variables) => {
     if (value === undefined) delete env[name];
     else env[name] = value;
   }
-  const child = spawn(process.execPath, [mainPath], { env });
+  const child = spawn(process.execPath, [main], { env });
   children.add(child);
   const output = { stdout: '', stderr: '' };
   child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
@@ -93,8 +107,8 @@ const run = (variables: Variables): Promise<Run> => {
   return exited;
 };
 
-const start = (variables: Variables): Promise<Started> => {
-  const { child, output, exited } = spawnServer(variables);
+const start = (variables: Variables, main = mainPath): Promise<Started> => {
+  const { child, output, exited } = spawnServer(variables, main);
   return new Promise<Started>((resolve, reject) => {
     const stop = () => {
       child.kill('SIGTERM');
@@ -328,6 +342,45 @@ describe('server start', { concurrent: true, timeout: 30_000 }, () => {
       expect(outputOf(result)).not.toContain(secrets.LINK_SECRET);
     }
     expect(readFileSync(secretsPath, 'utf8')).toBe(`{"LINK_SECRET":"${leaked}"`);
+  });
+
+  it('starts without a .env at the repository root', async ({ expect }) => {
+    const root = path.join(directory, 'without-env');
+    const main = relocatedMain(root);
+    expect(existsSync(path.join(root, '.env'))).toBe(false);
+    const server = await start({ NODE_ENV: 'production' }, main);
+    try {
+      const response = await fetch(`${server.url}/api/health`);
+      expect(response.status).toBe(200);
+    } finally {
+      await server.stop();
+    }
+  });
+
+  it('loads the .env at the repository root without overriding the process environment', async ({
+    expect,
+  }) => {
+    const root = path.join(directory, 'with-env');
+    const main = relocatedMain(root);
+    const databasePath = freshDatabase();
+    const linkSecret = generated();
+    writeFileSync(
+      path.join(root, '.env'),
+      `BETTER_AUTH_SECRET=${SHORT_SECRET}\nLINK_SECRET=${linkSecret}\n`,
+    );
+    const server = await start(
+      { NODE_ENV: 'production', DATABASE_PATH: databasePath, BETTER_AUTH_SECRET: generated() },
+      main,
+    );
+    try {
+      const response = await fetch(`${server.url}/api/health`);
+      expect(response.status).toBe(200);
+    } finally {
+      const result = await server.stop();
+      expect(result.stdout).not.toContain('generated');
+      expect(outputOf(result)).not.toContain(linkSecret);
+    }
+    expect(existsSync(secretsOf(databasePath))).toBe(false);
   });
 
   it('admits sign-up from the request origin and rejects another origin without BETTER_AUTH_URL', async ({

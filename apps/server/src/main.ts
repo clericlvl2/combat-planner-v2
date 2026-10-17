@@ -1,9 +1,12 @@
 import { randomBytes } from 'node:crypto';
-import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { apiEnvSchema } from '@combat-planner/api';
 import { serve } from '@hono/node-server';
 import { createServerApp } from './app.ts';
+
+const rootEnvFile = path.join(import.meta.dirname, '../../../.env');
+if (existsSync(rootEnvFile)) process.loadEnvFile(rootEnvFile);
 
 const MIN_SECRET_LENGTH = 32;
 
