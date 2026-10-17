@@ -1,5 +1,5 @@
 import { ApiError } from '@combat-planner/api/client';
-import type { ApiEndEvent } from '@combat-planner/api/client';
+import type { ApiEndEvent, DmCombat } from '@combat-planner/api/client';
 import type { Action, Combat } from '@combat-planner/domain';
 import { LIMITS } from '@combat-planner/domain';
 import { describe, expect, expectTypeOf, it, vi } from 'vite-plus/test';
@@ -32,8 +32,13 @@ const damage = (version: number): Action => ({
   amount: 5,
 });
 
-const entry = (version: number): CombatEntry<Combat> => ({
-  document: combat({ version }),
+const dmCombat = (overrides: Partial<Combat> = {}): DmCombat => ({
+  ...combat(overrides),
+  undo: null,
+});
+
+const entry = (version: number): CombatEntry<DmCombat> => ({
+  document: dmCombat({ version }),
   language: null,
 });
 
@@ -45,9 +50,9 @@ describe('combat cache', () => {
 
   it('writes a document only when it is newer', () => {
     const current = entry(3);
-    expect(writeDocument(current, combat({ version: 2 }))).toBe(current);
-    expect(writeDocument(current, combat({ version: 4 })).document.version).toBe(4);
-    expect(writeDocument(undefined, combat({ version: 1 }))).toEqual(entry(1));
+    expect(writeDocument(current, dmCombat({ version: 2 }))).toBe(current);
+    expect(writeDocument(current, dmCombat({ version: 4 })).document.version).toBe(4);
+    expect(writeDocument(undefined, dmCombat({ version: 1 }))).toEqual(entry(1));
   });
 
   it('merges a loaded entry without going back in version and keeps the language', () => {
@@ -78,10 +83,10 @@ describe('combat sources', () => {
     const key = combatKey(COMBAT_ID, DM);
     const source = dmSource(context.api, COMBAT_ID);
     context.queryClient.setQueryData(key, await entryFetcher(context.queryClient, key, source)());
-    const first = context.queryClient.getQueryData<CombatEntry<Combat>>(key)?.document;
+    const first = context.queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document;
     await new Promise((resolve) => setTimeout(resolve, 2));
     context.queryClient.setQueryData(key, await entryFetcher(context.queryClient, key, source)());
-    const second = context.queryClient.getQueryData<CombatEntry<Combat>>(key)?.document;
+    const second = context.queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document;
     expect(context.api.calls.map((call) => call.method)).toEqual(['combats.open', 'combats.open']);
     expect(second?.lastPlayedAt).not.toBe(first?.lastPlayedAt);
   });
@@ -152,7 +157,7 @@ describe('combat sources', () => {
   });
 
   it('exposes refetch', () => {
-    expectTypeOf<CombatState<Combat>['refetch']>().toEqualTypeOf<() => Promise<void>>();
+    expectTypeOf<CombatState<DmCombat>['refetch']>().toEqualTypeOf<() => Promise<void>>();
   });
 });
 
@@ -169,7 +174,7 @@ describe('createDispatcher', () => {
       show: context.show,
       t: translate,
     });
-    await dispatch(damage(1));
+    await expect(dispatch(damage(1))).resolves.toEqual({ applied: true, version: 2 });
     expect(setQueryData).not.toHaveBeenCalled();
     expect(context.queryClient.getQueryData<CombatEntry>(key)?.document.version).toBe(1);
     await expect(context.api.combats.get(COMBAT_ID)).resolves.toMatchObject({ version: 2 });
@@ -187,7 +192,7 @@ describe('createDispatcher', () => {
       show: context.show,
       t: translate,
     });
-    await dispatch(damage(1));
+    await expect(dispatch(damage(1))).resolves.toEqual({ applied: false });
     expect(context.queryClient.getQueryData<CombatEntry>(key)?.document.version).toBe(3);
     expect(context.toasts).toEqual([{ message: 'combatChanged', kind: 'warning' }]);
   });
@@ -201,16 +206,18 @@ describe('createDispatcher', () => {
     const show = vi.fn((_input: unknown) => 'toast-1');
     const dispatch = createDispatcher({ send, refetch, show, t: translate });
     const action = damage(1);
-    await dispatch(action);
+    const sent = dispatch(action);
+    await flush();
     expect(refetch).not.toHaveBeenCalled();
     expect(show).toHaveBeenCalledWith({
       message: 'serverUnreachable',
       kind: 'error',
       action: { label: 'retry', onAction: expect.any(Function) },
+      onDismiss: expect.any(Function),
     });
     const [[toast]] = show.mock.calls as [[{ action: { onAction: () => void } }]];
     toast.action.onAction();
-    await flush();
+    await expect(sent).resolves.toEqual({ applied: true, version: 2 });
     expect(send.mock.calls).toEqual([[action], [action]]);
     expect(send.mock.calls[1]?.[0].id).toBe(action.id);
     expect(show).toHaveBeenCalledTimes(1);
@@ -224,10 +231,56 @@ describe('createDispatcher', () => {
       show,
       t: translate,
     });
-    await dispatch(damage(1));
+    await expect(dispatch(damage(1))).resolves.toEqual({ applied: false });
     expect(show).toHaveBeenCalledWith({
       message: `unitCap ${JSON.stringify({ limit: LIMITS.unitsPerCombat })}`,
       kind: 'warning',
     });
+  });
+
+  it('resolves not applied when the Retry toast is dismissed', async () => {
+    const show = vi.fn((_input: unknown) => 'toast-1');
+    const dispatch = createDispatcher({
+      send: () => Promise.reject(new ApiError({ status: 0, code: 'network' })),
+      refetch: async () => {},
+      show,
+      t: translate,
+    });
+    const sent = dispatch(damage(1));
+    await flush();
+    const [[toast]] = show.mock.calls as [[{ onDismiss: () => void }]];
+    toast.onDismiss();
+    await expect(sent).resolves.toEqual({ applied: false });
+  });
+
+  it('resolves the original call with the failed Retry when the second toast is dismissed', async () => {
+    const send = vi
+      .fn<(action: Action) => Promise<{ version: number }>>()
+      .mockRejectedValue(new ApiError({ status: 0, code: 'network' }));
+    const show = vi.fn((_input: unknown) => 'toast-1');
+    const dispatch = createDispatcher({ send, refetch: async () => {}, show, t: translate });
+    const sent = dispatch(damage(1));
+    await flush();
+    const [[first]] = show.mock.calls as [
+      [{ action: { onAction: () => void }; onDismiss: () => void }],
+    ];
+    first.action.onAction();
+    first.onDismiss();
+    await flush();
+    const second = show.mock.calls[1]?.[0] as { onDismiss: () => void };
+    second.onDismiss();
+    await expect(sent).resolves.toEqual({ applied: false });
+  });
+
+  it('resolves not applied on a rejection without a toast', async () => {
+    const show = vi.fn((_input: unknown) => 'toast-1');
+    const dispatch = createDispatcher({
+      send: () => Promise.reject(new ApiError({ status: 403, code: 'forbidden' })),
+      refetch: async () => {},
+      show,
+      t: translate,
+    });
+    await expect(dispatch(damage(1))).resolves.toEqual({ applied: false });
+    expect(show).not.toHaveBeenCalled();
   });
 });

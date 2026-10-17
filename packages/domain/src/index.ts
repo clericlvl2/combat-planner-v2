@@ -143,7 +143,7 @@ export type {
   NextTurnTarget,
   Patch,
 } from './reduce.ts';
-export { applyUndo, undoTarget } from './undo.ts';
-export type { LogEntry, UndoableEntry, Undone } from './undo.ts';
+export { applyUndo, undoSummary, undoTarget } from './undo.ts';
+export type { LogEntry, UndoSummary, UndoableEntry, Undone } from './undo.ts';
 export { PLAYER_ACTION_TYPES, authorize, isPlayerAction } from './authorize.ts';
 export type { PlayerActionType } from './authorize.ts';

@@ -1,10 +1,11 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import type { Combat, UnitId } from '@combat-planner/domain';
+import type { UnitId } from '@combat-planner/domain';
 import { Hono } from 'hono';
 import { createApiApp } from '../src/app.ts';
 import type { ApiAppDeps, ApiAppEnv, AppType } from '../src/app.ts';
+import type { DmCombat } from '../src/client.ts';
 import { openDatabase } from '../src/db/index.ts';
 import type { AppDatabase } from '../src/db/index.ts';
 import { runMigrations } from '../src/db/migrate.ts';
@@ -120,9 +121,9 @@ export const ulidAt = (index: number): string => {
   return `01ARZ3NDEKTSV4RRFFQ69G5F${suffix}`;
 };
 
-export const fetchCombat = async (app: Requester, id = COMBAT_ID): Promise<Combat> => {
+export const fetchCombat = async (app: Requester, id = COMBAT_ID): Promise<DmCombat> => {
   const response = await call(app, 'GET', `/combats/${id}`);
-  return (await response.json()) as Combat;
+  return (await response.json()) as DmCombat;
 };
 
 export interface Browser {

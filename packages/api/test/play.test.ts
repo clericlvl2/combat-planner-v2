@@ -61,7 +61,7 @@ const visibleKeys = (unit: PlayerUnit, playerId: string): string[] => {
 const assertVisibility = (document: PlayerCombat, source: Combat, playerId: string) => {
   expect(Object.keys(document).sort()).toEqual(
     Object.keys(source)
-      .filter((key) => key !== 'linkGeneration')
+      .filter((key) => key !== 'linkGeneration' && key !== 'undo')
       .sort(),
   );
   const disabled = source.units.filter((unit) => unit.disabled).map((unit) => unit.id);

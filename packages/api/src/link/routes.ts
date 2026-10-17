@@ -3,8 +3,9 @@ import { DomainError, apply } from '@combat-planner/domain';
 import { Hono } from 'hono';
 import { ulid } from 'ulid';
 import type { ApiAppEnv } from '../app.ts';
+import type { DmCombat } from '../client.ts';
 import { requireUser } from '../auth/require-user.ts';
-import { appendLogEntry, nextSeq } from '../combats/log.ts';
+import { appendLogEntry, dmDocument, nextSeq } from '../combats/log.ts';
 import type { Transaction } from '../combats/store.ts';
 import { NOT_FOUND, findOwnCombat, nowIso, saveCombat } from '../combats/store.ts';
 import { broadcast, broadcastDocument } from '../live/registry.ts';
@@ -38,7 +39,7 @@ const releaseEveryClaim = (tx: Transaction, source: Combat, now: string): Combat
   return combat;
 };
 
-const reissue = (tx: Transaction, ownerId: string, combatId: string): Combat | undefined => {
+const reissue = (tx: Transaction, ownerId: string, combatId: string): DmCombat | undefined => {
   const combat = findOwnCombat(tx, ownerId, combatId);
   if (!combat) return undefined;
   const now = nowIso();
@@ -50,7 +51,7 @@ const reissue = (tx: Transaction, ownerId: string, combatId: string): Combat | u
     updatedAt: now,
   };
   saveCombat(tx, next);
-  return next;
+  return dmDocument(tx, next);
 };
 
 export const linkApp = new Hono<ApiAppEnv>()

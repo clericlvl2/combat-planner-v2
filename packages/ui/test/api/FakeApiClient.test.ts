@@ -1,6 +1,6 @@
-import type { ApiEndEvent, ApiClient, ConnectionState } from '@combat-planner/api/client';
+import type { ApiEndEvent, ApiClient, ConnectionState, DmCombat } from '@combat-planner/api/client';
 import { ApiError } from '@combat-planner/api/client';
-import type { Action, Combat, PlayerCombat, Preset } from '@combat-planner/domain';
+import type { Action, PlayerCombat, Preset } from '@combat-planner/domain';
 import { LIMITS } from '@combat-planner/domain';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { FakeApiClient } from '../../src/api/FakeApiClient.ts';
@@ -30,7 +30,7 @@ const damage = (version: number, unitId = ENEMY_ID, id = ACTION_ID): Action => (
 const seeded = () => new FakeApiClient({ scenario: scenario({ combats: [combat()] }) });
 
 const watchDm = (client: ApiClient) => {
-  const documents: Combat[] = [];
+  const documents: DmCombat[] = [];
   const ended: ApiEndEvent[] = [];
   client.combats.subscribe(
     COMBAT_ID,
@@ -127,6 +127,62 @@ describe('FakeApiClient dispatch', () => {
       code: 'unauthorized',
       status: 401,
     });
+  });
+});
+
+describe('FakeApiClient undo', () => {
+  const ACTION_2 = '01ARZ3NDEKTSV4RRFFQ69G5FC1';
+  const ACTION_3 = '01ARZ3NDEKTSV4RRFFQ69G5FC2';
+
+  it('the DM document carries the newest undoable action with its unit name', async () => {
+    const client = seeded();
+    const dm = watchDm(client);
+    expect(dm.documents[0]?.undo).toBeNull();
+    await client.combats.dispatch(COMBAT_ID, damage(1));
+    const undo = { action: damage(1), unitName: 'Goblin boss' };
+    expect(dm.documents.at(-1)?.undo).toEqual(undo);
+    await expect(client.combats.get(COMBAT_ID)).resolves.toMatchObject({ undo });
+    await expect(client.combats.open(COMBAT_ID)).resolves.toMatchObject({ undo });
+  });
+
+  it('reflects a player action and gives a reopened stream the same undo', async () => {
+    const client = seeded();
+    await client.play.dispatch(TOKEN, PLAYER_ID, damage(1, HERO_ID));
+    const reopened = watchDm(client);
+    expect(reopened.documents[0]?.undo).toEqual({
+      action: damage(1, HERO_ID),
+      unitName: 'Aria',
+    });
+  });
+
+  it('is null after a release and after everything is undone, and never reaches a player', async () => {
+    const client = seeded();
+    const dm = watchDm(client);
+    const player = watchPlayer(client);
+    await client.combats.dispatch(COMBAT_ID, damage(1));
+    await client.combats.dispatch(COMBAT_ID, { id: ACTION_2, version: 2, type: 'undo' });
+    expect(dm.documents.at(-1)?.undo).toBeNull();
+    await client.combats.dispatch(COMBAT_ID, damage(3, ENEMY_ID, ACTION_3));
+    expect(dm.documents.at(-1)?.undo?.action.type).toBe('damage');
+    await client.play.dispatch(TOKEN, PLAYER_ID, {
+      id: '01ARZ3NDEKTSV4RRFFQ69G5FC3',
+      version: 4,
+      type: 'releaseUnit',
+      unitId: HERO_ID,
+    });
+    expect(dm.documents.at(-1)?.undo).toBeNull();
+    expect(player.documents.every((document) => !('undo' in document))).toBe(true);
+  });
+
+  it('deferBroadcasts delivers the document after the dispatch resolves', async () => {
+    const client = seeded();
+    const dm = watchDm(client);
+    client.deferBroadcasts();
+    await client.combats.dispatch(COMBAT_ID, damage(1));
+    expect(dm.documents.map((document) => document.version)).toEqual([1]);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(dm.documents.map((document) => document.version)).toEqual([1, 2]);
+    expect(dm.documents.at(-1)?.undo?.action.type).toBe('damage');
   });
 });
 

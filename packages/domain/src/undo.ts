@@ -16,6 +16,11 @@ export interface UndoableEntry extends LogEntry {
   patch: Patch;
 }
 
+export interface UndoSummary {
+  action: Action;
+  unitName: string | null;
+}
+
 export interface Undone {
   combat: Combat;
   patch: null;
@@ -67,4 +72,18 @@ export const applyUndo = (
     patch: null,
     undone: target.action.id,
   };
+};
+
+const unitNameOf = (combat: Combat, entry: UndoableEntry): string | null => {
+  const { action } = entry;
+  if (action.type === 'addUnit') return action.name;
+  if (!('unitId' in action)) return null;
+  const known = [...combat.units, ...(entry.patch.fields.units ?? [])];
+  return known.find((unit) => unit.id === action.unitId)?.name ?? null;
+};
+
+export const undoSummary = (combat: Combat, log: readonly LogEntry[]): UndoSummary | null => {
+  const target = undoTarget(log);
+  if (target instanceof DomainError) return null;
+  return { action: target.action, unitName: unitNameOf(combat, target) };
 };

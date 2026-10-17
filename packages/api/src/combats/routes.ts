@@ -7,6 +7,7 @@ import type { ApiAppEnv } from '../app.ts';
 import { requireUser } from '../auth/require-user.ts';
 import { combatCreateInputSchema, combatPatchSchema } from '../client.ts';
 import { broadcast, broadcastDocument } from '../live/registry.ts';
+import { dmDocument } from './log.ts';
 import type { Transaction } from './store.ts';
 import {
   NOT_FOUND,
@@ -70,9 +71,10 @@ export const combatsApp = new Hono<ApiAppEnv>()
     return c.json(stored.combat);
   })
   .get('/:id', (c) => {
-    const combat = findOwnCombat(c.get('db'), c.get('userId'), c.req.param('id'));
+    const db = c.get('db');
+    const combat = findOwnCombat(db, c.get('userId'), c.req.param('id'));
     if (!combat) return c.json(NOT_FOUND, 404);
-    return c.json(combat);
+    return c.json(dmDocument(db, combat));
   })
   .patch('/:id', zValidator('json', combatPatchSchema), (c) => {
     const patch = c.req.valid('json');
@@ -86,7 +88,7 @@ export const combatsApp = new Hono<ApiAppEnv>()
         updatedAt: nowIso(),
       };
       saveCombat(tx, next);
-      return next;
+      return dmDocument(tx, next);
     });
     if (!updated) return c.json(NOT_FOUND, 404);
     broadcastDocument(updated.id, updated);
@@ -126,7 +128,7 @@ export const combatsApp = new Hono<ApiAppEnv>()
         updatedAt: now,
       };
       saveCombat(tx, next);
-      return next;
+      return dmDocument(tx, next);
     });
     if (!opened) return c.json(NOT_FOUND, 404);
     broadcastDocument(opened.id, opened);

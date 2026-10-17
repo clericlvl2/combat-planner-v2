@@ -3,7 +3,7 @@ import { combatSchema } from '@combat-planner/domain';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 import type { ApiEvent } from '../src/client.ts';
-import { combatSummarySchema } from '../src/client.ts';
+import { combatSummarySchema, dmCombatSchema } from '../src/client.ts';
 import { combats } from '../src/db/schema.ts';
 import { subscribe, subscriberCount } from '../src/live/registry.ts';
 import type { TestApp } from './helpers.ts';
@@ -216,9 +216,10 @@ describe('POST /combats/:id/open', () => {
     const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/open`);
     unsubscribe();
     expect(response.status).toBe(200);
-    const combat = combatSchema.parse(await response.json());
+    const combat = dmCombatSchema.parse(await response.json());
     expect(combat.lastPlayedAt).toEqual(expect.any(String));
     expect(combat.version).toBe(3);
+    expect(combat.undo).toBeNull();
     expect(events).toEqual([{ type: 'document', version: 3, document: combat }]);
     const summaries = combatSummarySchema
       .array()
@@ -252,7 +253,7 @@ describe('POST /combats/:id/duplicate', () => {
     });
     expect(copy.createdAt).not.toBe(source.createdAt);
     const stored = await fetchCombat(dm, COPY_ID);
-    expect(stored).toEqual(copy);
+    expect(stored).toEqual({ ...copy, undo: null });
   });
 
   it('answers 404 for a combat of another user', async () => {

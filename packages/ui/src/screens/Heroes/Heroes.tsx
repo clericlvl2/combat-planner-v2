@@ -8,6 +8,7 @@ import { Checkbox } from '../../atoms/Checkbox/Checkbox.tsx';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
+import type { DispatchResult } from '../../hooks/combat.ts';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { PlayerHeader } from '../../organisms/PlayerHeader/PlayerHeader.tsx';
 import { PlayerToast, usePlayerToasts } from '../PlayerView/PlayerToast.tsx';
@@ -18,7 +19,7 @@ import classes from './Heroes.module.css';
 export interface HeroesProps {
   combat: PlayerCombat;
   playerId: PlayerId;
-  dispatch: (action: Action) => Promise<void>;
+  dispatch: (action: Action) => Promise<DispatchResult>;
   onDone: () => void;
 }
 

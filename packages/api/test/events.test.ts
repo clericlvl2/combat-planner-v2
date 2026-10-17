@@ -1,4 +1,5 @@
-import type { Action, Combat, Viewer } from '@combat-planner/domain';
+import type { Action, Viewer } from '@combat-planner/domain';
+import type { DmCombat } from '../src/client.ts';
 import { Hono } from 'hono';
 import {
   afterAll,
@@ -61,7 +62,7 @@ const PENDING = 'pending';
 const pendingAfterTick = <T>(read: Promise<T>) =>
   Promise.race([read, settled().then(() => PENDING)]);
 
-const streamWith = (viewer: Viewer, load: () => Combat | undefined) =>
+const streamWith = (viewer: Viewer, load: () => DmCombat | undefined) =>
   new Hono()
     .get('/', (c) => streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load }))
     .request('/');
@@ -119,6 +120,7 @@ describe('GET /combats/:id/events', () => {
     expect(subscriberCount(COMBAT_ID)).toBe(1);
     const damaged = await dispatchDamage(ENEMY_ID, 3);
     expect(damaged.version).toBe(combat.version + 1);
+    expect(damaged.undo).toMatchObject({ action: { type: 'damage', amount: 3 } });
     expect(await stream.event()).toEqual({
       id: String(damaged.version),
       event: { type: 'document', version: damaged.version, document: damaged },
@@ -225,9 +227,9 @@ describe('streamCombatEvents', () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const failure = new Error('project failed');
     const combat = await fetchCombat(dm);
-    const broken: Combat = {
+    const broken: DmCombat = {
       ...combat,
-      get units(): Combat['units'] {
+      get units(): DmCombat['units'] {
         throw failure;
       },
     };

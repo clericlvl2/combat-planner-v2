@@ -6,6 +6,7 @@ import type {
   CombatSummary,
   ConnectionListener,
   ConnectionState,
+  DmCombat,
   DocumentListener,
   EndListener,
   LinkToken,
@@ -35,6 +36,7 @@ import {
   duplicateName,
   normalizeTag,
   project,
+  undoSummary,
 } from '@combat-planner/domain';
 import { ulid } from 'ulid';
 import type { FakeAccount, Scenario, ScenarioSession } from './scenarios.ts';
@@ -55,7 +57,7 @@ interface StoredCombat {
 }
 
 interface DmSubscriber {
-  onDocument: DocumentListener<Combat>;
+  onDocument: DocumentListener<DmCombat>;
   onEnd: EndListener;
   version: number;
 }
@@ -103,6 +105,11 @@ const fromDomain = (error: DomainError): ApiError =>
 
 const nowIso = (): string => new Date().toISOString();
 
+const dmDocument = ({ combat, log }: StoredCombat): DmCombat => ({
+  ...combat,
+  undo: undoSummary(combat, log),
+});
+
 const tokenOf = (combatId: CombatId, generation: number): LinkToken =>
   `${combatId}.${generation}.fake`;
 
@@ -147,6 +154,7 @@ export class FakeApiClient implements ApiClient {
   private readonly dmSubscribers = new Map<CombatId, Set<DmSubscriber>>();
   private readonly playerSubscribers = new Map<CombatId, Set<PlayerSubscriber>>();
   private pendingFailure: ApiError | null = null;
+  private broadcastsDeferred = false;
 
   constructor({ scenario, delay = 0 }: FakeApiClientOptions) {
     this.delay = delay;
@@ -170,7 +178,11 @@ export class FakeApiClient implements ApiClient {
     this.connectionState = state;
     for (const listener of this.connectionListeners) listener(state);
     if (state !== 'connected') return;
-    for (const { combat } of this.combatStore.values()) this.broadcast(combat);
+    for (const stored of this.combatStore.values()) this.broadcast(stored);
+  }
+
+  deferBroadcasts(): void {
+    this.broadcastsDeferred = true;
   }
 
   expireSession(): void {
@@ -219,13 +231,23 @@ export class FakeApiClient implements ApiClient {
 
   private save(stored: StoredCombat, combat: Combat): void {
     stored.combat = combat;
-    this.broadcast(combat);
+    this.broadcast(stored);
   }
 
-  private broadcast(combat: Combat, audience: 'all' | 'dm' = 'all'): void {
+  private broadcast(stored: StoredCombat, audience: 'all' | 'dm' = 'all'): void {
+    if (!this.broadcastsDeferred) {
+      this.deliver(stored, audience);
+      return;
+    }
+    const snapshot: StoredCombat = { combat: stored.combat, log: [...stored.log] };
+    setTimeout(() => this.deliver(snapshot, audience), 0);
+  }
+
+  private deliver(stored: StoredCombat, audience: 'all' | 'dm'): void {
     if (this.connectionState !== 'connected') return;
+    const { combat } = stored;
     for (const subscriber of this.dmSubscribers.get(combat.id) ?? []) {
-      this.deliverToDm(subscriber, combat);
+      this.deliverToDm(subscriber, stored);
     }
     if (audience === 'dm') return;
     for (const subscriber of this.playerSubscribers.get(combat.id) ?? []) {
@@ -233,10 +255,10 @@ export class FakeApiClient implements ApiClient {
     }
   }
 
-  private deliverToDm(subscriber: DmSubscriber, combat: Combat): void {
-    if (combat.version <= subscriber.version) return;
-    subscriber.version = combat.version;
-    subscriber.onDocument(project(combat, DM));
+  private deliverToDm(subscriber: DmSubscriber, stored: StoredCombat): void {
+    if (stored.combat.version <= subscriber.version) return;
+    subscriber.version = stored.combat.version;
+    subscriber.onDocument(dmDocument(stored));
   }
 
   private deliverToPlayer(subscriber: PlayerSubscriber, combat: Combat): void {
@@ -461,9 +483,9 @@ export class FakeApiClient implements ApiClient {
           updatedAt: now,
         };
         this.save(stored, next);
-        return next;
+        return dmDocument(stored);
       }),
-    get: (id) => this.run('combats.get', [id], () => this.stored(id).combat),
+    get: (id) => this.run('combats.get', [id], () => dmDocument(this.stored(id))),
     dispatch: (id, action) =>
       this.run('combats.dispatch', [id, action], () =>
         this.dispatchAs(this.stored(id), DM, action),
@@ -483,7 +505,7 @@ export class FakeApiClient implements ApiClient {
       const subscribers = this.dmSubscribers.get(id) ?? new Set<DmSubscriber>();
       subscribers.add(subscriber);
       this.dmSubscribers.set(id, subscribers);
-      if (this.connectionState === 'connected') this.deliverToDm(subscriber, stored.combat);
+      if (this.connectionState === 'connected') this.deliverToDm(subscriber, stored);
       return () => {
         this.dmSubscribers.get(id)?.delete(subscriber);
       };
@@ -521,7 +543,7 @@ export class FakeApiClient implements ApiClient {
           updatedAt: now,
         };
         stored.combat = next;
-        this.broadcast(next, 'dm');
+        this.broadcast(stored, 'dm');
         this.endSubscribers(id, { type: 'linkRevoked' }, 'player');
         return { token: this.currentToken(next), version: next.version };
       }),

@@ -2,13 +2,14 @@ import type { LinkToken } from '@combat-planner/api/client';
 import type { CombatId } from '@combat-planner/domain';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
-import { useApi } from '../../api/ApiProvider.tsx';
-import { mutation } from '../../hooks/mutations.ts';
-import { queryKeys } from '../../hooks/queryKeys.ts';
-import { useToasts } from '../../hooks/useToasts.ts';
+import { useApi } from '../api/ApiProvider.tsx';
+import { mutation } from './mutations.ts';
+import { queryKeys } from './queryKeys.ts';
+import { useToasts } from './useToasts.ts';
 
 export interface CombatLink {
   token: LinkToken | undefined;
+  error: Error | null;
   reissue: () => Promise<unknown>;
 }
 
@@ -23,5 +24,5 @@ export function useCombatLink(id: CombatId, enabled: boolean): CombatLink {
       mutation({ queryClient, show, t }, { send: () => api.link.reissue(id), invalidate: [key] }),
     [api, id, key, queryClient, show, t],
   );
-  return { token: query.data?.token, reissue };
+  return { token: query.data?.token, error: query.error, reissue };
 }

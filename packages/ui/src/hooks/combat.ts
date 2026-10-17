@@ -2,13 +2,14 @@ import { ApiError } from '@combat-planner/api/client';
 import type {
   ApiClient,
   ApiEndEvent,
+  DmCombat,
   LinkToken,
   Locale,
   Unsubscribe,
   VersionResult,
 } from '@combat-planner/api/client';
 import { LIMITS } from '@combat-planner/domain';
-import type { Action, Combat, CombatId, PlayerCombat, Viewer } from '@combat-planner/domain';
+import type { Action, CombatId, PlayerCombat, Viewer } from '@combat-planner/domain';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import { queryKeys } from './queryKeys.ts';
 import { errorToast } from './toasts.ts';
@@ -16,7 +17,9 @@ import type { ToastInput, Translate } from './toasts.ts';
 
 export type DmViewer = Extract<Viewer, { kind: 'dm' }>;
 export type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
-export type CombatDocument = Combat | PlayerCombat;
+export type CombatDocument = DmCombat | PlayerCombat;
+
+export type DispatchResult = { applied: true; version: number } | { applied: false };
 
 export interface CombatEntry<Document extends CombatDocument = CombatDocument> {
   document: Document;
@@ -38,7 +41,7 @@ export const combatKey = (id: CombatId, viewer: Viewer): QueryKey =>
     ? [...queryKeys.combat, id, 'dm']
     : [...queryKeys.combat, id, 'player', viewer.playerId];
 
-export function dmSource(api: ApiClient, id: CombatId): CombatSource<Combat> {
+export function dmSource(api: ApiClient, id: CombatId): CombatSource<DmCombat> {
   return {
     load: async () => ({ document: await api.combats.open(id), language: null }),
     reload: async () => ({ document: await api.combats.get(id), language: null }),
@@ -143,26 +146,43 @@ export interface DispatcherOptions {
   t: Translate;
 }
 
+const NOT_APPLIED: DispatchResult = { applied: false };
+
 export function createDispatcher({
   send,
   refetch,
   show,
   t,
-}: DispatcherOptions): (action: Action) => Promise<void> {
-  const dispatch = async (action: Action): Promise<void> => {
+}: DispatcherOptions): (action: Action) => Promise<DispatchResult> {
+  const dispatch = async (action: Action): Promise<DispatchResult> => {
     try {
-      await send(action);
+      const { version } = await send(action);
+      return { applied: true, version };
     } catch (error) {
       if (error instanceof ApiError && error.code === 'version') await refetch().catch(() => {});
-      const toast = errorToast(
-        error,
-        t,
-        () => {
-          void dispatch(action);
-        },
-        t('unitCap', { limit: LIMITS.unitsPerCombat }),
-      );
-      if (toast) show(toast);
+      return new Promise<DispatchResult>((resolve) => {
+        let retried = false;
+        const toast = errorToast(
+          error,
+          t,
+          () => {
+            retried = true;
+            void dispatch(action).then(resolve);
+          },
+          t('unitCap', { limit: LIMITS.unitsPerCombat }),
+        );
+        if (!toast?.action) {
+          if (toast) show(toast);
+          resolve(NOT_APPLIED);
+          return;
+        }
+        show({
+          ...toast,
+          onDismiss: () => {
+            if (!retried) resolve(NOT_APPLIED);
+          },
+        });
+      });
     }
   };
   return dispatch;

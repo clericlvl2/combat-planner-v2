@@ -1,6 +1,6 @@
-import type { Combat, CombatId, Viewer } from '@combat-planner/domain';
+import type { CombatId, PlayerCombat, Viewer } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
-import type { ApiEvent } from '../client.ts';
+import type { ApiEvent, DmCombat } from '../client.ts';
 
 export type Audience = Viewer['kind'];
 
@@ -32,12 +32,15 @@ export function broadcast(combatId: CombatId, event: ApiEvent, audience?: Audien
   for (const subscriber of audienceOf(combatId, audience)) subscriber.send(event);
 }
 
-export function broadcastDocument(combatId: CombatId, combat: Combat, audience?: Audience): void {
+export const documentFor = (combat: DmCombat, viewer: Viewer): DmCombat | PlayerCombat =>
+  viewer.kind === 'dm' ? combat : project(combat, viewer);
+
+export function broadcastDocument(combatId: CombatId, combat: DmCombat, audience?: Audience): void {
   for (const subscriber of audienceOf(combatId, audience)) {
     subscriber.send({
       type: 'document',
       version: combat.version,
-      document: project(combat, subscriber.viewer),
+      document: documentFor(combat, subscriber.viewer),
     });
   }
 }

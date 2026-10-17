@@ -1,9 +1,8 @@
-import type { Combat, CombatId, Viewer } from '@combat-planner/domain';
-import { project } from '@combat-planner/domain';
+import type { CombatId, Viewer } from '@combat-planner/domain';
 import type { Context } from 'hono';
 import { streamSSE } from 'hono/streaming';
-import type { ApiEvent } from '../client.ts';
-import { subscribe } from './registry.ts';
+import type { ApiEvent, DmCombat } from '../client.ts';
+import { documentFor, subscribe } from './registry.ts';
 
 export const HEARTBEAT_MS = 15_000;
 
@@ -12,7 +11,7 @@ const LAST_EVENT_ID = 'Last-Event-ID';
 export interface StreamRequest {
   combatId: CombatId;
   viewer: Viewer;
-  load: () => Combat | undefined;
+  load: () => DmCombat | undefined;
 }
 
 const toMessage = (event: ApiEvent) => ({
@@ -69,7 +68,11 @@ export const streamCombatEvents = (
             return;
           }
           if (lastEventId === String(combat.version)) return;
-          send({ type: 'document', version: combat.version, document: project(combat, viewer) });
+          send({
+            type: 'document',
+            version: combat.version,
+            document: documentFor(combat, viewer),
+          });
         } catch (error) {
           stop();
           reject(error);

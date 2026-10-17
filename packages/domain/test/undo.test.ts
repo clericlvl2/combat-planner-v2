@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { ACTION_TYPES, DomainError, LIMITS, apply, undoTarget } from '../src/index.ts';
+import { ACTION_TYPES, DomainError, LIMITS, apply, undoSummary, undoTarget } from '../src/index.ts';
 import type { Action, Combat, LogEntry, Viewer } from '../src/index.ts';
 import { DM, LATER, NOW, PLAYER, PLAYER_ID, id, makeCombat, makeUnit } from './fixtures.ts';
 
@@ -312,5 +312,74 @@ describe('applyUndo', () => {
     const undone = undo(state);
     expect(undone.combat.units[1]).toEqual(state.combat.units[1]);
     expect(undone.combat.units[0]?.note).toBe('');
+  });
+});
+
+describe('undoSummary', () => {
+  const summaryOf = (state: State) => undoSummary(state.combat, state.log);
+
+  it('is null on an empty log', () => {
+    expect(summaryOf(setup())).toBeNull();
+  });
+
+  it('names the newest undoable action and its unit', () => {
+    const state = dispatch(setup(), { type: 'damage', unitId: id(2), amount: 12 });
+    expect(summaryOf(state)).toEqual({
+      action: state.log[0]?.action,
+      unitName: 'Goblin',
+    });
+  });
+
+  it('includes player actions', () => {
+    const state = dispatch(setup(), { type: 'damage', unitId: id(1), amount: 4 }, PLAYER);
+    expect(summaryOf(state)?.action.type).toBe('damage');
+    expect(summaryOf(state)?.unitName).toBe('Анна');
+  });
+
+  it('is null when the newest entry is a claim or a release', () => {
+    const damaged = dispatch(setup(), { type: 'damage', unitId: id(2), amount: 3 });
+    expect(summaryOf(dispatch(damaged, { type: 'releaseUnit', unitId: id(1) }))).toBeNull();
+    expect(
+      summaryOf(
+        dispatch(damaged, { type: 'claimUnit', unitId: id(3), displayName: 'Bob' }, PLAYER),
+      ),
+    ).toBeNull();
+  });
+
+  it('moves to the previous entry after an undo and to null when everything is undone', () => {
+    const first = dispatch(setup(), { type: 'heal', unitId: id(2), amount: 1 });
+    const second = dispatch(first, { type: 'editNote', unitId: id(1), note: 'Hex' });
+    expect(summaryOf(second)?.action.type).toBe('editNote');
+    const once = undo(second);
+    expect(summaryOf(once)?.action.type).toBe('heal');
+    expect(summaryOf(undo(once))).toBeNull();
+  });
+
+  it('stops after the undo depth', () => {
+    let state = setup();
+    for (let index = 0; index < LIMITS.undoDepth; index += 1) {
+      state = dispatch(state, { type: 'damage', unitId: id(2), amount: 1 });
+    }
+    for (let index = 0; index < LIMITS.undoDepth - 1; index += 1) state = undo(state);
+    expect(summaryOf(state)?.action.type).toBe('damage');
+    expect(summaryOf(undo(state))).toBeNull();
+  });
+
+  it('names a removed unit from the patch and an added unit from the action', () => {
+    const removed = dispatch(setup(), { type: 'removeUnit', unitId: id(2) });
+    expect(summaryOf(removed)?.unitName).toBe('Goblin');
+    const added = dispatch(setup(), {
+      type: 'addUnit',
+      unitId: id(9),
+      roll: 5,
+      ...form,
+      name: 'Orc',
+    });
+    expect(summaryOf(added)?.unitName).toBe('Orc');
+  });
+
+  it('has no unit name for a combat action', () => {
+    const state = dispatch(active(), { type: 'nextTurn' });
+    expect(summaryOf(state)).toMatchObject({ unitName: null });
   });
 });

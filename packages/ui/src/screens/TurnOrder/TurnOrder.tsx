@@ -12,6 +12,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
+import type { DispatchResult } from '../../hooks/combat.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
@@ -28,7 +29,7 @@ import classes from './TurnOrder.module.css';
 export interface TurnOrderProps {
   combat: PlayerCombat;
   playerId: PlayerId;
-  dispatch: (action: Action) => Promise<void>;
+  dispatch: (action: Action) => Promise<DispatchResult>;
   onHeroes: () => void;
   random?: () => number;
 }

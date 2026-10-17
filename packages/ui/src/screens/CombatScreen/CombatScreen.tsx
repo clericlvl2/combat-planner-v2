@@ -1,4 +1,5 @@
 import { ApiError } from '@combat-planner/api/client';
+import type { DmCombat } from '@combat-planner/api/client';
 import {
   LIMITS,
   nextTurnBlockReason,
@@ -40,6 +41,7 @@ import { combatKey } from '../../hooks/combat.ts';
 import type { CombatEntry } from '../../hooks/combat.ts';
 import type { ToastAction, ToastItem } from '../../hooks/toasts.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
+import { useCombatLink } from '../../hooks/useCombatLink.ts';
 import { useConnection } from '../../hooks/useConnection.ts';
 import { usePresets } from '../../hooks/usePresets.ts';
 import { useTags } from '../../hooks/useTags.ts';
@@ -67,7 +69,6 @@ import { CombatNotFound } from '../CombatNotFound/CombatNotFound.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
 import { isUndoable, undoLabel } from './undoLabel.ts';
 import type { UndoableAction } from './undoLabel.ts';
-import { useCombatLink } from './useCombatLink.ts';
 import classes from './CombatScreen.module.css';
 
 export interface CombatScreenProps {
@@ -168,7 +169,7 @@ export function CombatScreen({
 
   const key = combatKey(combatId, DM);
   const latest = (): Combat | undefined =>
-    queryClient.getQueryData<CombatEntry<Combat>>(key)?.document ?? combat;
+    queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document ?? combat;
   const nameOf = (unitId: UnitId): string | undefined =>
     latest()?.units.find((unit) => unit.id === unitId)?.name;
 

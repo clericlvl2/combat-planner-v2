@@ -1,5 +1,7 @@
-import type { ActionId, CombatId, LogEntry } from '@combat-planner/domain';
+import type { ActionId, Combat, CombatId, LogEntry } from '@combat-planner/domain';
+import { undoSummary } from '@combat-planner/domain';
 import { and, asc, eq, max } from 'drizzle-orm';
+import type { DmCombat } from '../client.ts';
 import { actionLog } from '../db/schema.ts';
 import type { Executor } from './store.ts';
 
@@ -72,3 +74,8 @@ export const markUndone = (
     .where(and(eq(actionLog.combatId, combatId), eq(actionLog.actionId, actionId)))
     .run();
 };
+
+export const dmDocument = (db: Executor, combat: Combat): DmCombat => ({
+  ...combat,
+  undo: undoSummary(combat, loadLog(db, combat.id)),
+});

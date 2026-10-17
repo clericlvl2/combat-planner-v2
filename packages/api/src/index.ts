@@ -50,6 +50,7 @@ export {
   combatCreateInputSchema,
   combatPatchSchema,
   combatSummarySchema,
+  dmCombatSchema,
   emailSchema,
   linkGenerationSchema,
   linkReissueResultSchema,
@@ -66,6 +67,7 @@ export {
   signInInputSchema,
   signUpInputSchema,
   tagCreateInputSchema,
+  undoSummarySchema,
   versionResultSchema,
   versionSchema,
 } from './client.ts';
@@ -82,6 +84,7 @@ export type {
   CombatPatch,
   CombatSummary,
   CombatsApi,
+  DmCombat,
   ConnectionApi,
   ConnectionListener,
   ConnectionState,
@@ -105,6 +108,7 @@ export type {
   SignUpInput,
   TagCreateInput,
   TagsApi,
+  UndoSummary,
   Unsubscribe,
   VersionResult,
 } from './client.ts';

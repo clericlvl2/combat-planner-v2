@@ -290,3 +290,68 @@ describe('undo through the route', () => {
     expect(await response.json()).toMatchObject({ code: 'blocked' });
   });
 });
+
+describe('undo summary in the DM document', () => {
+  it('names the newest undoable entry for get and the DM stream, never for a player', async () => {
+    expect((await fetchCombat(dm)).undo).toBeNull();
+    const dmStream = listen({ kind: 'dm' });
+    const playerStream = listen({ kind: 'player', playerId: PLAYER_ID });
+    const before = await fetchCombat(dm);
+    const action: Action = {
+      id: nextActionId(),
+      version: before.version,
+      type: 'damage',
+      unitId: ENEMY_ID,
+      amount: 3,
+    };
+    expect((await post(action)).status).toBe(200);
+    dmStream.unsubscribe();
+    playerStream.unsubscribe();
+    const after = await fetchCombat(dm);
+    expect(after.undo).toEqual({ action, unitName: 'Goblin' });
+    expect(dmStream.events).toEqual([
+      { type: 'document', version: after.version, document: after },
+    ]);
+    expect((playerStream.events[0] as { document: object }).document).not.toHaveProperty('undo');
+  });
+
+  it('reflects a player action and moves back after an undo', async () => {
+    const before = await fetchCombat(dm);
+    const playerAction: Action = {
+      id: nextActionId(),
+      version: before.version,
+      type: 'heal',
+      unitId: HERO_ID,
+      amount: 2,
+    };
+    const outcome = dispatch(opened.db, {
+      combatId: COMBAT_ID,
+      viewer: { kind: 'player', playerId: PLAYER_ID },
+      action: playerAction,
+      now: NOW,
+    });
+    expect(outcome).toMatchObject({ ok: true });
+    expect((await fetchCombat(dm)).undo).toEqual({ action: playerAction, unitName: 'Ada' });
+    const current = await fetchCombat(dm);
+    expect(
+      (await post({ id: nextActionId(), version: current.version, type: 'undo' })).status,
+    ).toBe(200);
+    expect((await fetchCombat(dm)).undo).toMatchObject({
+      action: { type: 'damage', amount: 3 },
+      unitName: 'Goblin',
+    });
+  });
+
+  it('is null after a claim, also on open', async () => {
+    const before = await fetchCombat(dm);
+    const outcome = dispatch(opened.db, {
+      combatId: COMBAT_ID,
+      viewer: { kind: 'player', playerId: PLAYER_ID },
+      action: { id: nextActionId(), version: before.version, type: 'releaseUnit', unitId: HERO_ID },
+      now: NOW,
+    });
+    expect(outcome).toMatchObject({ ok: true });
+    const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/open`);
+    expect(((await response.json()) as { undo: unknown }).undo).toBeNull();
+  });
+});

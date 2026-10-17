@@ -1,7 +1,7 @@
-import type { Action, Combat } from '@combat-planner/domain';
+import type { Action } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
-import type { ConnectionState, EndListener } from '../src/client.ts';
+import type { ConnectionState, DmCombat, EndListener } from '../src/client.ts';
 import {
   createHonoApiClient,
   EVENT_SOURCE_CLOSED,
@@ -22,7 +22,7 @@ const action: Action = {
   escalation: 1,
 };
 
-const combatAt = (version: number): Combat => ({
+const combatAt = (version: number): DmCombat => ({
   id: combatId,
   title: 'Goblin ambush',
   description: '',
@@ -38,6 +38,7 @@ const combatAt = (version: number): Combat => ({
   createdAt: now,
   updatedAt: now,
   units: [],
+  undo: null,
 });
 
 interface Seen {
@@ -254,7 +255,7 @@ describe('createHonoApiClient connection', () => {
     const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
     const states: ConnectionState[] = [];
     client.connection.subscribe((state) => states.push(state));
-    const documents: Combat[] = [];
+    const documents: DmCombat[] = [];
     const ended = vi.fn();
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), ended);
     const source = StubEventSource.instances[0]!;
@@ -285,6 +286,21 @@ describe('createHonoApiClient connection', () => {
     expect(client.connection.state()).toBe('offline');
     expect(states).toEqual(['connected', 'reconnecting', 'connected', 'offline']);
     expect(ended).not.toHaveBeenCalled();
+  });
+
+  it('hands the DM the undo summary from get, open and the stream', async () => {
+    const undone = { ...combatAt(3), undo: { action, unitName: null } };
+    const { fetch } = stubFetch(200, undone);
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    await expect(client.combats.get(combatId)).resolves.toEqual(undone);
+    await expect(client.combats.open(combatId)).resolves.toEqual(undone);
+    const documents: DmCombat[] = [];
+    const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
+    const source = StubEventSource.instances.at(-1)!;
+    source.emit('open');
+    source.emit('message', JSON.stringify({ type: 'document', version: 3, document: undone }));
+    expect(documents).toEqual([undone]);
+    unsubscribe();
   });
 
   it('closes the stream on a final event and hands it to onEnd', () => {

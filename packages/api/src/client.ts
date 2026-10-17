@@ -11,6 +11,7 @@ import type {
 } from '@combat-planner/domain';
 import {
   LIMITS,
+  actionSchema,
   colorSchema,
   combatDescriptionSchema,
   combatSchema,
@@ -79,6 +80,15 @@ export const combatSummarySchema = z.object({
   updatedAt: isoDateSchema,
 });
 export type CombatSummary = z.infer<typeof combatSummarySchema>;
+
+export const undoSummarySchema = z.object({
+  action: actionSchema,
+  unitName: z.string().nullable(),
+});
+export type UndoSummary = z.infer<typeof undoSummarySchema>;
+
+export const dmCombatSchema = combatSchema.safeExtend({ undo: undoSummarySchema.nullable() });
+export type DmCombat = z.infer<typeof dmCombatSchema>;
 
 export const combatCreateInputSchema = z.object({
   id: ulidSchema,
@@ -181,7 +191,7 @@ export const apiEventSchema = z.discriminatedUnion('type', [
   z.object({
     type: z.literal('document'),
     version: versionSchema,
-    document: z.union([combatSchema, playerCombatSchema]),
+    document: z.union([dmCombatSchema, playerCombatSchema]),
   }),
   z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
   z.object({ type: z.literal('linkRevoked') }),
@@ -192,7 +202,9 @@ export type ApiEndEvent =
   | { type: 'unauthorized' };
 
 export type Unsubscribe = () => void;
-export type DocumentListener<Document extends Combat | PlayerCombat> = (document: Document) => void;
+export type DocumentListener<Document extends DmCombat | PlayerCombat> = (
+  document: Document,
+) => void;
 export type EndListener = (event: ApiEndEvent) => void;
 export type ConnectionListener = (state: ConnectionState) => void;
 
@@ -216,10 +228,10 @@ export interface CombatsApi {
   update(id: CombatId, patch: CombatPatch): Promise<VersionResult>;
   remove(id: CombatId): Promise<void>;
   duplicate(id: CombatId, newId: CombatId): Promise<Combat>;
-  open(id: CombatId): Promise<Combat>;
-  get(id: CombatId): Promise<Combat>;
+  open(id: CombatId): Promise<DmCombat>;
+  get(id: CombatId): Promise<DmCombat>;
   dispatch(id: CombatId, action: Action): Promise<VersionResult>;
-  subscribe(id: CombatId, onDocument: DocumentListener<Combat>, onEnd: EndListener): Unsubscribe;
+  subscribe(id: CombatId, onDocument: DocumentListener<DmCombat>, onEnd: EndListener): Unsubscribe;
 }
 
 export interface LinkApi {

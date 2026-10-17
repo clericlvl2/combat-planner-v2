@@ -1,8 +1,9 @@
 import type { Action, Combat, CombatId, DomainErrorCode, Viewer } from '@combat-planner/domain';
 import { DomainError, apply } from '@combat-planner/domain';
+import type { DmCombat } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import { broadcastDocument } from '../live/registry.ts';
-import { appendLogEntry, findLogEntry, loadLog, markUndone, nextSeq } from './log.ts';
+import { appendLogEntry, dmDocument, findLogEntry, loadLog, markUndone, nextSeq } from './log.ts';
 import type { Transaction } from './store.ts';
 import { findCombatRow, saveCombat } from './store.ts';
 
@@ -27,7 +28,7 @@ export interface DispatchApplied {
   ok: true;
   version: number;
   combat: Combat;
-  replayed: boolean;
+  document: DmCombat | null;
 }
 
 export type DispatchOutcome = DispatchApplied | DispatchRejected;
@@ -58,7 +59,7 @@ const run = (
   }
   const known = findLogEntry(tx, combatId, action.id);
   if (known) {
-    return { ok: true, version: known.action.version + 1, combat: row.document, replayed: true };
+    return { ok: true, version: known.action.version + 1, combat: row.document, document: null };
   }
   const combat = row.document;
   if (action.version !== combat.version) {
@@ -79,11 +80,16 @@ const run = (
     undoneBy: null,
   });
   if ('undone' in result) markUndone(tx, combatId, result.undone, action.id);
-  return { ok: true, version: result.combat.version, combat: result.combat, replayed: false };
+  return {
+    ok: true,
+    version: result.combat.version,
+    combat: result.combat,
+    document: dmDocument(tx, result.combat),
+  };
 };
 
 export function dispatch(db: AppDatabase, request: DispatchRequest): DispatchOutcome {
   const outcome = db.transaction((tx) => run(tx, request));
-  if (outcome.ok && !outcome.replayed) broadcastDocument(request.combatId, outcome.combat);
+  if (outcome.ok && outcome.document) broadcastDocument(request.combatId, outcome.document);
   return outcome;
 }

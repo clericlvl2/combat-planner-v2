@@ -95,9 +95,9 @@ function createMemoryClient() {
     open: async (id) => {
       const opened = { ...combat(id), lastPlayedAt: now };
       combats.set(id, opened);
-      return opened;
+      return { ...opened, undo: null };
     },
-    get: async (id) => combat(id),
+    get: async (id) => ({ ...combat(id), undo: null }),
     dispatch: async (id, action: Action) => {
       const earlier = dispatched.get(action.id);
       if (earlier) return earlier;
@@ -108,7 +108,7 @@ function createMemoryClient() {
       return result;
     },
     subscribe: (id, onDocument) => {
-      onDocument(combat(id));
+      onDocument({ ...combat(id), undo: null });
       return () => {};
     },
   };

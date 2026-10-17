@@ -1,11 +1,4 @@
-import type {
-  Combat,
-  CombatId,
-  PlayerCombat,
-  PlayerId,
-  PresetId,
-  TagId,
-} from '@combat-planner/domain';
+import type { CombatId, PlayerCombat, PlayerId, PresetId, TagId } from '@combat-planner/domain';
 import {
   combatSchema,
   combatTitleSchema,
@@ -25,6 +18,7 @@ import {
   ApiError,
   SOCIAL_PROVIDERS,
   combatSummarySchema,
+  dmCombatSchema,
   linkReissueResultSchema,
   linkSchema,
   localeSchema,
@@ -41,6 +35,7 @@ import type {
   ApiErrorCode,
   ConnectionListener,
   ConnectionState,
+  DmCombat,
   DocumentListener,
   EndListener,
   LinkToken,
@@ -241,7 +236,7 @@ export function createHonoApiClient({
   const connection = createConnection();
   const playerHeaders = (playerId: PlayerId) => ({ headers: { 'X-Player-Id': playerId } });
 
-  function openStream<Document extends Combat | PlayerCombat>(
+  function openStream<Document extends DmCombat | PlayerCombat>(
     url: string,
     documentSchema: z.ZodType<Document>,
     refetch: () => Promise<Document>,
@@ -379,8 +374,8 @@ export function createHonoApiClient({
         () => client.combats[':id'].duplicate.$post({ param: { id }, json: { id: newId } }),
         combatSchema,
       ),
-    open: (id) => json(() => client.combats[':id'].open.$post({ param: { id } }), combatSchema),
-    get: (id) => json(() => client.combats[':id'].$get({ param: { id } }), combatSchema),
+    open: (id) => json(() => client.combats[':id'].open.$post({ param: { id } }), dmCombatSchema),
+    get: (id) => json(() => client.combats[':id'].$get({ param: { id } }), dmCombatSchema),
     dispatch: (id, action) =>
       json(
         () => client.combats[':id'].actions.$post({ param: { id }, json: action }),
@@ -389,7 +384,7 @@ export function createHonoApiClient({
     subscribe: (id, onDocument, onEnd) =>
       openStream(
         `${baseUrl}/combats/${id}/events`,
-        combatSchema,
+        dmCombatSchema,
         () => combats.get(id),
         onDocument,
         onEnd,
