@@ -20,12 +20,6 @@
   min-height: 68px;
 }
 
-.head > .role {
-  width: 62px;
-  height: 100%;
-  min-height: 0;
-}
-
 .text {
   display: flex;
   flex-direction: column;

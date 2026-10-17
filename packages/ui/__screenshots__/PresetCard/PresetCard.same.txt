@@ -1,1 +1,1 @@
-Anatomy Enemy ExtraBodyIsNotATarget
+Anatomy Enemy ExtraBodyIsNotATarget ExtraRoleFillsHead

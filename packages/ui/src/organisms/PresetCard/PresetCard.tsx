@@ -61,11 +61,7 @@ export function PresetCard({
       data-expanded={expanded || undefined}
     >
       <div className={classes.head}>
-        <RoleBlock
-          className={classes.role}
-          unitRole={preset.role}
-          top={{ kind: 'hp', value: preset.maxHp }}
-        />
+        <RoleBlock fill unitRole={preset.role} top={{ kind: 'hp', value: preset.maxHp }} />
         <div className={classes.text}>
           <span className={classes.name}>{preset.name}</span>
           <span className={classes.tags} data-empty={tags.length === 0 || undefined}>

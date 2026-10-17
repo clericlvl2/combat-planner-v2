@@ -94,6 +94,16 @@ export const Anatomy = meta.story({
   },
 });
 
+export const ExtraRoleFillsHead = meta.story({
+  name: 'The role block fills the card head',
+  play: async ({ canvasElement }) => {
+    const role = canvasElement.querySelector<HTMLElement>('[data-fill]');
+    await expect(role).not.toBeNull();
+    const head = role?.parentElement;
+    await expect(role?.getBoundingClientRect().height).toBe(head?.getBoundingClientRect().height);
+  },
+});
+
 export const Enemy = meta.story({
   name: 'Enemy',
 });
