@@ -652,6 +652,19 @@ export const ExtraReleaseClaimUnclaimed = meta.story({
   },
 });
 
+export const ExtraDuplicateDisabled = meta.story({
+  name: 'Duplicate disabled at the unit limit',
+  args: { unit: vashtiExpanded, expanded: true, duplicateDisabled: true },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    await expect(duplicate).toBeDisabled();
+    await userEvent.click(duplicate, { pointerEventsCheck: 0 });
+    await expect(args.onDuplicate).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('menuitem', { name: 'Disable' })).toBeEnabled();
+  },
+});
+
 export const ExtraFlashSkipsDeadAndDisabled = meta.story({
   name: 'The flash border skips dead and disabled rows',
   args: { active: false, flash: true },

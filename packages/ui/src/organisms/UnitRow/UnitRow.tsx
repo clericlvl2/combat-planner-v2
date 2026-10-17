@@ -64,6 +64,7 @@ interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childre
   conditionsOpen?: boolean;
   historyOpen?: boolean;
   menuOpen?: boolean;
+  duplicateDisabled?: boolean;
   random?: () => number;
   'data-tap'?: UnitRowTarget;
 }
@@ -89,6 +90,7 @@ export function UnitRow({
   conditionsOpen = false,
   historyOpen = false,
   menuOpen = false,
+  duplicateDisabled = false,
   random,
   onToggle,
   onInitiative,
@@ -138,7 +140,13 @@ export function UnitRow({
   };
 
   const menuItems: (MenuItem & { run: () => void })[] = [
-    { id: 'duplicate', icon: IconCopy, label: t('duplicate'), run: () => onDuplicate?.() },
+    {
+      id: 'duplicate',
+      icon: IconCopy,
+      label: t('duplicate'),
+      disabled: duplicateDisabled,
+      run: () => onDuplicate?.(),
+    },
     disabled
       ? {
           id: 'enable',
