@@ -165,6 +165,11 @@ const sessionOf = ({ user }: AuthResponse, method: SignInMethod): Session =>
     method,
   });
 
+const EMPTY_JSON_BODY = {
+  headers: { 'Content-Type': 'application/json' },
+  init: { body: JSON.stringify({}) },
+};
+
 const ULID_PREFIX = /^[0-7][0-9A-HJKMNP-TV-Z]{25}/;
 
 const combatIdOf = (token: LinkToken): CombatId => {
@@ -467,7 +472,7 @@ export function createHonoApiClient({
           await json(() => client.auth['sign-in'].email.$post({ json: input }), authResponseSchema),
           'email',
         ),
-      signOut: () => none(() => client.auth['sign-out'].$post()),
+      signOut: () => none(() => client.auth['sign-out'].$post({}, EMPTY_JSON_BODY)),
       session: async () => {
         const found = await json(() => client.auth['get-session'].$get(), authSessionSchema);
         return found === null ? null : sessionOf(found, found.method);

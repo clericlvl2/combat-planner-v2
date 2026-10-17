@@ -390,3 +390,44 @@ describe('auth.socialSignIn', () => {
     }
   });
 });
+
+describe('auth client over a Node HTTP transport', () => {
+  const overHttp = (browser: Browser) =>
+    (async (input: string | URL | Request, init?: RequestInit) => {
+      const request = new Request(input, init);
+      const body = request.method === 'GET' ? undefined : await request.arrayBuffer();
+      return browser.request(request.url, {
+        method: request.method,
+        headers: request.headers,
+        body,
+      });
+    }) as typeof fetch;
+
+  it('signs up, signs out, signs in and starts a social sign-in with a body on every POST', async () => {
+    const configured = createTestApp({
+      env: { google: { clientId: 'google-id', clientSecret: 'google-secret' } },
+    });
+    try {
+      const client = createHonoApiClient({
+        baseUrl: 'http://localhost',
+        fetch: overHttp(createBrowser(configured.app)),
+      });
+      const email = 'transport@example.com';
+      await expect(
+        client.auth.signUp({ email, password: PASSWORD, displayName: 'Tess' }),
+      ).resolves.toMatchObject({ email, method: 'email' });
+      await expect(client.auth.session()).resolves.toMatchObject({ email });
+      await expect(client.auth.signOut()).resolves.toBeUndefined();
+      await expect(client.auth.session()).resolves.toBeNull();
+      await expect(client.combats.list()).rejects.toMatchObject({ status: 401 });
+      await expect(client.auth.signIn({ email, password: PASSWORD })).resolves.toMatchObject({
+        email,
+      });
+      await expect(client.combats.list()).resolves.toEqual([]);
+      const { url } = await client.auth.socialSignIn('google', '/combats');
+      expect(new URL(url).hostname).toBe('accounts.google.com');
+    } finally {
+      configured.close();
+    }
+  });
+});
