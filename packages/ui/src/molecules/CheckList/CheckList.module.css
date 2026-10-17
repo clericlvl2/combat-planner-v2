@@ -38,7 +38,8 @@
     font-weight: 700;
   }
 
-  &[data-active] {
+  &[data-active],
+  &[data-new] {
     background: var(--cp-color-highlight);
   }
 }
@@ -48,7 +49,8 @@
   min-width: 0;
 }
 
-.count {
+.count,
+.badge {
   flex: none;
   color: var(--cp-color-secondary);
   font-size: var(--mantine-font-size-small);

@@ -12,6 +12,7 @@ interface CellOption {
   key?: TagKey;
   label?: string;
   count: number;
+  badge?: string;
 }
 
 interface CheckListCellProps extends Omit<CheckListProps, 'options'> {
@@ -32,6 +33,7 @@ function CheckListCell({
     value: tag.key ?? tag.label ?? '',
     label: tag.label ?? (tag.key ? t(tag.key) : ''),
     count: tag.count,
+    badge: tag.badge,
   }));
   return (
     <div style={{ width: width + 24, padding: 12, background: 'var(--cp-color-surface)' }}>
@@ -83,9 +85,9 @@ export const VariantsQueryMatch = meta.story({
   play: async ({ args, canvas }) => {
     await expect(canvas.getByText('Mooks')).toBeVisible();
     await expect(canvas.queryByRole('checkbox', { name: 'Orcs 2' })).toBeNull();
-    const create = canvas.getByRole('button', { name: 'Create “mo”' });
+    await expect(canvas.queryByRole('button', { name: 'Create “mo”' })).toBeNull();
     const rows = canvas.getByRole('group').children;
-    await expect(rows[rows.length - 1]).toBe(create);
+    await expect(rows).toHaveLength(1);
     await expect(rows[0]).toHaveAttribute('data-active');
     await expect(args.onCreate).not.toHaveBeenCalled();
   },
@@ -172,11 +174,30 @@ export const ExtraExactMatch = meta.story({
 });
 
 export const ExtraPartialMatch = meta.story({
-  name: 'Partial match shows Create',
-  args: { tags: library, values: [], query: 'Orc', onCreate: fn() },
+  name: 'A query contained in an option hides Create',
+  args: { tags: library, values: [], query: 'S', onCreate: fn() },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Orcs')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Create “Orc”' })).toBeVisible();
+    await expect(canvas.getByText('Mooks')).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: /Create/ })).toBeNull();
+    await expect(canvas.queryByText('No tags match')).toBeNull();
+  },
+});
+
+export const ExtraNewBadge = meta.story({
+  name: 'A badge replaces the count and highlights the row',
+  args: {
+    tags: [{ label: 'Elite', count: 0, badge: 'new' }, ...tags],
+    values: ['Elite'],
+  },
+  play: async ({ canvas }) => {
+    const created = canvas.getByRole('checkbox', { name: 'Elite new' });
+    await expect(created).toBeChecked();
+    const row = created.closest('label');
+    await expect(row).toHaveAttribute('data-new');
+    await expect(row && getComputedStyle(row).backgroundColor).toBe('rgb(255, 244, 210)');
+    await expect(canvas.queryByText('0')).toBeNull();
+    const plain = canvas.getByRole('checkbox', { name: 'Orcs 2' }).closest('label');
+    await expect(plain).not.toHaveAttribute('data-new');
   },
 });
 
