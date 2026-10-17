@@ -74,7 +74,7 @@
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
-| fix-2.3 | reported `.claude/artifacts/reports/fix-2.3.md`; orchestrator split Stepper/UnitForm and Drawer/Dialog (tree unchanged, check-commit green); rebase conflict in `allow-same.txt` back to the agent; screen baseline refresh after the final rebase | |
+| fix-2.3 | reported `.claude/artifacts/reports/fix-2.3.md`; rebased on master (with 2.4-PlayerView); +`chore(toolchain): optimizeDeps` (4 deps), +`fix(ui): BottomBar` (8 screen PNGs: PlayerRow corner, PlayerHeader icon, TextField counter; check-commit exception recorded); gate running | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
