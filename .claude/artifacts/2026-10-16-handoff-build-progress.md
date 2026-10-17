@@ -80,7 +80,7 @@
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
-| 2.4-AppPages | running worker-bee 2026-10-17T11:00+03:00 (parallel with fix-2.3) | SignIn, SignUp, Settings, Account, About |
+| 2.4-AppPages | reported `.claude/artifacts/reports/2.4-AppPages.md`, gate running | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
@@ -93,6 +93,21 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-AppPages, решения оркестратора 2026-10-17: тост «Your account was
+  deleted» из стора без дубля — принято; About по списку плана (две
+  карточки) — принято; AP-F3.2/F3.5 реальным флоу — принято; поле Display
+  name в Sign up и Account — принято. → `fix-2.4`: общие части экранов
+  (`AuthScreen`, `SocialButtons`, `ScreenToast`, `submitOnEnter`, `hasCode`,
+  `PageScreen`, `PageSection`) переезжают в `packages/ui/src/screens/shared/`;
+  `Session` получает `method: 'email' | SocialProvider` (сервер по таблице
+  `account` Better Auth, `hono-client`, `FakeApiClient`), Account показывает
+  «Signed in with …»; ошибка sign-up для занятого e-mail — отдельный код
+  `emailTaken` (сервер, клиент, фейк), SignUp не отображает любой `invalid`
+  как «занят»; `callbackUrl` social sign-in — страница после входа
+  (`${origin}/combats`), не путь OAuth-колбэка сервера (Better Auth
+  `callbackURL` — цель после входа). Бриф `4-web`: маршрут
+  `/auth/callback/:provider` обслуживает сервер (`/api/auth/callback/*`).
 
 - 2.4-CombatList, решения оркестратора 2026-10-17: `CombatFormSheet` в
   `screens/CombatList/CombatFormSheet/` (check-commit требует папку по имени)
@@ -446,6 +461,11 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.4-AppPages: Sign in / Create account тусклые до валидной формы; поле
+  Display name в Sign up и Account; нет строки «Signed in with email» (до
+  `fix-2.4`); About — две карточки по плану; маркеры нажатия как кольцо
+  фокуса; AP-F2.1 — Drawer над Settings; отступ подписей секций 8 вместо 4.
 
 - 2.4-CombatList: в Active карточки без «Round N» (до `fix-2.4`); маркеры
   нажатия как кольцо фокуса на следующей цели; CL-F1.4 «14 days ago» вместо
