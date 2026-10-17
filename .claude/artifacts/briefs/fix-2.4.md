@@ -88,8 +88,16 @@ extra paths it names.
       from the measured BottomBar height; `send` typed `Action`; player Edit
       with `lockMaxHp`; popover shows the real `initiativeBonus`; the
       CantReachServer baseline shows the error screen.
-    - `CombatScreen`: Undo from the document's `undo` (session stack removed),
-      flash and undo only on `applied`; `useCombatLink` from `hooks/`.
+    - `CombatScreen`: Undo from the document's `undo` (session stack removed);
+      flash, the «<name> removed» toast and the «Undid: …» toast only on
+      `applied`, with a story where the document arrives after the POST
+      (FakeApiClient option to delay the broadcast); rapid stepper and
+      condition taps build each action on the newest known version (the
+      version from the previous action's response) so a double tap does not
+      409; Save as preset failure shows a toast (`limit` and others); Share
+      with a failed `link.get` shows the error toast; `ExtraHpRules` asserts
+      `calls` and covers «damage never below −max» and «a lower HP stays on
+      Set Max»; `useCombatLink` from `hooks/`.
 16. `exports` (`feat(ui): exports`): `packages/ui/src/index.ts` exports every
     atom, molecule, organism, screen, `UiProvider`, `ApiProvider`, `useApi`,
     `FakeApiClient`, `scenarios`, every hook, `theme` tokens and
