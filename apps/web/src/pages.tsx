@@ -14,8 +14,8 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Outlet, useLoaderData, useLocation, useNavigate } from 'react-router';
 import { watchEdgeSwipe } from './edgeSwipe.ts';
-import type { SwipeEvent } from './edgeSwipe.ts';
 import { sectionOf } from './sections.ts';
+import { swipeAllowed } from './swipeGuard.ts';
 
 export interface CombatRouteData {
   combatId: CombatId;
@@ -55,9 +55,6 @@ function DmLocale() {
   return null;
 }
 
-const outsideModal = ({ target }: SwipeEvent): boolean =>
-  !(target instanceof Element && target.closest('[aria-modal="true"]'));
-
 function SwipeDrawer() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -65,7 +62,11 @@ function SwipeDrawer() {
   const [opened, setOpened] = useState(false);
 
   useEffect(
-    () => watchEdgeSwipe(document, { onSwipe: () => setOpened(true), canStart: outsideModal }),
+    () =>
+      watchEdgeSwipe(document, {
+        onSwipe: () => setOpened(true),
+        canStart: () => swipeAllowed(document),
+      }),
     [],
   );
 
