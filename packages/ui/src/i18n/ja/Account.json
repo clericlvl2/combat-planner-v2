@@ -1,0 +1,11 @@
+{
+  "title": "アカウント",
+  "signedInAs": "ログイン中のアカウント",
+  "email": "メールアドレス",
+  "displayName": "表示名",
+  "enterName": "表示名を入力してください",
+  "signOut": "ログアウト",
+  "dangerZone": "危険な操作",
+  "deleteAccount": "アカウントを削除",
+  "deleteNote": "すべての戦闘、プリセット、プレイヤー用リンクが削除されます。"
+}

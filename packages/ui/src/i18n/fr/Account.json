@@ -1,0 +1,11 @@
+{
+  "title": "Compte",
+  "signedInAs": "Connecté en tant que",
+  "email": "E-mail",
+  "displayName": "Nom affiché",
+  "enterName": "Saisissez un nom affiché",
+  "signOut": "Se déconnecter",
+  "dangerZone": "Zone de danger",
+  "deleteAccount": "Supprimer le compte",
+  "deleteNote": "Supprime tous les combats, modèles et liens des joueurs."
+}

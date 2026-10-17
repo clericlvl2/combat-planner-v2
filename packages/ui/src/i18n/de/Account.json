@@ -1,0 +1,11 @@
+{
+  "title": "Konto",
+  "signedInAs": "Angemeldet als",
+  "email": "E-Mail",
+  "displayName": "Anzeigename",
+  "enterName": "Gib einen Anzeigenamen ein",
+  "signOut": "Abmelden",
+  "dangerZone": "Gefahrenzone",
+  "deleteAccount": "Konto löschen",
+  "deleteNote": "Löscht alle Kämpfe, Vorlagen und Spielerlinks."
+}

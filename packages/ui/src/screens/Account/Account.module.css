@@ -1,0 +1,90 @@
+.card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-card);
+  background: var(--cp-color-surface);
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px;
+}
+
+.caption {
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.email {
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  overflow-wrap: anywhere;
+}
+
+.divider {
+  flex: none;
+  height: 2px;
+  background: var(--cp-color-border);
+}
+
+.danger {
+  padding-top: 8px;
+}
+
+.row {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  border: none;
+  background: transparent;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  text-align: start;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-tone='danger'] {
+    color: var(--cp-role-enemy);
+  }
+
+  &:active,
+  &[data-pressed] {
+    background: var(--cp-color-soft);
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: -4px;
+    border-radius: 14px;
+  }
+}
+
+.icon {
+  flex: none;
+}
+
+.rowLabel {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.chevron {
+  flex: none;
+  color: var(--cp-color-muted);
+}

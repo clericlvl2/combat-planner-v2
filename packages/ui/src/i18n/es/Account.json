@@ -1,0 +1,11 @@
+{
+  "title": "Cuenta",
+  "signedInAs": "Sesión iniciada como",
+  "email": "Correo electrónico",
+  "displayName": "Nombre visible",
+  "enterName": "Escribe un nombre visible",
+  "signOut": "Cerrar sesión",
+  "dangerZone": "Zona de peligro",
+  "deleteAccount": "Eliminar cuenta",
+  "deleteNote": "Elimina todos los combates, plantillas y enlaces de jugadores."
+}

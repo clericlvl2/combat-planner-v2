@@ -1,0 +1,11 @@
+{
+  "title": "Account",
+  "signedInAs": "Signed in as",
+  "email": "Email",
+  "displayName": "Display name",
+  "enterName": "Enter a display name",
+  "signOut": "Sign out",
+  "dangerZone": "Danger zone",
+  "deleteAccount": "Delete account",
+  "deleteNote": "Deletes all combats, presets and player links."
+}
