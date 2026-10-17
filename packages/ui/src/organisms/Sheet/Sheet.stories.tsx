@@ -567,3 +567,16 @@ export const ExtraMotionOffNoTransition = meta.story({
     await waitFor(() => expect(sheet).toHaveFocus());
   },
 });
+
+export const ExtraClosedDoesNotBlock = meta.story({
+  name: 'A closed sheet does not block the page beneath',
+  args: { opened: false, withOpener: true },
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+    const opener = canvas.getByRole('button', { name: 'Sort' });
+    const box = opener.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+    await expect(hit).not.toBeNull();
+    await expect(opener).toContainElement(hit as HTMLElement);
+  },
+});

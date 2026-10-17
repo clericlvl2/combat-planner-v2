@@ -1,6 +1,6 @@
 import { Modal } from '@mantine/core';
 import { IconChevronLeft, IconX } from '@tabler/icons-react';
-import { Children, Fragment, isValidElement, useCallback, useRef } from 'react';
+import { Children, Fragment, isValidElement, useCallback, useRef, useState } from 'react';
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
@@ -45,6 +45,8 @@ export function Sheet({
   const actionList = flattenActions(actions);
   const initialFocusRef = useRef(initialFocus);
   initialFocusRef.current = initialFocus;
+  const [present, setPresent] = useState(opened);
+  if (opened && !present) setPresent(true);
 
   const attachSheet = useCallback((sheet: HTMLElement | null) => {
     if (!sheet) return;
@@ -61,6 +63,8 @@ export function Sheet({
     <Modal.Root
       opened={opened}
       onClose={onClose}
+      onExitTransitionEnd={() => setPresent(false)}
+      data-present={present ? '' : undefined}
       transitionProps={motion === 'off' ? { duration: 0 } : undefined}
       withinPortal={false}
       classNames={{

@@ -2,6 +2,10 @@
   position: fixed;
   inset: 0;
   z-index: 200;
+
+  &:not([data-present]) {
+    display: none;
+  }
 }
 
 .scrim {
