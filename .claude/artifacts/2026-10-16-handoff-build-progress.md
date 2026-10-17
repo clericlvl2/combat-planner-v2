@@ -77,7 +77,7 @@
 | fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
-| 2.4-CombatList | merged 8234d21..d653632 (gate `.claude/run/2.4-CombatList/` green), guard-bee running | CombatList |
+| 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | running worker-bee 2026-10-17T11:00+03:00 (parallel with fix-2.3) | SignIn, SignUp, Settings, Account, About |
@@ -541,6 +541,16 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.4-CombatList → `fix-2.4`: P2 лимит 100 боёв: отказ `limit` получает тост
+  (код `limit` в `API_ERROR_CODES` и маппинг в `errorToast`, FakeApiClient
+  отвечает тем же кодом), Duplicate в меню CombatCard неактивен на лимите
+  (проп `duplicateDisabled`); P2 повторный Create: кнопка формы неактивна, пока
+  запрос в полёте, `id` нового боя создаётся один раз на открытие формы. P3:
+  Retry после сетевой ошибки закрывает лист и ведёт на новый бой (вместе с
+  пунктом Retry из 2.4-api-hooks); `withApi` заменяет сценарий истории
+  целиком, а не сливает с meta; CombatFormSheet без постоянного `opened`
+  (переход выхода).
 
 - 2.4-api-hooks → `fix-2.4`: P2 поток SSE на не-200 закрывается браузером
   навсегда (hono-client.ts:312-320, :286-288): 401 на пробе — конец сессии,
