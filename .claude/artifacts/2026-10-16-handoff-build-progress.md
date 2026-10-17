@@ -24,7 +24,7 @@
 | 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4-core, fix-2.4 | phase-2 |
 | 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
 | 4 | web | 4-web, fix-4 | |
-| 5 | e2e | 5-e2e | |
+| 5 | e2e | 5-e2e, fix-5 | |
 | 6 | docker | 6-docker | |
 
 ## Текущий шаг
@@ -94,7 +94,8 @@
 | 5-e2e | running worker-bee a5e1868 2026-10-17T16:35+03:00 (Opus 5.5 medium; parallel with `fix-4`, paths `e2e/**` only) | auth, combat lifecycle, player, library, account |
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4-web | running worker-bee afb4a3c 2026-10-17T16:44+03:00 (Opus 5.5 medium) | swipe, router test, locale, teardown |
-| fix-4 | merged e42d8a7..07e346e (gate `.claude/run/fix-4/` green), guard-bee running | |
+| fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
+| fix-5 | todo (after `5-e2e`: guard-bee entries → `fix-5` and the e2e defects) | |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
@@ -676,6 +677,22 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-4 → `fix-5`:
+  - P2 CombatScreen.tsx:332, :207-214: Undo on the «X removed» toast labels
+    the removal but undoes whatever is newest. It must undo the removal or
+    answer 409 (pin it to the removal's result version).
+  - P3: `createDispatcher` gets a `generation` guard, like `mutations.ts:51`.
+  - P3: `failedTags` is pruned when the tag appears in `useTags`
+    (Library.tsx:141).
+  - P3: a `log.test.ts` case reaches the third page; the `ROW_BOUND` bound
+    matches the code.
+  - P3: a double tap during the toast's exit runs its action once
+    (Toast.tsx:108-111).
+  - P3: `streamCombatEvents` types `load` per viewer, so a `DmCombat` cannot
+    reach a player (sse.ts:14).
+  - P3: on a first-load 404, PlayerView shows CombatDeleted without a title,
+    not UnexpectedError (PlayerView.tsx:89-99).
 
 - 4-web → `fix-4-web` (`apps/web/**`, `e2e/teardown.ts`,
   `packages/ui/src/organisms/MessageScreen/**`):
