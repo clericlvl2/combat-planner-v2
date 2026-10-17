@@ -33,5 +33,7 @@
   "noMatchTags": "Keine Vorlage passt zu {{tags}}.",
   "noMatchQueryTags": "Keine Vorlage passt zu „{{query}}“ in {{tags}}.",
   "noPresets": "Die Bibliothek hat noch keine Vorlagen.",
-  "removeTag": "{{name}} entfernen"
+  "removeTag": "{{name}} entfernen",
+  "hintSetup": "Die Initiative wird beim Kampfstart gewürfelt",
+  "hintActive": "Die Initiative wird beim Hinzufügen gewürfelt: W20 {{bonus}}"
 }

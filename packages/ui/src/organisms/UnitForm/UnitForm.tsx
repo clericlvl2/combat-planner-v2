@@ -23,6 +23,8 @@ export type UnitFormMode = 'add' | 'edit';
 
 export type UnitFormSource = 'new' | 'library';
 
+export type UnitFormHint = 'setup' | 'active';
+
 export interface UnitFormProps {
   opened: boolean;
   mode: UnitFormMode;
@@ -34,6 +36,7 @@ export interface UnitFormProps {
   tags?: readonly TagSheetTag[];
   combatTitle?: string;
   roleCounts?: Partial<Record<Role, number>>;
+  hint?: UnitFormHint;
 }
 
 type NumberKey = 'maxHp' | 'tempHp' | 'ac' | 'pd' | 'md' | 'initiativeBonus';
@@ -77,6 +80,8 @@ const allNumberKeys: ReadonlySet<NumberKey> = new Set(numberFields.map((field) =
 
 const fold = (text: string) => text.toLocaleLowerCase();
 
+const signedBonus = (value: number) => (value < 0 ? `−${Math.abs(value)}` : `+${value}`);
+
 function matchesTags(preset: Preset, tagIds: readonly string[]): boolean {
   return tagIds.length === 0 || preset.tags.some((tag) => tagIds.includes(tag));
 }
@@ -92,6 +97,7 @@ export function UnitForm({
   tags = [],
   combatTitle,
   roleCounts,
+  hint,
 }: UnitFormProps) {
   const { t } = useTranslation('UnitForm');
   const [wasOpened, setWasOpened] = useState(opened);
@@ -144,23 +150,44 @@ export function UnitForm({
     setSetKeys((current) => new Set([...current, key]));
   };
 
+  const withPreset = (current: UnitDraft, preset: Preset): UnitDraft => ({
+    ...current,
+    name: preset.name,
+    role: lockRole ? current.role : preset.role,
+    maxHp: preset.maxHp,
+    ac: preset.ac,
+    pd: preset.pd,
+    md: preset.md,
+    initiativeBonus: preset.initiativeBonus,
+  });
+
   const pick = (preset: Preset) => {
     setPicked(preset.id);
     setNameError(false);
-    setDraft((current) => ({
-      ...current,
-      name: preset.name,
-      role: lockRole ? current.role : preset.role,
-      maxHp: preset.maxHp,
-      ac: preset.ac,
-      pd: preset.pd,
-      md: preset.md,
-      initiativeBonus: preset.initiativeBonus,
-    }));
+    setDraft((current) => withPreset(current, preset));
     setSetKeys(allNumberKeys);
   };
 
+  const changeSource = (next: UnitFormSource) => {
+    setSource(next);
+    setPicked(null);
+  };
+
+  const changeQuery = (next: string) => {
+    setQuery(next);
+    setPicked(null);
+  };
+
+  const changeTagFilter = (next: string[]) => {
+    setTagFilter(next);
+    setPicked(null);
+  };
+
   const submit = () => {
+    if (library) {
+      if (pickedPreset) onSubmit(withPreset(draft, pickedPreset));
+      return;
+    }
     const typed = draft.name.trim();
     const name = typed === '' && draft.name === '' && adding ? defaultName : typed;
     if (name === '') {
@@ -212,7 +239,7 @@ export function UnitForm({
               { value: 'library', label: t('library') },
             ]}
             value={source}
-            onChange={setSource}
+            onChange={changeSource}
           />
         ) : null}
         {library ? (
@@ -221,7 +248,7 @@ export function UnitForm({
               <SearchField
                 className={classes.search}
                 value={query}
-                onChange={setQuery}
+                onChange={changeQuery}
                 placeholder={t('searchPresets')}
               />
               <ToolButton
@@ -241,24 +268,19 @@ export function UnitForm({
                     variant="tag"
                     selected
                     aria-label={t('removeTag', { name: tagName(id) })}
-                    onRemove={() => setTagFilter(tagFilter.filter((tag) => tag !== id))}
+                    onRemove={() => changeTagFilter(tagFilter.filter((tag) => tag !== id))}
                   >
                     {tagName(id)}
                   </Chip>
                 ))}
-                <Button variant="ghost" size="S" onClick={() => setTagFilter([])}>
+                <Button variant="ghost" size="S" onClick={() => changeTagFilter([])}>
                   {t('clear')}
                 </Button>
               </div>
             ) : null}
             <div className={classes.library}>
               {listed.length > 0 ? (
-                <div
-                  className={classes.list}
-                  role="group"
-                  aria-label={t('presets')}
-                  data-long={listed.length > 4 || undefined}
-                >
+                <div className={classes.list} role="group" aria-label={t('presets')}>
                   {listed.map((preset) => {
                     const on = preset.id === picked;
                     return (
@@ -309,7 +331,7 @@ export function UnitForm({
         ) : (
           <>
             <TextField
-              className={classes.name}
+              className={draft.name === '' ? classes.name : `${classes.name} ${classes.named}`}
               label={t('name')}
               value={draft.name}
               placeholder={adding ? defaultName : undefined}
@@ -348,6 +370,13 @@ export function UnitForm({
                 />
               ))}
             </div>
+            {adding && hint ? (
+              <span className={classes.hint}>
+                {hint === 'setup'
+                  ? t('hintSetup')
+                  : t('hintActive', { bonus: signedBonus(draft.initiativeBonus) })}
+              </span>
+            ) : null}
             <TextArea
               label={t('note')}
               value={draft.note}
@@ -368,7 +397,7 @@ export function UnitForm({
           presetCount={sheetCount}
           onChange={setSheetTags}
           onDone={() => {
-            setTagFilter(sheetValue);
+            changeTagFilter(sheetValue);
             setSheetTags(null);
           }}
           onClose={() => setSheetTags(null)}

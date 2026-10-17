@@ -33,5 +33,7 @@
   "noMatchTags": "{{tags}}に一致するプリセットはありません。",
   "noMatchQueryTags": "{{tags}}に「{{query}}」に一致するプリセットはありません。",
   "noPresets": "ライブラリにはまだプリセットがありません。",
-  "removeTag": "{{name}}を外す"
+  "removeTag": "{{name}}を外す",
+  "hintSetup": "イニシアチブは戦闘開始時に振られます",
+  "hintActive": "イニシアチブは追加時に振られます：d20 {{bonus}}"
 }

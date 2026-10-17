@@ -33,5 +33,7 @@
   "noMatchTags": "Aucun modèle ne correspond à {{tags}}.",
   "noMatchQueryTags": "Aucun modèle ne correspond à « {{query}} » dans {{tags}}.",
   "noPresets": "La bibliothèque ne contient encore aucun modèle.",
-  "removeTag": "Retirer {{name}}"
+  "removeTag": "Retirer {{name}}",
+  "hintSetup": "L’initiative est lancée au début du combat",
+  "hintActive": "L’initiative est lancée à l’ajout : d20 {{bonus}}"
 }

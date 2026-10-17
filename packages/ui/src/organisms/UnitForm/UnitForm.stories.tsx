@@ -6,7 +6,7 @@ import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { TagSheetTag } from '../TagSheet/TagSheet.tsx';
 import { UnitForm } from './UnitForm.tsx';
-import type { UnitDraft, UnitFormMode } from './UnitForm.tsx';
+import type { UnitDraft, UnitFormHint, UnitFormMode } from './UnitForm.tsx';
 
 interface UnitFormCellProps {
   mode?: UnitFormMode;
@@ -14,6 +14,8 @@ interface UnitFormCellProps {
   lockRole?: boolean;
   library?: boolean;
   roleCounts?: Partial<Record<Role, number>>;
+  hint?: UnitFormHint;
+  closeOnDone?: boolean;
   onSubmit?: (draft: UnitDraft) => void;
   onCancel?: () => void;
 }
@@ -113,6 +115,8 @@ function UnitFormCell({
   lockRole,
   library = true,
   roleCounts,
+  hint,
+  closeOnDone = false,
   onSubmit,
   onCancel,
 }: UnitFormCellProps) {
@@ -128,12 +132,13 @@ function UnitFormCell({
         tags={tags}
         combatTitle="Ambush at the Ferry"
         roleCounts={roleCounts}
+        hint={hint}
         onSubmit={(draft) => {
-          setOpened(false);
+          if (closeOnDone) setOpened(false);
           onSubmit?.(draft);
         }}
         onCancel={() => {
-          setOpened(false);
+          if (closeOnDone) setOpened(false);
           onCancel?.();
         }}
       />
@@ -276,6 +281,12 @@ export const MinimumValues = meta.story({
     await expect(decrease[0]).toBeDisabled();
     await expect(decrease[1]).toBeDisabled();
     await expect(decrease[2]).toBeEnabled();
+    await expect(getComputedStyle(decrease[0] as HTMLElement).backgroundColor).toBe(
+      'rgb(250, 246, 238)',
+    );
+    await expect(getComputedStyle(decrease[2] as HTMLElement).backgroundColor).toBe(
+      'rgb(243, 237, 226)',
+    );
   },
 });
 
@@ -313,7 +324,6 @@ export const ExtraFlowAddFromLibrary = meta.story({
       initiativeBonus: 3,
       note: '',
     });
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
 
@@ -458,6 +468,81 @@ export const ExtraPickFillsForm = meta.story({
   },
 });
 
+export const ExtraAddClosesTheSheet = meta.story({
+  name: 'Add closes the sheet in a host that closes on submit',
+  args: { closeOnDone: true },
+  play: async ({ canvas, args }) => {
+    await openLibrary(canvas);
+    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Add Orc Berserker' }));
+    await expect(args.onSubmit).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+  },
+});
+
+export const ExtraPickResetsOnSearch = meta.story({
+  name: 'A new search drops the picked preset',
+  play: async ({ canvas, args }) => {
+    await openLibrary(canvas);
+    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
+    await expect(canvas.getByRole('button', { name: 'Add Orc Berserker' })).toBeEnabled();
+    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search presets' }), 'gob');
+    const cta = canvas.getByRole('button', { name: 'Pick a preset' });
+    await expect(cta).toBeDisabled();
+    await userEvent.click(cta, { pointerEventsCheck: 0 });
+    await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+});
+
+export const ExtraPickResetsOnTab = meta.story({
+  name: 'Switching tabs drops the picked preset',
+  play: async ({ canvas, args }) => {
+    await openLibrary(canvas);
+    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
+    await userEvent.click(canvas.getByRole('radio', { name: 'New' }));
+    const name = canvas.getByRole('textbox', { name: 'Name' });
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Grunt');
+    await openLibrary(canvas);
+    await expect(canvas.getByRole('button', { name: 'Pick a preset' })).toBeDisabled();
+    await expect(canvas.queryByRole('button', { name: 'Add Orc Berserker' })).toBeNull();
+    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Add Orc Berserker' }));
+    await expect(args.onSubmit).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'Orc Berserker', maxHp: 40 }),
+    );
+  },
+});
+
+export const ExtraHintActive = meta.story({
+  name: 'Hint: initiative rolled on add in Active',
+  args: { library: false, hint: 'active', value: { initiativeBonus: 2 } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Initiative is rolled on add: d20 +2')).toBeVisible();
+  },
+});
+
+export const ExtraHintSetup = meta.story({
+  name: 'Hint: initiative rolled at Start in Setup',
+  args: { library: false, hint: 'setup' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText('Initiative is rolled when the combat starts')).toBeVisible();
+  },
+});
+
+export const ExtraEditEmptyName = meta.story({
+  name: 'An empty name in Edit draws the empty border',
+  args: { mode: 'edit', value: vashti },
+  play: async ({ canvas }) => {
+    const name = canvas.getByRole('textbox', { name: 'Name' });
+    const frame = name.closest<HTMLElement>('[data-field]');
+    await expect(frame && getComputedStyle(frame).borderTopColor).toBe('rgb(35, 31, 28)');
+    await userEvent.clear(name);
+    await userEvent.tab();
+    await expect(frame && getComputedStyle(frame).borderTopColor).toBe('rgb(226, 216, 198)');
+  },
+});
+
 export const ExtraEscapeCancels = meta.story({
   name: 'Escape cancels without saving',
   args: { mode: 'edit', value: vashti },
@@ -466,7 +551,6 @@ export const ExtraEscapeCancels = meta.story({
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onSubmit).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
 

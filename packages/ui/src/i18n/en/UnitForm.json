@@ -33,5 +33,7 @@
   "noMatchTags": "No preset matches {{tags}}.",
   "noMatchQueryTags": "No preset matches “{{query}}” in {{tags}}.",
   "noPresets": "The Library has no presets yet.",
-  "removeTag": "Remove {{name}}"
+  "removeTag": "Remove {{name}}",
+  "hintSetup": "Initiative is rolled when the combat starts",
+  "hintActive": "Initiative is rolled on add: d20 {{bonus}}"
 }

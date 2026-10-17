@@ -19,10 +19,18 @@
 
 .name {
   flex: none;
+}
 
-  & [data-field]:not([data-error]):has(textarea:not(:placeholder-shown)) {
-    border-color: var(--cp-color-ink);
-  }
+.named [data-field]:not([data-error]) {
+  border-color: var(--cp-color-ink);
+}
+
+.hint {
+  flex: none;
+  color: var(--cp-color-secondary);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-snug);
 }
 
 .field {
@@ -58,6 +66,10 @@
 
 .stepper[data-empty] input[role='spinbutton']:not(:focus) {
   color: var(--cp-color-muted);
+}
+
+.stepper button[aria-controls]:disabled {
+  background: var(--cp-color-background);
 }
 
 .tools {

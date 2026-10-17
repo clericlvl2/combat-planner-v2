@@ -33,5 +33,7 @@
   "noMatchTags": "Ninguna plantilla coincide con {{tags}}.",
   "noMatchQueryTags": "Ninguna plantilla coincide con «{{query}}» en {{tags}}.",
   "noPresets": "La biblioteca aún no tiene plantillas.",
-  "removeTag": "Quitar {{name}}"
+  "removeTag": "Quitar {{name}}",
+  "hintSetup": "La iniciativa se tira al empezar el combate",
+  "hintActive": "La iniciativa se tira al añadir: d20 {{bonus}}"
 }
