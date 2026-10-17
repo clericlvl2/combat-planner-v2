@@ -71,32 +71,45 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
   const show = (panel: Panel, unit: PlayerUnit) => setOpen({ panel, unitId: unit.id });
   const close = () => setOpen(null);
 
-  const send = (unit: PlayerUnit, body: Record<string, unknown> & { type: Action['type'] }) => {
-    void dispatch({ ...body, id: ulid(), version: combat.version, unitId: unit.id } as Action);
+  const target = (unit: PlayerUnit) => ({
+    id: ulid(),
+    version: combat.version,
+    unitId: unit.id,
+  });
+
+  const send = (action: Action) => {
+    void dispatch(action);
+  };
+
+  const hpAction = (unit: PlayerUnit, kind: Exclude<HpHistoryKind, 'max'>, amount: number) => {
+    if (kind === 'damage') return { ...target(unit), type: 'damage' as const, amount };
+    if (kind === 'heal') return { ...target(unit), type: 'heal' as const, amount };
+    return { ...target(unit), type: 'setTempHp' as const, amount };
   };
 
   const applyHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number) => {
     if (kind === 'max') return;
-    const type = kind === 'damage' ? 'damage' : kind === 'heal' ? 'heal' : 'setTempHp';
-    send(unit, { type, amount });
     close();
-    setFlashId(unit.id);
-    flash();
+    void dispatch(hpAction(unit, kind, amount)).then((result) => {
+      if (!result.applied) return;
+      setFlashId(unit.id);
+      flash();
+    });
   };
 
   const changeConditions = (unit: PlayerUnit, next: Condition[]) => {
     const condition = toggledCondition(unit.conditions, next);
-    if (condition) send(unit, { type: 'toggleCondition', condition });
+    if (condition) send({ ...target(unit), type: 'toggleCondition', condition });
   };
 
   const saveEdit = (unit: PlayerUnit, draft: UnitDraft) => {
-    send(unit, { ...draft, type: 'editUnit', role: 'hero' });
+    send({ ...draft, ...target(unit), type: 'editUnit', role: 'hero' });
     close();
   };
 
   const selectMore = (unit: PlayerUnit, id: string) => {
     if (id !== RELEASE_CLAIM) return;
-    send(unit, { type: 'releaseUnit' });
+    send({ ...target(unit), type: 'releaseUnit' });
     setExpandedId(null);
   };
 
@@ -133,7 +146,7 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
             <div key={unit.id} className={classes.slot}>
               <PlayerRow
                 className={classes.row}
-                data-flash={(flashing && flashId === unit.id) || undefined}
+                flash={flashing && flashId === unit.id}
                 unit={unit}
                 mine={mine}
                 expanded={mine && expandedId === unit.id}
@@ -150,7 +163,7 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
                 onHp={mine ? () => show('numpad', unit) : noop}
                 onConditions={() => show('conditions', unit)}
                 onHistory={() => show('history', unit)}
-                onNoteChange={(note) => send(unit, { type: 'editNote', note })}
+                onNoteChange={(note) => send({ ...target(unit), type: 'editNote', note })}
                 onEdit={() => show('edit', unit)}
                 onMore={() => (isOpen('more', unit) ? close() : show('more', unit))}
               />
@@ -159,11 +172,13 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
                   className={classes.initiative}
                   open={isOpen('initiative', unit)}
                   value={unit.initiative}
-                  bonus={0}
+                  bonus={unit.initiativeBonus ?? 0}
                   random={random}
-                  onSet={(initiative) => send(unit, { type: 'setInitiative', initiative })}
+                  onSet={(initiative) =>
+                    send({ ...target(unit), type: 'setInitiative', initiative })
+                  }
                   onRoll={(_initiative, roll) => {
-                    send(unit, { type: 'rollInitiative', roll });
+                    send({ ...target(unit), type: 'rollInitiative', roll });
                     close();
                   }}
                   onClose={close}
@@ -226,6 +241,7 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
           opened
           mode="edit"
           lockRole
+          lockMaxHp
           value={{
             name: editUnit.name,
             role: 'hero',

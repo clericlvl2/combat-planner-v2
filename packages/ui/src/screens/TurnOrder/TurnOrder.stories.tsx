@@ -159,6 +159,7 @@ export const EditOwnHero = meta.story({
       'true',
     );
     await expect(within(form).getByRole('radiogroup')).toHaveAttribute('aria-disabled', 'true');
+    await expect(within(form).getByRole('spinbutton', { name: 'Max HP' })).toBeDisabled();
     const name = within(form).getByRole('textbox', { name: 'Name' });
     await userEvent.clear(name);
     await userEvent.type(name, 'Vashti the Bold');
@@ -175,5 +176,36 @@ export const EditOwnHero = meta.story({
       ]),
     );
     await expect(await canvas.findByRole('button', { name: 'Vashti the Bold' })).toBeVisible();
+  },
+});
+
+export const ExtraFailedDamageNoFlash = meta.story({
+  name: 'A rejected Damage does not flash the row',
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await userEvent.click(within(vashti).getByRole('button', { name: /^20 \/36/ }));
+    const sheet = await canvas.findByRole('dialog', { name: ME });
+    await userEvent.click(within(sheet).getByRole('button', { name: '5' }));
+    api.failNext('version');
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Damage' }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      'The combat changed. Try again.',
+    );
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    const after = await rowOf(canvas, ME);
+    await expect(after).not.toHaveAttribute('data-flash');
+    await expect(within(after).getByRole('button', { name: /^20 \/36/ })).toBeVisible();
+  },
+});
+
+export const ExtraInitiativeBonus = meta.story({
+  name: 'The initiative popover shows the hero bonus',
+  parameters: { scenario: playerScenario(ferryCombat({ status: 'setup' })) },
+  play: async ({ canvas }) => {
+    const vashti = await rowOf(canvas, ME);
+    await userEvent.click(within(vashti).getByRole('button', { name: /You$/ }));
+    const popover = await canvas.findByRole('dialog', { name: 'Initiative' });
+    await expect(within(popover).getByRole('button', { name: /^Roll d20 \+2/ })).toBeVisible();
   },
 });
