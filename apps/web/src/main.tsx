@@ -14,9 +14,9 @@ import { createQueryClient } from '@combat-planner/ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
-import { ulid } from 'ulid';
 import { aboutLinks } from './about.ts';
 import { browserLocale } from './locale.ts';
+import { browserStorage, playerIdOf } from './playerId.ts';
 import { AppProviders } from './providers.tsx';
 import { createAppRouter } from './router.tsx';
 
@@ -25,11 +25,10 @@ if (!rootElement) throw new Error('Element #root is missing');
 
 const api = createHonoApiClient({ baseUrl: '/api' });
 const queryClient = createQueryClient();
-const pagePlayerId = ulid();
 const router = createAppRouter({
   api,
   queryClient,
-  playerId: () => pagePlayerId,
+  playerId: playerIdOf(browserStorage),
   about: aboutLinks(import.meta.env),
 });
 
