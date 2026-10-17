@@ -1,6 +1,7 @@
 import type { ApiEndEvent, ApiClient, ConnectionState } from '@combat-planner/api/client';
 import { ApiError } from '@combat-planner/api/client';
-import type { Action, Combat, PlayerCombat } from '@combat-planner/domain';
+import type { Action, Combat, PlayerCombat, Preset } from '@combat-planner/domain';
+import { LIMITS } from '@combat-planner/domain';
 import { describe, expect, it, vi } from 'vite-plus/test';
 import { FakeApiClient } from '../../src/api/FakeApiClient.ts';
 import { emptyScenario, scenario } from '../../src/api/scenarios.ts';
@@ -10,10 +11,12 @@ import {
   ENEMY_ID,
   HERO_ID,
   HIDDEN_ID,
+  NOW,
   OTHER_PLAYER_ID,
   PLAYER_ID,
   TOKEN,
   combat,
+  unit,
 } from './fixtures.ts';
 
 const damage = (version: number, unitId = ENEMY_ID, id = ACTION_ID): Action => ({
@@ -199,6 +202,34 @@ describe('FakeApiClient test controls', () => {
     await expect(client.combats.list()).rejects.toMatchObject({ code: 'version', status: 409 });
   });
 
+  it('setConnection holds documents while the stream is down and delivers the latest one on connected', async () => {
+    const client = seeded();
+    const dm = watchDm(client);
+    const player = watchPlayer(client);
+    client.setConnection('reconnecting');
+    await client.combats.dispatch(COMBAT_ID, damage(1));
+    await client.combats.dispatch(COMBAT_ID, damage(2, ENEMY_ID, '01ARZ3NDEKTSV4RRFFQ69G5FC1'));
+    expect(dm.documents.map((document) => document.version)).toEqual([1]);
+    expect(player.documents.map((document) => document.version)).toEqual([1]);
+    client.setConnection('connected');
+    expect(dm.documents.map((document) => document.version)).toEqual([1, 3]);
+    expect(player.documents.map((document) => document.version)).toEqual([1, 3]);
+    client.setConnection('offline');
+    client.setConnection('connected');
+    expect(dm.documents).toHaveLength(2);
+  });
+
+  it('expireSession ends every DM stream with unauthorized and leaves player streams open', async () => {
+    const client = seeded();
+    const dm = watchDm(client);
+    const player = watchPlayer(client);
+    client.expireSession();
+    expect(dm.ended).toEqual([{ type: 'unauthorized' }]);
+    expect(player.ended).toEqual([]);
+    await expect(client.auth.session()).resolves.toBeNull();
+    expect(watchDm(client).ended).toEqual([{ type: 'unauthorized' }]);
+  });
+
   it('setConnection notifies subscribers and changes state()', () => {
     const client = new FakeApiClient({ scenario: scenario({ connection: 'offline' }) });
     const states: ConnectionState[] = [];
@@ -296,6 +327,111 @@ describe('FakeApiClient REST groups', () => {
     await expect(
       client.tags.create({ id: '01ARZ3NDEKTSV4RRFFQ69G5FE1', name: 'undead' }),
     ).rejects.toMatchObject({ code: 'invalid', status: 422 });
+  });
+
+  it('lists summaries with the round of an active combat and the creation time', async () => {
+    const active = combat({
+      id: '01ARZ3NDEKTSV4RRFFQ69G5FAZ',
+      status: 'active',
+      round: 4,
+      createdAt: '2026-10-15T09:00:00.000Z',
+    });
+    const client = new FakeApiClient({ scenario: scenario({ combats: [combat(), active] }) });
+    const summaries = await client.combats.list();
+    expect(summaries.map(({ id, round, createdAt }) => ({ id, round, createdAt }))).toEqual([
+      { id: COMBAT_ID, round: null, createdAt: NOW },
+      { id: active.id, round: 4, createdAt: '2026-10-15T09:00:00.000Z' },
+    ]);
+  });
+
+  it('carries the sign-in method in the session', async () => {
+    const seededSession = new FakeApiClient({ scenario: emptyScenario });
+    await expect(seededSession.auth.session()).resolves.toMatchObject({ method: 'email' });
+    const social = new FakeApiClient({
+      scenario: scenario({
+        session: {
+          userId: 'dm-2',
+          email: 'ilse@example.com',
+          displayName: 'Ilse',
+          language: 'de',
+          method: 'github',
+        },
+      }),
+    });
+    await expect(social.auth.session()).resolves.toMatchObject({ method: 'github' });
+    const legacy = new FakeApiClient({
+      scenario: scenario({
+        session: { userId: 'dm-3', email: 'kai@example.com', displayName: 'Kai', language: 'en' },
+      }),
+    });
+    await expect(legacy.auth.session()).resolves.toMatchObject({ method: 'email' });
+    await social.auth.signOut();
+    await expect(
+      social.auth.signIn({ email: 'dm@example.com', password: 'correct horse battery' }),
+    ).resolves.toMatchObject({ method: 'email' });
+  });
+
+  it('failNext rejects with the server status of limit and emailTaken', async () => {
+    const client = new FakeApiClient({ scenario: scenario({ session: null }) });
+    client.failNext('emailTaken');
+    await expect(
+      client.auth.signUp({ email: 'new@example.com', password: 'horse battery', displayName: 'N' }),
+    ).rejects.toMatchObject({ code: 'emailTaken', status: 422 });
+    client.failNext('limit');
+    await expect(client.auth.providers()).rejects.toMatchObject({ code: 'limit', status: 422 });
+  });
+
+  it('answers the combat, preset and unit caps with limit', async () => {
+    const full = new FakeApiClient({
+      scenario: scenario({
+        combats: Array.from({ length: LIMITS.combatsPerDm }, (_, index) =>
+          combat({ id: `01ARZ3NDEKTSV4RRFFQ69G${String(index).padStart(4, '0')}` }),
+        ),
+        presets: Array.from({ length: LIMITS.presetsPerDm }, (_, index): Preset => ({
+          id: `01ARZ3NDEKTSV4RRFFQ69H${String(index).padStart(4, '0')}`,
+          name: `Goblin ${index}`,
+          role: 'enemy',
+          maxHp: 10,
+          ac: 13,
+          pd: 11,
+          md: 10,
+          initiativeBonus: 1,
+          tags: [],
+          createdAt: NOW,
+          updatedAt: NOW,
+        })),
+      }),
+    });
+    await expect(
+      full.combats.duplicate('01ARZ3NDEKTSV4RRFFQ69G0000', '01ARZ3NDEKTSV4RRFFQ69J0000'),
+    ).rejects.toMatchObject({ code: 'limit', status: 422 });
+    await expect(
+      full.presets.duplicate('01ARZ3NDEKTSV4RRFFQ69H0000', '01ARZ3NDEKTSV4RRFFQ69J0001'),
+    ).rejects.toMatchObject({ code: 'limit', status: 422 });
+    const crowded = new FakeApiClient({
+      scenario: scenario({
+        combats: [
+          combat({
+            units: Array.from({ length: LIMITS.unitsPerCombat }, (_, index) =>
+              unit({
+                id: `01ARZ3NDEKTSV4RRFFQ69K${String(index).padStart(4, '0')}`,
+                name: `Orc ${index}`,
+                role: 'enemy',
+              }),
+            ),
+          }),
+        ],
+      }),
+    });
+    await expect(
+      crowded.combats.dispatch(COMBAT_ID, {
+        id: ACTION_ID,
+        version: 1,
+        type: 'duplicateUnit',
+        unitId: '01ARZ3NDEKTSV4RRFFQ69K0000',
+        newUnitId: '01ARZ3NDEKTSV4RRFFQ69J0002',
+      }),
+    ).rejects.toMatchObject({ code: 'limit', status: 422 });
   });
 
   it('settings.update changes the session language', async () => {

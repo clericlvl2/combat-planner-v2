@@ -1,14 +1,12 @@
 import type {
-  ApiClient,
   ConnectionState,
   LinkToken,
   Locale,
   Session,
   Settings,
+  SocialProvider,
 } from '@combat-planner/api/client';
 import type { Combat, CombatId, DisplayName, PlayerId, Preset, Tag } from '@combat-planner/domain';
-
-export type SocialProvider = Parameters<ApiClient['auth']['socialSignIn']>[0];
 
 export interface FakeAccount {
   userId: string;
@@ -18,8 +16,10 @@ export interface FakeAccount {
   language: Locale;
 }
 
+export type ScenarioSession = Omit<Session, 'method'> & Partial<Pick<Session, 'method'>>;
+
 export interface Scenario {
-  session: Session | null;
+  session: ScenarioSession | null;
   accounts: FakeAccount[];
   combats: Combat[];
   links: Partial<Record<CombatId, LinkToken>>;
@@ -39,12 +39,13 @@ export const DM_ACCOUNT: FakeAccount = {
   language: 'en',
 };
 
-export const emptyScenario: Scenario = {
+const defaults: Scenario = {
   session: {
     userId: DM_ACCOUNT.userId,
     email: DM_ACCOUNT.email,
     displayName: DM_ACCOUNT.displayName,
     language: DM_ACCOUNT.language,
+    method: 'email',
   },
   accounts: [DM_ACCOUNT],
   combats: [],
@@ -57,7 +58,18 @@ export const emptyScenario: Scenario = {
   connection: 'connected',
 };
 
-export const scenario = (overrides: Partial<Scenario> = {}): Scenario => ({
-  ...emptyScenario,
-  ...overrides,
-});
+const notMergedByStorybook: object = Object.freeze({});
+
+export const scenario = (overrides: Partial<Scenario> = {}): Scenario =>
+  Object.assign<Scenario, Scenario, Partial<Scenario>>(
+    Object.create(notMergedByStorybook),
+    defaults,
+    overrides,
+  );
+
+export const isScenario = (value: unknown): value is Scenario =>
+  typeof value === 'object' &&
+  value !== null &&
+  Object.getPrototypeOf(value) === notMergedByStorybook;
+
+export const emptyScenario: Scenario = scenario();

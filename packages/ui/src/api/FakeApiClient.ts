@@ -10,6 +10,7 @@ import type {
   EndListener,
   LinkToken,
   Session,
+  SocialProvider,
   Unsubscribe,
   VersionResult,
 } from '@combat-planner/api/client';
@@ -36,7 +37,7 @@ import {
   project,
 } from '@combat-planner/domain';
 import { ulid } from 'ulid';
-import type { FakeAccount, Scenario, SocialProvider } from './scenarios.ts';
+import type { FakeAccount, Scenario, ScenarioSession } from './scenarios.ts';
 
 export interface FakeApiClientOptions {
   scenario: Scenario;
@@ -56,12 +57,14 @@ interface StoredCombat {
 interface DmSubscriber {
   onDocument: DocumentListener<Combat>;
   onEnd: EndListener;
+  version: number;
 }
 
 interface PlayerSubscriber {
   playerId: PlayerId;
   onDocument: DocumentListener<PlayerCombat>;
   onEnd: EndListener;
+  version: number;
 }
 
 interface IssuedLink {
@@ -77,13 +80,15 @@ export const FAKE_ERROR_STATUS: Record<ApiErrorCode, number> = {
   unauthorized: 401,
   network: 0,
   linkRevoked: 410,
+  limit: 422,
+  emailTaken: 422,
 };
 
 const DOMAIN_ERROR_CODE: Record<DomainErrorCode, ApiErrorCode> = {
   version: 'version',
   forbidden: 'forbidden',
   blocked: 'invalid',
-  limit: 'invalid',
+  limit: 'limit',
   invalid: 'invalid',
   notFound: 'notFound',
 };
@@ -107,8 +112,10 @@ const summaryOf = (combat: Combat): CombatSummary => ({
   description: combat.description,
   color: combat.color,
   status: combat.status,
+  round: combat.status === 'active' ? combat.round : null,
   unitCount: combat.units.length,
   lastPlayedAt: combat.lastPlayedAt,
+  createdAt: combat.createdAt,
   updatedAt: combat.updatedAt,
 });
 
@@ -117,7 +124,11 @@ const sessionOf = (account: FakeAccount): Session => ({
   email: account.email,
   displayName: account.displayName,
   language: account.language,
+  method: 'email',
 });
+
+const scenarioSession = (session: ScenarioSession | null): Session | null =>
+  session && { method: 'email', ...session };
 
 export class FakeApiClient implements ApiClient {
   readonly calls: FakeCall[] = [];
@@ -139,7 +150,7 @@ export class FakeApiClient implements ApiClient {
 
   constructor({ scenario, delay = 0 }: FakeApiClientOptions) {
     this.delay = delay;
-    this.session = scenario.session;
+    this.session = scenarioSession(scenario.session);
     this.accounts = scenario.accounts.map((account) => ({ ...account }));
     for (const combat of scenario.combats) {
       const players = { ...combat.players, ...scenario.players[combat.id] };
@@ -158,6 +169,15 @@ export class FakeApiClient implements ApiClient {
     if (state === this.connectionState) return;
     this.connectionState = state;
     for (const listener of this.connectionListeners) listener(state);
+    if (state !== 'connected') return;
+    for (const { combat } of this.combatStore.values()) this.broadcast(combat);
+  }
+
+  expireSession(): void {
+    this.session = null;
+    const ended = [...this.dmSubscribers.values()].flatMap((subscribers) => [...subscribers]);
+    this.dmSubscribers.clear();
+    for (const subscriber of ended) subscriber.onEnd({ type: 'unauthorized' });
   }
 
   failNext(code: ApiErrorCode): void {
@@ -203,13 +223,26 @@ export class FakeApiClient implements ApiClient {
   }
 
   private broadcast(combat: Combat, audience: 'all' | 'dm' = 'all'): void {
+    if (this.connectionState !== 'connected') return;
     for (const subscriber of this.dmSubscribers.get(combat.id) ?? []) {
-      subscriber.onDocument(project(combat, DM));
+      this.deliverToDm(subscriber, combat);
     }
     if (audience === 'dm') return;
     for (const subscriber of this.playerSubscribers.get(combat.id) ?? []) {
-      subscriber.onDocument(project(combat, { kind: 'player', playerId: subscriber.playerId }));
+      this.deliverToPlayer(subscriber, combat);
     }
+  }
+
+  private deliverToDm(subscriber: DmSubscriber, combat: Combat): void {
+    if (combat.version <= subscriber.version) return;
+    subscriber.version = combat.version;
+    subscriber.onDocument(project(combat, DM));
+  }
+
+  private deliverToPlayer(subscriber: PlayerSubscriber, combat: Combat): void {
+    if (combat.version <= subscriber.version) return;
+    subscriber.version = combat.version;
+    subscriber.onDocument(project(combat, { kind: 'player', playerId: subscriber.playerId }));
   }
 
   private endSubscribers(combatId: CombatId, event: ApiEndEvent, audience: 'all' | 'player'): void {
@@ -272,7 +305,7 @@ export class FakeApiClient implements ApiClient {
     const existing = this.combatStore.get(combat.id);
     if (existing) return existing.combat;
     if (this.combatStore.size >= LIMITS.combatsPerDm) {
-      throw fail('invalid', `A DM keeps at most ${LIMITS.combatsPerDm} combats`);
+      throw fail('limit', `A DM keeps at most ${LIMITS.combatsPerDm} combats`);
     }
     this.combatStore.set(combat.id, { combat, log: [] });
     return combat;
@@ -288,7 +321,7 @@ export class FakeApiClient implements ApiClient {
     const existing = this.presetList.find((candidate) => candidate.id === preset.id);
     if (existing) return existing;
     if (this.presetList.length >= LIMITS.presetsPerDm) {
-      throw fail('invalid', `A DM keeps at most ${LIMITS.presetsPerDm} presets`);
+      throw fail('limit', `A DM keeps at most ${LIMITS.presetsPerDm} presets`);
     }
     this.checkTags(preset.tags);
     this.presetList = [preset, ...this.presetList];
@@ -437,8 +470,12 @@ export class FakeApiClient implements ApiClient {
       ),
     subscribe: (id, onDocument, onEnd) => {
       this.calls.push({ method: 'combats.subscribe', args: [id] });
-      const subscriber: DmSubscriber = { onDocument, onEnd };
-      const stored = this.session ? this.combatStore.get(id) : undefined;
+      const subscriber: DmSubscriber = { onDocument, onEnd, version: -1 };
+      if (!this.session) {
+        onEnd({ type: 'unauthorized' });
+        return () => {};
+      }
+      const stored = this.combatStore.get(id);
       if (!stored) {
         onEnd({ type: 'deleted', title: '' });
         return () => {};
@@ -446,7 +483,7 @@ export class FakeApiClient implements ApiClient {
       const subscribers = this.dmSubscribers.get(id) ?? new Set<DmSubscriber>();
       subscribers.add(subscriber);
       this.dmSubscribers.set(id, subscribers);
-      onDocument(project(stored.combat, DM));
+      if (this.connectionState === 'connected') this.deliverToDm(subscriber, stored.combat);
       return () => {
         this.dmSubscribers.get(id)?.delete(subscriber);
       };
@@ -516,11 +553,11 @@ export class FakeApiClient implements ApiClient {
         return () => {};
       }
       const combatId = stored.combat.id;
-      const subscriber: PlayerSubscriber = { playerId, onDocument, onEnd };
+      const subscriber: PlayerSubscriber = { playerId, onDocument, onEnd, version: -1 };
       const subscribers = this.playerSubscribers.get(combatId) ?? new Set<PlayerSubscriber>();
       subscribers.add(subscriber);
       this.playerSubscribers.set(combatId, subscribers);
-      onDocument(project(stored.combat, { kind: 'player', playerId }));
+      if (this.connectionState === 'connected') this.deliverToPlayer(subscriber, stored.combat);
       return () => {
         this.playerSubscribers.get(combatId)?.delete(subscriber);
       };

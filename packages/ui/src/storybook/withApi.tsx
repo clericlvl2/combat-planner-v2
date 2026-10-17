@@ -2,7 +2,7 @@ import type { Decorator, Loader } from '@storybook/react-vite';
 import { QueryClient } from '@tanstack/react-query';
 import { ApiProvider, createQueryClient } from '../api/ApiProvider.tsx';
 import { FakeApiClient } from '../api/FakeApiClient.ts';
-import { emptyScenario } from '../api/scenarios.ts';
+import { emptyScenario, isScenario } from '../api/scenarios.ts';
 import type { Scenario } from '../api/scenarios.ts';
 
 export interface ApiParameters {
@@ -10,7 +10,9 @@ export interface ApiParameters {
 }
 
 function scenarioOf(value: unknown): Scenario {
-  return typeof value === 'object' && value !== null ? (value as Scenario) : emptyScenario;
+  if (value === undefined) return emptyScenario;
+  if (isScenario(value)) return value;
+  throw new Error('parameters.scenario must be built with scenario()');
 }
 
 export const apiLoader: Loader = ({ parameters }) => ({
