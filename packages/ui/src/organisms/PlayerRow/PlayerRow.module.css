@@ -27,14 +27,8 @@
   }
 }
 
-.root .role {
-  width: 62px;
-  min-height: 0;
-  align-self: stretch;
-
-  .root[data-expanded] > & {
-    border-bottom-left-radius: 0;
-  }
+.root[data-expanded] > .role {
+  border-bottom-left-radius: 0;
 }
 
 .main {

@@ -148,13 +148,14 @@ const pageCellInset = layout.contentEdge * 2;
 
 const screen: CSSProperties = { padding: pageCellInset };
 
-type PlayerRowCellProps = Omit<PlayerRowProps, 'claimedByName'>;
+type PlayerRowCellProps = Omit<PlayerRowProps, 'claimedByName'> & { hostCollapse?: boolean };
 
 function PlayerRowCell({
   unit,
   expanded: initiallyExpanded = false,
   onToggle,
   onNoteChange,
+  hostCollapse = false,
   ...props
 }: PlayerRowCellProps) {
   const [expanded, setExpanded] = useState(initiallyExpanded);
@@ -175,6 +176,15 @@ function PlayerRowCell({
           onNoteChange(value);
         }}
       />
+      {hostCollapse ? (
+        <button
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => setExpanded(false)}
+        >
+          Collapse from the host
+        </button>
+      ) : null}
     </div>
   );
 }
@@ -446,6 +456,36 @@ export const ExtraCollapseSavesNote = meta.story({
     await expect(args.onNoteChange).toHaveBeenCalledWith('Hex ends next round');
     await expect(args.onToggle).toHaveBeenCalledOnce();
     await expect(canvas.getByText('Hex ends next round')).toBeVisible();
+  },
+});
+
+export const ExtraHostCollapseSavesNote = meta.story({
+  name: 'A host collapse while editing saves the note',
+  args: { expanded: true, hostCollapse: true },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Note: Concentrating on Hex' }));
+    const editor = canvas.getByRole('textbox', { name: 'Note' });
+    await waitFor(() => expect(editor).toHaveFocus());
+    await userEvent.clear(editor);
+    await userEvent.type(editor, 'Hex ends next round');
+    await userEvent.click(canvas.getByRole('button', { name: 'Collapse from the host' }));
+    await expect(args.onNoteChange).toHaveBeenCalledOnce();
+    await expect(args.onNoteChange).toHaveBeenCalledWith('Hex ends next round');
+    await expect(await canvas.findByText('Hex ends next round')).toBeVisible();
+  },
+});
+
+export const ExtraRoleFillsRow = meta.story({
+  name: 'The role block fills the row height',
+  play: async ({ canvas, canvasElement }) => {
+    const row = canvas
+      .getByRole('button', { name: 'Vashti the Hexer' })
+      .closest('[data-unit-role]');
+    const role = canvasElement.querySelector<HTMLElement>('[data-fill]');
+    await expect(role).not.toBeNull();
+    const rowBox = row?.getBoundingClientRect();
+    const roleBox = role?.getBoundingClientRect();
+    await expect(roleBox?.height).toBe((rowBox?.height ?? 0) - 4);
   },
 });
 

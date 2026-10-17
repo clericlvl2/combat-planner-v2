@@ -1,4 +1,4 @@
-Anatomy OwnHero
+Anatomy ExtraRoleFillsRow OwnHero
 ExtraFlowTapRow ExtraKeyboard ExtraKeyboardMotion
 ExtraMoreMenu OwnExpanded
 ExtraOtherReadOnly OtherHero

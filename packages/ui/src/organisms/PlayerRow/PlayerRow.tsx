@@ -102,6 +102,7 @@ export function PlayerRow({
     >
       <RoleBlock
         className={classes.role}
+        fill
         unitRole={unit.role}
         top={unit.initiative === null ? null : { kind: 'initiative', value: unit.initiative }}
         active={shownActive}
