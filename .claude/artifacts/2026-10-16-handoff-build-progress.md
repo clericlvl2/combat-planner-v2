@@ -96,7 +96,7 @@
 | fix-4-web | handed back 5/5 (report `.claude/artifacts/reports/fix-4-web.md`), rebased, gate running; e2e after `5-e2e` frees port 3000 | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
 | fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
-| 6-docker | todo | Dockerfile, compose, README |
+| 6-docker | running worker-bee a43694d 2026-10-17T17:09+03:00 (Opus 5.5 medium; Docker socket unavailable — production command checked outside Docker) | Dockerfile, compose, README |
 
 ## Вопросы владельцу
 
