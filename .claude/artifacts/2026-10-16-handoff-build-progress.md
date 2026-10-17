@@ -78,7 +78,7 @@
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
-| 2.4-PlayerView | merged 0f76769..3be18c3 (gate `.claude/run/2.4-PlayerView/` green), guard-bee running | Heroes, TurnOrder |
+| 2.4-PlayerView | guarded `.claude/artifacts/guard/2.4-PlayerView.md` (P2 ×1, P3 ×8 → `fix-2.4`) | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
@@ -93,6 +93,14 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-PlayerView guard, вне scope: vision Unit → Actions запрещает игроку Set
+  max HP, но разрешает Edit, а поля формы включают max HP — игрок меняет max
+  HP через Edit (`authorize.ts:46`). Рекомендация 3a: в Edit игрока поле Max
+  HP заблокировано (UnitForm `lockMaxHp`), `authorize` отклоняет `editUnit`
+  игрока с изменённым `maxHp` — в `fix-2.4`, правка vision между фазами.
+  3b: оставить как есть (Edit — доверенное действие). Строю по 3a, пока нет
+  ответа.
 
 - Оркестратор 2026-10-17, правило baselines: CLAUDE.md запрещает менять
   `__screenshots__/<Name>/` без изменения в `src/**/<Name>/` того же коммита.
@@ -589,6 +597,17 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.4-PlayerView → `fix-2.4`: P2 после собственного Release claim последнего
+  героя открывается Heroes (vision Heroes screen: «When the player holds no
+  hero after a release or removal» — решение оркестратора: любой release,
+  `ExtraOwnRelease` меняет ожидание). P3: вспышка ряда по вернувшемуся
+  документу, не по отправке; неудачный `releaseUnit` не остаётся в
+  `ownReleases`; Heroes переходит на Turn order после успешных claims, при
+  ошибке остаётся с выбором; переименование возвращающегося игрока
+  отправляется по Done; отступ тоста от фактической высоты BottomBar (не 110);
+  `send` типизирован `Action`; baseline ExtraCantReachServer — экран ошибки до
+  Try again; недостающие Differences.
 
 - 2.4-AppPages → `fix-2.4` (P3): тост удалённого аккаунта один раз и без
   повторов из `history.state` (StrictMode, reload/Back); Settings отмечает
