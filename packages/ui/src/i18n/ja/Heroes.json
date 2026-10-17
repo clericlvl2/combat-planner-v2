@@ -1,0 +1,13 @@
+{
+  "title": "どのヒーローを使いますか？",
+  "nameLabel": "あなたの名前",
+  "namePlaceholder": "DMに表示されます",
+  "nameError": "名前を入力してください",
+  "heroesLabel": "この戦闘のヒーロー",
+  "free": "空き",
+  "playing": "{{name}}が使用中",
+  "you": "あなた",
+  "join": "参加",
+  "done": "完了",
+  "hint": "名前を入力してヒーローを選んでください"
+}

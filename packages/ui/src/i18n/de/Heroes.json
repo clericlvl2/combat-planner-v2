@@ -1,0 +1,13 @@
+{
+  "title": "Wen spielst du?",
+  "nameLabel": "Dein Name",
+  "namePlaceholder": "Für die Spielleitung sichtbar",
+  "nameError": "Gib deinen Namen ein",
+  "heroesLabel": "Helden in diesem Kampf",
+  "free": "Frei",
+  "playing": "{{name}} spielt",
+  "you": "Du",
+  "join": "Beitreten",
+  "done": "Fertig",
+  "hint": "Gib deinen Namen ein und wähle einen Helden"
+}

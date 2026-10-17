@@ -1,0 +1,13 @@
+{
+  "title": "¿A quién juegas?",
+  "nameLabel": "Tu nombre",
+  "namePlaceholder": "Lo verá el DM",
+  "nameError": "Escribe tu nombre",
+  "heroesLabel": "Héroes en este combate",
+  "free": "Libre",
+  "playing": "Lo juega {{name}}",
+  "you": "Tú",
+  "join": "Unirme",
+  "done": "Listo",
+  "hint": "Escribe tu nombre y elige un héroe"
+}

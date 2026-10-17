@@ -1,0 +1,13 @@
+{
+  "title": "Qui jouez-vous ?",
+  "nameLabel": "Votre nom",
+  "namePlaceholder": "Visible par le MJ",
+  "nameError": "Saisissez votre nom",
+  "heroesLabel": "Héros de ce combat",
+  "free": "Libre",
+  "playing": "Joué par {{name}}",
+  "you": "Vous",
+  "join": "Rejoindre",
+  "done": "Terminé",
+  "hint": "Saisissez votre nom et choisissez un héros"
+}
