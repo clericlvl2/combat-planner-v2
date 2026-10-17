@@ -95,7 +95,7 @@
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4-web | guarded `.claude/artifacts/guard/fix-4-web.md` (P3 ×5, deferred to the owner list) | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
-| fix-5 | handed back 11/11 (report `.claude/artifacts/reports/fix-5.md`), rebased, gate + e2e running; check-commit ac3abaa two folders (PlayerView + CombatDeleted) accepted: the brief allowed it | |
+| fix-5 | merged 6e084d0..ae4bddd (gate green except the accepted check-commit item, `pnpm e2e` 21 passed without `test.fail()`, no listeners), guard-bee running | |
 | fix-5-e2e | guarded `.claude/artifacts/guard/fix-5-e2e.md` (P2 hypothesis shared port 3000 → owner; P3 ×6 → owner list) | combat lifecycle, player, library, account |
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
 | fix-6 | merged 90219cb..797a446 (gate green, `pnpm e2e` 21 passed, no listeners), guard-bee running | secrets, Dockerfile, compose, README |
