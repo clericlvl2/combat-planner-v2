@@ -204,6 +204,23 @@ export const ExtraDismissMotionOn = meta.story({
   },
 });
 
+export const ExtraActionOnceDuringExit = meta.story({
+  name: 'A second tap on the action during the exit runs nothing',
+  parameters: { motion: 'on' },
+  args: { kind: 'failed', onAction: fn(), onHide: fn(), deferred: true },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
+    const retry = canvas.getByRole('button', { name: 'Retry' });
+    await userEvent.click(retry);
+    await userEvent.click(retry);
+    await expect(args.onHide).not.toHaveBeenCalled();
+    await expect(args.onAction).toHaveBeenCalledOnce();
+    await waitFor(() => expect(args.onHide).toHaveBeenCalledOnce());
+    await expect(canvas.queryByRole('status')).toBeNull();
+    await expect(args.onAction).toHaveBeenCalledOnce();
+  },
+});
+
 export const ExtraAutoHide = meta.story({
   name: 'Auto-hide after an injected duration',
   parameters: { motion: 'on' },

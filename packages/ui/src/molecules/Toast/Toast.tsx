@@ -106,6 +106,7 @@ export function Toast({
           type="button"
           className={classes.action}
           onClick={() => {
+            if (hidden.current) return;
             action.onAction();
             hide();
           }}
