@@ -35,10 +35,12 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
   const { i18n } = useTranslation();
   const notify = usePlayerToasts();
   const [view, setView] = useState<View | null>(null);
+  const [seenTitle, setSeenTitle] = useState<string | null>(null);
   const ownReleases = useRef(new Set<UnitId>());
   const previous = useRef<PlayerCombat | undefined>(undefined);
 
   if (combat && view === null) setView(holdsHero(combat, playerId) ? 'turnOrder' : 'heroes');
+  if (combat && combat.title !== seenTitle) setSeenTitle(combat.title);
 
   useLayoutEffect(() => {
     if (language !== null && i18n.language !== language) void i18n.changeLanguage(language);
@@ -82,11 +84,14 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
 
   if (ended?.type === 'linkRevoked') return <LinkExpired />;
   if (ended?.type === 'deleted') {
-    return <CombatDeleted combatTitle={ended.title || (combat?.title ?? '')} />;
+    return <CombatDeleted combatTitle={ended.title || (combat?.title ?? seenTitle ?? '')} />;
   }
   if (combat === undefined) {
     if (error === null) return null;
     if (error instanceof ApiError && error.code === 'linkRevoked') return <LinkExpired />;
+    if (error instanceof ApiError && error.code === 'notFound' && seenTitle !== null) {
+      return <CombatDeleted combatTitle={seenTitle} />;
+    }
     if (error instanceof ApiError && error.code === 'network') {
       return <CantReachServer onRetry={reload} />;
     }

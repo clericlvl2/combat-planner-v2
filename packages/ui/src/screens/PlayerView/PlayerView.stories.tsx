@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import type { Action } from '@combat-planner/domain';
 import type { Loader } from '@storybook/react-vite';
+import { focusManager } from '@tanstack/react-query';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
@@ -59,6 +60,34 @@ const offlineLoader: Loader = ({ parameters }) => {
   api.failNext('network');
   api.play.subscribe = () => () => {};
   return { api };
+};
+
+const heldEndLoader: Loader = ({ parameters }) => {
+  const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+  const subscribe = api.play.subscribe.bind(api.play);
+  const ends: Array<() => void> = [];
+  api.play.subscribe = (token, playerId, onDocument, onEnd) =>
+    subscribe(token, playerId, onDocument, (event) => {
+      ends.push(() => onEnd(event));
+    });
+  return {
+    api,
+    deliverEnds: () => {
+      for (const end of ends.splice(0)) end();
+    },
+  };
+};
+
+const deliverEndsOf = (loaded: Record<string, unknown>): (() => void) => {
+  const { deliverEnds } = loaded;
+  if (typeof deliverEnds !== 'function') throw new Error('heldEndLoader is missing');
+  return deliverEnds as () => void;
+};
+
+const refocus = () => {
+  focusManager.setFocused(false);
+  focusManager.setFocused(true);
+  focusManager.setFocused(undefined);
 };
 
 const meta = preview.meta({
@@ -447,6 +476,24 @@ export const ExtraConditionToggled = meta.story({
     await waitFor(() =>
       expect(within(sheet).getByRole('checkbox', { name: 'weakened' })).toBeChecked(),
     );
+  },
+});
+
+export const ExtraDeletedBeforeEnd = meta.story({
+  name: 'Extra: a 404 refetch before the deleted end shows Combat deleted',
+  loaders: [heldEndLoader],
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    await rowOf(canvas, ME);
+    await api.combats.remove(COMBAT_ID);
+    refocus();
+    const heading = await canvas.findByRole('heading', { name: `${COMBAT_TITLE} was deleted` });
+    await expect(heading).toBeVisible();
+    await expect(api.calls.filter((call) => call.method === 'play.get').length).toBeGreaterThan(1);
+    deliverEndsOf(loaded)();
+    await expect(
+      await canvas.findByRole('heading', { name: `${COMBAT_TITLE} was deleted` }),
+    ).toBeVisible();
   },
 });
 
