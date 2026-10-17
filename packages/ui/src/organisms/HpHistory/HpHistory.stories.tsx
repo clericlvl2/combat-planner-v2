@@ -512,7 +512,7 @@ export const ExtraSheetEscape = meta.story({
 export const ExtraSheetEscapeMotionOn = meta.story({
   name: 'Sheet with motion: long list scrolls by keyboard, Escape closes',
   parameters: { ...sheet, motion: 'on' },
-  args: { variant: 'sheet', entries: long },
+  args: { variant: 'sheet', entries: [...long, ...long] },
   play: async ({ args, canvas }) => {
     const dialog = await canvas.findByRole('dialog', { name: 'HP History' });
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
@@ -527,8 +527,14 @@ export const ExtraSheetEscapeMotionOn = meta.story({
     await userEvent.tab({ shift: true });
     await expect(list).toHaveFocus();
     await expect(list.scrollTop).toBe(0);
+    const rowHeight = within(list).getAllByRole('listitem')[0]?.offsetHeight ?? 0;
     await userEvent.keyboard('{PageDown}');
     await waitFor(() => expect(list.scrollTop).toBeGreaterThan(0));
+    await expect(rowHeight).toBeGreaterThan(0);
+    await expect(list.clientHeight - rowHeight).toBeLessThan(list.scrollHeight - list.clientHeight);
+    await expect(list.scrollTop).toBe(list.clientHeight - rowHeight);
+    await userEvent.keyboard('{PageUp}');
+    await expect(list.scrollTop).toBe(0);
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());

@@ -39,11 +39,16 @@ interface HpHistoryListProps extends HpHistoryBaseProps {
 
 const KEY_SCROLL_STEP = 40;
 
+function pageStep(node: HTMLElement): number {
+  const row = node.querySelector<HTMLElement>('[role="listitem"]');
+  return node.clientHeight - (row?.offsetHeight ?? 0);
+}
+
 function scrollDelta(key: string, node: HTMLElement): number | null {
   if (key === 'ArrowDown') return KEY_SCROLL_STEP;
   if (key === 'ArrowUp') return -KEY_SCROLL_STEP;
-  if (key === 'PageDown') return node.clientHeight;
-  if (key === 'PageUp') return -node.clientHeight;
+  if (key === 'PageDown') return pageStep(node);
+  if (key === 'PageUp') return -pageStep(node);
   if (key === 'End') return node.scrollHeight;
   if (key === 'Home') return -node.scrollHeight;
   return null;
