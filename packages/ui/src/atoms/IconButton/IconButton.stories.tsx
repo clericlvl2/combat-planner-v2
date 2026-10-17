@@ -186,6 +186,28 @@ export const ExtraOpen = meta.story({
   },
 });
 
+export const ExtraOpenBorderless = meta.story({
+  name: 'Open: borderless variants draw the ring',
+  args: { ...plainMenu, size: 'M' },
+  render: (args) => (
+    <div style={{ display: 'flex', gap: 16 }}>
+      <IconButtonCell {...args} data-open="" />
+      <IconButtonCell {...args} {...softBack} data-open="" />
+      <IconButtonCell {...args} {...filledPlus} data-open="" />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    for (const name of ['Open navigation', 'Back', 'Add']) {
+      const button = canvas.getByRole('button', { name });
+      await expect(getComputedStyle(button).boxShadow).toBe(
+        'rgb(35, 31, 28) 0px 0px 0px 2px inset',
+      );
+      await expect(getComputedStyle(button).backgroundColor).toBe('rgb(255, 231, 163)');
+      await expect(getComputedStyle(button).color).toBe('rgb(35, 31, 28)');
+    }
+  },
+});
+
 export const ExtraSizes = meta.story({
   name: 'Circle and icon sizes',
   args: plainMenu,
