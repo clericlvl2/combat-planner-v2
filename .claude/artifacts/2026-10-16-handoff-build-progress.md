@@ -74,7 +74,7 @@
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
-| fix-2.3 | merged 2b5edec..39671d9 (gate `.claude/run/fix-2.3/` green except check-commit on the recorded baseline exception 39671d9), guard-bee running | |
+| fix-2.3 | guarded `.claude/artifacts/guard/fix-2.3.md` (no P0–P1; documentary P2 closed by the guard's per-unit file:line list; P3 ×7 → `fix-2.4`) | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | running worker-bee 2026-10-17T13:30+03:00 | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
@@ -597,6 +597,15 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-2.3 → `fix-2.4` (P3): Sheet при motion on не задерживает фокус на ×
+  (фокус сразу на секции или `initialFocus`), история пишет каждый focusin;
+  устаревшие группы `PlayerRow.same.txt:3`, `TagSheet.same.txt:2`; мёртвый
+  ключ `NumpadSheet.close`; плеи, доказывающие `presetCount` в «Show N» и
+  UnitRow `readOnly` без колбэков; HpHistory PageDown с перекрытием строки
+  (или нативная прокрутка); NoteField не сохраняет при удалении ряда хостом
+  (только при сворачивании). Документальный P2 (file:line в отчёте) закрыт
+  списком guard-файла.
 
 - 2.4-PlayerView → `fix-2.4`: P2 после собственного Release claim последнего
   героя открывается Heroes (vision Heroes screen: «When the player holds no
