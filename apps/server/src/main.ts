@@ -41,7 +41,9 @@ const env = apiEnvSchema.parse({
 });
 
 mkdirSync(path.dirname(databasePath), { recursive: true });
-const webDist = path.resolve(import.meta.dirname, '../../web/dist');
+const webDist = path.resolve(
+  variable('STATIC_ROOT') ?? path.join(import.meta.dirname, '../../web/dist'),
+);
 const { app } = createServerApp({
   databasePath,
   staticRoot: path.relative(process.cwd(), webDist),
