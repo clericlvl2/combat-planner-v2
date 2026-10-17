@@ -106,6 +106,8 @@ test('Undo reverts the last action and shows the Undid toast', async ({ page }) 
   await addUnit(page, 'Aria', 'Hero');
   await addUnit(page, 'Grak', 'Enemy');
   await page.getByRole('button', { name: /Start combat/ }).click();
+  await expect(page.getByRole('button', { name: 'Edit round, round 1' })).toBeVisible();
+  await expect(unitRows(page).first()).toHaveAttribute('data-active', 'true');
   const names = await unitNames(page);
   const nextTurn = page.getByRole('button', { name: /^Next turn/ });
   await nextTurn.click();
