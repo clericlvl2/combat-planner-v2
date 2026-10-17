@@ -92,7 +92,7 @@
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | handed back 4/5 (report `.claude/artifacts/reports/4-web.md`); `smoke e2e` uncommitted, blocked by P0 Sheet root over the viewport → `fix-4-overlays`, then resume the same agent | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
-| fix-4-overlays | running worker-bee a4ef0d2 2026-10-17T16:10+03:00 (Opus 5.5 medium) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
+| fix-4-overlays | handed back (report `.claude/artifacts/reports/fix-4-overlays.md`, 1 commit Sheet; Menu, Dialog, Drawer, CombatHeader audited clean), gate running |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4 | running worker-bee ac057a5 2026-10-17T15:52+03:00 (Opus 5.5 xhigh, parallel with `4-web`, disjoint paths) | |
 | 6-docker | todo | Dockerfile, compose, README |
 
