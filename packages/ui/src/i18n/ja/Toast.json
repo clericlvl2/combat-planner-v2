@@ -18,5 +18,7 @@
   "dmReleased": "DMが{{hero}}を解放しました。ヒーローを選んでください。",
   "dmRemoved": "DMが{{hero}}を削除しました。ヒーローを選んでください。",
   "heroTaken": "{{hero}}は先に選ばれました",
-  "presetAdded": "{{name}}をライブラリに追加しました"
+  "presetAdded": "{{name}}をライブラリに追加しました",
+  "unitRemoved": "{{name}} を削除しました",
+  "undo": "元に戻す"
 }

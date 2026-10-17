@@ -18,5 +18,7 @@
   "dmReleased": "The DM released {{hero}}. Pick a hero.",
   "dmRemoved": "The DM removed {{hero}}. Pick a hero.",
   "heroTaken": "{{hero}} was just taken",
-  "presetAdded": "{{name}} added to Library"
+  "presetAdded": "{{name}} added to Library",
+  "unitRemoved": "{{name}} removed",
+  "undo": "Undo"
 }

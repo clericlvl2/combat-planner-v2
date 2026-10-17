@@ -18,5 +18,6 @@
   "undoSetTempHp": "取り消し：{{name}} の一時HP {{amount}}",
   "undoSetMaxHp": "取り消し：{{name}} の最大HP {{amount}}",
   "undoToggleCondition": "取り消し：{{name}} の {{condition}}",
-  "undoEditNote": "取り消し：{{name}} のメモ"
+  "undoEditNote": "取り消し：{{name}} のメモ",
+  "nextWrap": "{{name}} · ラウンド {{round}}"
 }

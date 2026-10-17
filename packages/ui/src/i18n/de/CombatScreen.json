@@ -18,5 +18,6 @@
   "undoSetTempHp": "Rückgängig: {{amount}} Temp. TP für {{name}}",
   "undoSetMaxHp": "Rückgängig: Max. TP {{amount}} für {{name}}",
   "undoToggleCondition": "Rückgängig: {{condition}} bei {{name}}",
-  "undoEditNote": "Rückgängig: Notiz zu {{name}}"
+  "undoEditNote": "Rückgängig: Notiz zu {{name}}",
+  "nextWrap": "{{name}} · Runde {{round}}"
 }

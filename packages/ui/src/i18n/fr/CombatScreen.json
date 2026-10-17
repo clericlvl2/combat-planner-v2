@@ -1,7 +1,7 @@
 {
   "undoStart": "Annulé : début du combat",
   "undoNextTurn": "Annulé : tour suivant",
-  "undoEditRound": "Annulé : round fixé à {{round}}",
+  "undoEditRound": "Annulé : tour fixé à {{round}}",
   "undoSetEscalation": "Annulé : dé d’escalade fixé à {{value}}",
   "undoRestart": "Annulé : redémarrage du combat",
   "undoClear": "Annulé : combat vidé",
@@ -18,5 +18,6 @@
   "undoSetTempHp": "Annulé : {{amount}} PV temp. pour {{name}}",
   "undoSetMaxHp": "Annulé : PV max {{amount}} pour {{name}}",
   "undoToggleCondition": "Annulé : {{condition}} sur {{name}}",
-  "undoEditNote": "Annulé : note de {{name}}"
+  "undoEditNote": "Annulé : note de {{name}}",
+  "nextWrap": "{{name}} · tour {{round}}"
 }

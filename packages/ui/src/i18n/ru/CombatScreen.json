@@ -18,5 +18,6 @@
   "undoSetTempHp": "Отменено: {{amount}} врем. ОЗ для {{name}}",
   "undoSetMaxHp": "Отменено: макс. ОЗ {{amount}} для {{name}}",
   "undoToggleCondition": "Отменено: {{condition}} у {{name}}",
-  "undoEditNote": "Отменено: заметка для {{name}}"
+  "undoEditNote": "Отменено: заметка для {{name}}",
+  "nextWrap": "{{name}} · раунд {{round}}"
 }

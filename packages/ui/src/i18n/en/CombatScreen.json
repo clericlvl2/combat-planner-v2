@@ -18,5 +18,6 @@
   "undoSetTempHp": "Undid: {{amount}} temp HP on {{name}}",
   "undoSetMaxHp": "Undid: max HP {{amount}} on {{name}}",
   "undoToggleCondition": "Undid: {{condition}} on {{name}}",
-  "undoEditNote": "Undid: note on {{name}}"
+  "undoEditNote": "Undid: note on {{name}}",
+  "nextWrap": "{{name}} · round {{round}}"
 }

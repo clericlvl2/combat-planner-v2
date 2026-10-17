@@ -18,5 +18,6 @@
   "undoSetTempHp": "Deshecho: {{amount}} PG temp. de {{name}}",
   "undoSetMaxHp": "Deshecho: PG máx. {{amount}} de {{name}}",
   "undoToggleCondition": "Deshecho: {{condition}} en {{name}}",
-  "undoEditNote": "Deshecho: nota de {{name}}"
+  "undoEditNote": "Deshecho: nota de {{name}}",
+  "nextWrap": "{{name}} · ronda {{round}}"
 }
