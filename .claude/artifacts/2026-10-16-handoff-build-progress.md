@@ -77,7 +77,7 @@
 | fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
-| 2.4-CombatList | running worker-bee 2026-10-17T10:10+03:00 (parallel with fix-2.3; baselines re-run after fix-2.3 merges) | CombatList |
+| 2.4-CombatList | reported `.claude/artifacts/reports/2.4-CombatList.md`, gate running | CombatList |
 | 2.4-PlayerView | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | todo, brief ready, after 2.4-CombatList and 2.4-SystemScreens | SignIn, SignUp, Settings, Account, About |
@@ -93,6 +93,22 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-CombatList, решения оркестратора 2026-10-17: `CombatFormSheet` в
+  `screens/CombatList/CombatFormSheet/` (check-commit требует папку по имени)
+  — принято; Create неактивна до валидного названия (vision), ошибка «Enter a
+  title» по уходу фокуса с пустого поля, рендер рисует кнопку активной —
+  принято, vision выше хэндоффа; `apiLoader` + `fakeApiOf(loaded)` рядом с
+  `withApi`, `LocationProbe` для проверки навигации — приняты; описания
+  сценария под поиск «ferry» — принято; иконки тостов по ожидаемому
+  сообщению — принято до `fix-2.4`. → `fix-2.4`: `CombatSummary` получает
+  `round` (мета «Round N · M units» в Active) и `createdAt` (порядок Newest
+  first не зависит от сервера) — сервер, `hono-client`, `FakeApiClient`,
+  CombatList; `CombatCard` «N weeks ago» от 14 дней по рендеру CL-F1.4;
+  элементы `useToasts` несут `kind` (success, neutral, warning, error) для
+  иконки; `useCombatList` отдаёт `refetch`, первый неудачный load —
+  CantReachServer с Try again; `Sheet` при `motion: 'off'` без 200 мс
+  перехода и с `initialFocus` (фокус в поле названия при открытии).
 
 - 2.4-SystemScreens, решения оркестратора 2026-10-17: ru «Бой «{{title}}»
   удалён», es/fr/ja переводы заголовка и fr «Aller aux affrontements» —
@@ -430,6 +446,11 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.4-CombatList: в Active карточки без «Round N» (до `fix-2.4`); маркеры
+  нажатия как кольцо фокуса на следующей цели; CL-F1.4 «14 days ago» вместо
+  «2 weeks ago»; Create тусклая до ввода названия, без каретки в поле;
+  e-mail в Drawer из сценария.
 
 - 2.3-NumpadSheet: шаги флоу, совпадающие с ячейками, без отдельных историй,
   `ExtraNp<N>` проигрывает флоу до шага 4; подписи BEFORE/AFTER — заметки
