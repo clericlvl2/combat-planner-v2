@@ -1,10 +1,3 @@
-.header {
-  display: flex;
-  flex: none;
-  align-items: center;
-  gap: 12px;
-}
-
 .role {
   box-sizing: border-box;
   display: flex;
@@ -54,11 +47,9 @@
 
 .body {
   display: flex;
-  flex: 0 1 auto;
+  flex: none;
   flex-direction: column;
   gap: 12px;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 .preview {
@@ -257,19 +248,19 @@
   min-width: 0;
   padding: 0 8px;
 
-  &[data-kind='damage']:not(:disabled) {
+  &[data-kind='damage']:not(:disabled, :active, [data-pressed]) {
     background: var(--cp-hp-damage);
   }
 
-  &[data-kind='heal']:not(:disabled) {
+  &[data-kind='heal']:not(:disabled, :active, [data-pressed]) {
     background: var(--cp-hp-heal);
   }
 
-  &[data-kind='temp']:not(:disabled) {
+  &[data-kind='temp']:not(:disabled, :active, [data-pressed]) {
     background: var(--cp-hp-set-temp);
   }
 
-  &[data-kind='max']:not(:disabled) {
+  &[data-kind='max']:not(:disabled, :active, [data-pressed]) {
     background: var(--cp-hp-set-max);
   }
 }

@@ -1,15 +1,13 @@
 import { LIMITS, apply, healthSegments, healthStatus } from '@combat-planner/domain';
 import type { Action, Combat, HpHistoryEntry, HpHistoryKind, Role } from '@combat-planner/domain';
-import { Modal, UnstyledButton } from '@mantine/core';
-import { IconArrowRight, IconX } from '@tabler/icons-react';
+import { UnstyledButton } from '@mantine/core';
+import { IconArrowRight } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
-import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { useMotion } from '../../provider.tsx';
 import { HpHistory } from '../HpHistory/HpHistory.tsx';
-import sheetClasses from '../Sheet/Sheet.module.css';
+import { Sheet } from '../Sheet/Sheet.tsx';
 import classes from './NumpadSheet.module.css';
 
 export type NumpadViewer = 'dm' | 'player';
@@ -62,7 +60,7 @@ function hpAction(kind: HpHistoryKind, amount: number): Action {
 }
 
 export function hpAfter(health: NumpadHealth, kind: HpHistoryKind, amount: number): NumpadHealth {
-  if (amount <= 0) return health;
+  if (amount < 0 || (amount === 0 && kind !== 'temp')) return health;
   const combat: Combat = {
     id: previewId,
     title: previewId,
@@ -176,179 +174,184 @@ export function NumpadSheet({
   'data-tap': tap,
 }: NumpadSheetProps) {
   const { t } = useTranslation('NumpadSheet');
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState<number | null>(null);
   const [previewKind, setPreviewKind] = useState<HpHistoryKind>('damage');
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const [openedBefore, setOpenedBefore] = useState(opened);
-  const sheetRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const appliedRef = useRef(false);
   const motion = useMotion();
 
   if (opened !== openedBefore) {
     setOpenedBefore(opened);
     if (opened) {
-      setAmount(0);
+      appliedRef.current = false;
+      setAmount(null);
       setPreviewKind('damage');
       setHistoryExpanded(false);
     }
   }
 
   useEffect(() => {
-    if (!opened) return;
-    const timer = setTimeout(() => sheetRef.current?.focus({ preventScroll: true }));
-    return () => clearTimeout(timer);
-  }, [opened]);
+    if (!historyExpanded) return;
+    const scroller = bodyRef.current?.closest<HTMLElement>('[data-sheet-content]');
+    scroller?.scrollTo({
+      top: scroller.scrollHeight,
+      behavior: motion === 'off' ? 'instant' : 'smooth',
+    });
+  }, [historyExpanded, motion]);
+
+  const append = useCallback((digit: string) => {
+    appliedRef.current = false;
+    setAmount((current) =>
+      current !== null && String(current).length >= amountDigits && current > 0
+        ? current
+        : (current ?? 0) * 10 + Number(digit),
+    );
+  }, []);
+  const deleteDigit = useCallback(() => {
+    appliedRef.current = false;
+    setAmount((current) => (current === null || current < 10 ? null : Math.floor(current / 10)));
+  }, []);
+  const clear = () => {
+    appliedRef.current = false;
+    setAmount(null);
+  };
 
   useEffect(() => {
-    if (!historyExpanded) return;
-    const body = bodyRef.current;
-    body?.scrollTo({ top: body.scrollHeight, behavior: motion === 'off' ? 'instant' : 'smooth' });
-  }, [historyExpanded, motion]);
+    if (!opened) return;
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const sheet = bodyRef.current?.closest('[role="dialog"]');
+      if (!sheet || !(event.target instanceof Node) || !sheet.contains(event.target)) return;
+      if (/^[0-9]$/.test(event.key)) {
+        event.preventDefault();
+        append(event.key);
+      } else if (event.key === 'Backspace') {
+        event.preventDefault();
+        deleteDigit();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown, true);
+    return () => document.removeEventListener('keydown', handleKeyDown, true);
+  }, [opened, append, deleteDigit]);
 
   const kinds = viewer === 'dm' ? actionKinds : actionKinds.filter((kind) => kind !== 'max');
   const now = { hp, maxHp, tempHp };
-  const after = hpAfter(now, tap ?? previewKind, amount);
-  const ready = amount > 0;
-
-  const append = (digit: string) => {
-    setAmount((current) =>
-      String(current).length >= amountDigits && current > 0
-        ? current
-        : current * 10 + Number(digit),
-    );
-  };
-  const deleteDigit = () => setAmount((current) => Math.floor(current / 10));
-  const clear = () => setAmount(0);
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.altKey || event.ctrlKey || event.metaKey) return;
-    if (/^[0-9]$/.test(event.key)) {
-      event.preventDefault();
-      append(event.key);
-    } else if (event.key === 'Backspace') {
-      event.preventDefault();
-      deleteDigit();
-    }
-  };
+  const after = amount === null ? now : hpAfter(now, previewKind, amount);
+  const enabled = (kind: HpHistoryKind) => amount !== null && (amount > 0 || kind === 'temp');
 
   const applyKind = (kind: HpHistoryKind) => {
-    if (!ready) return;
+    if (amount === null || !enabled(kind) || appliedRef.current) return;
+    appliedRef.current = true;
     onApply(kind, amount);
+    setAmount(null);
     onClose();
   };
 
   return (
-    <Modal.Root
+    <Sheet
       opened={opened}
+      title={name}
       onClose={onClose}
-      withinPortal={false}
-      classNames={{
-        root: sheetClasses.root,
-        overlay: sheetClasses.scrim,
-        inner: sheetClasses.inner,
-        content: sheetClasses.sheet,
-        title: classes.name,
-      }}
-    >
-      <Modal.Overlay data-scrim="" />
-      <Modal.Content ref={sheetRef} onKeyDownCapture={handleKeyDown}>
-        <div className={classes.header}>
+      header={
+        <>
           <span className={classes.role} data-unit-role={role}>
             <span className={classes.initiative}>
               {initiative === null ? '—' : formatNumber(initiative)}
             </span>
             <span className={classes.roleLabel}>{t(role)}</span>
           </span>
-          <Modal.Title>{name}</Modal.Title>
-          <IconButton icon={IconX} variant="outline" aria-label={t('close')} onClick={onClose} />
+          <h2 className={classes.name}>{name}</h2>
+        </>
+      }
+    >
+      <div ref={bodyRef} className={classes.body}>
+        <div className={classes.preview}>
+          <HpReading label={t('now')} health={now} side="now" />
+          <IconArrowRight className={classes.arrow} size={32} stroke={2} aria-hidden="true" />
+          <HpReading label={t('after')} health={after} side="after" />
         </div>
-        <div ref={bodyRef} className={classes.body} data-sheet-content="">
-          <div className={classes.preview}>
-            <HpReading label={t('now')} health={now} side="now" />
-            <IconArrowRight className={classes.arrow} size={32} stroke={2} aria-hidden="true" />
-            <HpReading label={t('after')} health={after} side="after" />
-          </div>
-          <div className={classes.amount}>
-            <span className={classes.amountLabel} aria-hidden="true">
-              {t('amount')}
-            </span>
-            <output
-              className={classes.amountValue}
-              aria-label={t('amount')}
-              data-empty={!ready || undefined}
-            >
-              {amount}
-            </output>
-            <span className={classes.caret} aria-hidden="true" />
-          </div>
-          <div className={classes.keys} role="group" aria-label={t('keypad')}>
-            {digitKeys.map((digit) => (
-              <UnstyledButton
-                key={digit}
-                component="button"
-                type="button"
-                className={classes.key}
-                onClick={() => append(digit)}
-              >
-                {digit}
-              </UnstyledButton>
-            ))}
-            <UnstyledButton
-              component="button"
-              type="button"
-              className={classes.key}
-              data-kind="clear"
-              aria-label={t('clear')}
-              onClick={clear}
-            >
-              C
-            </UnstyledButton>
-            <UnstyledButton
-              component="button"
-              type="button"
-              className={classes.key}
-              onClick={() => append('0')}
-            >
-              0
-            </UnstyledButton>
-            <UnstyledButton
-              component="button"
-              type="button"
-              className={classes.key}
-              data-kind="delete"
-              aria-label={t('delete')}
-              onClick={deleteDigit}
-            >
-              {'<'}
-            </UnstyledButton>
-          </div>
-          <div className={classes.actions}>
-            {kinds.map((kind) => (
-              <Button
-                key={kind}
-                className={classes.action}
-                data-kind={kind}
-                data-tap={tap === kind ? '' : undefined}
-                fullWidth
-                disabled={!ready}
-                onPointerEnter={() => setPreviewKind(kind)}
-                onFocus={() => setPreviewKind(kind)}
-                onClick={() => applyKind(kind)}
-              >
-                {t(actionLabels[kind])}
-              </Button>
-            ))}
-          </div>
-          <HpHistory
-            className={classes.history}
-            variant="inline"
-            entries={history}
-            maxHp={maxHp}
-            expanded={historyExpanded}
-            onToggle={() => setHistoryExpanded((expanded) => !expanded)}
-          />
+        <div className={classes.amount}>
+          <span className={classes.amountLabel} aria-hidden="true">
+            {t('amount')}
+          </span>
+          <output
+            className={classes.amountValue}
+            aria-label={t('amount')}
+            data-empty={amount === null || undefined}
+          >
+            {amount ?? 0}
+          </output>
+          <span className={classes.caret} aria-hidden="true" />
         </div>
-      </Modal.Content>
-    </Modal.Root>
+        <div className={classes.keys} role="group" aria-label={t('keypad')}>
+          {digitKeys.map((digit) => (
+            <UnstyledButton
+              key={digit}
+              component="button"
+              type="button"
+              className={classes.key}
+              onClick={() => append(digit)}
+            >
+              {digit}
+            </UnstyledButton>
+          ))}
+          <UnstyledButton
+            component="button"
+            type="button"
+            className={classes.key}
+            data-kind="clear"
+            aria-label={t('clear')}
+            onClick={clear}
+          >
+            C
+          </UnstyledButton>
+          <UnstyledButton
+            component="button"
+            type="button"
+            className={classes.key}
+            onClick={() => append('0')}
+          >
+            0
+          </UnstyledButton>
+          <UnstyledButton
+            component="button"
+            type="button"
+            className={classes.key}
+            data-kind="delete"
+            aria-label={t('delete')}
+            onClick={deleteDigit}
+          >
+            {'<'}
+          </UnstyledButton>
+        </div>
+        <div className={classes.actions}>
+          {kinds.map((kind) => (
+            <Button
+              key={kind}
+              className={classes.action}
+              data-kind={kind}
+              data-tap={tap === kind ? '' : undefined}
+              fullWidth
+              disabled={!enabled(kind)}
+              onPointerEnter={() => setPreviewKind(kind)}
+              onFocus={() => setPreviewKind(kind)}
+              onClick={() => applyKind(kind)}
+            >
+              {t(actionLabels[kind])}
+            </Button>
+          ))}
+        </div>
+        <HpHistory
+          className={classes.history}
+          variant="inline"
+          entries={history}
+          maxHp={maxHp}
+          expanded={historyExpanded}
+          onToggle={() => setHistoryExpanded((expanded) => !expanded)}
+        />
+      </div>
+    </Sheet>
   );
 }

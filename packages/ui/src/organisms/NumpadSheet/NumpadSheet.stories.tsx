@@ -493,6 +493,85 @@ export const ExtraEnterOnFocusedAction = meta.story({
   },
 });
 
+export const ExtraEveryDigitAppends = meta.story({
+  name: 'Every key 0–9 appends its digit',
+  play: async ({ canvas }) => {
+    const dialog = await sheetOf(canvas);
+    const keys = within(dialog).getByRole('group', { name: 'Keypad' });
+    for (const digit of ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
+      await userEvent.click(within(keys).getByRole('button', { name: 'Clear' }));
+      await typeAmount(canvas, `1${digit}`);
+      await expect(amountOf(canvas)).toHaveTextContent(`1${digit}`);
+    }
+  },
+});
+
+export const ExtraSetTempZero = meta.story({
+  name: 'Set Temp at 0 clears temp HP, the other actions stay disabled',
+  args: { tempHp: 5 },
+  play: async ({ args, canvas, canvasElement }) => {
+    await typeAmount(canvas, '0');
+    await expect(canvas.getByRole('button', { name: 'Damage' })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: 'Heal' })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: 'Set Max' })).toBeDisabled();
+    const setTemp = canvas.getByRole('button', { name: 'Set Temp' });
+    await expect(setTemp).toBeEnabled();
+    await previewAction(canvas, 'Set Temp');
+    await expect(
+      readingOf(canvasElement, 'now').querySelector('[data-part="temp"]'),
+    ).not.toBeNull();
+    await expect(readingOf(canvasElement, 'after').querySelector('[data-part="temp"]')).toBeNull();
+    await userEvent.click(setTemp);
+    await expect(args.onApply).toHaveBeenCalledOnce();
+    await expect(args.onApply).toHaveBeenCalledWith('temp', 0);
+  },
+});
+
+export const ExtraDoubleTapAppliesOnce = meta.story({
+  name: 'A second tap during the exit transition does not apply twice',
+  parameters: { motion: 'on' },
+  play: async ({ args, canvas }) => {
+    await typeAmount(canvas, '5');
+    const damage = canvas.getByRole('button', { name: 'Damage' });
+    damage.click();
+    damage.click();
+    await expect(args.onApply).toHaveBeenCalledOnce();
+    await expect(args.onApply).toHaveBeenCalledWith('damage', 5);
+  },
+});
+
+export const ExtraSpaceOnAction = meta.story({
+  name: 'Space on a focused action applies it',
+  play: async ({ args, canvas }) => {
+    await typeAmount(canvas, '5');
+    canvas.getByRole('button', { name: 'Heal' }).focus();
+    await userEvent.keyboard(' ');
+    await expect(args.onApply).toHaveBeenCalledOnce();
+    await expect(args.onApply).toHaveBeenCalledWith('heal', 5);
+  },
+});
+
+export const ExtraTapDoesNotPinPreview = meta.story({
+  name: 'The tap marker does not pin the After preview',
+  args: { tap: 'heal' },
+  play: async ({ canvas, canvasElement }) => {
+    await typeAmount(canvas, '8');
+    await previewAction(canvas, 'Damage');
+    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('6/40');
+    await expect(canvas.getByRole('button', { name: 'Heal' })).toHaveAttribute('data-tap');
+  },
+});
+
+export const ExtraActionPressedColour = meta.story({
+  name: 'A pressed action takes the Button pressed colour',
+  play: async ({ canvas }) => {
+    await typeAmount(canvas, '5');
+    const damage = canvas.getByRole('button', { name: 'Damage' });
+    damage.setAttribute('data-pressed', '');
+    await expect(getComputedStyle(damage).backgroundColor).toBe('rgb(58, 53, 49)');
+  },
+});
+
 export const ExtraCloseWithoutChange = meta.story({
   name: 'Close button closes without a change',
   play: async ({ args, canvas }) => {
@@ -552,6 +631,7 @@ const pressedPlay =
   async ({ canvas, canvasElement }: { canvas: Canvas; canvasElement: HTMLElement }) => {
     await typeAmount(canvas, step.amount);
     await expect(canvas.getByRole('button', { name: step.action })).toHaveAttribute('data-tap');
+    await previewAction(canvas, step.action);
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent(step.after);
   };
 
