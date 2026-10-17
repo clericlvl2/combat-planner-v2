@@ -14,8 +14,11 @@ export const Default = meta.story({
     await expect(
       canvas.getByRole('heading', { level: 1, name: 'Can’t reach the server' }),
     ).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }));
-    await expect(args.onRetry).toHaveBeenCalledOnce();
+    await expect(canvas.getByRole('button', { name: 'Try again' })).toHaveAttribute(
+      'data-variant',
+      'secondary',
+    );
+    await expect(args.onRetry).not.toHaveBeenCalled();
   },
 });
 
@@ -45,6 +48,14 @@ export const ExtraKeyboardEnter = meta.story({
     await userEvent.tab();
     await expect(canvas.getByRole('button', { name: 'Try again' })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
+    await expect(args.onRetry).toHaveBeenCalledOnce();
+  },
+});
+
+export const ExtraTapAction = meta.story({
+  name: 'Tap on the action',
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }));
     await expect(args.onRetry).toHaveBeenCalledOnce();
   },
 });
