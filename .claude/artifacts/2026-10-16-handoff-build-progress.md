@@ -99,7 +99,7 @@
 | fix-5-e2e | guarded `.claude/artifacts/guard/fix-5-e2e.md` (P2 hypothesis shared port 3000 → owner; P3 ×6 → owner list) | combat lifecycle, player, library, account |
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
 | fix-6 | guarded `.claude/artifacts/guard/fix-6.md` (P3 ×7, owner list) | secrets, Dockerfile, compose, README |
-| fix-6-zero-config | handed back 8/8 (report `.claude/artifacts/reports/fix-6-zero-config.md`; clean clone: pnpm install + pnpm dev, sign-up through 5173, session survives restart), gate running | secrets, node version, compose, README |
+| fix-6-zero-config | merged 4f994a0..1a014b6 (gate green, `pnpm e2e` 21 passed, no listeners), guard-bee running | secrets, node version, compose, README |
 
 ## Вопросы владельцу
 
