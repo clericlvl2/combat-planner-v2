@@ -94,7 +94,7 @@
 | 5-e2e | running worker-bee a5e1868 2026-10-17T16:35+03:00 (Opus 5.5 medium; parallel with `fix-4`, paths `e2e/**` only) | auth, combat lifecycle, player, library, account |
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4-web | running worker-bee afb4a3c 2026-10-17T16:44+03:00 (Opus 5.5 medium) | swipe, router test, locale, teardown |
-| fix-4 | handed back 10/10 (report `.claude/artifacts/reports/fix-4.md`), rebased, gate running `.claude/run/fix-4/` | |
+| fix-4 | merged e42d8a7..07e346e (gate `.claude/run/fix-4/` green), guard-bee running | |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
