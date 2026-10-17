@@ -74,11 +74,11 @@
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
-| fix-2.3 | running worker-bee, resumed after the session limit (unit 27 of 28) | |
+| fix-2.3 | reported `.claude/artifacts/reports/fix-2.3.md`; orchestrator split Stepper/UnitForm and Drawer/Dialog (tree unchanged, check-commit green); rebase conflict in `allow-same.txt` back to the agent; screen baseline refresh after the final rebase | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
-| 2.4-PlayerView | reported `.claude/artifacts/reports/2.4-PlayerView.md`, gate running | Heroes, TurnOrder |
+| 2.4-PlayerView | merged 0f76769..3be18c3 (gate `.claude/run/2.4-PlayerView/` green), guard-bee running | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
@@ -93,6 +93,16 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- Оркестратор 2026-10-17, правило baselines: CLAUDE.md запрещает менять
+  `__screenshots__/<Name>/` без изменения в `src/**/<Name>/` того же коммита.
+  Общий организм (BottomBar `layout.ts`, PlayerRow, Sheet из `fix-2.3`)
+  сдвигает baselines экранов, у которых своего изменения нет. Решение:
+  обновление baselines экранов — один коммит `fix(ui): BottomBar` в `fix-2.3`
+  только со скриншотами; `check-commit.sh` на нём красный по правилу, исключение
+  принято оркестратором и записано здесь. Владельцу: разрешить в
+  `check-commit.sh` коммит только из baselines, если его единица называет
+  общий компонент, изменённый в той же пачке.
 
 - 2.4-PlayerView, решения оркестратора 2026-10-17: Heroes на `Checkbox`
   (CheckList не умеет блокировать опцию), claim по Join, далее сразу —
