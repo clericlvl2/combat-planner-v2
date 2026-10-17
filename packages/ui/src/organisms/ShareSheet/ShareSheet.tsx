@@ -12,7 +12,7 @@ export interface ShareSheetProps {
   opened: boolean;
   combatTitle: string;
   url: string;
-  onCopy: (url: string) => void;
+  onCopy: (url: string) => Promise<boolean> | void;
   onReissue: () => void;
   onClose: () => void;
 }
@@ -75,8 +75,17 @@ export function ShareSheet({
             className={classes.copy}
             data-copied={copied || undefined}
             onClick={() => {
-              setCopiedUrl(url);
-              onCopy(url);
+              const result = onCopy(url);
+              if (!(result instanceof Promise)) {
+                setCopiedUrl(url);
+                return;
+              }
+              result.then(
+                (ok) => {
+                  if (ok) setCopiedUrl(url);
+                },
+                () => undefined,
+              );
             }}
           >
             <CopyIcon className={classes.copyIcon} size={20} stroke={2} aria-hidden="true" />

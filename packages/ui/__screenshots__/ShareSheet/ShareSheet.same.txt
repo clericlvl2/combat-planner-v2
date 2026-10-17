@@ -1,2 +1,3 @@
 Anatomy Link
 ExtraClose ExtraKeyboard ExtraShiftTabMotionOn
+ExtraCopyResolves LinkCopied

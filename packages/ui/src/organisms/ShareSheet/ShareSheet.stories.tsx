@@ -11,6 +11,7 @@ interface ShareSheetCellProps {
   url?: string;
   reissuedUrl?: string;
   withOpener?: boolean;
+  copyResult?: boolean;
   onCopy?: (url: string) => void;
   onReissue?: () => void;
   onClose?: () => void;
@@ -29,6 +30,7 @@ function ShareSheetCell({
   url: initialUrl = linkG3,
   reissuedUrl = linkG4,
   withOpener = false,
+  copyResult,
   onCopy,
   onReissue,
   onClose,
@@ -46,7 +48,10 @@ function ShareSheetCell({
         opened={opened}
         combatTitle={combatTitle}
         url={url}
-        onCopy={(copied) => onCopy?.(copied)}
+        onCopy={(copied) => {
+          onCopy?.(copied);
+          return copyResult === undefined ? undefined : Promise.resolve(copyResult);
+        }}
         onReissue={() => {
           setUrl(reissuedUrl);
           onReissue?.();
@@ -170,6 +175,31 @@ export const ExtraFlow = meta.story({
     await expect(args.onCopy).toHaveBeenCalledTimes(2);
     await expect(args.onCopy).toHaveBeenLastCalledWith(linkG4);
     await expect(args.onClose).not.toHaveBeenCalled();
+  },
+});
+
+export const ExtraCopyFails = meta.story({
+  name: 'A failed copy does not show Copied',
+  args: { copyResult: false },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+    await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    await expect(canvas.queryByRole('button', { name: 'Copied' })).toBeNull();
+    await expect(canvas.getByRole('button', { name: 'Copy' })).not.toHaveAttribute('data-copied');
+  },
+});
+
+export const ExtraCopyResolves = meta.story({
+  name: 'A successful async copy shows Copied',
+  args: { copyResult: true },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+    await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
+    await expect(await canvas.findByRole('button', { name: 'Copied' })).toHaveAttribute(
+      'data-copied',
+    );
+    await restFocusOnSheet(canvas.getByRole('dialog'));
   },
 });
 
