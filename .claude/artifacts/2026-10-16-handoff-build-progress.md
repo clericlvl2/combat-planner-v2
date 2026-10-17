@@ -74,12 +74,12 @@
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
-| fix-2.3 | reported `.claude/artifacts/reports/fix-2.3.md`; rebased on master (with 2.4-PlayerView); +`chore(toolchain): optimizeDeps` (4 deps), +`fix(ui): BottomBar` (8 screen PNGs: PlayerRow corner, PlayerHeader icon, TextField counter; check-commit exception recorded); gate running | |
+| fix-2.3 | merged 2b5edec..39671d9 (gate `.claude/run/fix-2.3/` green except check-commit on the recorded baseline exception 39671d9), guard-bee running | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
-| 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
+| 2.4-CombatScreen | running worker-bee 2026-10-17T13:30+03:00 | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | guarded `.claude/artifacts/guard/2.4-PlayerView.md` (P2 ×1, P3 ×8 → `fix-2.4`) | Heroes, TurnOrder |
-| 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
+| 2.4-Library | running worker-bee 2026-10-17T13:30+03:00 | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
