@@ -83,7 +83,7 @@
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4-core | guarded `.claude/artifacts/guard/fix-2.4-core.md` (P3 ×7 → `fix-4`) | project, api contract, FakeApiClient, hooks |
-| fix-2.4 | running worker-bee 2026-10-17T16:30+03:00; API error after 4 commits, resumed by SendMessage 2026-10-17 | |
+| fix-2.4 | handed back (34 commits, report `.claude/artifacts/reports/fix-2.4.md`), rebased on 2a513b5, gate running `.claude/run/fix-2.4/` | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
