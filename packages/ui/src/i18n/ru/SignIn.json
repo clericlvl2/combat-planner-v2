@@ -1,0 +1,17 @@
+{
+  "title": "Вход",
+  "subtitle": "Ваши бои и библиотека сохраняются в аккаунте.",
+  "email": "Эл. почта",
+  "emailPlaceholder": "you@example.com",
+  "password": "Пароль",
+  "passwordPlaceholder": "••••••••",
+  "submit": "Войти",
+  "or": "или",
+  "google": "Войти через Google",
+  "github": "Войти через GitHub",
+  "noAccount": "Нет аккаунта?",
+  "signUp": "Зарегистрироваться",
+  "enterEmail": "Введите эл. почту",
+  "enterPassword": "Введите пароль",
+  "wrongCredentials": "Неверная почта или пароль"
+}

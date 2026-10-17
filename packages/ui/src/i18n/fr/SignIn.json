@@ -1,0 +1,17 @@
+{
+  "title": "Connexion",
+  "subtitle": "Vos combats et votre Bibliothèque sont enregistrés dans votre compte.",
+  "email": "E-mail",
+  "emailPlaceholder": "you@example.com",
+  "password": "Mot de passe",
+  "passwordPlaceholder": "••••••••",
+  "submit": "Se connecter",
+  "or": "ou",
+  "google": "Continuer avec Google",
+  "github": "Continuer avec GitHub",
+  "noAccount": "Pas de compte ?",
+  "signUp": "Créer un compte",
+  "enterEmail": "Saisissez votre e-mail",
+  "enterPassword": "Saisissez votre mot de passe",
+  "wrongCredentials": "E-mail ou mot de passe incorrect"
+}

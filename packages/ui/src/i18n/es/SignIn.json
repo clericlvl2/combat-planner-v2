@@ -1,0 +1,17 @@
+{
+  "title": "Iniciar sesión",
+  "subtitle": "Tus combates y tu Biblioteca se guardan en tu cuenta.",
+  "email": "Correo electrónico",
+  "emailPlaceholder": "you@example.com",
+  "password": "Contraseña",
+  "passwordPlaceholder": "••••••••",
+  "submit": "Iniciar sesión",
+  "or": "o",
+  "google": "Continuar con Google",
+  "github": "Continuar con GitHub",
+  "noAccount": "¿No tienes cuenta?",
+  "signUp": "Regístrate",
+  "enterEmail": "Escribe tu correo",
+  "enterPassword": "Escribe tu contraseña",
+  "wrongCredentials": "Correo o contraseña incorrectos"
+}

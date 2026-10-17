@@ -1,0 +1,17 @@
+{
+  "title": "Anmelden",
+  "subtitle": "Deine Kämpfe und die Bibliothek werden in deinem Konto gespeichert.",
+  "email": "E-Mail",
+  "emailPlaceholder": "you@example.com",
+  "password": "Passwort",
+  "passwordPlaceholder": "••••••••",
+  "submit": "Anmelden",
+  "or": "oder",
+  "google": "Weiter mit Google",
+  "github": "Weiter mit GitHub",
+  "noAccount": "Kein Konto?",
+  "signUp": "Registrieren",
+  "enterEmail": "Gib deine E-Mail ein",
+  "enterPassword": "Gib dein Passwort ein",
+  "wrongCredentials": "E-Mail oder Passwort falsch"
+}

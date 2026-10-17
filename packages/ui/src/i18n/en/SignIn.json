@@ -1,0 +1,17 @@
+{
+  "title": "Sign in",
+  "subtitle": "Your combats and Library are saved to your account.",
+  "email": "Email",
+  "emailPlaceholder": "you@example.com",
+  "password": "Password",
+  "passwordPlaceholder": "••••••••",
+  "submit": "Sign in",
+  "or": "or",
+  "google": "Continue with Google",
+  "github": "Continue with GitHub",
+  "noAccount": "No account?",
+  "signUp": "Sign up",
+  "enterEmail": "Enter your email",
+  "enterPassword": "Enter your password",
+  "wrongCredentials": "Wrong email or password"
+}
