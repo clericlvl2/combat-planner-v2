@@ -83,7 +83,7 @@
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4-core | guarded `.claude/artifacts/guard/fix-2.4-core.md` (P3 ×7 → `fix-4`) | project, api contract, FakeApiClient, hooks |
-| fix-2.4 | handed back (34 commits, report `.claude/artifacts/reports/fix-2.4.md`), rebased on 2a513b5, gate running `.claude/run/fix-2.4/` | |
+| fix-2.4 | merged 0e6ed1d..e45eab0 (gate `.claude/run/fix-2.4/` green except check-commit: 15 cross-folder problems accepted, see «Вопросы владельцу»), guard-bee running | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
@@ -95,6 +95,21 @@
 
 ## Вопросы владельцу
 
+- fix-2.4: `check-commit` red with 15 cross-folder problems, accepted as with
+  fix-2.3 39671d9. A `Sheet` change shifts the baselines of 8 sheet consumers.
+  `SignIn`/`Account`/`UnexpectedError`/`PlayerView` shift the `SignUp`,
+  `AppPages` and `Heroes` baselines. The `Stepper` labels change the `UnitForm`
+  queries. `NoteField` changes the `PlayerRow` story. `shared` moves 5 folders.
+  Proposal: `check-commit.sh` accepts a baseline-only change of a consumer
+  folder when the commit's unit is a shared component changed in the same
+  commit.
+- fix-2.4: a returning player's rename is sent as `releaseUnit` + `claimUnit`
+  of the own hero, because the domain has no rename and forbids re-claiming an
+  own hero (`authorize.ts:35`). Owner: allow re-claim as rename?
+- fix-2.4: `UndoSummary.action` carries the full `Action`, not just the type,
+  so «Undid: 12 damage to …» can show the amount. Accepted.
+- fix-2.4: toast icons come from `kind` (success, neutral, warning, error) in
+  place of the per-message icons the renders draw.
 - fix-2.4-core, решения оркестратора 2026-10-17: экспорт `applyHp` из
   `packages/domain/src/index.ts` — принято; `method` по последнему
   `account.updatedAt` (точнее — колонка в `session` и миграция) — принято;
