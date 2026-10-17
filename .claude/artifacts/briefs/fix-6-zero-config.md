@@ -56,3 +56,26 @@ The paths the plan names per unit. Nothing else.
 `REPORT.md` sections per `CLAUDE.md`. If `REPORT.md` cannot be written,
 return its full text as the final message. Otherwise the hand-back message is
 the path only.
+
+## Addendum 2026-10-18 (after the first hand-back)
+
+Units 5–8 are in the plan's section «Решения после первого прогона». They go
+in the same branch, one commit each, with these subjects:
+- `fix(server): env file`;
+- `fix(web): proxy`;
+- `fix(api): secure cookies`;
+- `chore(docker): dockerignore`.
+
+Allowed paths: the ones that section names.
+
+Acceptance criterion 3 must now hold on a fresh clean clone, with no `.env`
+and host Node 22:
+- `pnpm install`, then `pnpm dev` starts both processes;
+- sign-up through `http://localhost:5173/api` with
+  `Origin: http://localhost:5173` gets 200;
+- a cookie that is not `Secure` comes back;
+- after both processes restart, `get-session` through 5173 still returns the
+  user.
+
+Repeat the image-layout run and confirm the cookie has no `Secure`. The full
+pre-commit and `pnpm e2e` are green.

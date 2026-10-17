@@ -111,3 +111,36 @@ Opus 5.5 xhigh, worktree `../combat-planner-v2.wt/fix-6-zero-config`, ветка
   :3000, перезапуск, сессия жива.
 - Настоящий `docker compose up --build` запускается, если пользователь в
   группе `docker`. Иначе он остаётся непроверенным и попадает в отчёт.
+
+## Решения после первого прогона (2026-10-18)
+
+Чистый клон показал три препятствия и одну утечку. Пачка дополняется
+единицами 5–8, в той же ветке:
+
+5. `fix(server): env file` (`apps/server/package.json`,
+   `apps/server/src/main.ts`, `apps/server/src/main.test.ts`).
+   - Скрипты `dev` и `start` запускают `node --watch src/main.ts` и
+     `node src/main.ts` без `--env-file-if-exists`: watch-режим Node 24.12
+     падает на отсутствующем файле.
+   - `main.ts` в самом начале загружает корневой `.env` через
+     `process.loadEnvFile`, если файл есть. Путь берётся от
+     `import.meta.dirname`, а не от cwd.
+   - Тест: старт без `.env` и старт с `.env`, где задана переменная.
+6. `fix(web): proxy` (`apps/web/vite.config.ts`): `'/api': { target:
+   'http://localhost:3000', changeOrigin: false }`. Тогда прокси сохраняет
+   `Host: localhost:5173`, и регистрация через 5173 проходит проверку origin
+   без `BETTER_AUTH_TRUSTED_ORIGINS`.
+7. `fix(api): secure cookies` (`packages/api/src/auth/index.ts`,
+   `packages/api/test/**`):
+   - `advanced.useSecureCookies` = `true`, только если `betterAuthUrl` задан
+     и начинается с `https:`. Иначе `false`.
+   - Так сессия работает по http на `localhost` и на адресе в локальной
+     сети. Для https по README задаётся `BETTER_AUTH_URL`.
+   - Тест: без `betterAuthUrl` cookie без `Secure`, с `https://…` — с
+     `Secure`.
+8. `chore(docker): dockerignore` (`.dockerignore`): `**/data`. Локальные
+   `apps/server/data/secrets.json` и база не попадают в контекст сборки.
+
+Предупреждение Better Auth «Base URL is not set» при старте без
+`BETTER_AUTH_URL` остаётся: оно безвредно, а глушить логгер — значит терять
+другие предупреждения.
