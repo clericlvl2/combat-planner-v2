@@ -79,7 +79,7 @@
 | 2.4-CombatScreen | reported `.claude/artifacts/reports/2.4-CombatScreen.md`, rebase conflict in `Toast.json` (both added `presetAdded`) back to the agent | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | guarded `.claude/artifacts/guard/2.4-PlayerView.md` (P2 ×1, P3 ×8 → `fix-2.4`) | Heroes, TurnOrder |
-| 2.4-Library | merged b31aef2..c19a023 (gate `.claude/run/2.4-Library/` green), guard-bee running | Library |
+| 2.4-Library | guarded `.claude/artifacts/guard/2.4-Library.md` (P2 ×2, P3 ×5 → `fix-2.4`) | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4-core | running worker-bee (Opus xhigh) 2026-10-17T14:45+03:00 | project, api contract, FakeApiClient, hooks |
@@ -629,6 +629,14 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.4-Library → `fix-2.4`: P2 повторный Create пресета (кнопка неактивна в
+  полёте, `id` один на открытие формы — как для CombatFormSheet); P2
+  `duplicateDisabled` у PresetCard на лимите 1000. P3: создание тега
+  дожидается ответа до сохранения формы, ошибка видна; метка «new» только у
+  действительно созданного тега (TagSheet); LBF43 — Differences или лист с
+  видимой формой; первый неудачный load Library — CantReachServer с Try again
+  (как CombatList).
 
 - fix-2.3 → `fix-2.4` (P3): Sheet при motion on не задерживает фокус на ×
   (фокус сразу на секции или `initialFocus`), история пишет каждый focusin;
