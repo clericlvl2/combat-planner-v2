@@ -23,13 +23,13 @@
 | 2.3 | организмы | 2.3-organisms-a…i, 2.3-UnitRow, 2.3-UnitForm, 2.3-NumpadSheet, fix-2.3 | |
 | 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4-core, fix-2.4 | phase-2 |
 | 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
-| 4 | web | 4-web, fix-4-overlays, fix-4, fix-4-web | |
+| 4 | web | 4-web, fix-4-overlays, fix-4, fix-4-web | phase-4 |
 | 5 | e2e | 5-e2e, fix-5, fix-5-e2e | |
 | 6 | docker | 6-docker | |
 
 ## Текущий шаг
 
-Фаза 2 закрыта тегом `phase-2` (гейт `fix-2.4` на дереве master, отличие только в `.claude/artifacts/**`, служит фазовым гейтом). Идут `4-web` и `fix-4` параллельно (пути не пересекаются).
+Фаза 2 закрыта тегом `phase-2` (гейт `fix-2.4` на дереве master, отличие только в `.claude/artifacts/**`, служит фазовым гейтом). Фаза 4 закрыта тегом `phase-4` на 63e0843: гейт `fix-4-web` прошёл на этом коде, `pnpm e2e` — 21 passed. Идут `fix-5`, `fix-5-e2e`, guard `6-docker`.
 Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Фазы 2.1 и 2.2 закрыты (`fix-2.2` проверен). Идёт фаза 2.3 (организмы, брифы
 готовы) параллельно с фазой 3 (`3-server-rest`, затем `fix-3`). С 2026-10-17
 вместо Fable 5.1 — Opus 5.5 (план, «Решения владельца»). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
@@ -93,11 +93,11 @@
 | 4-web | guarded `.claude/artifacts/guard/4-web.md` (no P0–P1; CRIT 6 FAIL P3 system-screen swipe; P2 ×1, P3 ×4 → `fix-4-web`) | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | guarded `.claude/artifacts/guard/5-e2e.md` (P2 ×1 flaky Undo read, P3 ×7 → `fix-5-e2e`) | auth, combat lifecycle, player, library, account |
 | fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
-| fix-4-web | merged e84687d..4d4efaa (regate on 5-e2e green, `pnpm e2e` 21 passed, no listeners), guard-bee running | swipe, router test, locale, teardown |
+| fix-4-web | guarded `.claude/artifacts/guard/fix-4-web.md` (P3 ×5, deferred to the owner list) | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
 | fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
 | fix-5-e2e | running worker-bee a1bda23 2026-10-17T17:15+03:00 (Opus 5.5 medium) | combat lifecycle, player, library, account |
-| 6-docker | handed back 3/3 (report `.claude/artifacts/reports/6-docker.md`; production command outside Docker: /api/health and / 200; docker build/compose not run, no socket), gate running | Dockerfile, compose, README |
+| 6-docker | merged 63e0843..44f4f04 (regate green, `.claude/run/6-docker/`), guard-bee running | Dockerfile, compose, README |
 
 ## Вопросы владельцу
 
@@ -678,6 +678,13 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-4-web, P3, отложено для владельца:
+  - wiring без теста (`pages.tsx:68`, `main.tsx:40`);
+  - возможная вспышка языка браузера на кадр при возврате на DM-маршрут
+    (`DmLocale` на `useLayoutEffect`);
+  - ключ маркера teardown продублирован в двух файлах;
+  - `/tmp/fix4-passed-IK9p` удалить вручную.
 
 - 5-e2e → `fix-5`:
   - P1 functional: sign-out never signs out. `hono-client.ts:442` posts
