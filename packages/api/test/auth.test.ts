@@ -309,6 +309,42 @@ describe('trusted origins', () => {
   });
 });
 
+describe('session cookie', () => {
+  const signUpWith = async (betterAuthUrl: string | undefined, email: string) => {
+    const auth = createAuth({ db: opened.db, env: { ...env, betterAuthUrl } });
+    const response = await createAuthApp(auth).request('/sign-up/email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ email, password: PASSWORD, name: 'Sofia' }),
+    });
+    expect(response.status).toBe(200);
+    const cookie = response.headers
+      .getSetCookie()
+      .find((header) => header.includes('better-auth.session_token='));
+    return { useSecureCookies: auth.options.advanced.useSecureCookies, cookie };
+  };
+
+  it.for([
+    ['without betterAuthUrl', undefined, 'cookie-unset@example.com'],
+    ['with an http betterAuthUrl', 'http://192.168.1.20:3000', 'cookie-http@example.com'],
+  ] as const)('is not Secure %s', async ([, betterAuthUrl, email]) => {
+    const { useSecureCookies, cookie } = await signUpWith(betterAuthUrl, email);
+    expect(useSecureCookies).toBe(false);
+    expect(cookie).toMatch(/^better-auth\.session_token=/);
+    expect(cookie).not.toMatch(/;\s*Secure/i);
+  });
+
+  it('is Secure with an https betterAuthUrl', async () => {
+    const { useSecureCookies, cookie } = await signUpWith(
+      'https://planner.example',
+      'cookie-https@example.com',
+    );
+    expect(useSecureCookies).toBe(true);
+    expect(cookie).toMatch(/^__Secure-better-auth\.session_token=/);
+    expect(cookie).toMatch(/;\s*Secure/i);
+  });
+});
+
 describe('social sign-in', () => {
   const GITHUB_EMAIL = 'octo@example.com';
 

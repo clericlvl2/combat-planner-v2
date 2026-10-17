@@ -92,7 +92,10 @@ export function createAuth({ db, env, originCheck }: CreateAuthOptions) {
     basePath: AUTH_BASE_PATH,
     trustedOrigins: env.trustedOrigins,
     disabledPaths: DISABLED_AUTH_PATHS,
-    advanced: { disableOriginCheck: originCheck === undefined ? undefined : !originCheck },
+    advanced: {
+      disableOriginCheck: originCheck === undefined ? undefined : !originCheck,
+      useSecureCookies: env.betterAuthUrl?.startsWith('https:') === true,
+    },
     emailAndPassword: { enabled: true },
     socialProviders: {
       ...(env.google ? { google: env.google } : {}),
