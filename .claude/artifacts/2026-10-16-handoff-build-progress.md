@@ -21,14 +21,15 @@
 | 2.1 | атомы | 2.1-atoms-a…d, fix-2.1 | |
 | 2.2 | молекулы | 2.2-molecules-a…e, fix-2.2 | |
 | 2.3 | организмы | 2.3-organisms-a…i, 2.3-UnitRow, 2.3-UnitForm, 2.3-NumpadSheet, fix-2.3 | |
-| 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4-core, fix-2.4 | |
+| 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4-core, fix-2.4 | phase-2 |
 | 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
-| 4 | web | 4-web | |
+| 4 | web | 4-web, fix-4 | |
 | 5 | e2e | 5-e2e | |
 | 6 | docker | 6-docker | |
 
 ## Текущий шаг
 
+Фаза 2 закрыта тегом `phase-2` (гейт `fix-2.4` на дереве master, отличие только в `.claude/artifacts/**`, служит фазовым гейтом). Следующая — `4-web`, затем `fix-4`.
 Фазы 0, 0.5 и 1 закрыты тегами `phase-0`, `phase-0.5`, `phase-1`. Фаза 2.1 слита и проверена целиком (`fix-2.1` ab729f2). Фазы 2.1 и 2.2 закрыты (`fix-2.2` проверен). Идёт фаза 2.3 (организмы, брифы
 готовы) параллельно с фазой 3 (`3-server-rest`, затем `fix-3`). С 2026-10-17
 вместо Fable 5.1 — Opus 5.5 (план, «Решения владельца»). Гейт на этой машине идёт с `COMBAT_PLANNER_NO_DOCKER=1`.
@@ -83,7 +84,7 @@
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4-core | guarded `.claude/artifacts/guard/fix-2.4-core.md` (P3 ×7 → `fix-4`) | project, api contract, FakeApiClient, hooks |
-| fix-2.4 | merged 0e6ed1d..e45eab0 (gate `.claude/run/fix-2.4/` green except check-commit: 15 cross-folder problems accepted, see «Вопросы владельцу»), guard-bee running | |
+| fix-2.4 | guarded `.claude/artifacts/guard/fix-2.4.md` (CRIT 5 scope accepted; P2 ×2, P3 ×9 → `fix-4`) | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
 | 3-server-live | guarded `.claude/artifacts/guard/3-server-live.md` (P2 ×2 → `fix-3`, 2.4-api-hooks; P2 outside scope → owner) | events route, play routes |
@@ -91,6 +92,7 @@
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | todo | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
+| fix-4 | todo (after `4-web`; brief from «Замечания guard-bee» entries → `fix-4`) | |
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
@@ -105,7 +107,9 @@
   commit.
 - fix-2.4: a returning player's rename is sent as `releaseUnit` + `claimUnit`
   of the own hero, because the domain has no rename and forbids re-claiming an
-  own hero (`authorize.ts:35`). Owner: allow re-claim as rename?
+  own hero (`authorize.ts:35`). Owner: allow re-claim as rename? The guard
+  (fix-2.4 P2) shows the pair nulls the DM's Undo and races; `fix-4` adds
+  `renameUnit` (orchestrator decision, between phases into vision).
 - fix-2.4: `UndoSummary.action` carries the full `Action`, not just the type,
   so «Undid: 12 damage to …» can show the amount. Accepted.
 - fix-2.4: toast icons come from `kind` (success, neutral, warning, error) in
@@ -543,6 +547,11 @@
 
 ## Отличия от рендеров
 
+- fix-2.4, CS-F8.1: Goblin Archer 3 is drawn as the active row; the render
+  shows no active row, which contradicts «next is Brother Tomas».
+- fix-2.4: toast icons come from `kind`; the social buttons render disabled
+  after a tap (APF16); focus rings in APF13, APF23, APF51–53; PV-F4.2 header
+  shows Round 3; the CombatScreen list in the report's Differences.
 - 2.4-CombatScreen: полное имя во второй строке TurnBar; CS-F2.4 ход Tomas;
   CS-F7.1/F7.2 урон 12 до меню (Undo до `fix-2.4` только по сессии); кольца
   фокуса после play; CS-F3.9 прокрутка тела NumpadSheet; CS-F6.6 ряд
@@ -655,6 +664,26 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-2.4 → `fix-4`:
+  - P2 CombatScreen.tsx:174-181 / hooks/combat.ts:162-185: a failed
+    dispatch blocks the action queue until its Retry toast settles; later
+    taps wait, then burst (double Next turn).
+  - P2 Heroes.tsx:127-137: rename as release + claim nulls the DM's Undo and
+    races another claimer. The fix depends on the owner question «rename»;
+    until then, `fix-4` adds a domain `renameUnit` player action, which is
+    undo-neutral.
+  - P3: a stale `link.get` error closes Share on retry
+    (CombatScreen.tsx:148-158).
+  - P3: a rejected tag create blocks Save silently (Library.tsx:176-210).
+  - P3: `dmDocument` loads the whole log on every request (log.ts:78-81).
+  - P3: Undo from the «removed» toast uses the pre-removal summary
+    (CombatScreen.tsx:200-207).
+  - P3: Account `blurred` never resets (Account.tsx:21,46).
+  - P3: unit Duplicate is disabled at 99 units (orchestrator decision: as on
+    CombatCard and PresetCard).
+  - P3: the toast store survives `queryClient.clear()` (toasts.ts:128-135,
+    already routed from fix-2.4-core).
 
 - fix-2.4-core → `fix-4` (пачка исправлений после `4-web`; `fix-2.4` уже
   запущен, его бриф заморожен): тесты SSE — отписка во время таймера
