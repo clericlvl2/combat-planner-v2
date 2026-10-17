@@ -12,5 +12,10 @@
   "combatChanged": "The combat changed. Try again.",
   "reconnecting": "Reconnecting…",
   "presetDuplicated": "{{name}} created",
-  "accountDeleted": "Your account was deleted"
+  "accountDeleted": "Your account was deleted",
+  "dmRestarted": "The DM restarted the combat",
+  "dmCleared": "The DM cleared the combat",
+  "dmReleased": "The DM released {{hero}}. Pick a hero.",
+  "dmRemoved": "The DM removed {{hero}}. Pick a hero.",
+  "heroTaken": "{{hero}} was just taken"
 }

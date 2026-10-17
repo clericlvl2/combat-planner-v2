@@ -12,5 +12,10 @@
   "combatChanged": "Бой изменился. Попробуйте ещё раз.",
   "reconnecting": "Переподключение…",
   "presetDuplicated": "{{name}} создан",
-  "accountDeleted": "Ваш аккаунт удалён"
+  "accountDeleted": "Ваш аккаунт удалён",
+  "dmRestarted": "Мастер перезапустил бой",
+  "dmCleared": "Мастер очистил бой",
+  "dmReleased": "Мастер освободил героя {{hero}}. Выберите героя.",
+  "dmRemoved": "Мастер убрал героя {{hero}}. Выберите героя.",
+  "heroTaken": "Героя {{hero}} только что заняли"
 }

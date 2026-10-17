@@ -12,5 +12,10 @@
   "combatChanged": "戦闘が変更されました。もう一度お試しください。",
   "reconnecting": "再接続中…",
   "presetDuplicated": "{{name}} を作成しました",
-  "accountDeleted": "アカウントを削除しました"
+  "accountDeleted": "アカウントを削除しました",
+  "dmRestarted": "DMが戦闘をやり直しました",
+  "dmCleared": "DMが戦闘を空にしました",
+  "dmReleased": "DMが{{hero}}を解放しました。ヒーローを選んでください。",
+  "dmRemoved": "DMが{{hero}}を削除しました。ヒーローを選んでください。",
+  "heroTaken": "{{hero}}は先に選ばれました"
 }
