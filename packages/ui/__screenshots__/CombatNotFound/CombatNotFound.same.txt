@@ -1,1 +1,1 @@
-Default ExtraKeyboardEnter
+ExtraKeyboardEnter ExtraTapAction
