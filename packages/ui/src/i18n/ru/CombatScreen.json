@@ -19,5 +19,7 @@
   "undoSetMaxHp": "Отменено: макс. ОЗ {{amount}} для {{name}}",
   "undoToggleCondition": "Отменено: {{condition}} у {{name}}",
   "undoEditNote": "Отменено: заметка для {{name}}",
-  "nextWrap": "{{name}} · раунд {{round}}"
+  "nextWrap": "{{name}} · раунд {{round}}",
+  "presetFailed": "Не удалось сохранить заготовку. Попробуйте ещё раз.",
+  "linkFailed": "Не удалось загрузить ссылку для игроков. Попробуйте ещё раз."
 }

@@ -19,5 +19,7 @@
   "undoSetMaxHp": "Annulé : PV max {{amount}} pour {{name}}",
   "undoToggleCondition": "Annulé : {{condition}} sur {{name}}",
   "undoEditNote": "Annulé : note de {{name}}",
-  "nextWrap": "{{name}} · tour {{round}}"
+  "nextWrap": "{{name}} · tour {{round}}",
+  "presetFailed": "Impossible d’enregistrer le modèle. Réessayez.",
+  "linkFailed": "Impossible de charger le lien des joueurs. Réessayez."
 }

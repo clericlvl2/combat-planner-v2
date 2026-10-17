@@ -42,6 +42,18 @@ const historyEntry = (amount: number, previous: number, round: number): HpHistor
   at: createdAt,
 });
 
+const healEntry = (amount: number, previous: number, round: number): HpHistoryEntry => ({
+  ...historyEntry(amount, previous, round),
+  kind: 'heal',
+  result: previous + amount,
+});
+
+const maxEntry = (amount: number, previous: number, round: number): HpHistoryEntry => ({
+  ...historyEntry(amount, previous, round),
+  kind: 'max',
+  result: amount,
+});
+
 export const roster = {
   aldric: {
     name: 'Ser Aldric',
@@ -60,6 +72,14 @@ export const roster = {
     maxHp: 40,
     defenses: [18, 16, 12],
     conditions: ['staggered'],
+    hpHistory: [
+      historyEntry(10, 40, 1),
+      healEntry(4, 30, 1),
+      historyEntry(12, 34, 2),
+      healEntry(3, 22, 2),
+      historyEntry(8, 25, 3),
+      historyEntry(3, 17, 3),
+    ],
   },
   vashti: {
     name: 'Vashti the Hexer',
@@ -71,7 +91,7 @@ export const roster = {
     defenses: [16, 14, 19],
     conditions: ['dazed'],
     claimedBy: MIKA,
-    hpHistory: [historyEntry(9, 36, 2), historyEntry(7, 27, 3)],
+    hpHistory: [maxEntry(36, 32, 1), historyEntry(9, 36, 2), historyEntry(7, 27, 3)],
   },
   goblin: {
     name: 'Goblin Archer 1',
@@ -308,8 +328,14 @@ export const setupScenario = (): Scenario =>
 export const noUnitsScenario = (): Scenario =>
   combatScenario(combatOf({ status: 'setup', units: [] }));
 
-export const longScenario = (count?: number): Scenario =>
-  combatScenario(combatOf({ active: null, units: longUnits(count) }));
+export const longScenario = (count?: number): Scenario => {
+  const units = longUnits(count);
+  const tomas = units.findIndex((unit) => unit.name === roster.tomas.name);
+  return combatScenario({
+    ...combatOf({ active: null, units }),
+    activeUnitId: units[tomas - 1]?.id ?? null,
+  });
+};
 
 export const rolls = (values: readonly number[]): (() => number) => {
   let index = 0;

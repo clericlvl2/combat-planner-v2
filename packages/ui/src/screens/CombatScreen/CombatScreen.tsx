@@ -9,37 +9,31 @@ import {
 } from '@combat-planner/domain';
 import type {
   Action,
-  Combat,
   CombatId,
   Condition,
   HpHistoryKind,
   Role,
+  UndoSummary,
   Unit,
   UnitId,
 } from '@combat-planner/domain';
 import {
-  IconAlertTriangle,
-  IconArrowBackUp,
-  IconBookmark,
-  IconCheck,
   IconLinkOff,
   IconRefresh,
   IconTrash,
   IconUserMinus,
   IconUserPlus,
   IconUsers,
-  IconWifiOff,
 } from '@tabler/icons-react';
-import type { Icon } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { combatKey } from '../../hooks/combat.ts';
 import type { CombatEntry } from '../../hooks/combat.ts';
-import type { ToastAction, ToastItem } from '../../hooks/toasts.ts';
+import type { ToastAction, ToastKind } from '../../hooks/toasts.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useCombatLink } from '../../hooks/useCombatLink.ts';
 import { useConnection } from '../../hooks/useConnection.ts';
@@ -48,7 +42,6 @@ import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
-import type { ToastTone } from '../../molecules/Toast/Toast.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import type {
   CombatHeaderPopover,
@@ -67,8 +60,8 @@ import { UnitRow } from '../../organisms/UnitRow/UnitRow.tsx';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatNotFound } from '../CombatNotFound/CombatNotFound.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
+import { toastLook } from '../shared/toastLook.ts';
 import { isUndoable, undoLabel } from './undoLabel.ts';
-import type { UndoableAction } from './undoLabel.ts';
 import classes from './CombatScreen.module.css';
 
 export interface CombatScreenProps {
@@ -94,24 +87,9 @@ type Confirm =
   | { kind: 'clear' }
   | { kind: 'revoke' };
 
-interface UndoEntry {
-  action: UndoableAction;
-  unitName?: string;
-}
-
-type ToastKind = 'presetAdded' | 'unitRemoved' | 'undone' | 'linkCopied' | 'unitCap';
-
-const toastLooks: Record<ToastKind | 'failed' | 'other', { icon: Icon; tone: ToastTone }> = {
-  presetAdded: { icon: IconBookmark, tone: 'success' },
-  unitRemoved: { icon: IconUserMinus, tone: 'neutral' },
-  undone: { icon: IconArrowBackUp, tone: 'neutral' },
-  linkCopied: { icon: IconCheck, tone: 'success' },
-  unitCap: { icon: IconAlertTriangle, tone: 'warning' },
-  failed: { icon: IconWifiOff, tone: 'error' },
-  other: { icon: IconAlertTriangle, tone: 'warning' },
-};
-
 const DM = { kind: 'dm' } as const;
+
+const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit']);
 
 const hpActionTypes = {
   damage: 'damage',
@@ -149,7 +127,7 @@ export function CombatScreen({
   const { t: tRow } = useTranslation('UnitRow');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { combat, error, ended, dispatch } = useCombat(combatId, DM);
+  const { combat, error, ended, dispatch, refetch } = useCombat(combatId, DM);
   useConnection();
   const { presets, create: createPreset } = usePresets();
   const { tags } = useTags();
@@ -161,48 +139,48 @@ export function CombatScreen({
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [flashId, setFlashId] = useState<UnitId | null>(null);
-  const [undoCount, setUndoCount] = useState(0);
   const { flashing, flash } = useHpFlash();
   const link = useCombatLink(combatId, shareOpen);
-  const undoStack = useRef<UndoEntry[]>([]);
-  const toastKinds = useRef(new Map<string, ToastKind>());
+  const knownVersion = useRef(0);
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const signedOut =
+    ended?.type === 'unauthorized' || (error instanceof ApiError && error.code === 'unauthorized');
+  const linkFailed = shareOpen && link.error !== null;
+
+  useEffect(() => {
+    if (signedOut) void navigate('/auth/sign-in');
+  }, [signedOut, navigate]);
+
+  useEffect(() => {
+    if (!linkFailed) return;
+    setShareOpen(false);
+    showToast({ message: t('linkFailed'), kind: 'error' });
+  }, [linkFailed, showToast, t]);
 
   const key = combatKey(combatId, DM);
-  const latest = (): Combat | undefined =>
+  const latest = (): DmCombat | undefined =>
     queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document ?? combat;
-  const nameOf = (unitId: UnitId): string | undefined =>
-    latest()?.units.find((unit) => unit.id === unitId)?.name;
 
-  const setStack = (next: UndoEntry[]) => {
-    undoStack.current = next.slice(-LIMITS.undoDepth);
-    setUndoCount(undoStack.current.length);
-  };
-
-  const remember = (action: Action, unitName: string | undefined) => {
-    if (action.type === 'releaseUnit') setStack([]);
-    else if (isUndoable(action)) setStack([...undoStack.current, { action, unitName }]);
-  };
-
-  const send = async (body: ActionBody): Promise<boolean> => {
+  const sendNow = async (body: ActionBody): Promise<boolean> => {
     const before = latest();
     if (before === undefined) return false;
-    const action = { ...body, id: ulid(), version: before.version } as Action;
-    const unitName = 'unitId' in action ? nameOf(action.unitId) : undefined;
-    await dispatch(action);
-    const ok = (latest()?.version ?? before.version) > before.version;
-    if (ok) remember(action, unitName);
-    return ok;
+    const version = Math.max(before.version, knownVersion.current);
+    const result = await dispatch({ ...body, id: ulid(), version } as Action);
+    if (!result.applied) return false;
+    knownVersion.current = Math.max(knownVersion.current, result.version);
+    return true;
   };
 
-  const notify = (kind: ToastKind, message: string, action?: ToastAction) => {
-    toastKinds.current.set(message, kind);
-    showToast({ message, action });
+  const enqueue = <T,>(run: () => Promise<T>): Promise<T> => {
+    const next = queue.current.then(run, run);
+    queue.current = next.catch(() => {});
+    return next;
   };
 
-  const lookOf = (toast: ToastItem) => {
-    const kind = toastKinds.current.get(toast.message);
-    if (kind) return toastLooks[kind];
-    return toast.action ? toastLooks.failed : toastLooks.other;
+  const send = (body: ActionBody): Promise<boolean> => enqueue(() => sendNow(body));
+
+  const notify = (message: string, kind: ToastKind, action?: ToastAction) => {
+    showToast({ message, kind, action });
   };
 
   const flashUnit = (unitId: UnitId) => {
@@ -210,28 +188,30 @@ export function CombatScreen({
     flash();
   };
 
-  const undo = async () => {
-    const entry = undoStack.current.at(-1);
-    if (entry === undefined) return;
-    const ok = await send({ type: 'undo' });
-    if (!ok) return;
-    setStack(undoStack.current.slice(0, -1));
-    notify(
-      'undone',
-      undoLabel(entry.action, {
-        t: (labelKey, options) => t(labelKey, options),
-        unitName: entry.unitName,
-        condition: (condition: Condition) => tRow(condition),
-      }),
-    );
+  const undoMessage = (summary: UndoSummary): string | null => {
+    if (!isUndoable(summary.action)) return null;
+    return undoLabel(summary.action, {
+      t: (labelKey, options) => t(labelKey, options),
+      unitName: summary.unitName ?? undefined,
+      condition: (condition: Condition) => tRow(condition),
+    });
   };
+
+  const undo = () =>
+    enqueue(async () => {
+      const summary = latest()?.undo;
+      if (!summary) return;
+      const message = undoMessage(summary);
+      const ok = await sendNow({ type: 'undo' });
+      if (ok && message !== null) notify(message, 'neutral');
+    });
 
   const close = () => setOpen(null);
   const show = (panel: RowPanel, unit: Unit) => setOpen({ panel, unitId: unit.id });
   const isOpen = (panel: RowPanel, unit: Unit) => open?.panel === panel && open.unitId === unit.id;
 
   const reload = () => {
-    void queryClient.resetQueries({ queryKey: key });
+    void refetch();
   };
 
   const goToCombats = () => {
@@ -240,7 +220,7 @@ export function CombatScreen({
 
   if (ended?.type === 'deleted') return <CombatNotFound onGoToCombats={goToCombats} />;
   if (combat === undefined) {
-    if (error === null) return null;
+    if (error === null || signedOut) return null;
     if (error instanceof ApiError && error.code === 'notFound') {
       return <CombatNotFound onGoToCombats={goToCombats} />;
     }
@@ -258,7 +238,7 @@ export function CombatScreen({
     open?.panel === panel ? unitById(open.unitId) : undefined;
 
   const capToast = () => {
-    notify('unitCap', tToast('unitCap', { limit: LIMITS.unitsPerCombat }));
+    notify(tToast('unitCap', { limit: LIMITS.unitsPerCombat }), 'warning');
   };
 
   const openAdd = () => {
@@ -311,8 +291,11 @@ export function CombatScreen({
       ...input
     } = presetFromUnit(unit, ulid(), new Date().toISOString());
     createPreset(input)
-      .then(() => notify('presetAdded', tToast('presetAdded', { name: unit.name })))
-      .catch(() => {});
+      .then(() => notify(tToast('presetAdded', { name: unit.name }), 'success'))
+      .catch((error: unknown) => {
+        if (error instanceof ApiError && toastedCodes.has(error.code)) return;
+        notify(t('presetFailed'), 'error');
+      });
   };
 
   const changeConditions = (unit: Unit, next: readonly Condition[]) => {
@@ -340,7 +323,7 @@ export function CombatScreen({
     setExpandedId(null);
     const ok = await send({ type: 'removeUnit', unitId: unit.id });
     if (!ok) return;
-    notify('unitRemoved', tToast('unitRemoved', { name: unit.name }), {
+    notify(tToast('unitRemoved', { name: unit.name }), 'neutral', {
       label: tToast('undo'),
       onAction: () => {
         void undo();
@@ -354,15 +337,13 @@ export function CombatScreen({
     } catch {
       return false;
     }
-    notify('linkCopied', tToast('linkCopied'));
+    setShareOpen(false);
+    notify(tToast('linkCopied'), 'success');
     return true;
   };
 
   const reissue = () => {
-    link
-      .reissue()
-      .then(() => setStack([]))
-      .catch(() => {});
+    link.reissue().catch(() => {});
   };
 
   const confirmed = (current: Confirm) => {
@@ -436,7 +417,7 @@ export function CombatScreen({
         round={setup ? null : combat.round}
         escalation={combat.escalation as EscalationValue}
         open={headerOpen}
-        undoDisabled={undoCount === 0}
+        undoDisabled={!combat.undo}
         onBack={goToCombats}
         onRound={() => setHeaderOpen('round')}
         onEscalation={() => setHeaderOpen('escalation')}
@@ -495,6 +476,7 @@ export function CombatScreen({
             }}
             onSetDisabled={(disabled) => {
               close();
+              if (disabled) setExpandedId(null);
               void send({ type: 'setDisabled', unitId: unit.id, disabled });
             }}
             onSaveAsPreset={() => saveAsPreset(unit)}
@@ -530,7 +512,7 @@ export function CombatScreen({
       {toast ? (
         <Toast
           key={toast.id}
-          {...lookOf(toast)}
+          {...toastLook(toast.kind)}
           message={toast.message}
           action={toast.action}
           duration={toast.duration}

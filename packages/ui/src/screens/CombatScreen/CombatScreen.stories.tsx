@@ -418,7 +418,10 @@ export const CSF35 = meta.story({
   play: async ({ canvas, canvasElement }) => {
     const sheet = await openNumpad(canvas, canvasElement, names.vashti, /^20 \/36/);
     await typeAmount(sheet, '8');
-    await expect(within(sheet).getByRole('button', { name: 'Heal' })).toBeEnabled();
+    const heal = within(sheet).getByRole('button', { name: 'Heal' });
+    heal.focus();
+    await expect(heal).toHaveFocus();
+    await expect(within(sheet).getByText('28')).toBeVisible();
   },
 });
 
@@ -427,7 +430,10 @@ export const CSF36 = meta.story({
   play: async ({ canvas, canvasElement }) => {
     const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
     await typeAmount(sheet, '5');
-    await expect(within(sheet).getByRole('button', { name: 'Set Temp' })).toBeEnabled();
+    const setTemp = within(sheet).getByRole('button', { name: 'Set Temp' });
+    setTemp.focus();
+    await expect(setTemp).toHaveFocus();
+    await expect(within(sheet).getByText('+5 temp')).toBeVisible();
   },
 });
 
@@ -446,7 +452,10 @@ export const CSF38 = meta.story({
   play: async ({ canvas, canvasElement }) => {
     const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
     await typeAmount(sheet, '30');
-    await expect(within(sheet).getByRole('button', { name: 'Set Max' })).toBeEnabled();
+    const setMax = within(sheet).getByRole('button', { name: 'Set Max' });
+    setMax.focus();
+    await expect(setMax).toHaveFocus();
+    await expect(within(sheet).getByText('/30')).toBeVisible();
   },
 });
 
@@ -682,6 +691,9 @@ export const CSF67 = meta.story({
     await expect(dispatched(fakeApiOf(loaded))).toEqual([
       expect.objectContaining({ type: 'setDisabled', unitId: unitIds.orc, disabled: true }),
     ]);
+    await expect(
+      within(await rowOf(canvasElement, names.orc)).getByRole('button', { name: 'Unit details' }),
+    ).toHaveAttribute('aria-expanded', 'false');
   },
 });
 
@@ -732,7 +744,10 @@ export const CSF74 = meta.story({
     const writeText = spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
     const sheet = await openShare(canvas);
     await userEvent.click(within(sheet).getByRole('button', { name: 'Copy' }));
-    await expect(await canvas.findByText('Link copied')).toBeVisible();
+    await expect(await canvas.findByRole('status')).toHaveTextContent('Link copied');
+    await waitFor(() =>
+      expect(canvas.queryByRole('dialog', { name: 'Share with players' })).toBeNull(),
+    );
     await expect(writeText).toHaveBeenCalledWith(
       `${STORY_ORIGIN}/combats/${COMBAT_ID}/play?t=${COMBAT_ID}.0.fake`,
     );
@@ -803,7 +818,7 @@ export const CSF79 = meta.story({
 export const CSF81 = meta.story({
   name: 'CS-F8.1 Long list, scrolled, 6 languages',
   parameters: { scenario: longScenario() },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvas, canvasElement }) => {
     await scrollList(canvasElement);
     await expect(
       await rowOf(canvasElement, '黒水の渡し守と呪われし大蛇の群れ'),
@@ -811,6 +826,9 @@ export const CSF81 = meta.story({
     await expect(
       await rowOf(canvasElement, 'Капитан стражи переправы Святослав Огнев'),
     ).toBeVisible();
+    await expect(await nextTurnButton(canvas)).toHaveAccessibleName(
+      /Brother Tomas of the Silver Lantern Order/,
+    );
   },
 });
 
@@ -877,7 +895,7 @@ export const ExtraNoChangeBeforeDocument = meta.story({
 export const ExtraHpRules = meta.story({
   name: 'Extra: damage, heal, Set Temp and Set Max follow the rules',
   parameters: { scenario: runningScenario({ units: rosterUnits({ orc: { tempHp: 5 } }) }) },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, loaded }) => {
     const apply = async (hp: RegExp, digits: string, action: string) => {
       const sheet = await openNumpad(canvas, canvasElement, names.orc, hp);
       await typeAmount(sheet, digits);
@@ -886,13 +904,28 @@ export const ExtraHpRules = meta.story({
     };
     await apply(/^14 \/40/, '8', 'Damage');
     await expect(await hpOf(canvasElement, names.orc, /^11 \/40 Bloodied/)).toBeVisible();
-    await apply(/^11 \/40/, '50', 'Heal');
-    await expect(await hpOf(canvasElement, names.orc, /^40 \/40/)).toBeVisible();
-    await apply(/^40 \/40/, '5', 'Set Temp');
-    await apply(/^40 \/40/, '3', 'Set Temp');
-    await expect(await hpOf(canvasElement, names.orc, /^40 \/40 \+3 temp/)).toBeVisible();
-    await apply(/^40 \/40/, '30', 'Set Max');
+    await apply(/^11 \/40/, '30', 'Set Max');
+    await expect(await hpOf(canvasElement, names.orc, /^11 \/30/)).toBeVisible();
+    await apply(/^11 \/30/, '50', 'Heal');
     await expect(await hpOf(canvasElement, names.orc, /^30 \/30/)).toBeVisible();
+    await apply(/^30 \/30/, '5', 'Set Temp');
+    await expect(await hpOf(canvasElement, names.orc, /^30 \/30 \+5 temp/)).toBeVisible();
+    await apply(/^30 \/30/, '3', 'Set Temp');
+    await expect(await hpOf(canvasElement, names.orc, /^30 \/30 \+3 temp/)).toBeVisible();
+    await apply(/^30 \/30/, '99', 'Damage');
+    await expect(await hpOf(canvasElement, names.orc, /^[−-]30 \/30/)).toBeVisible();
+    await expect(
+      dispatched(fakeApiOf(loaded)).map((action) =>
+        'amount' in action ? [action.type, action.amount] : [action.type],
+      ),
+    ).toEqual([
+      ['damage', 8],
+      ['setMaxHp', 30],
+      ['heal', 50],
+      ['setTempHp', 5],
+      ['setTempHp', 3],
+      ['damage', 99],
+    ]);
   },
 });
 
@@ -1010,5 +1043,118 @@ export const ExtraBack = meta.story({
   play: async ({ canvas, canvasElement }) => {
     await userEvent.click(await canvas.findByRole('button', { name: 'Back to combats' }));
     await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
+  },
+});
+
+export const ExtraUndoFromDocument = meta.story({
+  name: 'Extra: Undo comes from the document after a reload',
+  loaders: [
+    async ({ parameters }) => {
+      const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+      const { version } = await api.combats.get(COMBAT_ID);
+      await api.combats.dispatch(COMBAT_ID, {
+        id: '01JQ0000000000000000000001',
+        version,
+        type: 'damage',
+        unitId: unitIds.orc,
+        amount: 12,
+      });
+      return { api };
+    },
+  ],
+  play: async ({ canvas, canvasElement }) => {
+    await hpOf(canvasElement, names.orc, /^2 \/40/);
+    await pickMenu(canvas, 'Undo');
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      'Undid: 12 damage to Orc Berserker',
+    );
+    await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
+  },
+});
+
+export const ExtraDocumentAfterPost = meta.story({
+  name: 'Extra: the document arrives after the POST',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    fakeApiOf(loaded).deferBroadcasts();
+    const menu = await openRowMenu(canvas, canvasElement, names.orc);
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Remove' }));
+    const dialog = await canvas.findByRole('alertdialog', { name: 'Remove Orc Berserker?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Remove' }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent('Orc Berserker removed');
+    await waitFor(() =>
+      expect(within(canvasElement).queryByText(names.orc, { exact: true })).toBeNull(),
+    );
+    const sheet = await openNumpad(canvas, canvasElement, names.vashti, /^20 \/36/);
+    await typeAmount(sheet, '5');
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Damage' }));
+    await expect(await hpOf(canvasElement, names.vashti, /^15 \/36/)).toBeVisible();
+    await waitFor(async () =>
+      expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-flash'),
+    );
+  },
+});
+
+export const ExtraRapidTaps = meta.story({
+  name: 'Extra: rapid condition taps build on the newest version',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    api.deferBroadcasts();
+    const row = await expand(canvasElement, names.orc);
+    await userEvent.click(within(row).getByRole('button', { name: 'Conditions' }));
+    const sheet = await canvas.findByRole('dialog', { name: 'Conditions' });
+    within(sheet).getByRole('checkbox', { name: 'weakened' }).click();
+    within(sheet).getByRole('checkbox', { name: 'dazed' }).click();
+    await waitFor(() => expect(callsOf(api, 'combats.dispatch')).toHaveLength(2));
+    const [first, second] = dispatched(api);
+    await waitFor(() => expect(second!.version).toBe(first!.version + 1));
+    await waitFor(() =>
+      expect(within(sheet).getByRole('checkbox', { name: 'dazed' })).toBeChecked(),
+    );
+    await expect(within(sheet).getByRole('checkbox', { name: 'weakened' })).toBeChecked();
+    await expect(canvas.queryByText('The combat changed. Try again.')).toBeNull();
+  },
+});
+
+export const ExtraSavePresetFails = meta.story({
+  name: 'Extra: a failed Save as preset shows a toast',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const menu = await openRowMenu(canvas, canvasElement, names.orc);
+    fakeApiOf(loaded).failNext('invalid');
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Save as preset' }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      'Couldn’t save the preset. Try again.',
+    );
+  },
+});
+
+export const ExtraSavePresetLimit = meta.story({
+  name: 'Extra: Save as preset at the preset limit shows a toast',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const menu = await openRowMenu(canvas, canvasElement, names.orc);
+    fakeApiOf(loaded).failNext('limit');
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Save as preset' }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent('Limit reached');
+  },
+});
+
+export const ExtraShareLinkFails = meta.story({
+  name: 'Extra: Share with a failed link load shows a toast',
+  play: async ({ canvas, loaded }) => {
+    const menu = await openMenu(canvas);
+    fakeApiOf(loaded).failNext('network');
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Share' }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      'Couldn’t load the player link. Try again.',
+    );
+    await expect(canvas.queryByRole('dialog', { name: 'Share with players' })).toBeNull();
+  },
+});
+
+export const ExtraSignedOut = meta.story({
+  name: 'Extra: an expired session goes to sign-in',
+  play: async ({ canvasElement, loaded }) => {
+    await hpOf(canvasElement, names.orc, /^14 \/40/);
+    fakeApiOf(loaded).expireSession();
+    await waitFor(() => expect(locationOf(canvasElement)).toBe('/auth/sign-in'));
   },
 });

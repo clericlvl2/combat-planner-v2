@@ -19,5 +19,7 @@
   "undoSetMaxHp": "Deshecho: PG máx. {{amount}} de {{name}}",
   "undoToggleCondition": "Deshecho: {{condition}} en {{name}}",
   "undoEditNote": "Deshecho: nota de {{name}}",
-  "nextWrap": "{{name}} · ronda {{round}}"
+  "nextWrap": "{{name}} · ronda {{round}}",
+  "presetFailed": "No se pudo guardar la plantilla. Inténtalo de nuevo.",
+  "linkFailed": "No se pudo cargar el enlace para jugadores. Inténtalo de nuevo."
 }
