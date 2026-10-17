@@ -14,6 +14,7 @@ export function UnexpectedError({ onReload }: UnexpectedErrorProps) {
       title={t('title')}
       body={t('body')}
       actionLabel={t('reload')}
+      actionVariant="primary"
       onAction={onReload}
     />
   );
