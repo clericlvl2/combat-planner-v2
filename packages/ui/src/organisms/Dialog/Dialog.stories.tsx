@@ -108,7 +108,6 @@ function DialogCell({
   onConfirm,
   onCancel,
 }: DialogCellProps) {
-  const { t } = useTranslation('Dialog');
   const spec = usePresets(units)[preset];
   const [opened, setOpened] = useState(initiallyOpened);
   return (
@@ -141,7 +140,6 @@ function DialogCell({
 }
 
 function OverSheetCell({ onConfirm, onCancel, onSheetClose }: DialogCellProps) {
-  const { t } = useTranslation('Dialog');
   const spec = usePresets(6).clear;
   const [sheetOpened, setSheetOpened] = useState(true);
   const [dialogOpened, setDialogOpened] = useState(false);
