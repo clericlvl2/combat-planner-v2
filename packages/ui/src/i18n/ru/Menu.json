@@ -11,7 +11,7 @@
   "saveAsPreset": "Сохранить как пресет",
   "releaseClaim": "Снять занятость",
   "remove": "Удалить",
-  "changeHero": "Сменить героя",
+  "heroes": "Герои",
   "delete": "Удалить",
   "round": "Раунд",
   "roundHint": "{{min}}–{{max}}. Смена раунда не двигает ход."

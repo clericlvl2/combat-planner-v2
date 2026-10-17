@@ -11,7 +11,7 @@
   "saveAsPreset": "プリセットとして保存",
   "releaseClaim": "担当を解除",
   "remove": "削除",
-  "changeHero": "ヒーローを変更",
+  "heroes": "ヒーロー",
   "delete": "削除",
   "round": "ラウンド",
   "roundHint": "{{min}}–{{max}}。ラウンドを変えても手番は移りません。"

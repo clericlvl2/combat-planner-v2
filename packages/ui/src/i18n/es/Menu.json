@@ -11,7 +11,7 @@
   "saveAsPreset": "Guardar como plantilla",
   "releaseClaim": "Liberar reclamo",
   "remove": "Quitar",
-  "changeHero": "Cambiar héroe",
+  "heroes": "Héroes",
   "delete": "Eliminar",
   "round": "Ronda",
   "roundHint": "{{min}}–{{max}}. Cambiar la ronda no mueve el turno."

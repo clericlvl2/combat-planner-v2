@@ -21,6 +21,7 @@ import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
+import { Sheet } from '../Sheet/Sheet.tsx';
 import { Menu, PopoverFrame } from './Menu.tsx';
 import type { MenuItem } from './Menu.tsx';
 
@@ -36,6 +37,7 @@ interface MenuCellProps {
   onSelect?: (id: string) => void;
   onClose?: () => void;
   onEdit?: () => void;
+  onSheetClose?: () => void;
 }
 
 const moreLabel = 'More actions';
@@ -76,7 +78,7 @@ function usePresetItems(preset: Preset): MenuItem[] {
       { id: 'duplicate', icon: IconCopy, label: t('duplicate') },
       { id: 'delete', icon: IconTrash, label: t('delete'), tone: 'danger', divider: true },
     ],
-    player: [{ id: 'changeHero', icon: IconSwitchHorizontal, label: t('changeHero') }],
+    player: [{ id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') }],
   };
   return presets[preset];
 }
@@ -413,6 +415,45 @@ export const ExtraMotionOn = meta.story({
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
     await expect(more).toHaveFocus();
+  },
+});
+
+export const ExtraReopenDuringExit = meta.story({
+  name: 'Motion on: reopening during the exit transition focuses the first item',
+  args: toSource,
+  parameters: { motion: 'on' },
+  play: async ({ canvas }) => {
+    const more = canvas.getByRole('button', { name: 'More actions' });
+    more.focus();
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+    await userEvent.keyboard('{Escape}');
+    await expect(more).toHaveFocus();
+    await expect(canvas.getByRole('menu')).toBeInTheDocument();
+    await userEvent.keyboard('{Enter}');
+    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+  },
+});
+
+export const ExtraInsideSheet = meta.story({
+  name: 'Inside a Sheet, Escape closes only the menu',
+  args: { ...toSource, onSheetClose: fn() },
+  render: ({ onSheetClose, ...args }) => (
+    <Sheet opened title="Orc Berserker" onClose={onSheetClose ?? (() => undefined)}>
+      <MenuCell {...args} />
+    </Sheet>
+  ),
+  play: async ({ args, canvas }) => {
+    const more = await canvas.findByRole('button', { name: 'More actions' });
+    await userEvent.click(more);
+    const first = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    await waitFor(() => expect(first).toHaveFocus());
+    await expect(first).toHaveAttribute('data-mantine-stop-propagation', 'true');
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await expect(args.onSheetClose).not.toHaveBeenCalled();
+    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
+    await expect(canvas.getByRole('dialog', { name: 'Orc Berserker' })).toBeVisible();
   },
 });
 

@@ -11,7 +11,7 @@
   "saveAsPreset": "Als Vorlage speichern",
   "releaseClaim": "Anspruch freigeben",
   "remove": "Entfernen",
-  "changeHero": "Held wechseln",
+  "heroes": "Helden",
   "delete": "Löschen",
   "round": "Runde",
   "roundHint": "{{min}}–{{max}}. Eine Rundenänderung verschiebt den Zug nicht."

@@ -126,6 +126,10 @@ export function Menu({
   );
 
   useEffect(() => {
+    if (opened && !inline && panelRef.current) focusFirstItem(panelRef.current, FOCUS_FRAMES);
+  }, [opened, inline]);
+
+  useEffect(() => {
     if (!opened) return;
     const handlePointerDown = (event: PointerEvent) => {
       if (!(event.target instanceof Node)) return;
@@ -193,6 +197,7 @@ export function Menu({
       aria-label={ariaLabel}
       aria-orientation="vertical"
       tabIndex={-1}
+      data-mantine-stop-propagation="true"
       className={classes.menu}
       style={{ width }}
       onKeyDown={handleKeyDown}
@@ -208,6 +213,7 @@ export function Menu({
               type="button"
               role="menuitem"
               tabIndex={-1}
+              data-mantine-stop-propagation="true"
               className={classes.item}
               data-tone={item.tone ?? 'ink'}
               data-item={item.id}

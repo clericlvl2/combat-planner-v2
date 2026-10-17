@@ -11,7 +11,7 @@
   "saveAsPreset": "Enregistrer comme modèle",
   "releaseClaim": "Libérer la réservation",
   "remove": "Retirer",
-  "changeHero": "Changer de héros",
+  "heroes": "Héros",
   "delete": "Supprimer",
   "round": "Tour",
   "roundHint": "{{min}}–{{max}}. Changer le tour ne change pas l’unité active."

@@ -11,7 +11,7 @@
   "saveAsPreset": "Save as preset",
   "releaseClaim": "Release claim",
   "remove": "Remove",
-  "changeHero": "Change hero",
+  "heroes": "Heroes",
   "delete": "Delete",
   "round": "Round",
   "roundHint": "{{min}}–{{max}}. Changing the round doesn’t move the turn."
