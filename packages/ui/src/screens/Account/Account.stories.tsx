@@ -206,3 +206,19 @@ export const ExtraEmptyNameWhileTyping = meta.story({
     await expect(canvas.queryByText('Enter a display name')).toBeNull();
   },
 });
+
+export const ExtraEmptyNameAfterEarlierBlur = meta.story({
+  name: 'After an earlier blur, an emptied name shows the error only after the next blur',
+  play: async ({ canvas }) => {
+    const name = canvas.getByRole('textbox', { name: 'Display name' });
+    await waitFor(() => expect(name).toHaveValue('Ferry DM'));
+    await userEvent.type(name, ' Ирина');
+    await userEvent.tab();
+    await waitFor(() => expect(name).toHaveValue('Ferry DM Ирина'));
+    await userEvent.clear(name);
+    await expect(name).toHaveFocus();
+    await expect(canvas.queryByText('Enter a display name')).toBeNull();
+    await userEvent.tab();
+    await expect(await canvas.findByText('Enter a display name')).toBeVisible();
+  },
+});

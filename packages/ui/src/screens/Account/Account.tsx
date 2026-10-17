@@ -42,6 +42,11 @@ export function Account() {
       });
   };
 
+  const editName = (value: string) => {
+    setDraft(value);
+    setBlurred(false);
+  };
+
   const leaveName = () => {
     setBlurred(true);
     saveName();
@@ -80,7 +85,7 @@ export function Account() {
               maxLength={LIMITS.displayName}
               value={displayName}
               error={nameMissing ? t('enterName') : undefined}
-              onChange={setDraft}
+              onChange={editName}
               onBlur={leaveName}
               onKeyDown={submitOnEnter(saveName)}
             />
