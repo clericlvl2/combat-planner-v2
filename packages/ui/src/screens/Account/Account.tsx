@@ -1,6 +1,6 @@
 import { LIMITS } from '@combat-planner/domain';
 import { IconChevronRight, IconLogout, IconUserX } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
@@ -18,22 +18,33 @@ export function Account() {
   const { session, update, signOut, remove } = useAccount();
   const [draft, setDraft] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [blurred, setBlurred] = useState(false);
+  const sending = useRef<string | null>(null);
 
   const saved = session?.displayName ?? '';
   const displayName = draft ?? saved;
-  const nameMissing = draft !== null && draft.trim() === '';
+  const nameMissing = blurred && draft !== null && draft.trim() === '';
 
   const saveName = () => {
     if (draft === null) return;
     const next = draft.trim();
-    if (next === '') return;
+    if (next === '' || next === sending.current) return;
     if (next === saved) {
       setDraft(null);
       return;
     }
+    sending.current = next;
     update({ displayName: next })
       .then(() => setDraft(null))
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        sending.current = null;
+      });
+  };
+
+  const leaveName = () => {
+    setBlurred(true);
+    saveName();
   };
 
   const leave = () => {
@@ -45,7 +56,7 @@ export function Account() {
   const confirmDelete = () => {
     setConfirming(false);
     remove()
-      .then(() => navigate('/auth/sign-in', { state: { accountDeleted: true } }))
+      .then(() => navigate('/auth/sign-in'))
       .catch(() => {});
   };
 
@@ -56,6 +67,9 @@ export function Account() {
           <div className={classes.block}>
             <span className={classes.caption}>{t('email')}</span>
             <span className={classes.email}>{session?.email ?? ''}</span>
+            {session ? (
+              <span className={classes.method}>{t(`method_${session.method}`)}</span>
+            ) : null}
           </div>
           <span className={classes.divider} aria-hidden="true" />
           <div className={classes.block}>
@@ -67,7 +81,7 @@ export function Account() {
               value={displayName}
               error={nameMissing ? t('enterName') : undefined}
               onChange={setDraft}
-              onBlur={saveName}
+              onBlur={leaveName}
               onKeyDown={submitOnEnter(saveName)}
             />
           </div>

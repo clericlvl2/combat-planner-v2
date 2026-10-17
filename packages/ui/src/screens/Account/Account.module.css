@@ -29,6 +29,12 @@
   overflow-wrap: anywhere;
 }
 
+.method {
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-snug);
+}
+
 .divider {
   flex: none;
   height: 2px;

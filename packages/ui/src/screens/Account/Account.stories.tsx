@@ -65,6 +65,7 @@ export const Default = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Account' })).toBeVisible();
     await expect(await canvas.findByText('dm@ferry.games')).toBeVisible();
+    await expect(canvas.getByText('Signed in with email')).toBeVisible();
     await expect(canvas.getByRole('textbox', { name: 'Display name' })).toHaveValue('Ferry DM');
     await expect(canvas.getByRole('button', { name: 'Sign out' })).toBeEnabled();
     await expect(canvas.getByRole('button', { name: 'Delete account' })).toBeEnabled();
@@ -98,7 +99,8 @@ export const AccountDeleted = meta.story({
     const dialog = await canvas.findByRole('alertdialog', { name: 'Delete your account?' });
     await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(probeOf(canvasElement).location).toBe('/auth/sign-in'));
-    await expect(probeOf(canvasElement).state).toEqual({ accountDeleted: true });
+    await expect(probeOf(canvasElement).state).toBeNull();
+    await expect(await canvas.findByRole('status')).toHaveTextContent('Your account was deleted');
     await expect(methodsOf(loaded).filter((method) => method === 'account.remove')).toHaveLength(1);
   },
 });
@@ -146,5 +148,61 @@ export const Japanese = meta.story({
     await expect(canvas.getByRole('heading', { level: 1, name: 'アカウント' })).toBeVisible();
     await expect(await canvas.findByText('dm@ferry.games')).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'アカウントを削除' })).toBeVisible();
+  },
+});
+
+export const ExtraSignedInWithGitHub = meta.story({
+  name: 'The sign-in method comes from the session',
+  parameters: {
+    scenario: scenario({
+      session: {
+        userId: ferryAccount.userId,
+        email: ferryAccount.email,
+        displayName: ferryAccount.displayName,
+        language: 'en',
+        method: 'github',
+      },
+      accounts: [ferryAccount],
+    }),
+  },
+  play: async ({ canvas }) => {
+    await expect(await canvas.findByText('Signed in with GitHub')).toBeVisible();
+    await expect(canvas.queryByText('Signed in with email')).toBeNull();
+  },
+});
+
+export const ExtraEnterThenBlurSavesOnce = meta.story({
+  name: 'Enter then blur saves the name once',
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    let finish: () => void = () => {};
+    const update = api.account.update.bind(api.account);
+    const updates: unknown[] = [];
+    api.account.update = (patch) => {
+      updates.push(patch);
+      return new Promise((resolve) => {
+        finish = () => resolve(update(patch));
+      });
+    };
+    const name = canvas.getByRole('textbox', { name: 'Display name' });
+    await waitFor(() => expect(name).toHaveValue('Ferry DM'));
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Мастер переправы{Enter}');
+    name.blur();
+    await expect(updates).toEqual([{ displayName: 'Мастер переправы' }]);
+    finish();
+    await waitFor(() => expect(name).toHaveValue('Мастер переправы'));
+    await expect(updates).toHaveLength(1);
+  },
+});
+
+export const ExtraEmptyNameWhileTyping = meta.story({
+  name: 'An emptied name shows no error while the field has focus',
+  play: async ({ canvas }) => {
+    const name = canvas.getByRole('textbox', { name: 'Display name' });
+    await waitFor(() => expect(name).toHaveValue('Ferry DM'));
+    await userEvent.clear(name);
+    await expect(name).toHaveFocus();
+    await expect(canvas.queryByText('Enter a display name')).toBeNull();
   },
 });
