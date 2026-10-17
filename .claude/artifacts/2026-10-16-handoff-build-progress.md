@@ -92,7 +92,7 @@
 | 3-server-rest | guarded `.claude/artifacts/guard/3-server-rest.md` (P2 ×2 → `fix-3`) | auth, presets, tags, settings, account |
 | 4-web | handed back 5/5 (report `.claude/artifacts/reports/4-web.md`), rebased on f43b706, gate + e2e running `.claude/run/4-web/` | router, providers, player identity, drawer, smoke e2e |
 | 5-e2e | todo | auth, combat lifecycle, player, library, account |
-| fix-4-overlays | merged 1e3fcd1..130f90d (gate `.claude/run/fix-4-overlays/` green), guard-bee running |  Sheet, Menu, Dialog, Drawer, CombatHeader |
+| fix-4-overlays | guarded `.claude/artifacts/guard/fix-4-overlays.md` (P2 ×1 → `5-e2e`) |  Sheet, Menu, Dialog, Drawer, CombatHeader |
 | fix-4 | running worker-bee ac057a5 2026-10-17T15:52+03:00 (Opus 5.5 xhigh, parallel with `4-web`, disjoint paths) | |
 | 6-docker | todo | Dockerfile, compose, README |
 
@@ -672,6 +672,12 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-4-overlays → `5-e2e`: P2 — no test opens and closes a Sheet and then
+  clicks beneath it (Sheet.stories.tsx:571-582 covers only a Sheet never
+  opened). A `5-e2e` scenario opens and closes a sheet (Sort on `/combats`),
+  then clicks New combat; Playwright's hit-test guards the exit wiring
+  (Sheet.tsx:66).
 
 - fix-2.4 → `fix-4`:
   - P2 CombatScreen.tsx:174-181 / hooks/combat.ts:162-185: a failed
