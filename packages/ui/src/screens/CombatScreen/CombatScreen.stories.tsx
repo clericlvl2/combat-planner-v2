@@ -1025,6 +1025,36 @@ export const ExtraRemoveUndone = meta.story({
   },
 });
 
+export const ExtraRemoveUndoAfterNextTurn = meta.story({
+  name: 'Extra: Undo in the removal toast after Next turn changes nothing',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const before = await api.combats.get(COMBAT_ID);
+    const menu = await openRowMenu(canvas, canvasElement, names.orc);
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Remove' }));
+    const dialog = await canvas.findByRole('alertdialog', { name: 'Remove Orc Berserker?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Remove' }));
+    await expect(await canvas.findByText('Orc Berserker removed')).toBeVisible();
+    await waitFor(() => expect(orderOf(canvasElement, rosterOrder)).not.toContain(names.orc));
+    await userEvent.click(await nextTurnButton(canvas));
+    await waitFor(async () =>
+      expect((await api.combats.get(COMBAT_ID)).version).toBe(before.version + 2),
+    );
+    const turned = await api.combats.get(COMBAT_ID);
+    await userEvent.click(canvas.getByRole('button', { name: 'Undo' }));
+    await expect(await canvas.findByText('The combat changed. Try again.')).toBeVisible();
+    await expect(canvas.queryByText(/^Undid:/)).toBeNull();
+    const after = await api.combats.get(COMBAT_ID);
+    await expect(after.version).toBe(turned.version);
+    await expect(after.activeUnitId).toBe(turned.activeUnitId);
+    await expect(after.units.map((unit) => unit.id)).not.toContain(unitIds.orc);
+    await expect(orderOf(canvasElement, rosterOrder)).not.toContain(names.orc);
+    const [removal, nextTurn, undo] = dispatched(api);
+    await expect(nextTurn).toMatchObject({ type: 'nextTurn', version: removal!.version + 1 });
+    await expect(undo).toMatchObject({ type: 'undo', version: removal!.version + 1 });
+  },
+});
+
 export const ExtraRevokeConfirmed = meta.story({
   name: 'Extra: Revoke reissues the link after confirm',
   play: async ({ canvas, loaded }) => {

@@ -72,6 +72,16 @@ export interface CombatScreenProps {
 
 type ActionBody<A extends Action = Action> = A extends Action ? Omit<A, 'id' | 'version'> : never;
 
+interface Sent {
+  action: Action;
+  version: number;
+}
+
+interface PinnedUndo {
+  summary: UndoSummary;
+  version: number;
+}
+
 type RowPanel = 'initiative' | 'menu' | 'conditions' | 'history' | 'numpad';
 
 interface Panel {
@@ -161,15 +171,19 @@ export function CombatScreen({
   const latest = (): DmCombat | undefined =>
     queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document ?? combat;
 
-  const sendNow = async (body: ActionBody, release: () => void): Promise<Action | null> => {
+  const sendNow = async (
+    body: ActionBody,
+    release: () => void,
+    pinnedVersion?: number,
+  ): Promise<Sent | null> => {
     const before = latest();
     if (before === undefined) return null;
-    const version = Math.max(before.version, knownVersion.current);
+    const version = pinnedVersion ?? Math.max(before.version, knownVersion.current);
     const action = { ...body, id: ulid(), version } as Action;
     const result = await dispatch(action, release);
     if (!result.applied) return null;
     knownVersion.current = Math.max(knownVersion.current, result.version);
-    return action;
+    return { action, version: result.version };
   };
 
   const enqueue = <T,>(run: (release: () => void) => Promise<T>): Promise<T> => {
@@ -183,7 +197,7 @@ export function CombatScreen({
     return next;
   };
 
-  const send = (body: ActionBody): Promise<Action | null> =>
+  const send = (body: ActionBody): Promise<Sent | null> =>
     enqueue((release) => sendNow(body, release));
 
   const notify = (message: string, kind: ToastKind, action?: ToastAction) => {
@@ -204,12 +218,12 @@ export function CombatScreen({
     });
   };
 
-  const undo = (own?: UndoSummary) =>
+  const undo = (pinned?: PinnedUndo) =>
     enqueue(async (release) => {
-      const summary = own ?? latest()?.undo;
+      const summary = pinned?.summary ?? latest()?.undo;
       if (!summary) return;
       const message = undoMessage(summary);
-      const undone = await sendNow({ type: 'undo' }, release);
+      const undone = await sendNow({ type: 'undo' }, release, pinned?.version);
       if (undone && message !== null) notify(message, 'neutral');
     });
 
@@ -329,7 +343,10 @@ export function CombatScreen({
     notify(tToast('unitRemoved', { name: unit.name }), 'neutral', {
       label: tToast('undo'),
       onAction: () => {
-        void undo({ action: removal, unitName: unit.name });
+        void undo({
+          summary: { action: removal.action, unitName: unit.name },
+          version: removal.version,
+        });
       },
     });
   };
