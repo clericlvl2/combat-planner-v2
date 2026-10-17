@@ -1,7 +1,12 @@
 import preview from '#.storybook/preview';
+import type { ApiErrorCode } from '@combat-planner/api/client';
+import { useState } from 'react';
+import type { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { useApi } from '../../api/ApiProvider.tsx';
+import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { COMBAT_SORT_KEY, CombatList } from './CombatList.tsx';
 import {
@@ -19,6 +24,15 @@ const ambush = listCombats[0]!;
 function LocationProbe() {
   const { pathname } = useLocation();
   return <span hidden data-location={pathname} />;
+}
+
+function FailFirstCall({ code, children }: { code: ApiErrorCode; children: ReactNode }) {
+  const api = useApi();
+  useState(() => {
+    if (api instanceof FakeApiClient) api.failNext(code);
+    return code;
+  });
+  return children;
 }
 
 const locationOf = (canvasElement: HTMLElement): string | null | undefined =>
@@ -149,8 +163,8 @@ export const CLF14 = meta.story({
       'Капитан стражи переправы: засада у моста',
       'Bandits on the Old Road',
     ]);
-    await expect(canvas.getByText('11 units · Today')).toBeVisible();
-    await expect(canvas.getByText('6 units · Yesterday')).toBeVisible();
+    await expect(canvas.getByText('Round 7 · 11 units · Today')).toBeVisible();
+    await expect(canvas.getByText('Round 3 · 6 units · Yesterday')).toBeVisible();
     await expect(canvas.getAllByText('0 units · Never played')).toHaveLength(1);
   },
 });
@@ -486,5 +500,80 @@ export const ExtraRussian = meta.story({
   play: async ({ canvas }) => {
     await expect(await canvas.findByRole('heading', { name: 'Сражения' })).toBeVisible();
     await expect(await canvas.findByText('Капитан стражи переправы: засада у моста')).toBeVisible();
+  },
+});
+
+export const ExtraFirstLoadFails = meta.story({
+  name: 'A failed first load shows Can’t reach the server with Try again',
+  render: (args) => (
+    <FailFirstCall code="network">
+      <CombatList {...args} />
+      <LocationProbe />
+    </FailFirstCall>
+  ),
+  play: async ({ canvas, loaded }) => {
+    await userEvent.click(await canvas.findByRole('button', { name: 'Try again' }));
+    await canvas.findByRole('button', { name: `${detailsPrefix}${ambush.title}` });
+    await expect(
+      fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.list'),
+    ).toHaveLength(2);
+  },
+});
+
+export const ExtraSignedOut = meta.story({
+  name: 'An unauthorized first load goes to sign-in',
+  render: (args) => (
+    <FailFirstCall code="unauthorized">
+      <CombatList {...args} />
+      <LocationProbe />
+    </FailFirstCall>
+  ),
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(locationOf(canvasElement)).toBe('/auth/sign-in'));
+  },
+});
+
+export const ExtraCreateRetry = meta.story({
+  name: 'Create is disabled in flight; Retry creates once with the same id and opens the combat',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    await openCreate(canvas);
+    await fillCreate(canvas);
+    api.failNext('network');
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await expect(await canvas.findByRole('button', { name: 'Create' })).toBeDisabled();
+    await userEvent.click(await canvas.findByRole('button', { name: 'Retry' }));
+    const created = api.calls.filter((call) => call.method === 'combats.create');
+    await expect(created).toHaveLength(2);
+    const [first] = created[0]!.args as [{ id: string }];
+    const [second] = created[1]!.args as [{ id: string }];
+    await expect(second.id).toBe(first.id);
+    await waitFor(() => expect(locationOf(canvasElement)).toBe(`/combats/${first.id}`));
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+  },
+});
+
+export const ExtraDuplicateAtLimit = meta.story({
+  name: 'Duplicate is disabled at the combat limit',
+  parameters: { scenario: fullScenario },
+  play: async ({ canvas, loaded }) => {
+    await expand(canvas, 'Encounter 1');
+    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    await expect(duplicate).toBeDisabled();
+    await userEvent.click(duplicate, { pointerEventsCheck: 0 });
+    await expect(
+      fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.duplicate'),
+    ).toHaveLength(0);
+  },
+});
+
+export const ExtraKindIcons = meta.story({
+  name: 'Toast icons follow the toast kind',
+  play: async ({ canvas }) => {
+    await openMenu(canvas);
+    await userEvent.click(canvas.getByRole('menuitem', { name: 'Duplicate' }));
+    const toast = await canvas.findByRole('status');
+    await expect(toast.querySelector('.tabler-icon-check')).not.toBeNull();
   },
 });

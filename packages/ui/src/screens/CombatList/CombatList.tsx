@@ -1,18 +1,15 @@
 import type { CombatSummary } from '@combat-planner/api/client';
 import { LIMITS } from '@combat-planner/domain';
 import type { CombatId } from '@combat-planner/domain';
+import { ApiError } from '@combat-planner/api/client';
 import {
-  IconAlertTriangle,
-  IconCopy,
   IconPlus,
   IconSearchOff,
   IconSortDescending,
   IconSwords,
   IconTrash,
-  IconWifiOff,
 } from '@tabler/icons-react';
-import type { Icon } from '@tabler/icons-react';
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { ulid } from 'ulid';
@@ -20,10 +17,8 @@ import type { CombatColor } from '../../atoms/Swatch/Swatch.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombatList } from '../../hooks/useCombatList.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
-import type { ToastItem } from '../../hooks/toasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
-import type { ToastTone } from '../../molecules/Toast/Toast.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { CombatCard } from '../../organisms/CombatCard/CombatCard.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
@@ -32,6 +27,8 @@ import type { DrawerSection } from '../../organisms/Drawer/Drawer.tsx';
 import { PageHeader } from '../../organisms/PageHeader/PageHeader.tsx';
 import { SortSheet, combatSorts } from '../../organisms/SortSheet/SortSheet.tsx';
 import type { CombatSort } from '../../organisms/SortSheet/SortSheet.tsx';
+import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
+import { toastLook } from '../shared/toastLook.ts';
 import { CombatFormSheet, emptyCombatForm } from './CombatFormSheet/CombatFormSheet.tsx';
 import type { CombatFormValue } from './CombatFormSheet/CombatFormSheet.tsx';
 import classes from './CombatList.module.css';
@@ -44,16 +41,7 @@ const SORT_TOOL = 'sort';
 
 const dayMs = 24 * 60 * 60 * 1000;
 
-type ToastKind = 'duplicated' | 'deleted';
-
-const toastLooks: Record<ToastKind | 'failed' | 'other', { icon: Icon; tone: ToastTone }> = {
-  duplicated: { icon: IconCopy, tone: 'success' },
-  deleted: { icon: IconTrash, tone: 'neutral' },
-  failed: { icon: IconWifiOff, tone: 'error' },
-  other: { icon: IconAlertTriangle, tone: 'warning' },
-};
-
-type Form = { mode: 'create' } | { mode: 'edit'; id: CombatId };
+type Form = { mode: 'create'; id: CombatId } | { mode: 'edit'; id: CombatId };
 
 export interface CombatListProps {
   now?: number;
@@ -120,9 +108,8 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   const { t: tEmpty } = useTranslation('EmptyState');
   const { t: tBar } = useTranslation('BottomBar');
   const { t: tDialog } = useTranslation('Dialog');
-  const { t: tToast } = useTranslation('Toast');
   const navigate = useNavigate();
-  const { combats, create, update, duplicate, remove } = useCombatList();
+  const { combats, error, refetch, create, update, duplicate, remove } = useCombatList();
   const { session } = useAccount();
   const { toasts, dismiss } = useToasts();
   const [query, setQuery] = useState('');
@@ -132,9 +119,15 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   const [expandedId, setExpandedId] = useState<CombatId | null>(null);
   const [menuId, setMenuId] = useState<CombatId | null>(null);
   const [form, setForm] = useState<Form | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
+  const [pending, setPending] = useState(false);
   const [deleteId, setDeleteId] = useState<CombatId | null>(null);
-  const toastKinds = useRef(new Map<string, ToastKind>());
+  const signedOut = error instanceof ApiError && error.code === 'unauthorized';
+
+  useEffect(() => {
+    if (signedOut) void navigate('/auth/sign-in');
+  }, [signedOut, navigate]);
 
   const locale = i18n.language;
   const all = combats ?? [];
@@ -148,6 +141,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   const openForm = (next: Form) => {
     setFormKey((key) => key + 1);
     setForm(next);
+    setFormOpen(true);
   };
 
   const changeSort = (next: CombatSort) => {
@@ -155,24 +149,22 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
     writeCombatSort(next);
   };
 
-  const rememberToast = (kind: ToastKind, title: string) => {
-    toastKinds.current.set(tToast(kind, { title }), kind);
-  };
-
   const submit = async (value: CombatFormValue) => {
-    if (form === null) return;
+    if (form === null || pending) return;
+    setPending(true);
     try {
       if (form.mode === 'create') {
-        const id = ulid();
-        await create({ id, ...value });
-        setForm(null);
-        void navigate(`/combats/${id}`);
+        await create({ id: form.id, ...value });
+        setFormOpen(false);
+        void navigate(`/combats/${form.id}`);
       } else {
         await update(form.id, value);
-        setForm(null);
+        setFormOpen(false);
       }
     } catch {
       return;
+    } finally {
+      setPending(false);
     }
   };
 
@@ -183,7 +175,6 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
       return;
     }
     setExpandedId(null);
-    rememberToast('duplicated', combat.title);
     duplicate(combat.id, ulid()).catch(() => {});
   };
 
@@ -191,7 +182,6 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
     if (deleting === undefined) return;
     setDeleteId(null);
     setExpandedId(null);
-    rememberToast('deleted', deleting.title);
     remove(deleting.id).catch(() => {});
   };
 
@@ -199,12 +189,12 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
     void navigate(`/${section}`);
   };
 
-  const lookOf = (toast: ToastItem) => {
-    if (toast.action) return toastLooks.failed;
-    return toastLooks[toastKinds.current.get(toast.message) ?? 'other'];
-  };
-
   const toast = toasts[0];
+
+  if (combats === undefined && error !== null) {
+    if (signedOut) return null;
+    return <CantReachServer onRetry={() => void refetch()} />;
+  }
 
   return (
     <div className={classes.root}>
@@ -236,11 +226,12 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
             description={combat.description}
             color={combat.color}
             status={combat.status}
-            round={null}
+            round={combat.round}
             units={combat.unitCount}
             lastPlayedDays={sort === 'lastPlayed' ? daysSince(now, combat.lastPlayedAt) : undefined}
             expanded={expandedId === combat.id}
             menuOpen={menuId === combat.id}
+            duplicateDisabled={atLimit}
             onOpen={() => navigate(`/combats/${combat.id}`)}
             onToggle={() => {
               setMenuId(null);
@@ -272,12 +263,12 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
         icon={IconPlus}
         disabled={!loaded || atLimit}
         hint={atLimit ? tBar('combatLimitReached') : undefined}
-        onClick={() => openForm({ mode: 'create' })}
+        onClick={() => openForm({ mode: 'create', id: ulid() })}
       />
       {toast ? (
         <Toast
           key={toast.id}
-          {...lookOf(toast)}
+          {...toastLook(toast.kind)}
           message={toast.message}
           action={toast.action}
           duration={toast.duration}
@@ -294,7 +285,8 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
       {form !== null ? (
         <CombatFormSheet
           key={formKey}
-          opened
+          opened={formOpen}
+          pending={pending}
           mode={form.mode}
           value={
             editing
@@ -308,7 +300,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
           onSubmit={(value) => {
             submit(value).catch(() => {});
           }}
-          onClose={() => setForm(null)}
+          onClose={() => setFormOpen(false)}
         />
       ) : null}
       <Dialog
