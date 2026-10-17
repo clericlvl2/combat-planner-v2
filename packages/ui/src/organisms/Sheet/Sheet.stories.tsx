@@ -27,6 +27,7 @@ interface SheetCellProps {
   back?: boolean;
   opened?: boolean;
   withOpener?: boolean;
+  header?: boolean;
   actionsAs?: 'list' | 'fragment' | 'none';
   onClose?: () => void;
   onBack?: () => void;
@@ -145,6 +146,7 @@ function SheetCell({
   back = false,
   opened: initiallyOpened = true,
   withOpener = false,
+  header = false,
   actionsAs = 'list',
   onClose,
   onBack,
@@ -186,13 +188,20 @@ function SheetCell({
       {withOpener ? (
         <div style={{ padding: 'calc(var(--cp-layout-status-bar) + 12px) 12px 12px' }}>
           <Button variant="secondary" size="S" onClick={() => setOpened(true)}>
-            {t('opener')}
+            Sort
           </Button>
         </div>
       ) : null}
       <Sheet
         opened={opened}
         title={title ?? t('sortCombats')}
+        header={
+          header ? (
+            <span data-testid="custom-header" style={{ fontWeight: 700 }}>
+              {title ?? t('sortCombats')}
+            </span>
+          ) : undefined
+        }
         subtitle={subtitle}
         onBack={back ? onBack : undefined}
         onClose={() => {
@@ -355,6 +364,31 @@ export const ExtraFocus = meta.story({
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     await waitFor(() => expect(opener).toHaveFocus());
+  },
+});
+
+export const ExtraMotionOnFocus = meta.story({
+  name: 'Motion on: opening from closed focuses the section',
+  args: { opened: false, withOpener: true },
+  parameters: { motion: 'on' },
+  play: async ({ canvas }) => {
+    await expect(document.documentElement.dataset.motion).toBe('on');
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+    const sheet = await canvas.findByRole('dialog', { name: 'Sort combats' });
+    await waitFor(() => expect(sheet).toHaveFocus());
+    await userEvent.tab({ shift: true });
+    await expect(canvas.getByRole('button', { name: 'Done' })).toHaveFocus();
+  },
+});
+
+export const ExtraHeaderSlot = meta.story({
+  name: 'A header slot replaces the title',
+  args: { header: true },
+  play: async ({ canvas }) => {
+    const sheet = canvas.getByRole('dialog', { name: 'Sort combats' });
+    await expect(canvas.getByTestId('custom-header')).toBeVisible();
+    await expect(canvas.queryByRole('heading')).toBeNull();
+    await expect(sheet).toContainElement(canvas.getByRole('button', { name: 'Close' }));
   },
 });
 

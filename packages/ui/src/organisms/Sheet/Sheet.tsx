@@ -8,6 +8,7 @@ import classes from './Sheet.module.css';
 
 export interface SheetProps {
   title: string;
+  header?: ReactNode;
   subtitle?: string;
   onBack?: () => void;
   onClose: () => void;
@@ -26,10 +27,20 @@ function flattenActions(node: ReactNode): ReactNode[] {
   );
 }
 
-export function Sheet({ title, subtitle, onBack, onClose, children, actions, opened }: SheetProps) {
+export function Sheet({
+  title,
+  header,
+  subtitle,
+  onBack,
+  onClose,
+  children,
+  actions,
+  opened,
+}: SheetProps) {
   const { t } = useTranslation('Sheet');
   const actionList = flattenActions(actions);
   const sheetRef = useRef<HTMLDivElement>(null);
+  const focusSection = () => sheetRef.current?.focus({ preventScroll: true });
 
   useEffect(() => {
     if (!opened) return;
@@ -40,6 +51,7 @@ export function Sheet({ title, subtitle, onBack, onClose, children, actions, ope
     <Modal.Root
       opened={opened}
       onClose={onClose}
+      onEnterTransitionEnd={focusSection}
       withinPortal={false}
       classNames={{
         root: classes.root,
@@ -51,7 +63,7 @@ export function Sheet({ title, subtitle, onBack, onClose, children, actions, ope
       }}
     >
       <Modal.Overlay data-scrim="" />
-      <Modal.Content ref={sheetRef}>
+      <Modal.Content ref={sheetRef} aria-label={header === undefined ? undefined : title}>
         <div className={classes.header}>
           {onBack ? (
             <IconButton
@@ -61,10 +73,14 @@ export function Sheet({ title, subtitle, onBack, onClose, children, actions, ope
               onClick={onBack}
             />
           ) : null}
-          <div className={classes.heading}>
-            <Modal.Title>{title}</Modal.Title>
-            {subtitle ? <Modal.Body>{subtitle}</Modal.Body> : null}
-          </div>
+          {header === undefined ? (
+            <div className={classes.heading}>
+              <Modal.Title>{title}</Modal.Title>
+              {subtitle ? <Modal.Body>{subtitle}</Modal.Body> : null}
+            </div>
+          ) : (
+            <div className={classes.custom}>{header}</div>
+          )}
           <IconButton icon={IconX} variant="outline" aria-label={t('close')} onClick={onClose} />
         </div>
         <div className={classes.content} data-sheet-content="">
