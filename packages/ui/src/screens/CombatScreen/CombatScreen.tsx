@@ -161,23 +161,30 @@ export function CombatScreen({
   const latest = (): DmCombat | undefined =>
     queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document ?? combat;
 
-  const sendNow = async (body: ActionBody): Promise<boolean> => {
+  const sendNow = async (body: ActionBody, release: () => void): Promise<Action | null> => {
     const before = latest();
-    if (before === undefined) return false;
+    if (before === undefined) return null;
     const version = Math.max(before.version, knownVersion.current);
-    const result = await dispatch({ ...body, id: ulid(), version } as Action);
-    if (!result.applied) return false;
+    const action = { ...body, id: ulid(), version } as Action;
+    const result = await dispatch(action, release);
+    if (!result.applied) return null;
     knownVersion.current = Math.max(knownVersion.current, result.version);
-    return true;
+    return action;
   };
 
-  const enqueue = <T,>(run: () => Promise<T>): Promise<T> => {
-    const next = queue.current.then(run, run);
-    queue.current = next.catch(() => {});
+  const enqueue = <T,>(run: (release: () => void) => Promise<T>): Promise<T> => {
+    let release = () => {};
+    const released = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const step = () => run(release);
+    const next = queue.current.then(step, step);
+    queue.current = Promise.race([next, released]).catch(() => {});
     return next;
   };
 
-  const send = (body: ActionBody): Promise<boolean> => enqueue(() => sendNow(body));
+  const send = (body: ActionBody): Promise<Action | null> =>
+    enqueue((release) => sendNow(body, release));
 
   const notify = (message: string, kind: ToastKind, action?: ToastAction) => {
     showToast({ message, kind, action });
@@ -197,13 +204,13 @@ export function CombatScreen({
     });
   };
 
-  const undo = () =>
-    enqueue(async () => {
-      const summary = latest()?.undo;
+  const undo = (own?: UndoSummary) =>
+    enqueue(async (release) => {
+      const summary = own ?? latest()?.undo;
       if (!summary) return;
       const message = undoMessage(summary);
-      const ok = await sendNow({ type: 'undo' });
-      if (ok && message !== null) notify(message, 'neutral');
+      const undone = await sendNow({ type: 'undo' }, release);
+      if (undone && message !== null) notify(message, 'neutral');
     });
 
   const close = () => setOpen(null);
@@ -268,19 +275,15 @@ export function CombatScreen({
 
   const applyHp = async (unit: Unit, kind: HpHistoryKind, amount: number) => {
     close();
-    const ok = await send({ type: hpActionTypes[kind], unitId: unit.id, amount });
-    if (ok) flashUnit(unit.id);
+    const applied = await send({ type: hpActionTypes[kind], unitId: unit.id, amount });
+    if (applied) flashUnit(unit.id);
   };
 
   const duplicate = async (unit: Unit) => {
     close();
-    if (atCap) {
-      capToast();
-      return;
-    }
     const newUnitId = ulid();
-    const ok = await send({ type: 'duplicateUnit', unitId: unit.id, newUnitId });
-    if (ok) flashUnit(newUnitId);
+    const applied = await send({ type: 'duplicateUnit', unitId: unit.id, newUnitId });
+    if (applied) flashUnit(newUnitId);
   };
 
   const saveAsPreset = (unit: Unit) => {
@@ -321,12 +324,12 @@ export function CombatScreen({
 
   const removeUnit = async (unit: Unit) => {
     setExpandedId(null);
-    const ok = await send({ type: 'removeUnit', unitId: unit.id });
-    if (!ok) return;
+    const removal = await send({ type: 'removeUnit', unitId: unit.id });
+    if (!removal) return;
     notify(tToast('unitRemoved', { name: unit.name }), 'neutral', {
       label: tToast('undo'),
       onAction: () => {
-        void undo();
+        void undo({ action: removal, unitName: unit.name });
       },
     });
   };
@@ -445,6 +448,7 @@ export function CombatScreen({
             conditionsOpen={isOpen('conditions', unit)}
             historyOpen={isOpen('history', unit)}
             menuOpen={isOpen('menu', unit)}
+            duplicateDisabled={atCap}
             random={random}
             onToggle={() => {
               close();

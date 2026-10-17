@@ -177,6 +177,40 @@ const releaseOf = (loaded: Record<string, unknown>): (() => void) => {
   return release as () => void;
 };
 
+const heldDocumentsLoader: Loader = ({ parameters }) => {
+  const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+  const subscribe = api.combats.subscribe.bind(api.combats);
+  const held: Array<() => void> = [];
+  let holding = false;
+  api.combats.subscribe = (id, onDocument, onEnd) =>
+    subscribe(
+      id,
+      (document) => {
+        if (holding) held.push(() => onDocument(document));
+        else onDocument(document);
+      },
+      onEnd,
+    );
+  return {
+    api,
+    hold: () => {
+      holding = true;
+    },
+    release: () => {
+      holding = false;
+      for (const deliver of held.splice(0)) deliver();
+    },
+  };
+};
+
+const heldDocumentsOf = (loaded: Record<string, unknown>) => {
+  const { hold, release } = loaded;
+  if (typeof hold !== 'function' || typeof release !== 'function') {
+    throw new Error('heldDocumentsLoader is missing');
+  }
+  return { hold: hold as () => void, release: release as () => void };
+};
+
 const setupRolls = [19, 17, 12, 12, 7];
 
 const meta = preview.meta({
@@ -1112,6 +1146,106 @@ export const ExtraRapidTaps = meta.story({
     );
     await expect(within(sheet).getByRole('checkbox', { name: 'weakened' })).toBeChecked();
     await expect(canvas.queryByText('The combat changed. Try again.')).toBeNull();
+  },
+});
+
+export const ExtraTapWhileFailureToast = meta.story({
+  name: 'Extra: a tap while a failure toast is up runs at once',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
+    await typeAmount(sheet, '8');
+    api.failNext('network');
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Damage' }));
+    const failure = await canvas.findByText('Couldn’t reach the server. Nothing changed.');
+    await userEvent.click(await nextTurnButton(canvas));
+    await waitFor(async () =>
+      expect(await rowOf(canvasElement, names.tomas)).toHaveAttribute('data-active'),
+    );
+    await expect(failure).toBeVisible();
+    const [damage, nextTurn] = dispatched(api);
+    await expect(nextTurn).toMatchObject({ type: 'nextTurn', version: damage!.version });
+    await userEvent.click(canvas.getByRole('button', { name: 'Retry' }));
+    await expect(await canvas.findByText('The combat changed. Try again.')).toBeVisible();
+    await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
+    await expect(dispatched(api).map((action) => action.id)).toEqual([
+      damage!.id,
+      nextTurn!.id,
+      damage!.id,
+    ]);
+  },
+});
+
+export const ExtraDoubleNextTurnAfterFailure = meta.story({
+  name: 'Extra: a double Next turn after a failure skips no turn',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    api.failNext('network');
+    await userEvent.click(await nextTurnButton(canvas));
+    await expect(await canvas.findByRole('button', { name: 'Retry' })).toBeVisible();
+    await expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-active');
+    await userEvent.click(await nextTurnButton(canvas));
+    await waitFor(async () =>
+      expect(await rowOf(canvasElement, names.tomas)).toHaveAttribute('data-active'),
+    );
+    await userEvent.click(await nextTurnButton(canvas));
+    await waitFor(async () =>
+      expect(await rowOf(canvasElement, names.aldric)).toHaveAttribute('data-active'),
+    );
+    await expect(canvas.getByRole('button', { name: 'Edit round, round 4' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Retry' }));
+    await expect(await canvas.findByText('The combat changed. Try again.')).toBeVisible();
+    await expect(await rowOf(canvasElement, names.aldric)).toHaveAttribute('data-active');
+    await expect(await nextTurnButton(canvas)).toHaveTextContent(names.orc);
+    const sent = dispatched(api);
+    const first = sent[0]!.version;
+    await expect(sent.map((action) => [action.type, action.version])).toEqual([
+      ['nextTurn', first],
+      ['nextTurn', first],
+      ['nextTurn', first + 1],
+      ['nextTurn', first],
+    ]);
+    await expect(sent[3]!.id).toBe(sent[0]!.id);
+  },
+});
+
+export const ExtraUndoRemovalBeforeDocument = meta.story({
+  name: 'Extra: Undo in the removal toast before the document arrives',
+  loaders: [heldDocumentsLoader],
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const documents = heldDocumentsOf(loaded);
+    await hpOf(canvasElement, names.orc, /^14 \/40/);
+    documents.hold();
+    const menu = await openRowMenu(canvas, canvasElement, names.orc);
+    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Remove' }));
+    const dialog = await canvas.findByRole('alertdialog', { name: 'Remove Orc Berserker?' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Remove' }));
+    await expect(await canvas.findByText('Orc Berserker removed')).toBeVisible();
+    await expect(await rowOf(canvasElement, names.orc)).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Undo' }));
+    await expect(await canvas.findByText('Undid: Orc Berserker removed')).toBeVisible();
+    const [removal, undo] = dispatched(fakeApiOf(loaded));
+    await expect(removal).toMatchObject({ type: 'removeUnit', unitId: unitIds.orc });
+    await expect(undo).toMatchObject({ type: 'undo', version: removal!.version + 1 });
+    documents.release();
+    await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
+  },
+});
+
+export const ExtraDuplicateAtLimit = meta.story({
+  name: 'Extra: Duplicate disabled at the 99-unit limit',
+  parameters: { scenario: longScenario(99) },
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const menu = await openRowMenu(
+      canvas,
+      canvasElement,
+      'Flussbrückenwächterin Adelheid von Stein',
+    );
+    const duplicate = within(menu).getByRole('menuitem', { name: 'Duplicate' });
+    await expect(duplicate).toBeDisabled();
+    await userEvent.click(duplicate, { pointerEventsCheck: 0 });
+    await expect(canvas.queryByText('This combat already has 99 units')).toBeNull();
+    await expect(dispatched(fakeApiOf(loaded))).toEqual([]);
   },
 });
 
