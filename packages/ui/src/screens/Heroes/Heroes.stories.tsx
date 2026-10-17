@@ -10,6 +10,7 @@ import {
   COMBAT_ID,
   MIKA,
   TOKEN,
+  actAsDm,
   claimAs,
   ferryCombat,
   playerScenario,
@@ -96,7 +97,7 @@ export const PickAndJoin = meta.story({
         }),
       ]),
     );
-    await expect(canvasElement.querySelector('[data-done]')).not.toBeNull();
+    await waitFor(() => expect(canvasElement.querySelector('[data-done]')).not.toBeNull());
   },
 });
 
@@ -108,7 +109,12 @@ export const TakenWhileOpen = meta.story({
     await userEvent.click(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' }));
     await expect(canvas.getByRole('button', { name: 'Join' })).toBeEnabled();
     await claimAs(api, ALEX, 'Alex', unitIds.vashti);
-    await expect(await canvas.findByText('Vashti the Hexer was just taken')).toBeVisible();
+    const toast = await canvas.findByRole('status');
+    await expect(toast).toHaveTextContent('Vashti the Hexer was just taken');
+    const bar = canvas.getByRole('button', { name: 'Join' }).parentElement!;
+    await expect(
+      Math.round(bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom),
+    ).toBe(12);
     const vashti = canvas.getByRole('checkbox', { name: 'Vashti the Hexer' });
     await expect(vashti).toBeDisabled();
     await expect(vashti).not.toBeChecked();
@@ -139,5 +145,68 @@ export const Returning = meta.story({
       expect.objectContaining({ type: 'claimUnit', unitId: unitIds.ilse, displayName: 'Mika' }),
     ]);
     await expect(canvas.getByRole('button', { name: 'Done' })).toBeEnabled();
+  },
+});
+
+export const ExtraJoinFails = meta.story({
+  name: 'Join stays on Heroes when a claim fails',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    await userEvent.type(await canvas.findByRole('textbox', { name: 'Your name' }), 'Mika');
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Ilse the Bold' }));
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' }));
+    api.failNext('version');
+    await userEvent.click(canvas.getByRole('button', { name: 'Join' }));
+    await expect(await canvas.findByRole('status')).toBeVisible();
+    await expect(sentBy(api, MIKA)).toEqual([
+      expect.objectContaining({ type: 'claimUnit', unitId: unitIds.vashti }),
+    ]);
+    await expect(canvasElement.querySelector('[data-done]')).toBeNull();
+    await expect(canvas.getByRole('button', { name: 'Join' })).toBeVisible();
+  },
+});
+
+export const ExtraJoinClaimsOnReturnedVersion = meta.story({
+  name: 'Join claims each hero on the version the previous claim returned',
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const dispatch = api.play.dispatch.bind(api.play);
+    api.play.dispatch = async (token, playerId, action) => {
+      const result = await dispatch(token, playerId, action);
+      if (action.type === 'claimUnit' && action.unitId === unitIds.vashti) {
+        await actAsDm(api, { type: 'editNote', unitId: unitIds.orc, note: 'Ярость' });
+        return { version: result.version + 1 };
+      }
+      return result;
+    };
+    await userEvent.type(await canvas.findByRole('textbox', { name: 'Your name' }), 'Mika');
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Ilse the Bold' }));
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Join' }));
+    await waitFor(() => expect(canvasElement.querySelector('[data-done]')).not.toBeNull());
+    const [first, second] = sentBy(api, MIKA);
+    await expect(second).toEqual(
+      expect.objectContaining({ type: 'claimUnit', unitId: unitIds.ilse }),
+    );
+    await expect(second!.version).toBe(first!.version + 2);
+  },
+});
+
+export const ExtraReturningRename = meta.story({
+  name: 'Returning player renames and taps Done',
+  parameters: { scenario: playerScenario(ferryCombat({ status: 'setup', ilse: true })) },
+  play: async ({ canvas, canvasElement, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const name = await canvas.findByRole('textbox', { name: 'Your name' });
+    await waitFor(() => expect(name).toHaveValue('Mika'));
+    await userEvent.clear(name);
+    await userEvent.type(name, 'Мика');
+    await userEvent.click(canvas.getByRole('button', { name: 'Done' }));
+    await waitFor(() => expect(canvasElement.querySelector('[data-done]')).not.toBeNull());
+    await expect(sentBy(api, MIKA)).toEqual([
+      expect.objectContaining({ type: 'releaseUnit', unitId: unitIds.vashti }),
+      expect.objectContaining({ type: 'claimUnit', unitId: unitIds.vashti, displayName: 'Мика' }),
+    ]);
+    await expect(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' })).toBeChecked();
   },
 });

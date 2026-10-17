@@ -136,3 +136,16 @@
     color: var(--cp-role-hero);
   }
 }
+
+.footer {
+  position: relative;
+  flex: none;
+  margin-top: auto;
+}
+
+.toastAnchor {
+  position: absolute;
+  right: 0;
+  left: 0;
+  height: 0;
+}

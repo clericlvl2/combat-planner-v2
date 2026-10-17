@@ -2,6 +2,7 @@ import { LIMITS } from '@combat-planner/domain';
 import type { Action, PlayerCombat, PlayerId, PlayerUnit, UnitId } from '@combat-planner/domain';
 import { IconLock, IconLogin2, IconShield } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
 import { Checkbox } from '../../atoms/Checkbox/Checkbox.tsx';
@@ -9,6 +10,7 @@ import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.ts
 import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
+import { layout } from '../../layout.ts';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { PlayerHeader } from '../../organisms/PlayerHeader/PlayerHeader.tsx';
 import { PlayerToast, usePlayerToasts } from '../PlayerView/PlayerToast.tsx';
@@ -22,6 +24,10 @@ export interface HeroesProps {
   dispatch: (action: Action) => Promise<DispatchResult>;
   onDone: () => void;
 }
+
+const toastAnchor: CSSProperties = {
+  bottom: `calc(100% + ${layout.toast.aboveBar - layout.toast.withoutBar}px)`,
+};
 
 type HeroState = 'own' | 'chosen' | 'taken' | 'free';
 
@@ -39,6 +45,7 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
   const [nameTouched, setNameTouched] = useState(false);
   const [chosen, setChosen] = useState<ReadonlySet<UnitId>>(new Set());
   const previous = useRef(combat);
+  const submitting = useRef(false);
 
   const heroes = combat.units.filter((unit) => unit.role === 'hero');
   const claimerOf = (unit: PlayerUnit) => unit.claimedBy ?? null;
@@ -97,23 +104,54 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
     }
   };
 
-  const join = async (claimName: string, unitIds: readonly UnitId[]) => {
-    let version = combat.version;
+  const join = async (
+    claimName: string,
+    from: number,
+    unitIds: readonly UnitId[],
+  ): Promise<boolean> => {
+    let version = from;
     for (const unitId of unitIds) {
-      await dispatch({ id: ulid(), version, type: 'claimUnit', unitId, displayName: claimName });
-      version += 1;
+      const result = await dispatch({
+        id: ulid(),
+        version,
+        type: 'claimUnit',
+        unitId,
+        displayName: claimName,
+      });
+      if (!result.applied) return false;
+      version = result.version;
     }
+    return true;
+  };
+
+  const rename = async (claimName: string, unit: PlayerUnit): Promise<boolean> => {
+    const released = await dispatch({
+      id: ulid(),
+      version: combat.version,
+      type: 'releaseUnit',
+      unitId: unit.id,
+    });
+    if (!released.applied) return false;
+    return join(claimName, released.version, [unit.id]);
   };
 
   const submit = () => {
-    if (!ready || displayName === null) return;
-    if (!joined) {
-      void join(
-        displayName,
-        picked.filter((unit) => stateOf(unit) === 'chosen').map((unit) => unit.id),
-      );
-    }
-    onDone();
+    if (!ready || displayName === null || submitting.current) return;
+    const own = picked.find((unit) => stateOf(unit) === 'own');
+    const work = !joined
+      ? join(
+          displayName,
+          combat.version,
+          picked.filter((unit) => stateOf(unit) === 'chosen').map((unit) => unit.id),
+        )
+      : own && displayName !== storedName
+        ? rename(displayName, own)
+        : Promise.resolve(true);
+    submitting.current = true;
+    void work.then((done) => {
+      submitting.current = false;
+      if (done) onDone();
+    });
   };
 
   const subOf = (unit: PlayerUnit, state: HeroState): string => {
@@ -194,14 +232,18 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
           </div>
         </div>
       </div>
-      <BottomBar
-        label={joined ? t('done') : t('join')}
-        icon={IconLogin2}
-        disabled={!ready}
-        hint={ready ? undefined : t('hint')}
-        onClick={submit}
-      />
-      <PlayerToast aboveBottomBar />
+      <div className={classes.footer}>
+        <BottomBar
+          label={joined ? t('done') : t('join')}
+          icon={IconLogin2}
+          disabled={!ready}
+          hint={ready ? undefined : t('hint')}
+          onClick={submit}
+        />
+        <div className={classes.toastAnchor} style={toastAnchor}>
+          <PlayerToast aboveBottomBar={false} />
+        </div>
+      </div>
     </div>
   );
 }
