@@ -43,6 +43,37 @@ describe('toast stack', () => {
   });
 });
 
+describe('createToastStore clear', () => {
+  it('dismisses every toast, settles its onDismiss and starts a new generation', () => {
+    vi.useFakeTimers();
+    const store = createToastStore();
+    const dismissed = vi.fn();
+    store.show({ message: 'Couldn’t reach the server', action, onDismiss: dismissed }, 'on');
+    store.show({ message: 'Ссылка скопирована' }, 'on');
+    expect(store.generation()).toBe(0);
+    store.clear();
+    expect(store.toasts()).toEqual([]);
+    expect(dismissed).toHaveBeenCalledTimes(1);
+    expect(store.generation()).toBe(1);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('never runs the action of a toast that is no longer shown', () => {
+    const store = createToastStore();
+    const retry = vi.fn();
+    store.show(
+      { message: 'Couldn’t reach the server', action: { label: 'Retry', onAction: retry } },
+      'off',
+    );
+    const [shown] = store.toasts();
+    shown?.action?.onAction();
+    expect(retry).toHaveBeenCalledTimes(1);
+    store.clear();
+    shown?.action?.onAction();
+    expect(retry).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe('createToastStore', () => {
   it('auto-hides after 4 s and 8 s with an action, newest first', () => {
     vi.useFakeTimers();

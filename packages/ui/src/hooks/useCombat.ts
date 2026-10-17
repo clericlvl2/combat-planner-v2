@@ -1,5 +1,5 @@
 import type { ApiEndEvent, DmCombat, LinkToken, Locale } from '@combat-planner/api/client';
-import type { Action, CombatId, PlayerCombat } from '@combat-planner/domain';
+import type { CombatId, PlayerCombat } from '@combat-planner/domain';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useApi } from '../api/ApiProvider.tsx';
@@ -17,7 +17,7 @@ import {
 import type {
   CombatDocument,
   CombatSource,
-  DispatchResult,
+  Dispatch,
   DmViewer,
   PlayerViewer,
   SourceEnd,
@@ -30,7 +30,7 @@ export interface CombatState<Document extends CombatDocument> {
   status: 'pending' | 'error' | 'success';
   error: Error | null;
   ended: ApiEndEvent | null;
-  dispatch: (action: Action) => Promise<DispatchResult>;
+  dispatch: Dispatch;
   refetch: () => Promise<void>;
 }
 

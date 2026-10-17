@@ -148,13 +148,10 @@ export interface DispatcherOptions {
 
 const NOT_APPLIED: DispatchResult = { applied: false };
 
-export function createDispatcher({
-  send,
-  refetch,
-  show,
-  t,
-}: DispatcherOptions): (action: Action) => Promise<DispatchResult> {
-  const dispatch = async (action: Action): Promise<DispatchResult> => {
+export type Dispatch = (action: Action, onRetryShown?: () => void) => Promise<DispatchResult>;
+
+export function createDispatcher({ send, refetch, show, t }: DispatcherOptions): Dispatch {
+  const dispatch: Dispatch = async (action, onRetryShown) => {
     try {
       const { version } = await send(action);
       return { applied: true, version };
@@ -182,6 +179,7 @@ export function createDispatcher({
             if (!retried) resolve(NOT_APPLIED);
           },
         });
+        onRetryShown?.();
       });
     }
   };

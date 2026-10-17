@@ -1,5 +1,5 @@
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
-import { errorToast } from './toasts.ts';
+import { errorToast, toastStoreOf } from './toasts.ts';
 import type { ToastInput, Translate } from './toasts.ts';
 
 export interface MutationContext {
@@ -19,9 +19,13 @@ export function mutation<Args extends unknown[], Result>(
   context: MutationContext,
   { send, invalidate, clearCache = false, success }: MutationSpec<Args, Result>,
 ): (...args: Args) => Promise<Result> {
+  const toastStore = toastStoreOf(context.queryClient);
+
   const settle = async (result: Result, args: Args): Promise<Result> => {
-    if (clearCache) context.queryClient.clear();
-    else {
+    if (clearCache) {
+      context.queryClient.clear();
+      toastStore.clear();
+    } else {
       await Promise.all(
         invalidate.map((queryKey) => context.queryClient.invalidateQueries({ queryKey })),
       );
@@ -33,6 +37,7 @@ export function mutation<Args extends unknown[], Result>(
 
   return (...args: Args) =>
     new Promise<Result>((resolve, reject) => {
+      const generation = toastStore.generation();
       const attempt = () => {
         let sent: Promise<Result>;
         try {
@@ -43,6 +48,10 @@ export function mutation<Args extends unknown[], Result>(
         sent.then(
           (result) => settle(result, args).then(resolve, reject),
           (error: unknown) => {
+            if (toastStore.generation() !== generation) {
+              reject(error);
+              return;
+            }
             let retried = false;
             const toast = errorToast(error, context.t, () => {
               retried = true;

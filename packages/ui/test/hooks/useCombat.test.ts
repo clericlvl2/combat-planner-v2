@@ -272,6 +272,35 @@ describe('createDispatcher', () => {
     await expect(sent).resolves.toEqual({ applied: false });
   });
 
+  it('tells the caller once the Retry toast is up, while the result waits for it', async () => {
+    const send = vi
+      .fn<(action: Action) => Promise<{ version: number }>>()
+      .mockRejectedValueOnce(new ApiError({ status: 0, code: 'network' }))
+      .mockResolvedValueOnce({ version: 2 })
+      .mockResolvedValueOnce({ version: 3 });
+    const show = vi.fn((_input: unknown) => 'toast-1');
+    const dispatch = createDispatcher({ send, refetch: async () => {}, show, t: translate });
+    const retryShown = vi.fn();
+    let result: unknown = 'pending';
+    void dispatch(damage(1), retryShown).then((value) => {
+      result = value;
+    });
+    await flush();
+    expect(retryShown).toHaveBeenCalledTimes(1);
+    expect(result).toBe('pending');
+    const appliedShown = vi.fn();
+    await expect(dispatch(damage(2), appliedShown)).resolves.toEqual({
+      applied: true,
+      version: 2,
+    });
+    expect(appliedShown).not.toHaveBeenCalled();
+    const [[toast]] = show.mock.calls as [[{ action: { onAction: () => void } }]];
+    toast.action.onAction();
+    await flush();
+    expect(result).toEqual({ applied: true, version: 3 });
+    expect(retryShown).toHaveBeenCalledTimes(1);
+  });
+
   it('resolves not applied on a rejection without a toast', async () => {
     const show = vi.fn((_input: unknown) => 'toast-1');
     const dispatch = createDispatcher({

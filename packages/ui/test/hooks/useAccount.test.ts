@@ -3,8 +3,9 @@ import { describe, expect, it, vi } from 'vite-plus/test';
 import { accountActions, getProviders } from '../../src/hooks/account.ts';
 import { combatKey } from '../../src/hooks/combat.ts';
 import { queryKeys } from '../../src/hooks/queryKeys.ts';
+import { toastStoreOf } from '../../src/hooks/toasts.ts';
 import { COMBAT_ID, combat } from '../api/fixtures.ts';
-import { harness } from './helpers.ts';
+import { flush, harness } from './helpers.ts';
 
 const setup = (session: 'signedIn' | 'signedOut' = 'signedIn') => {
   const context = harness({
@@ -32,6 +33,61 @@ const cachedKeys = (queryClient: QueryClient) =>
     .getQueryCache()
     .getAll()
     .map((query) => query.queryKey);
+
+const withToastStore = (session: 'signedIn' | 'signedOut' = 'signedIn') => {
+  const context = harness({
+    providers: ['google', 'github'],
+    ...(session === 'signedOut' ? { session: null } : {}),
+  });
+  const store = toastStoreOf(context.queryClient);
+  const show = (input: Parameters<typeof store.show>[0]) => store.show(input, 'off');
+  return { context, store, actions: accountActions(context.api, { ...context, show }) };
+};
+
+const sentUpdates = (context: ReturnType<typeof harness>) =>
+  context.api.calls.filter((call) => call.method === 'account.update');
+
+describe('accountActions across sessions', () => {
+  it.each(['signIn', 'signUp', 'signOut', 'remove'] as const)(
+    '%s drops the toasts, and a Retry of the previous session never runs under the next one',
+    async (switchSession) => {
+      const { context, store, actions } = withToastStore();
+      context.api.failNext('network');
+      const pending = actions.update({ displayName: 'Старое имя' });
+      await flush();
+      const [retryToast] = store.toasts();
+      expect(retryToast?.action?.label).toBe('retry');
+      const switches = {
+        signIn: () =>
+          actions.signIn({ email: 'dm@example.com', password: 'correct horse battery' }),
+        signUp: () =>
+          actions.signUp({
+            email: 'второй@example.com',
+            password: 'длинный пароль',
+            displayName: 'Второй',
+          }),
+        signOut: () => actions.signOut(),
+        remove: () => actions.remove(),
+      };
+      await switches[switchSession]();
+      await expect(pending).rejects.toMatchObject({ code: 'network' });
+      expect(store.toasts().filter((toast) => toast.action)).toEqual([]);
+      retryToast?.action?.onAction();
+      await flush();
+      expect(sentUpdates(context)).toHaveLength(1);
+    },
+  );
+
+  it('a request of the previous session that fails after the switch shows no Retry', async () => {
+    const { context, store, actions } = withToastStore();
+    context.api.failNext('network');
+    const pending = actions.update({ displayName: 'Старое имя' });
+    store.clear();
+    await expect(pending).rejects.toMatchObject({ code: 'network' });
+    expect(store.toasts()).toEqual([]);
+    expect(sentUpdates(context)).toHaveLength(1);
+  });
+});
 
 describe('accountActions', () => {
   it('sign-in drops every cached query of the previous account', async () => {

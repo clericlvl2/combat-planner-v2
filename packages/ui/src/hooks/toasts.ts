@@ -67,11 +67,14 @@ export interface ToastStore {
   subscribe: (listener: () => void) => () => void;
   show: (input: ToastInput, motion: Motion) => string;
   dismiss: (id: string) => void;
+  clear: () => void;
+  generation: () => number;
 }
 
 export function createToastStore(): ToastStore {
   let stack: readonly ToastItem[] = [];
   let counter = 0;
+  let generation = 0;
   const listeners = new Set<() => void>();
   const timers = new Map<string, ReturnType<typeof setTimeout>>();
   const dismissListeners = new Map<string, () => void>();
@@ -81,15 +84,25 @@ export function createToastStore(): ToastStore {
     for (const listener of listeners) listener();
   };
 
+  const shown = (id: string) => stack.some((item) => item.id === id);
+
   const dismiss = (id: string) => {
     const timer = timers.get(id);
     if (timer !== undefined) clearTimeout(timer);
     timers.delete(id);
-    if (stack.some((item) => item.id === id)) publish(removeToast(stack, id));
+    if (shown(id)) publish(removeToast(stack, id));
     const onDismiss = dismissListeners.get(id);
     dismissListeners.delete(id);
     onDismiss?.();
   };
+
+  const guarded = (id: string, action: ToastAction | undefined): ToastAction | undefined =>
+    action && {
+      ...action,
+      onAction: () => {
+        if (shown(id)) action.onAction();
+      },
+    };
 
   return {
     toasts: () => stack,
@@ -109,7 +122,7 @@ export function createToastStore(): ToastStore {
           id,
           message: input.message,
           kind: input.kind ?? 'neutral',
-          action: input.action,
+          action: guarded(id, input.action),
           duration,
         }),
       );
@@ -122,6 +135,11 @@ export function createToastStore(): ToastStore {
       return id;
     },
     dismiss,
+    clear: () => {
+      generation += 1;
+      for (const { id } of stack) dismiss(id);
+    },
+    generation: () => generation,
   };
 }
 
