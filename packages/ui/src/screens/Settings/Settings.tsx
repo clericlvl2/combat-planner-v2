@@ -1,4 +1,5 @@
 import type { Locale } from '@combat-planner/api/client';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettings } from '../../hooks/useSettings.ts';
 import { RadioList } from '../../molecules/RadioList/RadioList.tsx';
@@ -15,10 +16,14 @@ const localeOf = (language: string): Locale =>
 
 export function Settings() {
   const { t, i18n } = useTranslation('Settings');
-  const { update } = useSettings();
+  const { settings, update } = useSettings();
+  const [chosen, setChosen] = useState<Locale | null>(null);
 
   const choose = (language: Locale) => {
-    update({ language }).catch(() => {});
+    setChosen(language);
+    update({ language }).catch(() => {
+      setChosen(null);
+    });
   };
 
   return (
@@ -28,7 +33,7 @@ export function Settings() {
           <RadioList
             aria-label={t('language')}
             options={options}
-            value={localeOf(i18n.language)}
+            value={chosen ?? settings?.language ?? localeOf(i18n.language)}
             onChange={choose}
           />
         </div>

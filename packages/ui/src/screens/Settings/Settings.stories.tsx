@@ -103,3 +103,12 @@ export const DrawerOpen = meta.story({
     await expect(locationOf(canvasElement)).toBe('/settings');
   },
 });
+
+export const ExtraCheckedFromSettings = meta.story({
+  name: 'The checked language comes from the saved settings',
+  parameters: { scenario: scenario({ session, settings: { language: 'de' } }) },
+  play: async ({ canvas }) => {
+    await waitFor(() => expect(canvas.getByRole('radio', { name: 'Deutsch' })).toBeChecked());
+    await expect(canvas.getByRole('radio', { name: 'English' })).not.toBeChecked();
+  },
+});
