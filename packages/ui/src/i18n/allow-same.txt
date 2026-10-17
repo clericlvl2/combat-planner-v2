@@ -13,7 +13,6 @@ NumpadSheet.temp
 SignIn.emailPlaceholder
 SignIn.passwordPlaceholder
 SignUp.emailPlaceholder
-About.version
 About.rulesValue
 About.sourceValue
 PlayerHeader.menu
