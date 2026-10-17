@@ -82,7 +82,7 @@
 | 2.4-Library | guarded `.claude/artifacts/guard/2.4-Library.md` (P2 ×2, P3 ×5 → `fix-2.4`) | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
-| fix-2.4-core | merged 5c9f0c8..c197f3f (gate `.claude/run/fix-2.4-core/` green), guard-bee running | project, api contract, FakeApiClient, hooks |
+| fix-2.4-core | guarded `.claude/artifacts/guard/fix-2.4-core.md` (P3 ×7 → `fix-4`) | project, api contract, FakeApiClient, hooks |
 | fix-2.4 | running worker-bee 2026-10-17T16:30+03:00 | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
@@ -640,6 +640,12 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- fix-2.4-core → `fix-4` (пачка исправлений после `4-web`; `fix-2.4` уже
+  запущен, его бриф заморожен): тесты SSE — отписка во время таймера
+  переоткрытия и пробы, REST 200 при отказе потока; таймаут пробы; PlayerView
+  ветка `notFound` → CombatDeleted; стор тостов очищается вместе с
+  `queryClient.clear()` (старый Retry не уходит под новой сессией).
 
 - 2.4-Library → `fix-2.4`: P2 повторный Create пресета (кнопка неактивна в
   полёте, `id` один на открытие формы — как для CombatFormSheet); P2
