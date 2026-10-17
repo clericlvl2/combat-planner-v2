@@ -97,7 +97,16 @@ extra paths it names.
       409; Save as preset failure shows a toast (`limit` and others); Share
       with a failed `link.get` shows the error toast; `ExtraHpRules` asserts
       `calls` and covers «damage never below −max» and «a lower HP stays on
-      Set Max»; `useCombatLink` from `hooks/`.
+      Set Max»; `useCombatLink` from `hooks/`. Render check
+      (`.claude/artifacts/guard/2.4-CombatScreen.md`, «Render check»): steps
+      CS-F3.5, F3.6, F3.8 focus the step's action so After previews it; Copy
+      closes the Share sheet and the «Link copied» toast is visible (CS-F7.4);
+      scenarios seed the Orc's 6-entry and Vashti's 3-entry HP history; the
+      Orc row collapses after Disable (CS-F6.7); CS-F8.1 has an active unit
+      so the next is Brother Tomas; every other DIFF of that list is added to
+      the report's Differences (hint line, dice icons, popover push, CS-F6.2
+      Orc, centred dialogs, rows behind dialogs, no menu scrim, flash border
+      from the setup, Restart clears initiative, scrollbar, sample URL).
 16. `exports` (`feat(ui): exports`): `packages/ui/src/index.ts` exports every
     atom, molecule, organism, screen, `UiProvider`, `ApiProvider`, `useApi`,
     `FakeApiClient`, `scenarios`, every hook, `theme` tokens and

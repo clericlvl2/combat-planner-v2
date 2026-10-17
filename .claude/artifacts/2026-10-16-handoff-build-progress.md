@@ -76,7 +76,7 @@
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
 | fix-2.3 | guarded `.claude/artifacts/guard/fix-2.3.md` (no P0–P1; documentary P2 closed by the guard's per-unit file:line list; P3 ×7 → `fix-2.4`) | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
-| 2.4-CombatScreen | guarded `.claude/artifacts/guard/2.4-CombatScreen.md` (no P0–P1; P2 ×1, P3 ×5 → `fix-2.4`; 42 baselines vs renders → render check running) | CombatScreen |
+| 2.4-CombatScreen | guarded `.claude/artifacts/guard/2.4-CombatScreen.md` (no P0–P1; code P2 ×1, P3 ×5; render check P2 ×4, P3 ×15 → `fix-2.4`) | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | guarded `.claude/artifacts/guard/2.4-PlayerView.md` (P2 ×1, P3 ×8 → `fix-2.4`) | Heroes, TurnOrder |
 | 2.4-Library | guarded `.claude/artifacts/guard/2.4-Library.md` (P2 ×2, P3 ×5 → `fix-2.4`) | Library |
