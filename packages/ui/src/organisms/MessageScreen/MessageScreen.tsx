@@ -11,6 +11,7 @@ export interface MessageScreenProps extends Omit<
   title: ReactNode;
   body: ReactNode;
   actionLabel?: string;
+  actionVariant?: 'primary' | 'secondary';
   onAction?: () => void;
 }
 
@@ -19,6 +20,7 @@ export function MessageScreen({
   title,
   body,
   actionLabel,
+  actionVariant = 'secondary',
   onAction,
   className,
   ...rest
@@ -32,7 +34,7 @@ export function MessageScreen({
       <p className={classes.body}>{body}</p>
       {actionLabel !== undefined && onAction !== undefined ? (
         <div className={classes.action}>
-          <Button variant="secondary" size="M" onClick={() => onAction()}>
+          <Button variant={actionVariant} size="M" onClick={() => onAction()}>
             {actionLabel}
           </Button>
         </div>

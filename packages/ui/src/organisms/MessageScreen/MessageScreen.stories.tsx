@@ -12,6 +12,7 @@ interface MessageScreenCellProps {
   title?: string;
   body?: string;
   actionLabel?: string;
+  actionVariant?: 'primary' | 'secondary';
   withAction?: boolean;
   onAction: () => void;
 }
@@ -27,6 +28,7 @@ function MessageScreenCell({
   title,
   body,
   actionLabel,
+  actionVariant,
   withAction = kind !== 'combatDeleted',
   onAction,
 }: MessageScreenCellProps) {
@@ -37,6 +39,7 @@ function MessageScreenCell({
       title={title ?? t(`${kind}Title`)}
       body={body ?? t(`${kind}Body`)}
       actionLabel={withAction ? (actionLabel ?? t('tryAgain')) : undefined}
+      actionVariant={actionVariant}
       onAction={onAction}
     />
   );
@@ -186,6 +189,17 @@ export const ExtraLocaleJa = meta.story({
       canvas.getByRole('heading', { level: 1, name: 'サーバーに接続できません' }),
     ).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: '再試行' }));
+    await expect(args.onAction).toHaveBeenCalledOnce();
+  },
+});
+
+export const ExtraPrimaryAction = meta.story({
+  name: 'Primary action variant',
+  args: { kind: 'offline', actionVariant: 'primary' },
+  play: async ({ args, canvas }) => {
+    const button = canvas.getByRole('button', { name: 'Try again' });
+    await expect(button).toHaveAttribute('data-variant', 'primary');
+    await userEvent.click(button);
     await expect(args.onAction).toHaveBeenCalledOnce();
   },
 });
