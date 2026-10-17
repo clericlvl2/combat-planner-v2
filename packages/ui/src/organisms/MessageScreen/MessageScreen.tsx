@@ -26,7 +26,11 @@ export function MessageScreen({
   ...rest
 }: MessageScreenProps) {
   return (
-    <div {...rest} className={className ? `${classes.root} ${className}` : classes.root}>
+    <div
+      {...rest}
+      className={className ? `${classes.root} ${className}` : classes.root}
+      data-system-screen=""
+    >
       <span className={classes.tile} aria-hidden="true">
         <IconComponent size={32} stroke={2} />
       </span>

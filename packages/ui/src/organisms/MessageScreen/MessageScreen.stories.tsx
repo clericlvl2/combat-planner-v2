@@ -55,6 +55,9 @@ const meta = preview.meta({
 export const Anatomy = meta.story({
   play: async ({ args, canvas }) => {
     await expect(
+      canvas.getByRole('heading', { level: 1 }).closest('[data-system-screen]'),
+    ).toBeInTheDocument();
+    await expect(
       canvas.getByRole('heading', { level: 1, name: 'This link no longer works' }),
     ).toBeVisible();
     await expect(
