@@ -98,7 +98,7 @@
 | fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
 | fix-5-e2e | handed back 4/4 (report `.claude/artifacts/reports/fix-5-e2e.md`, repeat-each 5: 70/70), gate running | combat lifecycle, player, library, account |
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
-| fix-6 | todo | secrets, Dockerfile, compose, README |
+| fix-6 | running worker-bee 2026-10-17T17:34+03:00 (Opus 5.5 xhigh) | secrets, Dockerfile, compose, README |
 
 ## Вопросы владельцу
 
