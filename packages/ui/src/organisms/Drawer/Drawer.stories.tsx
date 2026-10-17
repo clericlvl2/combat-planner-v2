@@ -188,8 +188,14 @@ export const ExtraTapTitleThenKeys = meta.story({
 
 export const ExtraScrollLock = meta.story({
   name: 'Page scroll is locked while open',
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
+    const dialog = canvas.getByRole('dialog');
+    await waitFor(() => expect(dialog).toHaveFocus());
     await expect(getComputedStyle(document.body).overflow).toBe('hidden');
+    await expect(document.body).toHaveAttribute('data-scroll-locked');
+    const wheel = new WheelEvent('wheel', { deltaY: 120, bubbles: true, cancelable: true });
+    canvasElement.dispatchEvent(wheel);
+    await expect(wheel.defaultPrevented).toBe(true);
     await userEvent.keyboard('{Escape}');
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     await expect(getComputedStyle(document.body).overflow).not.toBe('hidden');
@@ -203,10 +209,33 @@ export const ExtraFocusReturn = meta.story({
     await expect(canvas.queryByRole('dialog')).toBeNull();
     const burger = canvas.getByRole('button', { name: 'Open menu' });
     await userEvent.click(burger);
-    await canvas.findByRole('dialog', { name: 'Combat Planner' });
+    const dialog = await canvas.findByRole('dialog', { name: 'Combat Planner' });
+    await waitFor(() => expect(dialog).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(burger).toHaveFocus());
+  },
+});
+
+export const ExtraInitialFocus = meta.story({
+  name: 'Opening focuses the panel without visiting Combats',
+  args: { opened: false, withOpener: true },
+  play: async ({ canvas }) => {
+    const visited: Element[] = [];
+    const record = (event: FocusEvent) => {
+      if (event.target instanceof Element) visited.push(event.target);
+    };
+    document.addEventListener('focusin', record);
+    try {
+      await userEvent.click(canvas.getByRole('button', { name: 'Open menu' }));
+      const dialog = await canvas.findByRole('dialog', { name: 'Combat Planner' });
+      await waitFor(() => expect(dialog).toHaveFocus());
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      await expect(dialog).toHaveFocus();
+      await expect(visited).not.toContain(canvas.getByRole('button', { name: 'Combats' }));
+    } finally {
+      document.removeEventListener('focusin', record);
+    }
   },
 });
 

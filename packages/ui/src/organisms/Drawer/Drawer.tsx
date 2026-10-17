@@ -1,4 +1,4 @@
-import { FocusTrap, UnstyledButton } from '@mantine/core';
+import { FocusTrap, FocusTrapInitialFocus, RemoveScroll, UnstyledButton } from '@mantine/core';
 import { IconBooks, IconInfoCircle, IconSettings, IconSwords, IconUser } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 import { useEffect, useId, useLayoutEffect, useRef } from 'react';
@@ -61,16 +61,6 @@ export function Drawer({
     return () => clearTimeout(timer);
   }, [opened]);
 
-  useEffect(() => {
-    if (!opened) return;
-    const { body } = document;
-    const previous = body.style.overflow;
-    body.style.overflow = 'hidden';
-    return () => {
-      body.style.overflow = previous;
-    };
-  }, [opened]);
-
   if (!opened) return null;
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -86,43 +76,46 @@ export function Drawer({
   };
 
   return (
-    <div className={classes.root}>
-      <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onClose} />
-      <FocusTrap active innerRef={panelRef}>
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          tabIndex={-1}
-          className={classes.panel}
-          onKeyDown={handleKeyDown}
-        >
-          <h2 id={titleId} className={classes.title}>
-            {t('title')}
-          </h2>
-          <nav className={classes.nav} aria-label={t('navigation')}>
-            {sections.map((section) => {
-              const SectionIcon = sectionIcons[section];
-              const isCurrent = section === current;
-              return (
-                <UnstyledButton
-                  key={section}
-                  component="button"
-                  type="button"
-                  className={classes.item}
-                  aria-current={isCurrent ? 'page' : undefined}
-                  data-current={isCurrent || undefined}
-                  onClick={() => handleNavigate(section)}
-                >
-                  <SectionIcon className={classes.icon} size={24} stroke={2} aria-hidden="true" />
-                  <span className={classes.label}>{t(section)}</span>
-                </UnstyledButton>
-              );
-            })}
-          </nav>
-          <span className={classes.email}>{email}</span>
-        </div>
-      </FocusTrap>
-    </div>
+    <RemoveScroll>
+      <div className={classes.root}>
+        <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onClose} />
+        <FocusTrap active innerRef={panelRef}>
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={titleId}
+            tabIndex={-1}
+            className={classes.panel}
+            onKeyDown={handleKeyDown}
+          >
+            <FocusTrapInitialFocus />
+            <h2 id={titleId} className={classes.title}>
+              {t('title')}
+            </h2>
+            <nav className={classes.nav} aria-label={t('navigation')}>
+              {sections.map((section) => {
+                const SectionIcon = sectionIcons[section];
+                const isCurrent = section === current;
+                return (
+                  <UnstyledButton
+                    key={section}
+                    component="button"
+                    type="button"
+                    className={classes.item}
+                    aria-current={isCurrent ? 'page' : undefined}
+                    data-current={isCurrent || undefined}
+                    onClick={() => handleNavigate(section)}
+                  >
+                    <SectionIcon className={classes.icon} size={24} stroke={2} aria-hidden="true" />
+                    <span className={classes.label}>{t(section)}</span>
+                  </UnstyledButton>
+                );
+              })}
+            </nav>
+            <span className={classes.email}>{email}</span>
+          </div>
+        </FocusTrap>
+      </div>
+    </RemoveScroll>
   );
 }
