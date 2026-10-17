@@ -1,0 +1,13 @@
+.or {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+}
+
+.rule {
+  flex: 1;
+  height: 2px;
+  background: var(--cp-color-border);
+}

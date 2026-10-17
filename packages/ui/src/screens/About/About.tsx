@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { PageScreen } from '../Settings/Settings.tsx';
+import { PageScreen } from '../shared/PageScreen.tsx';
 import classes from './About.module.css';
 
 export interface AboutProps {

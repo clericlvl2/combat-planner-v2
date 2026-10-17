@@ -1,0 +1,24 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  margin: 0;
+  padding: 0 8px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: var(--mantine-line-height-snug);
+  text-transform: uppercase;
+}
+
+.note {
+  margin: 0;
+  padding: 0 8px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-body);
+}

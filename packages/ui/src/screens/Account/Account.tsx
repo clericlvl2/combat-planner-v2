@@ -6,8 +6,9 @@ import { useNavigate } from 'react-router';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
-import { submitOnEnter } from '../SignIn/SignIn.tsx';
-import { PageScreen, PageSection } from '../Settings/Settings.tsx';
+import { PageScreen } from '../shared/PageScreen.tsx';
+import { PageSection } from '../shared/PageSection.tsx';
+import { submitOnEnter } from '../shared/submitOnEnter.ts';
 import classes from './Account.module.css';
 
 export function Account() {

@@ -6,14 +6,11 @@ import { useNavigate } from 'react-router';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
-import {
-  AuthScreen,
-  SocialButtons,
-  assignLocation,
-  hasCode,
-  submitOnEnter,
-} from '../SignIn/SignIn.tsx';
-import type { Redirect } from '../SignIn/SignIn.tsx';
+import { AuthScreen } from '../shared/AuthScreen.tsx';
+import { hasCode } from '../shared/hasCode.ts';
+import { SocialButtons, assignLocation } from '../shared/SocialButtons.tsx';
+import type { Redirect } from '../shared/SocialButtons.tsx';
+import { submitOnEnter } from '../shared/submitOnEnter.ts';
 
 export interface SignUpProps {
   onRedirect?: Redirect;
