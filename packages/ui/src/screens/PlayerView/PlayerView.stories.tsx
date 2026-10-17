@@ -363,16 +363,16 @@ export const ExtraDmRemoved = meta.story({
   play: async ({ canvas, loaded }) => {
     await rowOf(canvas, ME);
     await actAsDm(fakeApiOf(loaded), { type: 'removeUnit', unitId: unitIds.vashti });
-    await expect(
-      await canvas.findByText('The DM removed Vashti the Hexer. Pick a hero.'),
-    ).toBeVisible();
+    const toast = await canvas.findByRole('status');
+    await expect(toast).toHaveTextContent('The DM removed Vashti the Hexer. Pick a hero.');
+    await expect(toast.querySelector('.tabler-icon-info-circle')).not.toBeNull();
     await expect(canvas.getByRole('heading', { name: 'Who are you playing?' })).toBeVisible();
     await expect(canvas.queryByRole('checkbox', { name: ME })).toBeNull();
   },
 });
 
 export const ExtraOwnRelease = meta.story({
-  name: 'Extra: own release keeps the turn order',
+  name: 'Extra: own release of the last hero opens Heroes',
   play: async ({ canvas, loaded }) => {
     await expandOwn(canvas);
     await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
@@ -382,9 +382,30 @@ export const ExtraOwnRelease = meta.story({
         expect.objectContaining({ type: 'releaseUnit', unitId: unitIds.vashti }),
       ]),
     );
-    await waitFor(() => expect(canvas.queryByRole('button', { name: ME })).toBeNull());
+    await expect(
+      await canvas.findByRole('heading', { name: 'Who are you playing?' }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('checkbox', { name: ME })).not.toBeChecked();
     await expect(canvas.queryByText(/The DM released/)).toBeNull();
-    await expect(canvas.getByRole('heading', { name: 'Round 3' })).toBeVisible();
+  },
+});
+
+export const ExtraFailedReleaseThenDmRelease = meta.story({
+  name: 'Extra: a failed own release does not hide a later DM release',
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    await expandOwn(canvas);
+    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    api.failNext('version');
+    await userEvent.click(await canvas.findByRole('menuitem', { name: 'Release claim' }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      'The combat changed. Try again.',
+    );
+    await expect(canvas.getByRole('button', { name: ME })).toBeVisible();
+    await actAsDm(api, { type: 'releaseUnit', unitId: unitIds.vashti });
+    await expect(
+      await canvas.findByRole('heading', { name: 'Who are you playing?' }),
+    ).toBeVisible();
   },
 });
 
@@ -432,10 +453,18 @@ export const ExtraConditionToggled = meta.story({
 export const ExtraCantReachServer = meta.story({
   name: 'Extra: first load without a response',
   loaders: [offlineLoader],
-  play: async ({ canvas, loaded }) => {
-    const retry = await canvas.findByRole('button', { name: 'Try again' });
+  play: async ({ canvas }) => {
+    await expect(await canvas.findByRole('button', { name: 'Try again' })).toBeVisible();
     await expect(canvas.getByRole('heading', { name: 'Can’t reach the server' })).toBeVisible();
-    await userEvent.click(retry);
+    await expect(canvas.queryByRole('heading', { name: 'Round 3' })).toBeNull();
+  },
+});
+
+export const ExtraCantReachServerRetry = meta.story({
+  name: 'Extra: Try again after a first load without a response',
+  loaders: [offlineLoader],
+  play: async ({ canvas, loaded }) => {
+    await userEvent.click(await canvas.findByRole('button', { name: 'Try again' }));
     await expect(await canvas.findByRole('heading', { name: 'Round 3' })).toBeVisible();
     await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.get')).toHaveLength(
       2,

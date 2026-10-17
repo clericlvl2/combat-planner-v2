@@ -1,10 +1,8 @@
 import { ApiError } from '@combat-planner/api/client';
 import type { LinkToken } from '@combat-planner/api/client';
 import type { Action, CombatId, PlayerCombat, PlayerId, UnitId } from '@combat-planner/domain';
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { combatKey } from '../../hooks/combat.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatDeleted } from '../CombatDeleted/CombatDeleted.tsx';
@@ -29,12 +27,11 @@ const holdsHero = (combat: PlayerCombat, playerId: PlayerId): boolean =>
   combat.units.some((unit) => unit.claimedBy === playerId);
 
 export function PlayerView({ combatId, token, playerId, random }: PlayerViewProps) {
-  const { combat, language, error, ended, dispatch } = useCombat(
+  const { combat, language, error, ended, dispatch, refetch } = useCombat(
     combatId,
     { kind: 'player', playerId },
     token,
   );
-  const queryClient = useQueryClient();
   const { i18n } = useTranslation();
   const notify = usePlayerToasts();
   const [view, setView] = useState<View | null>(null);
@@ -54,7 +51,10 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
     let lostHero = false;
     for (const event of playerEvents(before, combat, playerId)) {
       if (event.kind === 'taken') continue;
-      if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) continue;
+      if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) {
+        lostHero = true;
+        continue;
+      }
       if (event.kind === 'released' || event.kind === 'removed') {
         lostHero = true;
         notify(event.kind, event.name);
@@ -66,15 +66,18 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
   }, [combat, playerId, notify]);
 
   const send = useCallback(
-    (action: Action) => {
-      if (action.type === 'releaseUnit') ownReleases.current.add(action.unitId);
-      return dispatch(action);
+    async (action: Action) => {
+      const ownRelease = action.type === 'releaseUnit' ? action.unitId : null;
+      if (ownRelease !== null) ownReleases.current.add(ownRelease);
+      const result = await dispatch(action);
+      if (ownRelease !== null && !result.applied) ownReleases.current.delete(ownRelease);
+      return result;
     },
     [dispatch],
   );
 
   const reload = () => {
-    void queryClient.resetQueries({ queryKey: combatKey(combatId, { kind: 'player', playerId }) });
+    void refetch();
   };
 
   if (ended?.type === 'linkRevoked') return <LinkExpired />;

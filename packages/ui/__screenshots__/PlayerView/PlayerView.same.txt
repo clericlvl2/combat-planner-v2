@@ -1,1 +1,1 @@
-ExtraCantReachServer.png PVF32.png
+ExtraCantReachServerRetry PVF32
