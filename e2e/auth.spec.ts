@@ -1,5 +1,13 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { signIn, signUp } from './helpers.ts';
+
+const signOut = async (page: Page, email: string) => {
+  await page.goto('/account');
+  await expect(page.getByText(email)).toBeVisible();
+  await page.getByRole('button', { name: 'Sign out' }).click();
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+};
 
 test('sign-up lands on an empty combat list', async ({ page }) => {
   await signUp(page);
@@ -7,16 +15,10 @@ test('sign-up lands on an empty combat list', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'New combat' })).toBeEnabled();
 });
 
-test('sign-out, then sign-in with the same credentials — defect: sign-out POST answers 415', async ({
-  page,
-}) => {
-  test.fail();
+test('sign-out, then sign-in with the same credentials', async ({ page }) => {
   const { email, password } = await signUp(page);
 
-  await page.goto('/account');
-  await expect(page.getByText(email)).toBeVisible();
-  await page.getByRole('button', { name: 'Sign out' }).click();
-  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await signOut(page, email);
   await page.goto('/combats');
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
 
@@ -38,12 +40,9 @@ test('sign-in with the sign-up credentials in a fresh session', async ({ page, c
   await expect(page.getByText(email)).toBeVisible();
 });
 
-test('a wrong password shows the error and keeps the guest on sign-in', async ({
-  page,
-  context,
-}) => {
+test('a wrong password shows the error and keeps the guest on sign-in', async ({ page }) => {
   const { email } = await signUp(page);
-  await context.clearCookies();
+  await signOut(page, email);
 
   await signIn(page, email, 'wrong-password-123');
   await expect(page.getByText('Wrong email or password')).toBeVisible();
