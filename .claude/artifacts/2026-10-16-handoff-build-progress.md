@@ -74,13 +74,13 @@
 | 2.3-UnitRow | guarded `.claude/artifacts/guard/2.3-UnitRow.md` (P3 ×6 → `fix-2.3`) | UnitRow |
 | 2.3-UnitForm | guarded `.claude/artifacts/guard/2.3-UnitForm.md` (P3 ×6 → `fix-2.3`) | UnitForm |
 | 2.3-NumpadSheet | guarded `.claude/artifacts/guard/2.3-NumpadSheet.md` (P3 ×7 → `fix-2.3`) | NumpadSheet |
-| fix-2.3 | running worker-bee 2026-10-17T08:40+03:00 | |
+| fix-2.3 | running worker-bee, resumed after the session limit (unit 27 of 28) | |
 | 2.4-api-hooks | guarded `.claude/artifacts/guard/2.4-api-hooks.md` (P2 ×2, P3 ×8 → `fix-2.4`) | ApiProvider, FakeApiClient, useCombatList, useCombat, usePresets, useTags, useSettings, useAccount, useToasts, useConnection |
 | 2.4-CombatScreen | todo, brief ready, after fix-2.3 and 2.4-CombatList | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
-| 2.4-PlayerView | running worker-bee 2026-10-17T11:50+03:00 (parallel with fix-2.3) | Heroes, TurnOrder |
+| 2.4-PlayerView | running worker-bee, resumed after the session limit (Heroes) | Heroes, TurnOrder |
 | 2.4-Library | todo, brief ready, after 2.4-CombatList (`withApi`) | Library |
-| 2.4-AppPages | merged 85b5cdf..4992dbc (gate `.claude/run/2.4-AppPages/` green), guard-bee running | SignIn, SignUp, Settings, Account, About |
+| 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
 | fix-2.4 | todo | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
@@ -561,6 +561,18 @@
   240 px ячейки страницы.
 
 ## Замечания guard-bee P2–P3, отложены
+
+- 2.4-AppPages → `fix-2.4` (P3): тост удалённого аккаунта один раз и без
+  повторов из `history.state` (StrictMode, reload/Back); Settings отмечает
+  язык из `useSettings().settings`; сохранение имени в Account без дубля на
+  Enter+blur, ошибка пустого имени по уходу фокуса; проверки «нет social»
+  ждут ответа providers; кольца фокуса APF13/APF23/APF51–53 и лишние шаги в
+  APF13/APF15 — в Differences или истории без клика; social sign-in: ошибка
+  видна, повторный тап заблокирован; `About.version` из `allow-same.txt`
+  убрать (de/fr «Version» — владельцу, иначе перевести).
+- Падение 2026-10-17: лимит сессии API остановил fix-2.3 (юнит 27) и
+  2.4-PlayerView (Heroes); после сброса оба агента продолжены через
+  SendMessage с места остановки.
 
 - 2.4-CombatList → `fix-2.4`: P2 лимит 100 боёв: отказ `limit` получает тост
   (код `limit` в `API_ERROR_CODES` и маппинг в `errorToast`, FakeApiClient
