@@ -21,5 +21,6 @@
   "enable": "Enable",
   "saveAsPreset": "Save as preset",
   "releaseClaim": "Release claim",
-  "remove": "Remove"
+  "remove": "Remove",
+  "rollInitiative": "Roll initiative"
 }

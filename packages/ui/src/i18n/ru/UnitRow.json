@@ -21,5 +21,6 @@
   "enable": "Включить",
   "saveAsPreset": "Сохранить как пресет",
   "releaseClaim": "Снять занятость",
-  "remove": "Удалить"
+  "remove": "Удалить",
+  "rollInitiative": "Бросить инициативу"
 }

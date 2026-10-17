@@ -21,5 +21,6 @@
   "enable": "Activer",
   "saveAsPreset": "Enregistrer comme modèle",
   "releaseClaim": "Libérer la réservation",
-  "remove": "Retirer"
+  "remove": "Retirer",
+  "rollInitiative": "Lancer l’initiative"
 }

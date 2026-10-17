@@ -34,21 +34,7 @@ export type UnitRowTarget =
   | 'edit'
   | 'more';
 
-export interface UnitRowProps extends Omit<
-  HTMLAttributes<HTMLDivElement>,
-  'children' | 'onToggle'
-> {
-  unit: Unit;
-  claimedByName?: string;
-  active?: boolean;
-  expanded?: boolean;
-  flash?: boolean;
-  readOnly?: boolean;
-  initiativeOpen?: boolean;
-  conditionsOpen?: boolean;
-  historyOpen?: boolean;
-  menuOpen?: boolean;
-  random?: () => number;
+export interface UnitRowCallbacks {
   onToggle: () => void;
   onInitiative: () => void;
   onInitiativeSet: (initiative: number) => void;
@@ -66,8 +52,26 @@ export interface UnitRowProps extends Omit<
   onSaveAsPreset: () => void;
   onReleaseClaim: () => void;
   onRemove: () => void;
+}
+
+interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'children' | 'onToggle'> {
+  unit: Unit;
+  claimedByName?: string;
+  active?: boolean;
+  expanded?: boolean;
+  flash?: boolean;
+  initiativeOpen?: boolean;
+  conditionsOpen?: boolean;
+  historyOpen?: boolean;
+  menuOpen?: boolean;
+  random?: () => number;
   'data-tap'?: UnitRowTarget;
 }
+
+export type UnitRowProps = UnitRowBaseProps &
+  (({ readOnly?: false } & UnitRowCallbacks) | ({ readOnly: true } & Partial<UnitRowCallbacks>));
+
+const noop = () => undefined;
 
 const INTERACTIVE =
   'button, a, input, textarea, select, [role="button"], [role="dialog"], [role="menu"], [data-part="details"]';
@@ -124,34 +128,50 @@ export function UnitRow({
     onClick?.(event);
     if (readOnly || event.defaultPrevented) return;
     if (event.target instanceof Element && event.target.closest(INTERACTIVE)) return;
-    onToggle();
+    onToggle?.();
   };
 
   const closeInitiative = () => {
     const focusInside = initiativeRef.current?.contains(document.activeElement) === true;
-    onInitiativeClose();
+    onInitiativeClose?.();
     if (focusInside) roleCellRef.current?.querySelector('button')?.focus();
   };
 
   const menuItems: (MenuItem & { run: () => void })[] = [
-    { id: 'duplicate', icon: IconCopy, label: t('duplicate'), run: onDuplicate },
+    { id: 'duplicate', icon: IconCopy, label: t('duplicate'), run: () => onDuplicate?.() },
     disabled
-      ? { id: 'enable', icon: IconPlayerPlay, label: t('enable'), run: () => onSetDisabled(false) }
+      ? {
+          id: 'enable',
+          icon: IconPlayerPlay,
+          label: t('enable'),
+          run: () => onSetDisabled?.(false),
+        }
       : {
           id: 'disable',
           icon: IconPlayerPause,
           label: t('disable'),
-          run: () => onSetDisabled(true),
+          run: () => onSetDisabled?.(true),
         },
-    { id: 'saveAsPreset', icon: IconBookmark, label: t('saveAsPreset'), run: onSaveAsPreset },
-    { id: 'releaseClaim', icon: IconUserOff, label: t('releaseClaim'), run: onReleaseClaim },
+    {
+      id: 'saveAsPreset',
+      icon: IconBookmark,
+      label: t('saveAsPreset'),
+      run: () => onSaveAsPreset?.(),
+    },
+    {
+      id: 'releaseClaim',
+      icon: IconUserOff,
+      label: t('releaseClaim'),
+      disabled: unit.claimedBy === null,
+      run: () => onReleaseClaim?.(),
+    },
     {
       id: 'remove',
       icon: IconUserMinus,
       label: t('remove'),
       tone: 'danger',
       divider: true,
-      run: onRemove,
+      run: () => onRemove?.(),
     },
   ];
 
@@ -171,16 +191,20 @@ export function UnitRow({
       <div ref={roleCellRef} className={classes.roleCell}>
         <RoleBlock
           className={classes.role}
+          fill
           unitRole={unit.role}
           top={unit.initiative === null ? null : { kind: 'initiative', value: unit.initiative }}
           active={active}
           editable={!readOnly}
           dead={dead}
           disabled={disabled}
+          aria-label={readOnly ? undefined : t('rollInitiative')}
           aria-haspopup={readOnly ? undefined : 'dialog'}
           aria-expanded={readOnly ? undefined : showInitiative}
           data-tap={tapOf('initiative')}
-          onClick={readOnly ? undefined : () => onInitiative()}
+          onClick={
+            readOnly ? undefined : () => (showInitiative ? closeInitiative() : onInitiative?.())
+          }
         />
       </div>
       {showInitiative ? (
@@ -190,8 +214,9 @@ export function UnitRow({
             value={unit.initiative}
             bonus={unit.initiativeBonus}
             random={random}
-            onSet={onInitiativeSet}
-            onRoll={onInitiativeRoll}
+            triggerRef={roleCellRef}
+            onSet={onInitiativeSet ?? noop}
+            onRoll={onInitiativeRoll ?? noop}
             onClose={closeInitiative}
           />
         </div>
@@ -221,7 +246,7 @@ export function UnitRow({
           </span>
         ) : null}
         {!expanded && unit.note ? (
-          <NoteField value={unit.note} onChange={onNoteChange} collapsed />
+          <NoteField value={unit.note} onChange={onNoteChange ?? noop} collapsed />
         ) : null}
       </div>
       <div className={classes.hp}>
@@ -232,7 +257,7 @@ export function UnitRow({
           tempHp={unit.tempHp}
           disabled={disabled}
           data-tap={tapOf('hp')}
-          onClick={readOnly ? undefined : () => onHp()}
+          onClick={readOnly ? undefined : () => onHp?.()}
         />
       </div>
       {readOnly ? (
@@ -247,7 +272,7 @@ export function UnitRow({
           aria-label={t('details')}
           aria-expanded={expanded}
           aria-controls={expanded ? detailsId : undefined}
-          onClick={() => onToggle()}
+          onClick={() => onToggle?.()}
         >
           <span className={classes.chevron} aria-hidden="true" />
         </UnstyledButton>
@@ -263,7 +288,7 @@ export function UnitRow({
               aria-expanded={conditionsOpen}
               data-open={conditionsOpen || undefined}
               data-tap={tapOf('conditions')}
-              onClick={() => onConditions()}
+              onClick={() => onConditions?.()}
             >
               <span className={classes.triggerLabel}>{t('conditions')}</span>
               <IconChevronDown size={20} stroke={2} aria-hidden="true" />
@@ -276,26 +301,26 @@ export function UnitRow({
               aria-expanded={historyOpen}
               data-open={historyOpen || undefined}
               data-tap={tapOf('history')}
-              onClick={() => onHistory()}
+              onClick={() => onHistory?.()}
             >
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
               <IconChevronDown size={20} stroke={2} aria-hidden="true" />
             </UnstyledButton>
           </div>
-          <NoteField value={unit.note} onChange={onNoteChange} data-tap={tapOf('note')} />
+          <NoteField value={unit.note} onChange={onNoteChange ?? noop} data-tap={tapOf('note')} />
           <Menu
             opened={menuOpen}
             width={MENU_WIDTH}
             aria-label={t('menuLabel', { name: unit.name })}
             items={menuItems}
             onSelect={(id) => menuItems.find((item) => item.id === id)?.run()}
-            onClose={() => onMenuClose()}
+            onClose={() => onMenuClose?.()}
             target={
               <CardActions
                 open={menuOpen}
                 data-tap={tap === 'edit' || tap === 'more' ? tap : undefined}
-                onEdit={() => onEdit()}
-                onMore={() => onMore()}
+                onEdit={() => onEdit?.()}
+                onMore={() => onMore?.()}
               />
             }
           />

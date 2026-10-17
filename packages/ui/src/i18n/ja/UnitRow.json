@@ -21,5 +21,6 @@
   "enable": "有効にする",
   "saveAsPreset": "プリセットとして保存",
   "releaseClaim": "担当を解除",
-  "remove": "削除"
+  "remove": "削除",
+  "rollInitiative": "イニシアチブを振る"
 }

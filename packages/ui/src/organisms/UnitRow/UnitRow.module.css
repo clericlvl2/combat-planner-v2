@@ -20,11 +20,13 @@
     background: var(--cp-role-inactive-fill);
   }
 
-  &[data-flash] {
+  &[data-flash]:not([data-dead], [data-disabled]) {
     border-color: var(--cp-health-bloodied);
   }
 
   &[data-active] {
+    --cp-state-tap-marker: var(--cp-color-ink);
+
     border-color: var(--cp-color-ink);
     background: var(--cp-color-accent);
   }
@@ -34,12 +36,6 @@
   display: flex;
   align-items: stretch;
   min-height: 0;
-
-  & > .role {
-    width: 62px;
-    min-height: 0;
-    align-self: stretch;
-  }
 
   .root[data-expanded] > & > .role {
     border-bottom-left-radius: 0;

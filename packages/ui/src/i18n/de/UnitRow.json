@@ -21,5 +21,6 @@
   "enable": "Aktivieren",
   "saveAsPreset": "Als Vorlage speichern",
   "releaseClaim": "Anspruch freigeben",
-  "remove": "Entfernen"
+  "remove": "Entfernen",
+  "rollInitiative": "Initiative würfeln"
 }

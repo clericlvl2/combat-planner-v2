@@ -7,7 +7,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
 import { ConditionPicker } from '../ConditionPicker/ConditionPicker.tsx';
 import { UnitRow } from './UnitRow.tsx';
-import type { UnitRowProps } from './UnitRow.tsx';
+import type { UnitRowCallbacks, UnitRowProps } from './UnitRow.tsx';
 
 type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp'> &
   Partial<Unit> & { defenses: [number, number, number] };
@@ -96,7 +96,11 @@ const shadowArcher = unitOf({
 
 const screen: CSSProperties = { padding: layout.contentEdge };
 
-type UnitRowCellProps = Omit<UnitRowProps, 'claimedByName'> & { picker?: boolean };
+type UnitRowCellProps = Omit<UnitRowProps, 'claimedByName' | 'readOnly' | keyof UnitRowCallbacks> &
+  UnitRowCallbacks & {
+    readOnly?: boolean;
+    picker?: boolean;
+  };
 
 function UnitRowCell({
   unit: initialUnit,
@@ -114,6 +118,7 @@ function UnitRowCell({
   onNoteChange,
   onMore,
   onMenuClose,
+  readOnly = false,
   ...props
 }: UnitRowCellProps) {
   const [unit, setUnit] = useState(initialUnit);
@@ -125,6 +130,7 @@ function UnitRowCell({
     <div style={screen}>
       <UnitRow
         {...props}
+        {...(readOnly ? { readOnly: true as const } : { readOnly: false as const })}
         unit={unit}
         claimedByName={unit.claimedBy ? players[unit.claimedBy] : undefined}
         expanded={expanded}
@@ -563,7 +569,7 @@ export const ExtraFlowTapRoleBlock = meta.story({
   name: 'Flow: tap the role block to set initiative',
   args: { unit: vashtiExpanded, active: false },
   play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: /^15/ }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Roll initiative' }));
     await expect(args.onInitiative).toHaveBeenCalledOnce();
     await expect(args.onToggle).not.toHaveBeenCalled();
     const dialog = canvas.getByRole('dialog', { name: 'Initiative' });
@@ -573,7 +579,7 @@ export const ExtraFlowTapRoleBlock = meta.story({
     await userEvent.click(within(dialog).getByRole('button', { name: 'Roll d20 +3' }));
     await expect(args.onInitiativeRoll).toHaveBeenCalledOnce();
     await expect(args.onInitiativeRoll).toHaveBeenCalledWith(14, 11);
-    await expect(canvas.getByRole('button', { name: /^14/ })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Roll initiative' })).toHaveTextContent(/^14/);
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
@@ -607,7 +613,7 @@ async function pickMenuItem(canvasElement: HTMLElement, name: string) {
 
 export const ExtraActions = meta.story({
   name: 'Each action fires its own callback once',
-  args: { unit: vashtiExpanded, expanded: true },
+  args: { unit: { ...vashtiExpanded, claimedBy: MIKA }, expanded: true },
   play: async ({ args, canvas, canvasElement }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Edit' }));
     await expect(args.onEdit).toHaveBeenCalledOnce();
@@ -630,6 +636,73 @@ export const ExtraActions = meta.story({
     await expect(args.onMenuClose).toHaveBeenCalledTimes(5);
     await expect(args.onToggle).not.toHaveBeenCalled();
     await expect(args.onHp).not.toHaveBeenCalled();
+  },
+});
+
+export const ExtraReleaseClaimUnclaimed = meta.story({
+  name: 'Release claim stays visible and disabled when nobody claimed the unit',
+  args: { unit: vashtiExpanded, expanded: true },
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    const release = await canvas.findByRole('menuitem', { name: 'Release claim' });
+    await expect(release).toBeDisabled();
+    await userEvent.click(release, { pointerEventsCheck: 0 });
+    await expect(args.onReleaseClaim).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toBeEnabled();
+  },
+});
+
+export const ExtraFlashSkipsDeadAndDisabled = meta.story({
+  name: 'The flash border skips dead and disabled rows',
+  args: { active: false, flash: true },
+  render: (args) => (
+    <div style={{ ...screen, display: 'grid', gap: layout.listGap }}>
+      <UnitRow {...args} unit={unitOf(goblinSeed)} readOnly data-testid="dead" />
+      <UnitRow {...args} unit={shadowArcher} readOnly data-testid="disabled" />
+      <UnitRow {...args} unit={unitOf(orcSeed)} readOnly data-testid="alive" />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
+    await expect(border('dead')).toBe('rgb(226, 216, 198)');
+    await expect(border('disabled')).toBe('rgb(226, 216, 198)');
+    await expect(border('alive')).not.toBe('rgb(226, 216, 198)');
+  },
+});
+
+export const ExtraRoleBlockTogglesPopover = meta.story({
+  name: 'The role block closes its own popover',
+  args: { unit: vashtiExpanded, active: false, initiativeOpen: true },
+  play: async ({ args, canvas }) => {
+    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Roll initiative' }));
+    await expect(args.onInitiativeClose).toHaveBeenCalledOnce();
+    await expect(args.onInitiative).not.toHaveBeenCalled();
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+  },
+});
+
+export const ExtraTapMarkerOnActiveRow = meta.story({
+  name: 'The tap marker stays visible on the active row',
+  args: { active: true, 'data-tap': 'hp' },
+  play: async ({ canvas }) => {
+    const hp = canvas.getByRole('button', { name: '20 /36 Wounded' });
+    await expect(getComputedStyle(hp).outlineColor).toBe('rgb(35, 31, 28)');
+  },
+});
+
+export const ExtraReadOnlyWithoutCallbacks = meta.story({
+  name: 'A read-only row needs no callbacks',
+  args: { active: false },
+  render: () => (
+    <div style={screen}>
+      <UnitRow unit={vashti} readOnly />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await userEvent.click(canvas.getByText('Vashti the Hexer'));
+    await expect(canvas.queryByRole('button')).toBeNull();
+    await expect(canvas.getByText('Vashti the Hexer')).toBeVisible();
   },
 });
 
@@ -687,7 +760,7 @@ export const ExtraSetupNoInitiative = meta.story({
   args: { active: false, unit: unitOf({ ...vashtiSeed, initiative: null }) },
   play: async ({ args, canvas }) => {
     await expect(canvas.getByRole('img', { name: 'No initiative' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: /No initiative/ }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Roll initiative' }));
     await expect(args.onInitiative).toHaveBeenCalledOnce();
     const dialog = canvas.getByRole('dialog', { name: 'Initiative' });
     await expect(within(dialog).getByRole('spinbutton')).toHaveValue('—');
@@ -702,7 +775,7 @@ type KeyboardSpies = Pick<
 
 async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies) {
   const canvas = within(canvasElement);
-  const role = canvas.getByRole('button', { name: /^15/ });
+  const role = canvas.getByRole('button', { name: 'Roll initiative' });
   const chevron = canvas.getByRole('button', { name: 'Unit details' });
   await userEvent.tab();
   await waitFor(() => expect(role).toHaveFocus());
