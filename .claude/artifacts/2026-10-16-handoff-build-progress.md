@@ -79,10 +79,10 @@
 | 2.4-CombatScreen | running worker-bee 2026-10-17T13:30+03:00 | CombatScreen |
 | 2.4-CombatList | guarded `.claude/artifacts/guard/2.4-CombatList.md` (P2 ×2, P3 ×5 → `fix-2.4`) | CombatList |
 | 2.4-PlayerView | guarded `.claude/artifacts/guard/2.4-PlayerView.md` (P2 ×1, P3 ×8 → `fix-2.4`) | Heroes, TurnOrder |
-| 2.4-Library | running worker-bee 2026-10-17T13:30+03:00 | Library |
+| 2.4-Library | reported `.claude/artifacts/reports/2.4-Library.md`, gate running | Library |
 | 2.4-AppPages | guarded `.claude/artifacts/guard/2.4-AppPages.md` (P3 ×9 → `fix-2.4`) | SignIn, SignUp, Settings, Account, About |
 | 2.4-SystemScreens | guarded `.claude/artifacts/guard/2.4-SystemScreens.md` (no findings) | NotFound, UnexpectedError, CombatNotFound, LinkExpired, CombatDeleted, CantReachServer |
-| fix-2.4-core | todo, brief ready, next builder slot (Opus xhigh: domain, API, hooks) | project, api contract, FakeApiClient, hooks |
+| fix-2.4-core | running worker-bee (Opus xhigh) 2026-10-17T14:20+03:00 | project, api contract, FakeApiClient, hooks |
 | fix-2.4 | todo, after fix-2.4-core and the 2.4-Library / 2.4-CombatScreen guards (UI half) | |
 | 3-server-schema | guarded `.claude/artifacts/guard/3-server-schema.md` | schema, migrations, client-hono, server main |
 | 3-server-actions | guarded `.claude/artifacts/guard/3-server-actions.md` | combats routes, actions route, link |
@@ -94,6 +94,15 @@
 | 6-docker | todo | Dockerfile, compose, README |
 
 ## Вопросы владельцу
+
+- 2.4-Library, решения оркестратора 2026-10-17: новый ключ
+  `Toast.presetAdded` по vision — принято, `fix-2.4-core` убирает
+  `presetSaved`; `opened` у PresetFormSheet — принято; порядок строк листа
+  тегов по числу пресетов, скрытие тегов без пресетов в обоих листах (кроме
+  отмеченных и только что созданных) — принято; копия наверх, бонус
+  инициативы, защиты 0–99, Create только без совпадений — решения владельца.
+  → `fix-2.4`: доступные имена − / + Stepper включают подпись поля
+  (Stepper.tsx:109, :137).
 
 - 2.4-PlayerView guard, вне scope: vision Unit → Actions запрещает игроку Set
   max HP, но разрешает Edit, а поля формы включают max HP — игрок меняет max
@@ -494,6 +503,10 @@
   `sudo usermod -aG docker $USER` и новая сессия.
 
 ## Отличия от рендеров
+
+- 2.4-Library: копия пресета наверх; шаг бонуса инициативы и защиты 0–99;
+  Create неактивна до имени; LB-F4.7 без строки Create; порядок и счётчики
+  тегов реальные; тосты сразу после действия; кольца фокуса после play.
 
 - 2.4-PlayerView: Join/Done по vision вместо «Join as …», чекбоксы; тост
   «… was just taken»; PV-F2.2 +0 вместо +2 (до `fix-2.4`); пункт «Heroes»;

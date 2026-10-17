@@ -73,8 +73,9 @@ report with file:line of the fix).
    - toast items carry `kind: 'success' | 'neutral' | 'warning' | 'error'`;
    - `limit` maps to a toast (copy per vision: «This combat already has 99
      units», «limit reached» for combats and presets);
-   - `Toast.presetSaved` reads «{{name}} added to Library» (vision), six
-     locales;
+   - `Toast.presetAdded` («{{name}} added to Library», from `2.4-Library`)
+     is the one key for that toast: `Toast.presetSaved` is removed from the
+     six locales and its users point to `presetAdded`;
    - the «first connect» test goes offline → connected.
 
 ## Allowed paths
