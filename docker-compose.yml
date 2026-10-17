@@ -7,8 +7,10 @@ services:
         VITE_SOURCE_URL: ${VITE_SOURCE_URL:-}
         VITE_DONATE_URL: ${VITE_DONATE_URL:-}
     ports:
-      - '3000:3000'
-    env_file: .env
+      - '${PORT:-3000}:3000'
+    env_file:
+      - path: .env
+        required: false
     environment:
       PORT: '3000'
       DATABASE_PATH: /data/combat-planner.db
