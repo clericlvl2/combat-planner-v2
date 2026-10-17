@@ -10,6 +10,7 @@ export interface BottomBarProps extends Omit<
   label: string;
   icon: NonNullable<ButtonProps['icon']>;
   hint?: string;
+  onClick: NonNullable<ButtonProps['onClick']>;
 }
 
 export function BottomBar({ label, icon, hint, disabled = false, ...buttonProps }: BottomBarProps) {

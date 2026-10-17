@@ -3,6 +3,7 @@ import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/BottomBar.json';
+import { layout } from '../../layout.ts';
 import { BottomBar } from './BottomBar.tsx';
 import type { BottomBarProps } from './BottomBar.tsx';
 
@@ -129,12 +130,17 @@ export const ExtraBottomOfScreen = meta.story({
     const frameRect = frame?.getBoundingClientRect();
     const barRect = bar?.getBoundingClientRect();
     const buttonRect = button.getBoundingClientRect();
+    const { bottomBar, bottomButton } = layout;
     await expect(barRect?.bottom).toBe(frameRect?.bottom);
-    await expect(barRect?.height).toBe(98);
-    await expect(barRect?.width).toBe(390);
-    await expect(buttonRect.height).toBe(58);
-    await expect(buttonRect.left - (frameRect?.left ?? 0)).toBe(28);
-    await expect((frameRect?.bottom ?? 0) - buttonRect.bottom).toBe(28);
+    await expect(barRect?.height).toBe(bottomBar.height);
+    await expect(
+      bottomBar.borderTop + bottomBar.padding.top + bottomButton.height + bottomBar.padding.bottom,
+    ).toBe(bottomBar.height);
+    await expect(bar && getComputedStyle(bar).paddingTop).toBe(`${bottomBar.padding.top}px`);
+    await expect(barRect?.width).toBe(layout.phone.width);
+    await expect(buttonRect.height).toBe(bottomButton.height);
+    await expect(buttonRect.left - (frameRect?.left ?? 0)).toBe(bottomBar.padding.left);
+    await expect((frameRect?.bottom ?? 0) - buttonRect.bottom).toBe(bottomBar.padding.bottom);
   },
 });
 

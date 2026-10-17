@@ -8,7 +8,7 @@ export const layout = {
   listGap: 8,
   bottomBar: {
     height: 98,
-    padding: { top: 12, right: 28, bottom: 28, left: 28 },
+    padding: { top: 10, right: 28, bottom: 28, left: 28 },
     borderTop: 2,
   },
   bottomButton: { height: 58, radius: 29, edge: 28 },
