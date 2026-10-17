@@ -113,6 +113,7 @@ describe('PATCH /account', () => {
       email: EMAIL,
       displayName: 'Erin the Bold',
       language: 'en',
+      method: 'email',
     });
     expect(opened.db.select().from(user).where(eq(user.id, erinId)).get()?.name).toBe(
       'Erin the Bold',

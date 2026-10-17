@@ -4,12 +4,14 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { APIError } from 'better-auth/api';
 import { Hono } from 'hono';
 import type { JSONParsed } from 'hono/utils/types';
+import { z } from 'zod';
 import type { ApiAppEnv } from '../app.ts';
 import { SOCIAL_PROVIDERS } from '../client.ts';
 import type { SocialProvider } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import * as schema from '../db/schema.ts';
 import type { ApiEnv } from '../env.ts';
+import { signInMethodOf } from './method.ts';
 
 export const AUTH_BASE_PATH = '/api/auth';
 
@@ -39,6 +41,14 @@ const DISABLED_AUTH_PATHS = [
 ];
 
 const EMAIL_SIGN_UP = '/sign-up/email';
+const GET_SESSION = '/get-session';
+
+const EMAIL_TAKEN = {
+  code: 'emailTaken',
+  message: 'An account with this email already exists',
+} as const;
+
+const DUPLICATE_EMAIL_CODE = 'USER_ALREADY_EXISTS';
 
 const INVALID_DISPLAY_NAME = {
   code: 'invalid',
@@ -153,10 +163,45 @@ const rebase = (request: Request, routePath: string): Request => {
   return new Request(url, request);
 };
 
+const errorBodySchema = z.object({ code: z.string() });
+const sessionBodySchema = z.looseObject({ user: z.looseObject({ id: z.string() }) });
+
+const jsonResponse = (body: unknown, response: Response): Response => {
+  const headers = new Headers(response.headers);
+  headers.delete('content-length');
+  headers.set('content-type', 'application/json');
+  return new Response(JSON.stringify(body), { status: response.status, headers });
+};
+
+const bodyOf = async (response: Response): Promise<unknown> =>
+  response
+    .clone()
+    .json()
+    .catch(() => null);
+
+const withEmailTaken = async (response: Response): Promise<Response> => {
+  const body = errorBodySchema.safeParse(await bodyOf(response));
+  if (!body.success || !body.data.code.startsWith(DUPLICATE_EMAIL_CODE)) return response;
+  return jsonResponse(EMAIL_TAKEN, response);
+};
+
+const withMethod = async (auth: AuthInstance, response: Response): Promise<Response> => {
+  const body = sessionBodySchema.safeParse(await bodyOf(response));
+  if (!body.success) return response;
+  const context = await auth.$context;
+  const accounts = await context.internalAdapter.findAccounts(body.data.user.id);
+  return jsonResponse({ ...body.data, method: signInMethodOf(accounts) }, response);
+};
+
 export function createAuthApp(auth: AuthInstance) {
-  return new Hono<ApiAppEnv, AuthRoutes>().on(['GET', 'POST'], WILDCARD, (c) =>
-    auth.handler(rebase(c.req.raw, c.req.routePath)),
-  );
+  return new Hono<ApiAppEnv, AuthRoutes>().on(['GET', 'POST'], WILDCARD, async (c) => {
+    const request = rebase(c.req.raw, c.req.routePath);
+    const response = await auth.handler(request);
+    const path = new URL(request.url).pathname.slice(AUTH_BASE_PATH.length);
+    if (path === EMAIL_SIGN_UP && !response.ok) return withEmailTaken(response);
+    if (path === GET_SESSION && response.ok) return withMethod(auth, response);
+    return response;
+  });
 }
 
 export const configuredProviders = (env: ApiEnv): SocialProvider[] =>

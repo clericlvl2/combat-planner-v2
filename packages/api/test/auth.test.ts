@@ -41,6 +41,7 @@ const sessionOf = async (browser: Browser) => {
   const response = await browse(browser, 'GET', '/auth/get-session');
   const body = (await response.json()) as {
     user: { id: string; email: string; name: string; language: string };
+    method: string;
   } | null;
   if (body === null) return null;
   return sessionSchema.parse({
@@ -48,6 +49,7 @@ const sessionOf = async (browser: Browser) => {
     email: body.user.email,
     displayName: body.user.name,
     language: body.user.language,
+    method: body.method,
   });
 };
 
@@ -66,9 +68,10 @@ describe('POST /auth/sign-up/email', () => {
     expect(response.headers.getSetCookie().join(';')).toContain('session_token');
   });
 
-  it('rejects a second account for the same email', async () => {
+  it('rejects a second account for the same email with emailTaken', async () => {
     const response = await signUp(createBrowser(opened.app), EMAIL, 'Alice again');
     expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({ code: 'emailTaken' });
   });
 
   it('rejects a password under 8 characters', async () => {
@@ -110,6 +113,7 @@ describe('GET /auth/get-session', () => {
     expect(await response.json()).toMatchObject({
       user: { email: EMAIL, name: 'Alice', language: 'en' },
       session: { userId: expect.any(String) },
+      method: 'email',
     });
   });
 
@@ -221,6 +225,7 @@ describe('user update', () => {
         email: found?.user.email,
         displayName: found?.user.name,
         language: found?.user.language,
+        method: 'email',
       }),
     ).toMatchObject({ displayName: name.slice(0, LIMITS.displayName) });
   });
@@ -333,6 +338,7 @@ describe('social sign-in', () => {
       expect(await sessionOf(browser)).toMatchObject({
         email: GITHUB_EMAIL,
         displayName: name.slice(0, LIMITS.displayName),
+        method: 'github',
       });
     } finally {
       withGithub.close();

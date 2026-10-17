@@ -20,6 +20,7 @@ import {
   isoDateSchema,
   playerCombatSchema,
   presetSchema,
+  roundSchema,
   tagNameSchema,
   ulidSchema,
 } from '@combat-planner/domain';
@@ -36,11 +37,19 @@ export type VersionResult = z.infer<typeof versionResultSchema>;
 export const emailSchema = z.email();
 export const passwordSchema = z.string().min(8);
 
+export const SOCIAL_PROVIDERS = ['google', 'github'] as const;
+export type SocialProvider = (typeof SOCIAL_PROVIDERS)[number];
+
+export const SIGN_IN_METHODS = ['email', ...SOCIAL_PROVIDERS] as const;
+export const signInMethodSchema = z.enum(SIGN_IN_METHODS);
+export type SignInMethod = z.infer<typeof signInMethodSchema>;
+
 export const sessionSchema = z.object({
   userId: z.string().min(1),
   email: emailSchema,
   displayName: displayNameSchema,
   language: localeSchema,
+  method: signInMethodSchema,
 });
 export type Session = z.infer<typeof sessionSchema>;
 
@@ -63,8 +72,10 @@ export const combatSummarySchema = z.object({
   description: combatDescriptionSchema,
   color: colorSchema,
   status: combatStatusSchema,
+  round: roundSchema.nullable(),
   unitCount: z.number().int().min(0).max(LIMITS.unitsPerCombat),
   lastPlayedAt: isoDateSchema.nullable(),
+  createdAt: isoDateSchema,
   updatedAt: isoDateSchema,
 });
 export type CombatSummary = z.infer<typeof combatSummarySchema>;
@@ -140,6 +151,8 @@ export const API_ERROR_CODES = [
   'unauthorized',
   'network',
   'linkRevoked',
+  'limit',
+  'emailTaken',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 
@@ -174,7 +187,9 @@ export const apiEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('linkRevoked') }),
 ]);
 export type ApiEvent = z.infer<typeof apiEventSchema>;
-export type ApiEndEvent = Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' }>;
+export type ApiEndEvent =
+  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' }>
+  | { type: 'unauthorized' };
 
 export type Unsubscribe = () => void;
 export type DocumentListener<Document extends Combat | PlayerCombat> = (document: Document) => void;
@@ -185,9 +200,6 @@ export interface ConnectionApi {
   state(): ConnectionState;
   subscribe(listener: ConnectionListener): Unsubscribe;
 }
-
-export const SOCIAL_PROVIDERS = ['google', 'github'] as const;
-export type SocialProvider = (typeof SOCIAL_PROVIDERS)[number];
 
 export interface AuthApi {
   signUp(input: SignUpInput): Promise<Session>;

@@ -136,12 +136,32 @@ describe('GET /combats', () => {
       description: 'Road to Shadowfall',
       color: 3,
       status: 'setup',
+      round: null,
       unitCount: 0,
       lastPlayedAt: null,
+      createdAt: expect.any(String),
       updatedAt: expect.any(String),
     });
     const foreign = await call(stranger, 'GET', '/combats');
     expect(await foreign.json()).toEqual([]);
+  });
+
+  it('carries the round of an active combat and the creation time', async () => {
+    const row = opened.db.select().from(combats).where(eq(combats.id, SECOND_ID)).get();
+    if (!row) throw new Error('second combat missing');
+    opened.db
+      .update(combats)
+      .set({ document: { ...row.document, status: 'active', round: 3 } })
+      .where(eq(combats.id, SECOND_ID))
+      .run();
+    const response = await call(dm, 'GET', '/combats');
+    const summaries = combatSummarySchema.array().parse(await response.json());
+    expect(summaries.find((summary) => summary.id === SECOND_ID)).toMatchObject({
+      status: 'active',
+      round: 3,
+      createdAt: row.document.createdAt,
+    });
+    expect(summaries.find((summary) => summary.id === COMBAT_ID)?.round).toBeNull();
   });
 });
 

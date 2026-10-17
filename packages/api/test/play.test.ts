@@ -50,7 +50,7 @@ const EVERY_COLUMN = [
   'initiative',
 ];
 const FRIENDLY_COLUMNS = [...EVERY_COLUMN, 'claimedBy', 'hp', 'tempHp', 'maxHp', 'ac', 'pd', 'md'];
-const OWN_COLUMNS = [...FRIENDLY_COLUMNS, 'note', 'hpHistory'];
+const OWN_COLUMNS = [...FRIENDLY_COLUMNS, 'initiativeBonus', 'note', 'hpHistory'];
 
 const visibleKeys = (unit: PlayerUnit, playerId: string): string[] => {
   if (unit.claimedBy === playerId) return OWN_COLUMNS;

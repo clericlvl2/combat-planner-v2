@@ -22,8 +22,10 @@ export const summaryOf = (combat: Combat): CombatSummary => ({
   description: combat.description,
   color: combat.color,
   status: combat.status,
+  round: combat.status === 'active' ? combat.round : null,
   unitCount: combat.units.length,
   lastPlayedAt: combat.lastPlayedAt,
+  createdAt: combat.createdAt,
   updatedAt: combat.updatedAt,
 });
 

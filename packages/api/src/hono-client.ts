@@ -31,6 +31,7 @@ import {
   playViewSchema,
   sessionSchema,
   settingsSchema,
+  signInMethodSchema,
   versionResultSchema,
   versionSchema,
 } from './client.ts';
@@ -45,11 +46,14 @@ import type {
   LinkToken,
   Session,
   SignInInput,
+  SignInMethod,
   SignUpInput,
   Unsubscribe,
 } from './client.ts';
 
 export const RECONNECTING_AFTER_MS = 10_000;
+export const REOPEN_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 15_000] as const;
+export const EVENT_SOURCE_CLOSED = 2;
 
 export interface MessageEventLike {
   type: string;
@@ -57,6 +61,7 @@ export interface MessageEventLike {
 }
 
 export interface EventSourceLike {
+  readonly readyState: number;
   addEventListener(type: string, listener: (event: MessageEventLike) => void): void;
   close(): void;
 }
@@ -79,7 +84,7 @@ const authUserSchema = z.object({
   language: localeSchema.default('en'),
 });
 const authResponseSchema = z.object({ user: authUserSchema });
-const authSessionSchema = authResponseSchema.nullable();
+const authSessionSchema = z.object({ user: authUserSchema, method: signInMethodSchema }).nullable();
 const providersSchema = z.object({ providers: z.array(z.enum(SOCIAL_PROVIDERS)) });
 const socialSignInSchema = z.object({ url: z.string().min(1) });
 type AuthResponse = z.infer<typeof authResponseSchema>;
@@ -155,12 +160,13 @@ async function none(request: () => Promise<RawResponse>): Promise<void> {
   await send(request);
 }
 
-const sessionOf = ({ user }: AuthResponse): Session =>
+const sessionOf = ({ user }: AuthResponse, method: SignInMethod): Session =>
   sessionSchema.parse({
     userId: user.id,
     email: user.email,
     displayName: user.name,
     language: user.language,
+    method,
   });
 
 const ULID_PREFIX = /^[0-7][0-9A-HJKMNP-TV-Z]{25}/;
@@ -242,21 +248,26 @@ export function createHonoApiClient({
     onDocument: DocumentListener<Document>,
     onEnd: EndListener,
   ): Unsubscribe {
-    if (!eventSource) return () => {};
+    const EventSourceImpl = eventSource;
+    if (!EventSourceImpl) return () => {};
     const eventSchema = streamEventSchema(documentSchema);
     const stream: Stream = { status: 'connecting' };
-    const source = new eventSource(url, { withCredentials: true });
+    let source: EventSourceLike;
     let version = -1;
     let title = '';
     let opened = false;
     let closed = false;
     let probing = false;
+    let reopens = 0;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let reopenTimer: ReturnType<typeof setTimeout> | undefined;
 
     const close = () => {
       closed = true;
       if (timer !== undefined) clearTimeout(timer);
+      if (reopenTimer !== undefined) clearTimeout(reopenTimer);
       timer = undefined;
+      reopenTimer = undefined;
       source.close();
       connection.untrack(stream);
     };
@@ -274,54 +285,85 @@ export function createHonoApiClient({
       onEnd(event);
     };
 
+    const endOf = (error: unknown): ApiEndEvent | null => {
+      if (!(error instanceof ApiError)) return null;
+      if (error.status === 401) return { type: 'unauthorized' };
+      if (error.status === 410) return { type: 'linkRevoked' };
+      if (error.status === 404) return { type: 'deleted', title };
+      return null;
+    };
+
+    const reopenIfClosed = () => {
+      if (closed || reopenTimer !== undefined) return;
+      if (source.readyState !== EVENT_SOURCE_CLOSED) return;
+      const delay = REOPEN_DELAYS_MS[Math.min(reopens, REOPEN_DELAYS_MS.length - 1)];
+      reopens += 1;
+      reopenTimer = setTimeout(() => {
+        reopenTimer = undefined;
+        if (closed) return;
+        source.close();
+        source = connect();
+      }, delay);
+    };
+
     const probe = () => {
       if (probing) return;
       probing = true;
       refetch().then(
         () => {
           probing = false;
+          reopenIfClosed();
         },
         (error: unknown) => {
           probing = false;
-          if (!(error instanceof ApiError)) return;
-          if (error.status === 410) end({ type: 'linkRevoked' });
-          else if (error.status === 404) end({ type: 'deleted', title });
+          const ending = endOf(error);
+          if (ending) end(ending);
+          else reopenIfClosed();
         },
       );
     };
 
-    const handleEvent = (event: MessageEventLike) => {
-      if (typeof event.data !== 'string') return;
-      const parsed = eventSchema.safeParse(JSON.parse(event.data));
-      if (!parsed.success) return;
-      if (parsed.data.type === 'document') {
-        deliver(parsed.data.document);
-        return;
+    const connect = (): EventSourceLike => {
+      const next = new EventSourceImpl(url, { withCredentials: true });
+      const current = () => !closed && source === next;
+      const handleEvent = (event: MessageEventLike) => {
+        if (!current() || typeof event.data !== 'string') return;
+        const parsed = eventSchema.safeParse(JSON.parse(event.data));
+        if (!parsed.success) return;
+        if (parsed.data.type === 'document') {
+          deliver(parsed.data.document);
+          return;
+        }
+        end(parsed.data);
+      };
+      next.addEventListener('open', () => {
+        if (!current()) return;
+        if (timer !== undefined) clearTimeout(timer);
+        timer = undefined;
+        reopens = 0;
+        stream.status = 'open';
+        connection.update();
+        if (opened) refetch().then(deliver, () => {});
+        opened = true;
+      });
+      next.addEventListener('error', () => {
+        if (!current()) return;
+        stream.status = 'error';
+        connection.update();
+        timer ??= setTimeout(() => {
+          timer = undefined;
+          stream.status = 'reconnecting';
+          connection.update();
+        }, RECONNECTING_AFTER_MS);
+        probe();
+      });
+      for (const type of ['message', 'document', 'deleted', 'linkRevoked']) {
+        next.addEventListener(type, handleEvent);
       }
-      end(parsed.data);
+      return next;
     };
 
-    source.addEventListener('open', () => {
-      if (timer !== undefined) clearTimeout(timer);
-      timer = undefined;
-      stream.status = 'open';
-      connection.update();
-      if (opened) refetch().then(deliver, () => {});
-      opened = true;
-    });
-    source.addEventListener('error', () => {
-      stream.status = 'error';
-      connection.update();
-      timer ??= setTimeout(() => {
-        timer = undefined;
-        stream.status = 'reconnecting';
-        connection.update();
-      }, RECONNECTING_AFTER_MS);
-      probe();
-    });
-    for (const type of ['message', 'document', 'deleted', 'linkRevoked']) {
-      source.addEventListener(type, handleEvent);
-    }
+    source = connect();
     connection.track(stream);
     return close;
   }
@@ -395,15 +437,17 @@ export function createHonoApiClient({
               client.auth['sign-up'].email.$post({ json: { email, password, name: displayName } }),
             authResponseSchema,
           ),
+          'email',
         ),
       signIn: async (input: SignInInput) =>
         sessionOf(
           await json(() => client.auth['sign-in'].email.$post({ json: input }), authResponseSchema),
+          'email',
         ),
       signOut: () => none(() => client.auth['sign-out'].$post()),
       session: async () => {
         const found = await json(() => client.auth['get-session'].$get(), authSessionSchema);
-        return found === null ? null : sessionOf(found);
+        return found === null ? null : sessionOf(found, found.method);
       },
       providers: async () =>
         (await json(() => client['auth-providers'].$get(), providersSchema)).providers,

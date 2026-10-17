@@ -2,7 +2,12 @@ import type { Action, Combat } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import type { ConnectionState, EndListener } from '../src/client.ts';
-import { createHonoApiClient, RECONNECTING_AFTER_MS } from '../src/hono-client.ts';
+import {
+  createHonoApiClient,
+  EVENT_SOURCE_CLOSED,
+  RECONNECTING_AFTER_MS,
+  REOPEN_DELAYS_MS,
+} from '../src/hono-client.ts';
 import type { EventSourceLike, MessageEventLike } from '../src/hono-client.ts';
 
 const baseUrl = 'http://combat-planner.test/api';
@@ -69,6 +74,7 @@ class StubEventSource implements EventSourceLike {
   readonly url: string;
   readonly listeners = new Map<string, Array<(event: MessageEventLike) => void>>();
   closed = false;
+  readyState = 0;
 
   constructor(url: string) {
     this.url = url;
@@ -81,6 +87,17 @@ class StubEventSource implements EventSourceLike {
 
   close() {
     this.closed = true;
+    this.readyState = EVENT_SOURCE_CLOSED;
+  }
+
+  open() {
+    this.readyState = 1;
+    this.emit('open');
+  }
+
+  refuse() {
+    this.readyState = EVENT_SOURCE_CLOSED;
+    this.emit('error');
   }
 
   emit(type: string, data?: unknown) {
@@ -127,7 +144,12 @@ describe('createHonoApiClient error mapping', () => {
   it.each([
     [409, { code: 'invalid', message: 'A tag with this name already exists' }, 'invalid'],
     [404, { code: 'linkRevoked', message: 'This link was reissued' }, 'linkRevoked'],
-    [422, { code: 'limit', message: 'limit reached' }, 'invalid'],
+    [422, { code: 'limit', message: 'limit reached' }, 'limit'],
+    [
+      422,
+      { code: 'emailTaken', message: 'An account with this email already exists' },
+      'emailTaken',
+    ],
     [403, { code: 'FORBIDDEN', message: 'nope' }, 'forbidden'],
     [410, { code: 'linkRevoked', message: 'This link was reissued' }, 'linkRevoked'],
   ] as const)('prefers a known body code over status %i', async (status, body, code) => {
@@ -192,6 +214,7 @@ describe('createHonoApiClient requests', () => {
     const { fetch } = stubFetch(200, {
       session: { id: 'session-1' },
       user: { id: 'user-1', email: 'dm@example.com', name: 'DM', language: 'ru' },
+      method: 'google',
     });
     const client = createHonoApiClient({ baseUrl, fetch });
     await expect(client.auth.session()).resolves.toEqual({
@@ -199,7 +222,22 @@ describe('createHonoApiClient requests', () => {
       email: 'dm@example.com',
       displayName: 'DM',
       language: 'ru',
+      method: 'google',
     });
+  });
+
+  it('auth.signIn and auth.signUp report the email method', async () => {
+    const { fetch } = stubFetch(200, {
+      token: 'token',
+      user: { id: 'user-1', email: 'dm@example.com', name: 'DM', language: 'en' },
+    });
+    const client = createHonoApiClient({ baseUrl, fetch });
+    await expect(
+      client.auth.signIn({ email: 'dm@example.com', password: 'password' }),
+    ).resolves.toMatchObject({ method: 'email' });
+    await expect(
+      client.auth.signUp({ email: 'dm@example.com', password: 'password', displayName: 'DM' }),
+    ).resolves.toMatchObject({ method: 'email' });
   });
 
   it('rejects a response that does not match the schema', async () => {
@@ -362,6 +400,62 @@ describe('createHonoApiClient stream probe', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       expect(ended).not.toHaveBeenCalled();
       expect(source.closed).toBe(false);
+    });
+
+    it('ends with unauthorized when the probe answers 401', async () => {
+      const { fetch } = stubFetch(401, { message: 'Unauthorized' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const ended = vi.fn();
+      streams[kind](client, ended);
+      const source = StubEventSource.instances[0]!;
+      source.open();
+      source.refuse();
+      await vi.waitFor(() => expect(ended).toHaveBeenCalledWith({ type: 'unauthorized' }));
+      expect(ended).toHaveBeenCalledTimes(1);
+      expect(source.closed).toBe(true);
+      expect(StubEventSource.instances).toHaveLength(1);
+      expect(client.connection.state()).toBe('offline');
+    });
+
+    it('reopens a refused stream itself with backoff and reports reconnecting until it opens', async () => {
+      vi.useFakeTimers();
+      const { fetch, seen } = stubFetch(502, { message: 'Bad gateway' });
+      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const states: ConnectionState[] = [];
+      client.connection.subscribe((state) => states.push(state));
+      const ended = vi.fn();
+      streams[kind](client, ended);
+      const first = StubEventSource.instances[0]!;
+      first.open();
+      const settle = async () => {
+        for (let turn = 0; turn < 10; turn += 1) await vi.advanceTimersByTimeAsync(0);
+      };
+      let waited = 0;
+      for (const [attempt, delay] of [...REOPEN_DELAYS_MS, 15_000].entries()) {
+        StubEventSource.instances[attempt]!.refuse();
+        await settle();
+        expect(seen).toHaveLength(attempt + 1);
+        await vi.advanceTimersByTimeAsync(delay - 1);
+        expect(StubEventSource.instances).toHaveLength(attempt + 1);
+        await vi.advanceTimersByTimeAsync(1);
+        expect(StubEventSource.instances).toHaveLength(attempt + 2);
+        expect(StubEventSource.instances[attempt]!.closed).toBe(true);
+        expect(StubEventSource.instances[attempt + 1]!.url).toBe(first.url);
+        waited += delay;
+        expect(client.connection.state()).toBe(
+          waited >= RECONNECTING_AFTER_MS ? 'reconnecting' : 'connected',
+        );
+      }
+      StubEventSource.instances.at(-1)!.open();
+      expect(client.connection.state()).toBe('connected');
+      expect(states).toEqual(['connected', 'reconnecting', 'connected']);
+      expect(ended).not.toHaveBeenCalled();
+      StubEventSource.instances.at(-1)!.refuse();
+      await settle();
+      await vi.advanceTimersByTimeAsync(REOPEN_DELAYS_MS[0] - 1);
+      expect(StubEventSource.instances).toHaveLength(REOPEN_DELAYS_MS.length + 2);
+      await vi.advanceTimersByTimeAsync(1);
+      expect(StubEventSource.instances).toHaveLength(REOPEN_DELAYS_MS.length + 3);
     });
 
     it('does not end a stream that was closed before the probe answered', async () => {

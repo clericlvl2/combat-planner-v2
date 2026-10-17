@@ -4,7 +4,8 @@ import type { Session } from '../client.ts';
 import { localeSchema } from '../client.ts';
 import type { Executor } from '../combats/store.ts';
 import { listOwnCombats } from '../combats/store.ts';
-import { user } from '../db/schema.ts';
+import { signInMethodOf } from '../auth/method.ts';
+import { account, user } from '../db/schema.ts';
 
 export const USER_NOT_FOUND = { code: 'notFound', message: 'User not found' } as const;
 
@@ -17,11 +18,17 @@ export const findSession = (db: Executor, userId: string): Session | undefined =
     .where(eq(user.id, userId))
     .get();
   if (!row) return undefined;
+  const accounts = db
+    .select({ providerId: account.providerId, updatedAt: account.updatedAt })
+    .from(account)
+    .where(eq(account.userId, userId))
+    .all();
   return {
     userId,
     email: row.email,
     displayName: row.name,
     language: localeSchema.parse(row.language),
+    method: signInMethodOf(accounts),
   };
 };
 
