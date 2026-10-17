@@ -23,10 +23,9 @@
 | 2.3 | организмы | 2.3-organisms-a…i, 2.3-UnitRow, 2.3-UnitForm, 2.3-NumpadSheet, fix-2.3 | |
 | 2.4 | хуки, экраны | 2.4-api-hooks, 2.4-CombatScreen, 2.4-CombatList, 2.4-PlayerView, 2.4-Library, 2.4-AppPages, 2.4-SystemScreens, fix-2.4-core, fix-2.4 | phase-2 |
 | 3 | сервер | 3-server-schema, 3-server-actions, 3-server-live, 3-server-rest, fix-3 | phase-3 |
-| 4 | web | 4-web, fix-4 | |
+| 4 | web | 4-web, fix-4-overlays, fix-4, fix-4-web | |
 | 5 | e2e | 5-e2e, fix-5, fix-5-e2e | |
-| 6 | docker | fix-5-e2e | todo | combat lifecycle, player, library, account |
-| 6-docker | |
+| 6 | docker | 6-docker | |
 
 ## Текущий шаг
 
@@ -97,6 +96,7 @@
 | fix-4-web | handed back 5/5 (report `.claude/artifacts/reports/fix-4-web.md`), rebased, gate running; e2e after `5-e2e` frees port 3000 | swipe, router test, locale, teardown |
 | fix-4 | guarded `.claude/artifacts/guard/fix-4.md` (P2 ×1, P3 ×6 → `fix-5`; P3 ×2 accepted) | |
 | fix-5 | running worker-bee a0de5a0 2026-10-17T17:08+03:00 (Opus 5.5 xhigh) | |
+| fix-5-e2e | running worker-bee a1bda23 2026-10-17T17:15+03:00 (Opus 5.5 medium) | combat lifecycle, player, library, account |
 | 6-docker | handed back 3/3 (report `.claude/artifacts/reports/6-docker.md`; production command outside Docker: /api/health and / 200; docker build/compose not run, no socket), gate running | Dockerfile, compose, README |
 
 ## Вопросы владельцу
