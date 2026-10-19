@@ -316,6 +316,25 @@ describe('createHonoApiClient connection', () => {
     unsubscribe();
   });
 
+  it.each([
+    ['is not JSON', '{"type":"document",'],
+    ['fails the schema', JSON.stringify({ type: 'document', version: 2, document: { id: 1 } })],
+  ])('drops an event that %s and refetches the document', async (_case, data) => {
+    const { fetch, seen } = stubFetch(200, combatAt(6));
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const documents: DmCombat[] = [];
+    const ended = vi.fn();
+    const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), ended);
+    const source = StubEventSource.instances.at(-1)!;
+    source.emit('open');
+    expect(() => source.emit('message', data)).not.toThrow();
+    await vi.waitFor(() => expect(documents.map((doc) => doc.version)).toEqual([6]));
+    expect(seen.map((request) => request.url.pathname)).toEqual([`/api/combats/${combatId}`]);
+    expect(ended).not.toHaveBeenCalled();
+    expect(source.closed).toBe(false);
+    unsubscribe();
+  });
+
   it('closes the stream on a final event and hands it to onEnd', () => {
     const { fetch } = stubFetch(200, combatAt(1));
     const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });

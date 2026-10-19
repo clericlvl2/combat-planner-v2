@@ -233,6 +233,14 @@ function createConnection() {
   };
 }
 
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+};
+
 export function createHonoApiClient({
   baseUrl,
   fetch: customFetch,
@@ -351,8 +359,16 @@ export function createHonoApiClient({
       const current = () => !closed && source === next;
       const handleEvent = (event: MessageEventLike) => {
         if (!current() || typeof event.data !== 'string') return;
-        const parsed = eventSchema.safeParse(JSON.parse(event.data));
-        if (!parsed.success) return;
+        const parsed = eventSchema.safeParse(parseJson(event.data));
+        if (!parsed.success) {
+          refetch().then(
+            (document) => {
+              if (current()) deliver(document);
+            },
+            () => {},
+          );
+          return;
+        }
         if (parsed.data.type === 'document') {
           deliver(parsed.data.document);
           return;
