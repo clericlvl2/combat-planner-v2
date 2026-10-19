@@ -1015,7 +1015,7 @@ describe('copyCombat', () => {
       activeUnitId: null,
       lastPlayedAt: null,
       linkGeneration: 0,
-      version: 0,
+      version: 1,
       players: {},
       createdAt: LATER,
       updatedAt: LATER,

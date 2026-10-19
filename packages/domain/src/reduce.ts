@@ -545,7 +545,7 @@ export const copyCombat = (combat: Combat, combatId: CombatId, now: string): Com
   activeUnitId: null,
   lastPlayedAt: null,
   linkGeneration: 0,
-  version: 0,
+  version: 1,
   units: combat.units.map((unit) => ({
     ...restartedUnit(unit),
     disabled: unit.disabled,

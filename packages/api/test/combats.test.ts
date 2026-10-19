@@ -208,6 +208,17 @@ describe('PATCH /combats/:id', () => {
     const response = await call(dm, 'PATCH', `/combats/${COMBAT_ID}`, { title: 'x'.repeat(81) });
     expect(response.status).toBe(400);
   });
+
+  it('keeps the version and broadcasts nothing for an empty body', async () => {
+    const before = await fetchCombat(dm);
+    const { events, unsubscribe } = listen(COMBAT_ID);
+    const response = await call(dm, 'PATCH', `/combats/${COMBAT_ID}`, {});
+    unsubscribe();
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ version: before.version });
+    expect(await fetchCombat(dm)).toEqual(before);
+    expect(events).toEqual([]);
+  });
 });
 
 describe('POST /combats/:id/open', () => {
@@ -249,6 +260,7 @@ describe('POST /combats/:id/duplicate', () => {
       status: 'setup',
       lastPlayedAt: null,
       linkGeneration: 0,
+      version: 1,
       players: {},
     });
     expect(copy.createdAt).not.toBe(source.createdAt);

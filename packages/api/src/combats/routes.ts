@@ -81,6 +81,7 @@ export const combatsApp = new Hono<ApiAppEnv>()
     const updated = c.get('db').transaction((tx) => {
       const combat = findOwnCombat(tx, c.get('userId'), c.req.param('id'));
       if (!combat) return undefined;
+      if (Object.keys(patch).length === 0) return { version: combat.version, document: null };
       const next: Combat = {
         ...combat,
         ...patch,
@@ -88,10 +89,10 @@ export const combatsApp = new Hono<ApiAppEnv>()
         updatedAt: nowIso(),
       };
       saveCombat(tx, next);
-      return dmDocument(tx, next);
+      return { version: next.version, document: dmDocument(tx, next) };
     });
     if (!updated) return c.json(NOT_FOUND, 404);
-    broadcastDocument(updated.id, updated);
+    if (updated.document) broadcastDocument(updated.document.id, updated.document);
     return c.json({ version: updated.version });
   })
   .delete('/:id', (c) => {
