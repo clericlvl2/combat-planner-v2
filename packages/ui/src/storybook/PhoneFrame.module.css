@@ -12,8 +12,6 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  width: 390px;
-  height: 844px;
   overflow: hidden;
   contain: layout;
   border-radius: 28px;

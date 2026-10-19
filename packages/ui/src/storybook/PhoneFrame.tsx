@@ -1,32 +1,68 @@
 import type { Decorator } from '@storybook/react-vite';
 import type { CSSProperties, ReactNode } from 'react';
 import { layout } from '../layout.ts';
+import type { Viewport } from '../layout.ts';
 import classes from './PhoneFrame.module.css';
 
 export interface PhoneFrameProps {
   children: ReactNode;
   overlay?: boolean;
   docs?: boolean;
+  viewport?: Viewport;
 }
 
 export interface PhoneFrameParameter {
   overlay?: boolean;
 }
 
-const phoneStyle = {
-  width: layout.phone.width,
-  height: layout.phone.height,
-  '--cp-layout-status-bar': `${layout.statusBar}px`,
-} as CSSProperties;
+const viewportNames: Record<Viewport, string> = {
+  narrow: 'Narrow',
+  phone: 'Phone',
+  desktop: 'Desktop',
+};
 
-export function PhoneFrame({ children, overlay = false, docs = false }: PhoneFrameProps) {
+const viewportList = Object.keys(viewportNames) as Viewport[];
+
+export const frameGlobalType = {
+  frame: {
+    description: 'Phone frame width',
+    toolbar: {
+      title: 'Frame',
+      icon: 'mobile' as const,
+      items: viewportList.map((value) => ({
+        value,
+        title: `${viewportNames[value]} ${layout.viewports[value]}`,
+      })),
+      dynamicTitle: true,
+    },
+  },
+};
+
+function isViewport(value: unknown): value is Viewport {
+  return viewportList.some((viewport) => viewport === value);
+}
+
+function phoneStyle(viewport: Viewport): CSSProperties {
+  return {
+    width: layout.viewports[viewport],
+    height: layout.phone.height,
+    '--cp-layout-status-bar': `${layout.statusBar}px`,
+  } as CSSProperties;
+}
+
+export function PhoneFrame({
+  children,
+  overlay = false,
+  docs = false,
+  viewport = 'phone',
+}: PhoneFrameProps) {
   return (
     <div
       className={classes.phone}
       data-phone-frame=""
       data-overlay={overlay || undefined}
       data-docs={docs || undefined}
-      style={phoneStyle}
+      style={phoneStyle(viewport)}
     >
       <div className={classes.statusBar} style={{ height: layout.statusBar }} aria-hidden="true">
         9:41
@@ -54,10 +90,14 @@ function phoneFrameOf(value: unknown): PhoneFrameParameter | null {
   return null;
 }
 
-export const withPhoneFrame: Decorator = (Story, { parameters, viewMode }) => {
+export const withPhoneFrame: Decorator = (Story, { globals, parameters, viewMode }) => {
   const phoneFrame = phoneFrameOf(parameters.phoneFrame);
   return phoneFrame ? (
-    <PhoneFrame overlay={phoneFrame.overlay === true} docs={viewMode === 'docs'}>
+    <PhoneFrame
+      overlay={phoneFrame.overlay === true}
+      docs={viewMode === 'docs'}
+      viewport={isViewport(globals.frame) ? globals.frame : 'phone'}
+    >
       <Story />
     </PhoneFrame>
   ) : (
