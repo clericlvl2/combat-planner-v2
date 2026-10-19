@@ -46,6 +46,7 @@ export const RECONNECTING_AFTER_MS = 10_000;
 export const REOPEN_DELAYS_MS = [1_000, 2_000, 4_000, 8_000, 15_000] as const;
 export const EVENT_SOURCE_CLOSED = 2;
 export const PROBE_TIMEOUT_MS = 5_000;
+export const REPAIR_TIMEOUT_MS = 5_000;
 
 export interface MessageEventLike {
   type: string;
@@ -293,6 +294,7 @@ export function createHonoApiClient({
       timer = undefined;
       reopenTimer = undefined;
       cancelProbe();
+      cancelRepair();
       source.close();
       connection.untrack(stream);
     };
@@ -356,21 +358,55 @@ export function createHonoApiClient({
       );
     };
 
-    let repairing = false;
+    let repairController: AbortController | undefined;
+    let repairTimer: ReturnType<typeof setTimeout> | undefined;
+    let repairQueued = false;
+
+    const settleRepair = () => {
+      if (repairTimer !== undefined) clearTimeout(repairTimer);
+      repairTimer = undefined;
+      repairController = undefined;
+    };
+
+    const cancelRepair = () => {
+      const controller = repairController;
+      settleRepair();
+      repairQueued = false;
+      controller?.abort();
+    };
 
     const repair = () => {
-      if (repairing) return;
-      repairing = true;
-      refetch()
-        .then(
-          (document) => {
-            if (!closed) deliver(document);
-          },
-          () => {},
-        )
-        .finally(() => {
-          repairing = false;
-        });
+      if (closed) return;
+      if (repairController) {
+        repairQueued = true;
+        return;
+      }
+      const controller = new AbortController();
+      const current = () => repairController === controller;
+      const followUp = () => {
+        if (!repairQueued) return;
+        repairQueued = false;
+        repair();
+      };
+      repairController = controller;
+      repairTimer = setTimeout(() => {
+        settleRepair();
+        controller.abort();
+        followUp();
+      }, REPAIR_TIMEOUT_MS);
+      refetch(controller.signal).then(
+        (document) => {
+          if (!current()) return;
+          settleRepair();
+          deliver(document);
+          followUp();
+        },
+        () => {
+          if (!current()) return;
+          settleRepair();
+          followUp();
+        },
+      );
     };
 
     const connect = (): EventSourceLike => {
@@ -395,6 +431,7 @@ export function createHonoApiClient({
         if (timer !== undefined) clearTimeout(timer);
         timer = undefined;
         reopens = 0;
+        cancelRepair();
         stream.status = 'open';
         connection.update();
         if (opened) refetch().then(deliver, () => {});
