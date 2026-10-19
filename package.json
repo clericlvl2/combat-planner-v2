@@ -11,7 +11,7 @@
     "build": "pnpm --filter @combat-planner/web run build",
     "dev": "pnpm --parallel --filter @combat-planner/web --filter @combat-planner/server run dev",
     "screenshots:update": "bash scripts/screenshots-update.sh",
-    "e2e": "playwright test --pass-with-no-tests",
+    "e2e": "playwright test",
     "status": "bash scripts/status.sh"
   },
   "devDependencies": {

@@ -1,6 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-test('a DM runs a combat and a player follows the turn order', async ({ page, browser }) => {
+const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+test('a DM runs a combat and a player follows the turn order', async ({
+  page,
+  browser,
+  baseURL,
+}) => {
   const email = `dm-${Date.now().toString(36)}@example.com`;
 
   await page.goto('/');
@@ -32,7 +38,9 @@ test('a DM runs a combat and a player follows the turn order', async ({ page, br
   await page.getByRole('button', { name: 'Menu', exact: true }).click();
   await page.getByRole('menuitem', { name: 'Share' }).click();
   const link = await page.getByText(/\/play\?t=/).textContent();
-  expect(link).toMatch(/^http:\/\/localhost:3000\/combats\/[0-9A-Z]{26}\/play\?t=.+/);
+  expect(link).toMatch(
+    new RegExp(`^${escapeRegExp(baseURL ?? '')}/combats/[0-9A-Z]{26}/play\\?t=.+`),
+  );
 
   const playerContext = await browser.newContext({ viewport: { width: 390, height: 844 } });
   try {
