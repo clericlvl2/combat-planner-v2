@@ -183,7 +183,10 @@ function OverSheetCell({ onConfirm, onCancel, onSheetClose }: DialogCellProps) {
 const meta = preview.meta({
   title: 'Organisms/Dialog',
   component: DialogCell,
-  parameters: { phoneFrame: { overlay: true } },
+  parameters: {
+    phoneFrame: { overlay: true },
+    docs: { story: { inline: false, height: '876px' } },
+  },
   args: { preset: 'clear', onConfirm: fn(), onCancel: fn(), onSheetClose: fn() },
 });
 
