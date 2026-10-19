@@ -26,12 +26,20 @@ CRIT 3b UNVERIFIABLE (for the guard): the clean-clone run.
   - Both processes stopped and `pnpm dev` restarted: no generation, and the same cookie still returns the user.
   - Ports were free after the stop. → PASS.
 CRIT 4a PASS main.test.ts:252-286.
-CRIT 4b UNVERIFIABLE — `docker compose up --build` was never run: the Docker socket is denied to this user.
+CRIT 4b PASS (orchestrator, 2026-10-19, after the owner joined the `docker` group). Clean clone of c4e12b2, no `.env`.
+- First `docker compose -p cpverify build`: stalled for 14 min in `node-gyp rebuild` of better-sqlite3 after the Node headers download, at 0 % CPU (transient network stall in the build). Killed.
+- Second build: 47 s, exit 0.
+- `up -d`: healthy.
+  - `/api/health` 200, `/` 200, sign-up 200, get-session returns the user.
+  - Log: `BETTER_AUTH_SECRET and LINK_SECRET generated and stored in /data/secrets.json`.
+  - `/data` is owned by uid 1000, `secrets.json` 600, the process is `node` (1000).
+- `restart`: healthy, no generation, the same cookie returns the user.
+- Afterwards: `down -v` cleaned up, port 3000 free.
 CRIT 5 PASS — 8 subjects, paths, no comments, trailer.
 
 ## Findings
 
-1. P2 Dockerfile:12-25 with pnpm-workspace.yaml:19 — the Docker build was never run. `useNodeVersion` now downloads Node 24.12.0 in the build stages (hypothesis), so a builder without access to nodejs.org fails.
+1. P2→P3 Dockerfile:12-25 with pnpm-workspace.yaml:19 — the build works (see CRIT 4b). It needs nodejs.org: `useNodeVersion`, plus the node-gyp headers for better-sqlite3, which compiles from source. `useNodeVersion` now downloads Node 24.12.0 in the build stages (hypothesis), so a builder without access to nodejs.org fails.
 2. P3 main.ts:68-71,117,91 — first-start race: two processes on an empty data directory can store different secrets. Fix: `linkSync` publish, with re-read on EEXIST.
 3. P3 main.ts:90-91 — no fsync; a crash right after generation can leave a zero-length file, which fails closed.
 4. P3 main.ts:8-9 — `loadEnvFile` runs after the imports, so Better Auth's import-time `NODE_ENV` snapshot misses `.env`.
