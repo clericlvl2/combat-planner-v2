@@ -80,6 +80,23 @@ function hangingFetch({ honorAbort }: { honorAbort: boolean }) {
   return { fetch, signals };
 }
 
+interface HeldRequest {
+  signal: AbortSignal;
+  answer: (version: number) => void;
+}
+
+function heldFetch() {
+  const requests: HeldRequest[] = [];
+  const fetch = ((input: string | URL | Request, init?: RequestInit) => {
+    const { signal } = new Request(input, init);
+    return new Promise<Response>((resolve, reject) => {
+      requests.push({ signal, answer: (version) => resolve(Response.json(combatAt(version))) });
+      signal.addEventListener('abort', () => reject(signal.reason));
+    });
+  }) as typeof globalThis.fetch;
+  return { fetch, requests };
+}
+
 const failingFetch = (async () => {
   throw new TypeError('fetch failed');
 }) as typeof globalThis.fetch;
@@ -447,6 +464,66 @@ describe('createHonoApiClient connection', () => {
     source.emit('message', 'not json');
     await vi.waitFor(() => expect(signals).toHaveLength(4));
     unsubscribe();
+  });
+
+  it('holds a repair until the reconnect refetch answers, then runs it as the follow-up', async () => {
+    const { fetch, requests } = heldFetch();
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const documents: DmCombat[] = [];
+    const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
+    const source = StubEventSource.instances.at(-1)!;
+    source.emit('open');
+    source.emit('error');
+    await vi.waitFor(() => expect(requests).toHaveLength(1));
+    requests[0]!.answer(2);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    source.emit('open');
+    await vi.waitFor(() => expect(requests).toHaveLength(2));
+    source.emit('message', 'not json');
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(requests).toHaveLength(2);
+    requests[1]!.answer(5);
+    await vi.waitFor(() => expect(documents.map((doc) => doc.version)).toEqual([5]));
+    await vi.waitFor(() => expect(requests).toHaveLength(3));
+    requests[2]!.answer(6);
+    await vi.waitFor(() => expect(documents.map((doc) => doc.version)).toEqual([5, 6]));
+    unsubscribe();
+  });
+
+  it('aborts a reconnect refetch past the timeout and delivers nothing after close', async () => {
+    vi.useFakeTimers();
+    const { fetch, requests } = heldFetch();
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const documents: DmCombat[] = [];
+    const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
+    const source = StubEventSource.instances.at(-1)!;
+    const reconnect = async () => {
+      source.emit('error');
+      await vi.advanceTimersByTimeAsync(0);
+      requests.at(-1)!.answer(2);
+      await vi.advanceTimersByTimeAsync(0);
+      source.emit('open');
+      await vi.advanceTimersByTimeAsync(0);
+      return requests.at(-1)!;
+    };
+    source.emit('open');
+    const stuck = await reconnect();
+    expect(requests).toHaveLength(2);
+    await vi.advanceTimersByTimeAsync(REPAIR_TIMEOUT_MS);
+    expect(stuck.signal.aborted).toBe(true);
+    source.emit('message', 'not json');
+    await vi.advanceTimersByTimeAsync(0);
+    expect(requests).toHaveLength(3);
+    requests[2]!.answer(4);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(documents.map((doc) => doc.version)).toEqual([4]);
+    const late = await reconnect();
+    expect(requests).toHaveLength(5);
+    unsubscribe();
+    expect(late.signal.aborted).toBe(true);
+    late.answer(9);
+    await vi.advanceTimersByTimeAsync(0);
+    expect(documents.map((doc) => doc.version)).toEqual([4]);
   });
 
   it('hands the player the DM language from the stream and from the refetch', async () => {

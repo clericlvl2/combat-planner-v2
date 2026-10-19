@@ -434,7 +434,7 @@ export function createHonoApiClient({
         cancelRepair();
         stream.status = 'open';
         connection.update();
-        if (opened) refetch().then(deliver, () => {});
+        if (opened) repair();
         opened = true;
       });
       next.addEventListener('error', () => {
