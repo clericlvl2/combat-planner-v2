@@ -105,6 +105,7 @@
 | fix-8-docs-overlays | merged 55cdc59 (gate green); docs.story.inline false on Dialog and Drawer stole focus and ran play in the docs iframes, superseded by fix-9 | Dialog, Drawer |
 | fix-9-docs-overlays | merged 9064706 (gate green); browser check: no scroll lock, no focus trap, no play on both docs pages; Sheet in `organisms-dialog--extra-over-sheet` still focused itself on open, fixed by fix-10 | Dialog, Drawer, docs theme |
 | fix-10-docs-sheet-focus | merged 3873291 (gate green); browser check of six docs pages (Sheet, Dialog, Drawer, Button, Settings, CombatScreen): no iframes, no scroll lock, no focus on load, no play, overlays 0 px overflow | Sheet, docs theme |
+| fix-11-i18n-review | merged d2c5b7b (gate green except check-commit path scope, accepted in the brief); proofreading de/es/fr/ja/ru by five Opus reviewers applied, 55 baselines regenerated | de, es, fr, ja, ru translations, translation stories |
 
 ## Вопросы владельцу
 
