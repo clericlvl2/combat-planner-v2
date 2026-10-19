@@ -45,17 +45,51 @@ export function createRoutes({
       .fetchQuery({ queryKey: SESSION_KEY, queryFn: () => api.auth.session(), staleTime: 0 })
       .catch(unreachable);
 
-  const requireSession = async () => {
-    const session = await cachedSession();
-    if (session === null) throw redirect(SIGN_IN_PATH);
-    if (session === undefined) return null;
+  const applySessionLanguage = async (session: Session) => {
     const i18n = await language;
+    if (i18n.language !== session.language) await i18n.changeLanguage(session.language);
+  };
+
+  let stopFollowing = (): void => undefined;
+
+  const leaveDm = () => {
+    stopFollowing();
+    stopFollowing = () => undefined;
+  };
+
+  const followSessionLanguage = () => {
+    const unsubscribe = queryClient.getQueryCache().subscribe(() => {
+      const session = queryClient.getQueryData<Session | null>(SESSION_KEY);
+      if (session === undefined) return;
+      leaveDm();
+      if (session) void applySessionLanguage(session);
+    });
+    stopFollowing = unsubscribe;
+  };
+
+  const requireSession = async ({ request }: LoaderFunctionArgs) => {
+    leaveDm();
+    const session = await cachedSession();
+    if (request.signal.aborted) return null;
+    if (session === null) throw redirect(SIGN_IN_PATH);
+    if (session === undefined) {
+      followSessionLanguage();
+      return null;
+    }
+    const i18n = await language;
+    if (request.signal.aborted) return null;
     if (i18n.language !== session.language) await i18n.changeLanguage(session.language);
     return null;
   };
 
   const requireGuest = async () => {
+    leaveDm();
     if (await freshSession()) throw redirect(HOME_PATH);
+    return null;
+  };
+
+  const notFound = () => {
+    leaveDm();
     return null;
   };
 
@@ -63,11 +97,14 @@ export function createRoutes({
     combatId: params.id ?? '',
   });
 
-  const playerData = ({ params, request }: LoaderFunctionArgs): PlayerRouteData => ({
-    combatId: params.id ?? '',
-    token: new URL(request.url).searchParams.get('t') || null,
-    playerId: playerId(),
-  });
+  const playerData = ({ params, request }: LoaderFunctionArgs): PlayerRouteData => {
+    leaveDm();
+    return {
+      combatId: params.id ?? '',
+      token: new URL(request.url).searchParams.get('t') || null,
+      playerId: playerId(),
+    };
+  };
 
   return [
     {
@@ -98,7 +135,7 @@ export function createRoutes({
             { id: 'sign-up', path: 'auth/sign-up', element: <SignUp /> },
           ],
         },
-        { id: 'not-found', path: '*', element: <NotFoundPage /> },
+        { id: 'not-found', path: '*', loader: notFound, element: <NotFoundPage /> },
       ],
     },
   ];

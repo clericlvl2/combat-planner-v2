@@ -7,7 +7,7 @@ import {
   scenario,
 } from '@combat-planner/ui';
 import { createMemoryRouter } from 'react-router';
-import { afterEach, describe, expect, it } from 'vite-plus/test';
+import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { createRoutes } from './router.tsx';
 import { watchRouteLocale } from './routeLocale.ts';
 
@@ -45,7 +45,11 @@ const settled = (router: MemoryRouter): Promise<void> =>
     });
   });
 
-async function start(path: string, signedIn = true) {
+async function start(
+  path: string,
+  signedIn = true,
+  prepare: (api: FakeApiClient) => void = () => undefined,
+) {
   const api = new FakeApiClient({
     scenario: scenario({
       session: signedIn ? DM_SESSION : null,
@@ -53,6 +57,7 @@ async function start(path: string, signedIn = true) {
       settings: { language: DM_LANGUAGE },
     }),
   });
+  prepare(api);
   const queryClient = createQueryClient();
   const i18n = createI18n(BROWSER_LOCALE);
   const router = createMemoryRouter(
@@ -86,6 +91,25 @@ const recordDmFirstFrames = (router: MemoryRouter, i18n: { language: string }): 
 const go = async (router: MemoryRouter, path: string) => {
   await router.navigate(path);
   await settled(router);
+};
+
+const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+const failSessionOnce = (api: FakeApiClient) => {
+  vi.spyOn(api.auth, 'session').mockRejectedValueOnce(new Error('offline'));
+};
+
+const holdSession = (api: FakeApiClient): (() => void) => {
+  const session = api.auth.session.bind(api.auth);
+  let release = (): void => undefined;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  vi.spyOn(api.auth, 'session').mockImplementationOnce(async () => {
+    await gate;
+    return session();
+  });
+  return release;
 };
 
 describe('watchRouteLocale', () => {
@@ -149,6 +173,35 @@ describe('watchRouteLocale', () => {
     const firstFrames = recordDmFirstFrames(router, i18n);
     await go(router, '/library');
     expect(firstFrames).toEqual([DM_LANGUAGE]);
+  });
+
+  it('applies the DM language once a session that failed on entry arrives', async () => {
+    const { queryClient, router, i18n } = await start('/combats', true, failSessionOnce);
+    expect(router.state.location.pathname).toBe('/combats');
+    expect(i18n.language).toBe(BROWSER_LOCALE);
+    await queryClient.refetchQueries({ queryKey: ['session'] });
+    await vi.waitFor(() => expect(i18n.language).toBe(DM_LANGUAGE));
+  });
+
+  it('leaves the language alone when a late session arrives after the DM route is left', async () => {
+    const { queryClient, router, i18n } = await start('/combats', true, failSessionOnce);
+    await go(router, '/missing');
+    await queryClient.refetchQueries({ queryKey: ['session'] });
+    await tick();
+    expect(i18n.language).toBe(BROWSER_LOCALE);
+  });
+
+  it('leaves the language alone when a DM navigation is aborted', async () => {
+    const { api, router, i18n } = await start(`/combats/${COMBAT_ID}/play?t=token-1`);
+    const release = holdSession(api);
+    const entering = router.navigate('/combats');
+    await tick();
+    await go(router, '/missing');
+    release();
+    await entering;
+    await tick();
+    expect(router.state.location.pathname).toBe('/missing');
+    expect(i18n.language).toBe(BROWSER_LOCALE);
   });
 
   it('stops after the cleanup', async () => {
