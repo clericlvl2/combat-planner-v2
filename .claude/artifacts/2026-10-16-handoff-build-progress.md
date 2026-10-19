@@ -100,7 +100,7 @@
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
 | fix-6 | guarded `.claude/artifacts/guard/fix-6.md` (P3 ×7, owner list) | secrets, Dockerfile, compose, README |
 | fix-6-zero-config | guarded `.claude/artifacts/guard/fix-6-zero-config.md` (clean clone verified by the orchestrator; Docker not run — P2; P3 ×7, owner list) | secrets, node version, compose, README |
-| fix-7-layout | running worker-bee (Opus 5.5 medium; owner report 2026-10-19: white strip on tall phones, clipped focus rings in sheets) | viewport, Sheet, Dialog |
+| fix-7-layout | merged 65d25dc..6c85a15 (gate green except check-commit consumer baselines — accepted shared-component exception; e2e 22 passed), guard-bee running | viewport, Sheet, Dialog |
 
 ## Вопросы владельцу
 
