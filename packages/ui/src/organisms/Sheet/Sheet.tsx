@@ -1,4 +1,4 @@
-import { Modal } from '@mantine/core';
+import { Modal, useProps } from '@mantine/core';
 import { IconChevronLeft, IconX } from '@tabler/icons-react';
 import { Children, Fragment, isValidElement, useCallback, useRef, useState } from 'react';
 import type { ReactElement, ReactNode, RefObject } from 'react';
@@ -17,7 +17,10 @@ export interface SheetProps {
   actions?: ReactNode;
   opened: boolean;
   initialFocus?: RefObject<HTMLElement | null>;
+  autoFocus?: boolean;
 }
+
+const defaultProps = { autoFocus: true } satisfies Partial<SheetProps>;
 
 function isFragment(node: ReactNode): node is ReactElement<{ children?: ReactNode }> {
   return isValidElement(node) && node.type === Fragment;
@@ -29,27 +32,31 @@ function flattenActions(node: ReactNode): ReactNode[] {
   );
 }
 
-export function Sheet({
-  title,
-  header,
-  subtitle,
-  onBack,
-  onClose,
-  children,
-  actions,
-  opened,
-  initialFocus,
-}: SheetProps) {
+export function Sheet(props: SheetProps) {
+  const {
+    title,
+    header,
+    subtitle,
+    onBack,
+    onClose,
+    children,
+    actions,
+    opened,
+    initialFocus,
+    autoFocus,
+  } = useProps('CpSheet', defaultProps, props);
   const { t } = useTranslation('Sheet');
   const motion = useMotion();
   const actionList = flattenActions(actions);
   const initialFocusRef = useRef(initialFocus);
   initialFocusRef.current = initialFocus;
+  const autoFocusRef = useRef(autoFocus);
+  autoFocusRef.current = autoFocus;
   const [present, setPresent] = useState(opened);
   if (opened && !present) setPresent(true);
 
   const attachSheet = useCallback((sheet: HTMLElement | null) => {
-    if (!sheet) return;
+    if (!sheet || !autoFocusRef.current) return;
     const target = initialFocusRef.current?.current;
     if (target) {
       target.setAttribute('data-autofocus', '');
