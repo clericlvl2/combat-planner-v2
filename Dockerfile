@@ -12,7 +12,6 @@ FROM base AS build
 COPY . .
 RUN pnpm install --frozen-lockfile
 ARG VITE_SOURCE_URL
-ARG VITE_DONATE_URL
 RUN pnpm build
 
 FROM base AS prod-deps

@@ -332,11 +332,7 @@ export const APF41 = meta.story({
   name: 'AP-F4.1 About',
   parameters: dmPage('/about'),
   render: () => (
-    <About
-      version="2.0.0"
-      sourceUrl="https://github.com/combat-planner/combat-planner"
-      donateUrl="https://ko-fi.com/combatplanner"
-    />
+    <About version="2.0.0" sourceUrl="https://github.com/combat-planner/combat-planner" />
   ),
   play: async ({ canvas }) => {
     await expect(canvas.getByText('2.0.0')).toBeVisible();

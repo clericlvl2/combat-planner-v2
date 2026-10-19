@@ -8,9 +8,7 @@
   "description": "Gestor de combates para 13th Age: iniciativa, PG, estados y el dado de escalada, con una vista en directo para los jugadores.",
   "privacy": "Privacidad",
   "privacyNote": "Tu correo, tus combates y tus plantillas se guardan solo para que la app funcione. Sin anuncios, sin rastreo, no se vende nada.",
-  "donate": "Donar",
-  "donateValue": "Apoyar el proyecto",
   "credits": "Créditos",
   "creditsNote": "Iconos: Tabler Icons. Fuentes: Unbounded, Rubik y Noto Sans JP.",
-  "disclaimer": "Sin relación con Pelgrane Press."
+  "legal": "Combat Planner uses trademarks and/or copyrights owned by Fire Opal Media Inc., which are used under the Fire Opal Media Inc., 13th Age Community Use Policy. We are expressly prohibited from charging you to use or access this content. Combat Planner is not published, endorsed, or specifically approved by Fire Opal Media. 13th Age is a trademark of Fire Opal Media Inc."
 }

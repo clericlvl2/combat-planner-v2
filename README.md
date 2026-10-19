@@ -83,9 +83,9 @@ wrong value and names the variable, readable with `docker compose logs app`.
   or neither; the same for `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`. Callback
   URLs to register with the providers: `<public URL>/api/auth/callback/google` and
   `<public URL>/api/auth/callback/github`.
-- The About page links, `VITE_SOURCE_URL` and `VITE_DONATE_URL`, are build
-  arguments: the build bakes them into the web bundle, so a change takes effect with
-  the next `docker compose up --build`. An empty value keeps the default link.
+- The About page source link, `VITE_SOURCE_URL`, is a build argument: the build
+  bakes it into the web bundle, so a change takes effect with the next
+  `docker compose up --build`. An empty value keeps the default link.
 - The database is `/data/combat-planner.db` and the secrets `/data/secrets.json`.
   The server refuses to start on an unreadable or broken `secrets.json` and names
   its path and the server uid instead of generating new secrets.

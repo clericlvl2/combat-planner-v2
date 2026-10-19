@@ -72,7 +72,7 @@
 }
 
 .text,
-.disclaimer {
+.legal {
   margin: 0;
   padding: 0 8px;
   color: var(--cp-color-secondary);
@@ -80,7 +80,7 @@
   line-height: var(--mantine-line-height-body);
 }
 
-.disclaimer {
+.legal {
   margin-top: auto;
   text-align: center;
 }

@@ -38,7 +38,7 @@ async function start(path: string) {
       api,
       queryClient: createQueryClient(),
       playerId: () => PLAYER_ID,
-      about: { version: '2.0.0', sourceUrl: 'https://s.example', donateUrl: 'https://d.example' },
+      about: { version: '2.0.0', sourceUrl: 'https://s.example' },
     }),
     { initialEntries: [path] },
   );

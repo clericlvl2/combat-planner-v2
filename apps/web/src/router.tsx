@@ -15,7 +15,6 @@ const SESSION_KEY = ['session'] as const;
 export interface AboutLinks {
   version: string;
   sourceUrl: string;
-  donateUrl: string;
 }
 
 export interface AppRouteOptions {

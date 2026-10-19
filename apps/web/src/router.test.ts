@@ -27,7 +27,6 @@ const COMBAT_ID = '01JA0000000000000000000001';
 const about = {
   version: '2.0.0',
   sourceUrl: 'https://example.com/source',
-  donateUrl: 'https://example.com/donate',
 };
 
 type MemoryRouter = ReturnType<typeof createMemoryRouter>;

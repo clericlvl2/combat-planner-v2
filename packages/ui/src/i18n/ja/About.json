@@ -8,9 +8,7 @@
   "description": "13th Age用の戦闘トラッカー。イニシアチブ、HP、状態、エスカレーションダイスを管理し、プレイヤーにはライブ画面を提供します。",
   "privacy": "プライバシー",
   "privacyNote": "メールアドレス、戦闘、プリセットはアプリの動作のためだけに保存されます。広告やトラッキングはなく、データを販売することもありません。",
-  "donate": "寄付",
-  "donateValue": "プロジェクトを支援",
   "credits": "クレジット",
   "creditsNote": "アイコン：Tabler Icons。フォント：Unbounded、Rubik、Noto Sans JP。",
-  "disclaimer": "Pelgrane Pressとは関係ありません。"
+  "legal": "Combat Planner uses trademarks and/or copyrights owned by Fire Opal Media Inc., which are used under the Fire Opal Media Inc., 13th Age Community Use Policy. We are expressly prohibited from charging you to use or access this content. Combat Planner is not published, endorsed, or specifically approved by Fire Opal Media. 13th Age is a trademark of Fire Opal Media Inc."
 }

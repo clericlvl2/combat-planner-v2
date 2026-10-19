@@ -5,7 +5,6 @@ import classes from './About.module.css';
 export interface AboutProps {
   version: string;
   sourceUrl: string;
-  donateUrl: string;
 }
 
 interface ValueRowProps {
@@ -44,7 +43,7 @@ function NoteRow({ label, note }: NoteRowProps) {
   );
 }
 
-export function About({ version, sourceUrl, donateUrl }: AboutProps) {
+export function About({ version, sourceUrl }: AboutProps) {
   const { t } = useTranslation('About');
   return (
     <PageScreen title={t('title')} section="about">
@@ -56,10 +55,9 @@ export function About({ version, sourceUrl, donateUrl }: AboutProps) {
       <p className={classes.text}>{t('description')}</p>
       <div className={classes.card}>
         <NoteRow label={t('privacy')} note={t('privacyNote')} />
-        <ValueRow label={t('donate')} value={t('donateValue')} href={donateUrl} />
         <NoteRow label={t('credits')} note={t('creditsNote')} />
       </div>
-      <p className={classes.disclaimer}>{t('disclaimer')}</p>
+      <p className={classes.legal}>{t('legal')}</p>
     </PageScreen>
   );
 }

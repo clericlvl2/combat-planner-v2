@@ -4,13 +4,12 @@ import { expect, userEvent } from 'storybook/test';
 import { About } from './About.tsx';
 
 const sourceUrl = 'https://github.com/combat-planner/combat-planner';
-const donateUrl = 'https://ko-fi.com/combatplanner';
 
 const meta = preview.meta({
   title: 'Screens/About',
   component: About,
   decorators: [withRouter],
-  args: { version: '2.0.0', sourceUrl, donateUrl },
+  args: { version: '2.0.0', sourceUrl },
   parameters: {
     phoneFrame: { overlay: true },
     reactRouter: reactRouterParameters({
@@ -29,11 +28,10 @@ export const Default = meta.story({
       'href',
       sourceUrl,
     );
-    await expect(canvas.getByRole('link', { name: 'Donate Support the project' })).toHaveAttribute(
-      'href',
-      donateUrl,
-    );
-    await expect(canvas.getByText('Not affiliated with Pelgrane Press.')).toBeVisible();
+    await expect(canvas.queryByText('Donate')).not.toBeInTheDocument();
+    await expect(
+      canvas.getByText(/Fire Opal Media Inc\., 13th Age Community Use Policy/),
+    ).toBeVisible();
   },
 });
 
@@ -43,7 +41,9 @@ export const Russian = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'О приложении' })).toBeVisible();
     await expect(canvas.getByText('2.1.0-beta.3')).toBeVisible();
-    await expect(canvas.getByText('Не связано с Pelgrane Press.')).toBeVisible();
+    await expect(
+      canvas.getByText(/13th Age is a trademark of Fire Opal Media Inc\./),
+    ).toBeVisible();
   },
 });
 
@@ -62,6 +62,6 @@ export const KeyboardLinks = meta.story({
     source.focus();
     await expect(source).toHaveFocus();
     await userEvent.tab();
-    await expect(canvas.getByRole('link', { name: 'Donate Support the project' })).toHaveFocus();
+    await expect(source).not.toHaveFocus();
   },
 });

@@ -5,7 +5,6 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_SOURCE_URL: ${VITE_SOURCE_URL:-}
-        VITE_DONATE_URL: ${VITE_DONATE_URL:-}
     ports:
       - '${PORT:-3000}:3000'
     env_file:

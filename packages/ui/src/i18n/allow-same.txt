@@ -26,6 +26,7 @@ TextArea.optional
 UnitForm.optional
 CombatFormSheet.descriptionPlaceholder
 About.version
+About.legal
 CombatCard.round
 PlayerHeader.round
 HistoryRow.round
