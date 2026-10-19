@@ -1,4 +1,10 @@
-import { FocusTrap, FocusTrapInitialFocus, RemoveScroll, UnstyledButton } from '@mantine/core';
+import {
+  FocusTrap,
+  FocusTrapInitialFocus,
+  RemoveScroll,
+  UnstyledButton,
+  useProps,
+} from '@mantine/core';
 import { IconBooks, IconInfoCircle, IconSettings, IconSwords, IconUser } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 import { useEffect, useId, useLayoutEffect, useRef } from 'react';
@@ -31,16 +37,22 @@ export interface DrawerProps {
   onNavigate: (section: DrawerSection) => void;
   onClose: () => void;
   opened: boolean;
+  lockScroll?: boolean;
+  trapFocus?: boolean;
 }
 
-export function Drawer({
-  sections = drawerSections,
-  current,
-  email,
-  onNavigate,
-  onClose,
-  opened,
-}: DrawerProps) {
+const defaultProps = {
+  sections: drawerSections,
+  lockScroll: true,
+  trapFocus: true,
+} satisfies Partial<DrawerProps>;
+
+export function Drawer(props: DrawerProps) {
+  const { sections, current, email, onNavigate, onClose, opened, lockScroll, trapFocus } = useProps(
+    'CpDrawer',
+    defaultProps,
+    props,
+  );
   const { t } = useTranslation('Drawer');
   const titleId = useId();
   const opener = useRef<HTMLElement | null>(null);
@@ -56,10 +68,10 @@ export function Drawer({
   }, [opened]);
 
   useEffect(() => {
-    if (!opened) return;
+    if (!opened || !trapFocus) return;
     const timer = setTimeout(() => panelRef.current?.focus({ preventScroll: true }));
     return () => clearTimeout(timer);
-  }, [opened]);
+  }, [opened, trapFocus]);
 
   if (!opened) return null;
 
@@ -76,10 +88,10 @@ export function Drawer({
   };
 
   return (
-    <RemoveScroll>
+    <RemoveScroll enabled={lockScroll}>
       <div className={classes.root}>
         <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onClose} />
-        <FocusTrap active innerRef={panelRef}>
+        <FocusTrap active={trapFocus} innerRef={panelRef}>
           <div
             role="dialog"
             aria-modal="true"
