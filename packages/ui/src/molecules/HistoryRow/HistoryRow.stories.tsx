@@ -214,3 +214,14 @@ export const ExtraSetupRound = meta.story({
     await expect(part(canvasElement, 'amount').textContent).toBe('−4');
   },
 });
+
+export const ExtraMaxAtEntry = meta.story({
+  name: 'Entry shows the max HP at the time of the entry',
+  args: {
+    entry: entry({ kind: 'damage', amount: 6, previous: 40, result: 34, max: 40, round: 2 }),
+    maxHp: 30,
+  },
+  play: async ({ canvasElement }) => {
+    await expect(part(canvasElement, 'result').textContent).toBe('34/40');
+  },
+});

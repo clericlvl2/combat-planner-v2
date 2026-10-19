@@ -136,6 +136,7 @@ const withEntry = (
     absorbed,
     previous,
     result: unit.hp,
+    max: unit.maxHp,
     round: context.round,
     at: context.at,
   };

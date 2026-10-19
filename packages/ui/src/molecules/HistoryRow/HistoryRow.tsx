@@ -38,7 +38,7 @@ const signed = (value: number) => (value < 0 ? `−${Math.abs(value)}` : String(
 export function HistoryRow({ entry, hp, maxHp, className, style, ...rest }: HistoryRowProps) {
   const { t, i18n } = useTranslation('HistoryRow');
   const result = entry ? entry.result : hp;
-  const resultMax = entry?.kind === 'max' ? entry.amount : maxHp;
+  const resultMax = entry ? (entry.max ?? (entry.kind === 'max' ? entry.amount : maxHp)) : maxHp;
   const when =
     entry === null || entry.round === null ? t('start') : t('round', { round: entry.round });
   const amountText = (() => {

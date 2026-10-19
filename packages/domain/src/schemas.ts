@@ -72,6 +72,7 @@ export const hpHistoryEntrySchema = z.object({
   absorbed: amountSchema,
   previous: z.number().int(),
   result: hpSchema,
+  max: maxHpSchema.optional(),
   round: roundSchema.nullable(),
   at: isoDateSchema,
 });

@@ -6,6 +6,7 @@ import {
   applyHp,
   copyCombat,
   defenseSchema,
+  hpHistoryEntrySchema,
   nextTurnBlockReason,
   nextTurnTarget,
   presetFromUnit,
@@ -505,8 +506,8 @@ describe('Unit actions', () => {
     const next = go(combat, { type: 'editUnit', unitId: id(1), ...form, maxHp: 6, tempHp: 4 });
     expect(u(next, 1)).toMatchObject({ maxHp: 6, hp: 6, tempHp: 4 });
     expect(hist(next)).toEqual([
-      { kind: 'max', amount: 6, absorbed: 0, previous: 10, result: 6, round: 3, at: NOW },
-      { kind: 'temp', amount: 4, absorbed: 0, previous: 1, result: 6, round: 3, at: NOW },
+      { kind: 'max', amount: 6, absorbed: 0, previous: 10, result: 6, max: 6, round: 3, at: NOW },
+      { kind: 'temp', amount: 4, absorbed: 0, previous: 1, result: 6, max: 6, round: 3, at: NOW },
     ]);
   });
 
@@ -776,6 +777,14 @@ describe('Rules', () => {
     expect(u(minimum, 1)).toMatchObject({ maxHp: 1, hp: 1 });
   });
 
+  it('an HP history entry keeps the max HP at the time of the entry', () => {
+    const combat = one({ hp: 10, maxHp: 10 });
+    const damaged = go(combat, { type: 'damage', unitId: id(1), amount: 3 });
+    const lowered = go(damaged, { type: 'setMaxHp', unitId: id(1), amount: 5 });
+    expect(hist(lowered).map((entry) => entry.max)).toEqual([10, 5]);
+    expect(hpHistoryEntrySchema.safeParse(ENTRY).success).toBe(true);
+  });
+
   it('Set Max raises a current HP below the new negative floor to −max', () => {
     const combat = one({ hp: -8, maxHp: 10 });
     const floored = go(combat, { type: 'setMaxHp', unitId: id(1), amount: 4 });
@@ -872,7 +881,16 @@ describe('HP history', () => {
     const inSetup = one();
     const setupEntry = u(go(inSetup, { type: 'damage', unitId: id(1), amount: 1 }), 1).hpHistory;
     expect(setupEntry).toEqual([
-      { kind: 'damage', amount: 1, absorbed: 0, previous: 10, result: 9, round: null, at: NOW },
+      {
+        kind: 'damage',
+        amount: 1,
+        absorbed: 0,
+        previous: 10,
+        result: 9,
+        max: 10,
+        round: null,
+        at: NOW,
+      },
     ]);
     const inActive = active([makeUnit({ id: id(1), initiative: 1 })], { round: 5 });
     const steps: Payload[] = [
