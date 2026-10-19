@@ -2,7 +2,7 @@ import { LIMITS } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
 import { IconNote } from '@tabler/icons-react';
 import { useEffect, useId, useRef, useState } from 'react';
-import type { HTMLAttributes, KeyboardEvent } from 'react';
+import type { HTMLAttributes, KeyboardEvent, MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextArea } from '../../atoms/TextArea/TextArea.tsx';
 import classes from './NoteField.module.css';
@@ -62,6 +62,13 @@ export function NoteField({
     commit();
   };
 
+  const focusEditor = (event: MouseEvent<HTMLDivElement>) => {
+    const editor = event.currentTarget.querySelector('textarea');
+    if (!editor || event.target === editor) return;
+    event.preventDefault();
+    editor.focus();
+  };
+
   if (collapsed) {
     if (!value) return null;
     return (
@@ -80,7 +87,13 @@ export function NoteField({
 
   if (draft !== null) {
     return (
-      <div {...rest} className={rootClass(classes.field)} data-editing="">
+      <div
+        {...rest}
+        className={rootClass(classes.field)}
+        data-editing=""
+        data-field=""
+        onMouseDown={focusEditor}
+      >
         <label className={classes.label} htmlFor={inputId}>
           {fieldLabel}
         </label>
