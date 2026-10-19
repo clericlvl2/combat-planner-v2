@@ -1,11 +1,10 @@
 import { Hono } from 'hono';
-import type { ApiAppEnv } from '../app.ts';
-import { requireUser } from '../auth/require-user.ts';
+import type { UserAppEnv } from '../app.ts';
 import { streamCombatEvents } from '../live/sse.ts';
 import { dmDocument } from './log.ts';
 import { NOT_FOUND, findOwnCombat } from './store.ts';
 
-export const eventsApp = new Hono<ApiAppEnv>().use(requireUser).get('/:id/events', (c) => {
+export const eventsApp = new Hono<UserAppEnv>().get('/:id/events', (c) => {
   const db = c.get('db');
   const ownerId = c.get('userId');
   const combatId = c.req.param('id');

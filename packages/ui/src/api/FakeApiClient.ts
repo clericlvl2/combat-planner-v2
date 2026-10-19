@@ -548,7 +548,7 @@ export class FakeApiClient implements ApiClient {
         stored.combat = next;
         this.broadcast(stored, 'dm');
         this.endSubscribers(id, { type: 'linkRevoked' }, 'player');
-        return { token: this.currentToken(next), version: next.version };
+        return { token: this.currentToken(next), generation: next.linkGeneration };
       }),
   };
 

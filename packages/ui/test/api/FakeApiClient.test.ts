@@ -231,11 +231,11 @@ describe('FakeApiClient final events', () => {
     const client = seeded();
     const dm = watchDm(client);
     const player = watchPlayer(client);
-    const { token, version } = await client.link.reissue(COMBAT_ID);
+    const { token, generation } = await client.link.reissue(COMBAT_ID);
     expect(player.ended).toEqual([{ type: 'linkRevoked' }]);
     expect(dm.ended).toEqual([]);
     const latest = dm.documents.at(-1);
-    expect(latest?.version).toBe(version);
+    expect(generation).toBe(1);
     expect(latest?.linkGeneration).toBe(1);
     expect(latest?.units.every((unit) => unit.claimedBy === null)).toBe(true);
     expect(token).not.toBe(TOKEN);

@@ -6,11 +6,7 @@ import {
   presetSchema,
   tagSchema,
 } from '@combat-planner/domain';
-import type { Hono } from 'hono';
 import { hc } from 'hono/client';
-import type { HonoBase } from 'hono/hono-base';
-import type { BlankEnv } from 'hono/types';
-import type { UnionToIntersection } from 'hono/utils/types';
 import { z } from 'zod';
 import type { AppType } from './app.ts';
 import {
@@ -20,7 +16,7 @@ import {
   combatSummarySchema,
   dmCombatSchema,
   linkReissueResultSchema,
-  linkSchema,
+  playerLinkSchema,
   localeSchema,
   playViewSchema,
   sessionSchema,
@@ -84,10 +80,6 @@ const authSessionSchema = z.object({ user: authUserSchema, method: signInMethodS
 const providersSchema = z.object({ providers: z.array(z.enum(SOCIAL_PROVIDERS)) });
 const socialSignInSchema = z.object({ url: z.string().min(1) });
 type AuthResponse = z.infer<typeof authResponseSchema>;
-
-type AppSchema =
-  AppType extends HonoBase<infer _Env, infer S, infer _Base, infer _Current> ? S : never;
-type ClientApp = Hono<BlankEnv, UnionToIntersection<AppSchema>>;
 
 interface RawResponse {
   ok: boolean;
@@ -256,7 +248,7 @@ export function createHonoApiClient({
   fetch: customFetch,
   eventSource = (globalThis as { EventSource?: EventSourceConstructor }).EventSource,
 }: HonoApiClientOptions): ApiClient {
-  const client = hc<ClientApp>(baseUrl, customFetch ? { fetch: customFetch } : {});
+  const client = hc<AppType>(baseUrl, customFetch ? { fetch: customFetch } : {});
   const connection = createConnection();
   const playerHeaders = (playerId: PlayerId) => ({ headers: { 'X-Player-Id': playerId } });
 
@@ -520,7 +512,7 @@ export function createHonoApiClient({
     },
     combats,
     link: {
-      get: (id) => json(() => client.combats[':id'].link.$get({ param: { id } }), linkSchema),
+      get: (id) => json(() => client.combats[':id'].link.$get({ param: { id } }), playerLinkSchema),
       reissue: (id) =>
         json(
           () => client.combats[':id'].link.reissue.$post({ param: { id } }),

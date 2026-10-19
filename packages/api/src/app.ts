@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { authProvidersApp, createAuth, createAuthApp } from './auth/index.ts';
+import { requireUser } from './auth/require-user.ts';
 import type { SessionResolver } from './auth/require-user.ts';
 import { actionsApp } from './combats/actions.ts';
 import { eventsApp } from './combats/events.ts';
@@ -20,7 +21,15 @@ export interface ApiAppDeps {
   auth?: SessionResolver;
 }
 
-export type ApiAppEnv = { Variables: ApiAppDeps & { userId: string } };
+export type ApiAppEnv = { Variables: ApiAppDeps & { userId?: string } };
+export type UserAppEnv = { Variables: ApiAppDeps & { userId: string } };
+
+const userCombatsApp = new Hono<ApiAppEnv>()
+  .use(requireUser)
+  .route('/', combatsApp)
+  .route('/', actionsApp)
+  .route('/', eventsApp)
+  .route('/', linkApp);
 
 export function createApiApp({ db, env, auth }: ApiAppDeps) {
   const instance = createAuth({ db, env });
@@ -38,10 +47,7 @@ export function createApiApp({ db, env, auth }: ApiAppDeps) {
     .route('/tags', tagsApp)
     .route('/settings', settingsApp)
     .route('/account', createAccountApp(instance))
-    .route('/combats', combatsApp)
-    .route('/combats', actionsApp)
-    .route('/combats', eventsApp)
-    .route('/combats', linkApp)
+    .route('/combats', userCombatsApp)
     .route('/play', playApp);
 }
 

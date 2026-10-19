@@ -2,7 +2,7 @@ import type { Action, ActionId, LogEntry, Patch } from '@combat-planner/domain';
 import { LIMITS, undoSummary } from '@combat-planner/domain';
 import { asc, eq } from 'drizzle-orm';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
-import { linkSchema } from '../src/client.ts';
+import { playerLinkSchema } from '../src/client.ts';
 import { appendLogEntry, markUndone, nextSeq } from '../src/combats/log.ts';
 import { actionLog } from '../src/db/schema.ts';
 import type { TestApp } from './helpers.ts';
@@ -132,7 +132,9 @@ beforeAll(async () => {
   for (const action of actions) {
     expect((await call(dm, 'POST', `/combats/${COMBAT_ID}/actions`, action)).status).toBe(200);
   }
-  const link = linkSchema.parse(await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json());
+  const link = playerLinkSchema.parse(
+    await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json(),
+  );
   token = link.token;
   for (let index = 0; index < SEEDED; index += 1) damage(1 + (index % 7));
 });

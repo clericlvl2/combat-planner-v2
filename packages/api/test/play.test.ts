@@ -11,7 +11,7 @@ import {
   it,
   vi,
 } from 'vite-plus/test';
-import { linkSchema, linkReissueResultSchema, playViewSchema } from '../src/client.ts';
+import { playerLinkSchema, linkReissueResultSchema, playViewSchema } from '../src/client.ts';
 import { players, user } from '../src/db/schema.ts';
 import { signLink } from '../src/link/token.ts';
 import { broadcast, broadcastDocument, subscriberCount } from '../src/live/registry.ts';
@@ -143,7 +143,9 @@ beforeAll(async () => {
     expect((await call(dm, 'POST', `/combats/${COMBAT_ID}/actions`, action)).status).toBe(200);
   }
   await dmAction({ type: 'setDisabled', unitId: DISABLED_ID, disabled: true });
-  const link = linkSchema.parse(await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json());
+  const link = playerLinkSchema.parse(
+    await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json(),
+  );
   token = link.token;
 });
 
@@ -383,6 +385,7 @@ describe('GET /play/:id/events', () => {
     const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/link/reissue`);
     expect(response.status).toBe(200);
     const reissued = linkReissueResultSchema.parse(await response.json());
+    const { version } = await fetchCombat(dm);
     expect(await stream.event()).toEqual({ id: undefined, event: { type: 'linkRevoked' } });
     expect(await stream.closed()).toBe(true);
     expect(subscriberCount(COMBAT_ID)).toBe(0);
@@ -390,7 +393,7 @@ describe('GET /play/:id/events', () => {
       await getPlay(token, PLAYER_ID),
       await postAction(token, PLAYER_ID, {
         id: nextActionId(),
-        version: reissued.version,
+        version,
         type: 'heal',
         unitId: HERO_ID,
         amount: 1,

@@ -3,8 +3,7 @@ import { LIMITS, copyCombat, ulidSchema } from '@combat-planner/domain';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import type { ApiAppEnv } from '../app.ts';
-import { requireUser } from '../auth/require-user.ts';
+import type { UserAppEnv } from '../app.ts';
 import { combatCreateInputSchema, combatPatchSchema } from '../client.ts';
 import { broadcast, broadcastDocument } from '../live/registry.ts';
 import { dmDocument } from './log.ts';
@@ -43,8 +42,7 @@ const store = (tx: Transaction, ownerId: string, combat: Combat): Stored => {
 
 const duplicateBodySchema = z.object({ id: ulidSchema });
 
-export const combatsApp = new Hono<ApiAppEnv>()
-  .use(requireUser)
+export const combatsApp = new Hono<UserAppEnv>()
   .get('/', (c) => c.json(listOwnCombats(c.get('db'), c.get('userId')).map(summaryOf)))
   .post('/', zValidator('json', combatCreateInputSchema), (c) => {
     const input = c.req.valid('json');

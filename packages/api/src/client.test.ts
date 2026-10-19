@@ -144,7 +144,7 @@ function createMemoryClient() {
           version: combat(id).version + 1,
         };
         combats.set(id, reissued);
-        return { token: `${id}:${reissued.linkGeneration}`, version: reissued.version };
+        return { token: `${id}:${reissued.linkGeneration}`, generation: reissued.linkGeneration };
       },
     },
     play: {

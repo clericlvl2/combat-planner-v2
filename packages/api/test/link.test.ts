@@ -2,7 +2,7 @@ import type { Action, Combat } from '@combat-planner/domain';
 import { asc, eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 import type { ApiEvent } from '../src/client.ts';
-import { linkSchema, linkReissueResultSchema } from '../src/client.ts';
+import { playerLinkSchema, linkReissueResultSchema } from '../src/client.ts';
 import { dispatch } from '../src/combats/dispatch.ts';
 import { actionLog } from '../src/db/schema.ts';
 import { signLink, verifyLink } from '../src/link/token.ts';
@@ -112,7 +112,7 @@ describe('link routes', () => {
   it('GET /combats/:id/link returns the signed token of the current generation', async () => {
     const response = await call(dm, 'GET', `/combats/${COMBAT_ID}/link`);
     expect(response.status).toBe(200);
-    const link = linkSchema.parse(await response.json());
+    const link = playerLinkSchema.parse(await response.json());
     expect(link.generation).toBe(0);
     expect(link.token).toBe(signLink({ combatId: COMBAT_ID, generation: 0 }, secret));
     expect(verifyLink(link.token, secret)).toEqual({ combatId: COMBAT_ID, generation: 0 });
@@ -141,7 +141,7 @@ describe('link routes', () => {
     const after = await fetchCombat(dm);
     expect(after.linkGeneration).toBe(1);
     expect(after.version).toBe(before.version + 3);
-    expect(result.version).toBe(after.version);
+    expect(result.generation).toBe(after.linkGeneration);
     expect(result.token).toBe(signLink({ combatId: COMBAT_ID, generation: 1 }, secret));
     expect(after.units.every((unit) => unit.claimedBy === null)).toBe(true);
     expect(after.players).toEqual(before.players);
@@ -169,7 +169,7 @@ describe('link routes', () => {
     const stale = signLink({ combatId: COMBAT_ID, generation: 0 }, secret);
     const current = { combatId: combat.id, generation: combat.linkGeneration };
     expect(verifyLink(stale, secret, current)).toBeNull();
-    const link = linkSchema.parse(
+    const link = playerLinkSchema.parse(
       await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json(),
     );
     expect(verifyLink(link.token, secret, current)).toEqual(current);

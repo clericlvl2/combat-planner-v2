@@ -106,15 +106,15 @@ export type LinkToken = z.infer<typeof linkTokenSchema>;
 
 export const linkGenerationSchema = z.number().int().nonnegative();
 
-export const linkSchema = z.object({
+export const playerLinkSchema = z.object({
   token: linkTokenSchema,
   generation: linkGenerationSchema,
 });
-export type Link = z.infer<typeof linkSchema>;
+export type PlayerLink = z.infer<typeof playerLinkSchema>;
 
 export const linkReissueResultSchema = z.object({
   token: linkTokenSchema,
-  version: versionSchema,
+  generation: linkGenerationSchema,
 });
 export type LinkReissueResult = z.infer<typeof linkReissueResultSchema>;
 
@@ -237,7 +237,7 @@ export interface CombatsApi {
 }
 
 export interface LinkApi {
-  get(id: CombatId): Promise<Link>;
+  get(id: CombatId): Promise<PlayerLink>;
   reissue(id: CombatId): Promise<LinkReissueResult>;
 }
 

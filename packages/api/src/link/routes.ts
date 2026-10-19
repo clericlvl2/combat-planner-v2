@@ -2,9 +2,8 @@ import type { Action, Combat, Viewer } from '@combat-planner/domain';
 import { DomainError, apply } from '@combat-planner/domain';
 import { Hono } from 'hono';
 import { ulid } from 'ulid';
-import type { ApiAppEnv } from '../app.ts';
+import type { UserAppEnv } from '../app.ts';
 import type { DmCombat } from '../client.ts';
-import { requireUser } from '../auth/require-user.ts';
 import { appendLogEntry, dmDocument, nextSeq } from '../combats/log.ts';
 import type { Transaction } from '../combats/store.ts';
 import { NOT_FOUND, findOwnCombat, nowIso, saveCombat } from '../combats/store.ts';
@@ -54,8 +53,7 @@ const reissue = (tx: Transaction, ownerId: string, combatId: string): DmCombat |
   return dmDocument(tx, next);
 };
 
-export const linkApp = new Hono<ApiAppEnv>()
-  .use(requireUser)
+export const linkApp = new Hono<UserAppEnv>()
   .get('/:id/link', (c) => {
     const combat = findOwnCombat(c.get('db'), c.get('userId'), c.req.param('id'));
     if (!combat) return c.json(NOT_FOUND, 404);
@@ -72,5 +70,5 @@ export const linkApp = new Hono<ApiAppEnv>()
       { combatId: combat.id, generation: combat.linkGeneration },
       c.get('env').linkSecret,
     );
-    return c.json({ token, version: combat.version });
+    return c.json({ token, generation: combat.linkGeneration });
   });

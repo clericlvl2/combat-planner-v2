@@ -1,5 +1,5 @@
 import { createMiddleware } from 'hono/factory';
-import type { ApiAppEnv } from '../app.ts';
+import type { UserAppEnv } from '../app.ts';
 
 export interface ResolvedSession {
   user: { id: string };
@@ -13,7 +13,7 @@ export interface SessionResolver {
 
 const UNAUTHORIZED = { code: 'unauthorized', message: 'Sign in first' } as const;
 
-export const requireUser = createMiddleware<ApiAppEnv>(async (c, next) => {
+export const requireUser = createMiddleware<UserAppEnv>(async (c, next) => {
   const preset: string | undefined = c.get('userId');
   if (preset === undefined) {
     const session = await c.get('auth')?.api.getSession({ headers: c.req.raw.headers });
