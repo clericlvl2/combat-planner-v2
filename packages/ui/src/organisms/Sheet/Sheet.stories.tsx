@@ -465,6 +465,35 @@ export const ExtraDescriptionIsSubtitle = meta.story({
   },
 });
 
+const FOCUS_RING_REACH = 5;
+
+export const ExtraFocusRingInside = meta.story({
+  name: 'Keyboard focus ring fits inside the scroll area',
+  args: { sample: 'form', titleKey: 'editCombat', primaryKey: 'save' },
+  play: async ({ canvas }) => {
+    const sheet = canvas.getByRole('dialog', { name: 'Edit combat' });
+    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
+    const field = canvas.getByRole('textbox', { name: 'Title' });
+    await userEvent.tab();
+    await expect(canvas.getByRole('button', { name: 'Close' })).toHaveFocus();
+    await userEvent.tab();
+    await expect(field).toHaveFocus();
+    const frame = field.closest('[data-field]');
+    const content = sheet.querySelector('[data-sheet-content]');
+    await expect(frame).toBeInstanceOf(HTMLElement);
+    await expect(content).toBeInstanceOf(HTMLElement);
+    const ring = (frame as HTMLElement).getBoundingClientRect();
+    const scroller = content as HTMLElement;
+    const area = scroller.getBoundingClientRect();
+    const left = area.left + scroller.clientLeft;
+    const top = area.top + scroller.clientTop;
+    await expect(ring.left - FOCUS_RING_REACH).toBeGreaterThanOrEqual(left);
+    await expect(ring.top - FOCUS_RING_REACH).toBeGreaterThanOrEqual(top);
+    await expect(ring.right + FOCUS_RING_REACH).toBeLessThanOrEqual(left + scroller.clientWidth);
+    await expect(ring.bottom + FOCUS_RING_REACH).toBeLessThanOrEqual(top + scroller.clientHeight);
+  },
+});
+
 export const ExtraNoActions = meta.story({
   name: 'No actions row without actions',
   args: { actionsAs: 'none' },
