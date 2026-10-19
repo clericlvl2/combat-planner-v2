@@ -55,7 +55,10 @@ function DrawerCell({
 const meta = preview.meta({
   title: 'Organisms/Drawer',
   component: DrawerCell,
-  parameters: { phoneFrame: { overlay: true } },
+  parameters: {
+    phoneFrame: { overlay: true },
+    docs: { story: { inline: false, height: '876px' } },
+  },
   args: { current: 'combats', onNavigate: fn(), onClose: fn() },
 });
 
