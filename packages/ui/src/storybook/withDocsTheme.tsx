@@ -6,6 +6,8 @@ export const docsTheme: MantineThemeOverride = {
   components: {
     ModalRoot: { defaultProps: { lockScroll: false, trapFocus: false, returnFocus: false } },
     Popover: { defaultProps: { withinPortal: false } },
+    CpDialog: { defaultProps: { lockScroll: false, trapFocus: false } },
+    CpDrawer: { defaultProps: { lockScroll: false, trapFocus: false } },
   },
 };
 
