@@ -9,7 +9,7 @@
   "temp": "+{{amount}}一時",
   "full": "無傷",
   "wounded": "負傷",
-  "bloodied": "重傷",
+  "staggered": "よろめき",
   "dead": "死亡",
   "hero": "ヒーロー",
   "enemy": "敵",

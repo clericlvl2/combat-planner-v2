@@ -235,7 +235,7 @@ export const PVF33 = meta.story({
 });
 
 export const PVF34 = meta.story({
-  name: 'PV-F3.4 HP 13/36, Bloodied',
+  name: 'PV-F3.4 HP 13/36, Staggered',
   play: async ({ canvas, loaded }) => {
     const sheet = await openNumpad(canvas);
     await userEvent.click(within(sheet).getByRole('button', { name: '7' }));
@@ -247,7 +247,7 @@ export const PVF34 = meta.story({
     );
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     const vashti = await rowOf(canvas, ME);
-    await expect(within(vashti).getByRole('button', { name: /^13 \/36 Bloodied/ })).toBeVisible();
+    await expect(within(vashti).getByRole('button', { name: /^13 \/36 Staggered/ })).toBeVisible();
     await expect(vashti).toHaveAttribute('data-flash');
   },
 });

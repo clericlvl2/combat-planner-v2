@@ -20,9 +20,9 @@ const historyKindColors: Record<HpHistoryKind, { fill: string; text: string; amo
     amount: 'var(--cp-hp-heal)',
   },
   temp: {
-    fill: 'var(--cp-condition-staggered-fill)',
-    text: 'var(--cp-condition-staggered-text)',
-    amount: 'var(--cp-condition-staggered-text)',
+    fill: 'var(--cp-history-temp-fill)',
+    text: 'var(--cp-history-temp-text)',
+    amount: 'var(--cp-history-temp-text)',
   },
   max: {
     fill: 'var(--cp-condition-fear-fill)',

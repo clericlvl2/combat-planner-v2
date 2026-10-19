@@ -9,7 +9,7 @@
   "temp": "+{{amount}} temp.",
   "full": "Indemne",
   "wounded": "Blessé",
-  "bloodied": "Ensanglanté",
+  "staggered": "Chancelant",
   "dead": "Mort",
   "hero": "Héros",
   "enemy": "Ennemi",

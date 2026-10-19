@@ -246,8 +246,8 @@ export const ActiveTurnWounded = meta.story({
   name: 'Active turn, Wounded',
 });
 
-export const Bloodied = meta.story({
-  args: { active: false, unit: unitOf({ ...orcSeed, conditions: ['staggered'] }) },
+export const Staggered = meta.story({
+  args: { active: false, unit: unitOf({ ...orcSeed, conditions: ['hampered'] }) },
 });
 
 export const Dead = meta.story({
@@ -319,7 +319,7 @@ export const WithNote = meta.story({
   },
 });
 
-const claimedConditions: Condition[] = ['dazed', 'weakened', 'hindered'];
+const claimedConditions: Condition[] = ['dazed', 'weakened', 'hampered'];
 
 export const ShortPlayerName = meta.story({
   name: 'Short player name',
@@ -425,8 +425,8 @@ export const Wounded287320 = meta.story({
   args: { active: false, unit: unitOf(dragonSeed) },
 });
 
-export const BloodiedTemp120 = meta.story({
-  name: 'Bloodied, temp +120',
+export const StaggeredTemp120 = meta.story({
+  name: 'Staggered, temp +120',
   args: { active: false, unit: unitOf({ ...dragonSeed, hp: 112, tempHp: 120 }) },
 });
 
@@ -454,52 +454,52 @@ export const Dead105320 = meta.story({
   },
 });
 
-export const DeBlutend = meta.story({
-  name: 'de · Blutend',
+export const DeStaggered = meta.story({
+  name: 'de · Staggered',
   globals: { locale: 'de' },
   args: { active: false, unit: unitOf({ ...orcSeed, name: 'Ork-Berserker' }) },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Angeschlagen')).toBeVisible();
+    await expect(canvas.getByText('Taumelnd')).toBeVisible();
   },
 });
 
-export const EsMalheridoTemp = meta.story({
-  name: 'es · Malherido + temp',
+export const EsTambaleanteTemp = meta.story({
+  name: 'es · Tambaleante + temp',
   globals: { locale: 'es' },
   args: { active: false, unit: unitOf({ ...orcSeed, name: 'Berserker orco', tempHp: 5 }) },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Malherido')).toBeVisible();
+    await expect(canvas.getByText('Tambaleante')).toBeVisible();
     await expect(canvas.getByText('+5 temp.')).toBeVisible();
   },
 });
 
-export const FrEnsanglant3Digits = meta.story({
-  name: 'fr · Ensanglanté, 3 digits',
+export const FrChancelant3Digits = meta.story({
+  name: 'fr · Chancelant, 3 digits',
   globals: { locale: 'fr' },
   args: { active: false, unit: unitOf({ ...dragonSeed, name: 'Dragon noir ancien', hp: 112 }) },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Ensanglanté')).toBeVisible();
+    await expect(canvas.getByText('Chancelant')).toBeVisible();
   },
 });
 
 export const Ja = meta.story({
-  name: 'ja · 重傷',
+  name: 'ja · よろめき',
   globals: { locale: 'ja' },
   args: { active: false, unit: unitOf({ ...orcSeed, name: 'オークの狂戦士' }) },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('重傷')).toBeVisible();
+    await expect(canvas.getByText('よろめき')).toBeVisible();
   },
 });
 
 export const Ru3DigitsTemp = meta.story({
-  name: 'ru · Тяжело ранен, 3 digits + temp',
+  name: 'ru · Шатается, 3 digits + temp',
   globals: { locale: 'ru' },
   args: {
     active: false,
     unit: unitOf({ ...dragonSeed, name: 'Древний чёрный дракон', hp: 112, tempHp: 120 }),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Тяжело ранен')).toBeVisible();
+    await expect(canvas.getByText('Шатается')).toBeVisible();
     await expect(canvas.getByText('+120 врем.')).toBeVisible();
   },
 });
@@ -517,12 +517,12 @@ export const FourConditionsAllShown = meta.story({
   name: 'Four conditions, all shown',
   args: {
     active: false,
-    unit: unitOf({ ...orcSeed, conditions: ['staggered', 'dazed', 'vulnerable', 'stuck'] }),
+    unit: unitOf({ ...orcSeed, conditions: ['hampered', 'dazed', 'vulnerable', 'stuck'] }),
   },
   play: async ({ canvas }) => {
     const chips = canvas.getAllByRole('listitem');
     await expect(chips.map((chip) => chip.textContent)).toEqual([
-      'staggered',
+      'hampered',
       'dazed',
       'vulnerable',
       'stuck',
@@ -542,7 +542,7 @@ export const All12Colors = meta.story({
       hp: 10,
       maxHp: 10,
       defenses: [10, 10, 10],
-      conditions: [...CONDITIONS.filter((item) => item !== 'staggered'), 'staggered'],
+      conditions: [...CONDITIONS],
     }),
   },
   play: async ({ canvas }) => {
@@ -725,7 +725,7 @@ export const ExtraReadOnlyEveryTapWithoutCallbacks = meta.story({
   render: () => (
     <div style={screen}>
       <UnitRow
-        unit={unitOf({ ...orcSeed, conditions: ['staggered'], note: 'Hex until round 4' })}
+        unit={unitOf({ ...orcSeed, conditions: ['hampered'], note: 'Hex until round 4' })}
         readOnly
         expanded
         initiativeOpen
@@ -779,11 +779,11 @@ export const ExtraConditionsPicker = meta.story({
     await userEvent.click(trigger);
     await expect(args.onConditions).toHaveBeenCalledOnce();
     const sheet = await canvas.findByRole('dialog', { name: 'Conditions' });
-    await userEvent.click(within(sheet).getByRole('checkbox', { name: 'hindered' }));
+    await userEvent.click(within(sheet).getByRole('checkbox', { name: 'hampered' }));
     await userEvent.click(within(sheet).getByRole('button', { name: 'Done' }));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     const chips = canvas.getAllByRole('listitem');
-    await expect(chips.map((chip) => chip.textContent)).toEqual(['dazed', 'hindered', 'weakened']);
+    await expect(chips.map((chip) => chip.textContent)).toEqual(['dazed', 'hampered', 'weakened']);
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
@@ -901,10 +901,10 @@ export const ExtraNumpadResult = meta.story({
   args: { active: false },
   render: (args) => (
     <div style={{ ...screen, display: 'grid', gap: layout.listGap }}>
-      <UnitRow {...args} unit={unitOf({ ...orcSeed, conditions: ['staggered'] })} readOnly />
+      <UnitRow {...args} unit={unitOf({ ...orcSeed, conditions: ['hampered'] })} readOnly />
       <UnitRow
         {...args}
-        unit={unitOf({ ...orcSeed, hp: 2, conditions: ['staggered'] })}
+        unit={unitOf({ ...orcSeed, hp: 2, conditions: ['hampered'] })}
         readOnly
         flash
       />

@@ -1,7 +1,7 @@
 {
   "full": "Full",
   "wounded": "Wounded",
-  "bloodied": "Bloodied",
+  "staggered": "Staggered",
   "dead": "Dead",
   "temp": "+{{amount}} temp"
 }

@@ -248,7 +248,7 @@ describe('Visibility for players', () => {
   });
 
   it('Health status | Own Hero', () => {
-    expect(ownUnit).toMatchObject({ healthStatus: 'bloodied', healthSegments: 1 });
+    expect(ownUnit).toMatchObject({ healthStatus: 'staggered', healthSegments: 1 });
   });
 
   it('Health status | Other Hero, Ally', () => {
@@ -257,7 +257,7 @@ describe('Visibility for players', () => {
   });
 
   it('Health status | Enemy', () => {
-    expect(enemyUnit).toMatchObject({ healthStatus: 'bloodied', healthSegments: 1 });
+    expect(enemyUnit).toMatchObject({ healthStatus: 'staggered', healthSegments: 1 });
     const dead = project({ ...combat, units: [{ ...enemy, hp: 0 }] }, PLAYER);
     expect(pu(dead, 4)).toMatchObject({ healthStatus: 'dead', healthSegments: 0 });
   });

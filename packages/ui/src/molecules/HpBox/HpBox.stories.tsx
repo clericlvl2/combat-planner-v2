@@ -35,7 +35,7 @@ const boxOf = (canvasElement: HTMLElement) => {
 const statusLabels = {
   full: 'Full',
   wounded: 'Wounded',
-  bloodied: 'Bloodied',
+  staggered: 'Staggered',
   dead: 'Dead',
 } as const;
 
@@ -64,7 +64,7 @@ export const Anatomy = meta.story({
     const box = boxOf(canvasElement);
     await expect(box.getBoundingClientRect().width).toBe(96);
     await expect(getComputedStyle(box).borderTopColor).toBe(rgb(base.border));
-    await expect(getComputedStyle(canvas.getByText('Bloodied')).color).toBe(rgb(health.bloodied));
+    await expect(getComputedStyle(canvas.getByText('Staggered')).color).toBe(rgb(health.staggered));
   },
 });
 
@@ -84,16 +84,16 @@ export const VariantsDMWounded = meta.story({
   },
 });
 
-export const Bloodied = meta.story({
-  name: 'Bloodied',
+export const Staggered = meta.story({
+  name: 'Staggered',
   args: { viewer: 'dm', hp: 14, maxHp: 40 },
   play: async ({ canvasElement }) => {
     await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(14, 40));
   },
 });
 
-export const BloodiedLow = meta.story({
-  name: 'Bloodied, low',
+export const StaggeredLow = meta.story({
+  name: 'Staggered, low',
   args: { viewer: 'dm', hp: 6, maxHp: 40 },
   play: async ({ canvasElement }) => {
     await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(6, 40));
@@ -156,14 +156,14 @@ export const VariantsPlayerWounded = meta.story({
   },
 });
 
-export const OwnBloodied = meta.story({
-  name: 'Own, Bloodied',
+export const OwnStaggered = meta.story({
+  name: 'Own, Staggered',
   args: { viewer: 'player', hp: 13, maxHp: 36, mine: true },
   play: async ({ canvasElement }) => {
     const numbers = boxOf(canvasElement).firstElementChild;
     await expect(numbers && getComputedStyle(numbers).borderBottomStyle).toBe('dashed');
     await expect(getComputedStyle(boxOf(canvasElement)).backgroundColor).toBe(
-      rgb(healthTints.bloodied),
+      rgb(healthTints.staggered),
     );
   },
 });
@@ -178,10 +178,10 @@ export const OwnTemp = meta.story({
 
 export const Enemy = meta.story({
   name: 'Enemy',
-  args: { viewer: 'player', status: 'bloodied', hp: undefined, maxHp: undefined },
+  args: { viewer: 'player', status: 'staggered', hp: undefined, maxHp: undefined },
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Bloodied')).toBeVisible();
-    await expect(boxOf(canvasElement)).toHaveTextContent(/^Bloodied$/);
+    await expect(canvas.getByText('Staggered')).toBeVisible();
+    await expect(boxOf(canvasElement)).toHaveTextContent(/^Staggered$/);
   },
 });
 
@@ -252,54 +252,54 @@ export const PlayerOwn287320 = meta.story({
   args: { viewer: 'player', hp: 287, maxHp: 320, mine: true },
 });
 
-const bloodiedWithTemp = { viewer: 'dm', hp: 112, maxHp: 320, tempHp: 5 } as const;
+const staggeredWithTemp = { viewer: 'dm', hp: 112, maxHp: 320, tempHp: 5 } as const;
 
-export const DeBloodied = meta.story({
-  name: 'de · Bloodied',
+export const DeStaggered = meta.story({
+  name: 'de · Staggered',
   globals: { locale: 'de' },
-  args: bloodiedWithTemp,
+  args: staggeredWithTemp,
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Angeschlagen')).toBeVisible();
+    await expect(canvas.getByText('Taumelnd')).toBeVisible();
     await expect(canvas.getByText('+5 temp')).toBeVisible();
   },
 });
 
-export const EsBloodied = meta.story({
-  name: 'es · Bloodied',
+export const EsStaggered = meta.story({
+  name: 'es · Staggered',
   globals: { locale: 'es' },
-  args: bloodiedWithTemp,
+  args: staggeredWithTemp,
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Malherido')).toBeVisible();
+    await expect(canvas.getByText('Tambaleante')).toBeVisible();
     await expect(canvas.getByText('+5 temp.')).toBeVisible();
   },
 });
 
-export const FrBloodied = meta.story({
-  name: 'fr · Bloodied',
+export const FrStaggered = meta.story({
+  name: 'fr · Staggered',
   globals: { locale: 'fr' },
-  args: bloodiedWithTemp,
+  args: staggeredWithTemp,
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Ensanglanté')).toBeVisible();
+    await expect(canvas.getByText('Chancelant')).toBeVisible();
     await expect(canvas.getByText('+5 temp.')).toBeVisible();
   },
 });
 
-export const JaBloodied = meta.story({
-  name: 'ja · Bloodied',
+export const JaStaggered = meta.story({
+  name: 'ja · Staggered',
   globals: { locale: 'ja' },
-  args: bloodiedWithTemp,
+  args: staggeredWithTemp,
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('重傷')).toBeVisible();
+    await expect(canvas.getByText('よろめき')).toBeVisible();
     await expect(canvas.getByText('+5一時')).toBeVisible();
   },
 });
 
-export const RuBloodied = meta.story({
-  name: 'ru · Bloodied',
+export const RuStaggered = meta.story({
+  name: 'ru · Staggered',
   globals: { locale: 'ru' },
-  args: bloodiedWithTemp,
+  args: staggeredWithTemp,
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Тяжело ранен')).toBeVisible();
+    await expect(canvas.getByText('Шатается')).toBeVisible();
     await expect(canvas.getByText('+5 врем.')).toBeVisible();
   },
 });
@@ -309,7 +309,7 @@ export const PlayerFr = meta.story({
   globals: { locale: 'fr' },
   args: { viewer: 'player', hp: 112, maxHp: 320 },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Ensanglanté')).toBeVisible();
+    await expect(canvas.getByText('Chancelant')).toBeVisible();
   },
 });
 
@@ -318,7 +318,7 @@ export const PlayerRu = meta.story({
   globals: { locale: 'ru' },
   args: { viewer: 'player', hp: 112, maxHp: 320 },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Тяжело ранен')).toBeVisible();
+    await expect(canvas.getByText('Шатается')).toBeVisible();
   },
 });
 

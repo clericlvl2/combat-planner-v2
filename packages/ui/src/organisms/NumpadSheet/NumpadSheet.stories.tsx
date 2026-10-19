@@ -69,7 +69,7 @@ const units = {
     ac: 18,
     pd: 16,
     md: 12,
-    conditions: ['staggered'],
+    conditions: ['hampered'],
   },
   dragon: {
     ...unitDefaults,
@@ -252,7 +252,7 @@ export const Anatomy = meta.story({
     await expect(amountOf(canvas)).toHaveTextContent('12');
     await expect(numbersOf(canvasElement, 'now')).toHaveTextContent('14/40');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('2/40');
-    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Bloodied');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Staggered');
   },
 });
 
@@ -370,7 +370,7 @@ export const SetMax999 = meta.story({
     await typeAmount(canvas, '999');
     await previewAction(canvas, 'Set Max');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('287/999');
-    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Bloodied');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Staggered');
   },
 });
 
@@ -771,7 +771,7 @@ export const ExtraNp5Typed = meta.story({
   args: np5.args,
   play: async (context) => {
     await typedPlay(np5)(context);
-    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent('Bloodied');
+    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent('Staggered');
   },
 });
 

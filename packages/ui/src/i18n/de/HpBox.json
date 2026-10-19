@@ -1,7 +1,7 @@
 {
   "full": "Unverletzt",
   "wounded": "Verwundet",
-  "bloodied": "Angeschlagen",
+  "staggered": "Taumelnd",
   "dead": "Tot",
   "temp": "+{{amount}} temp"
 }

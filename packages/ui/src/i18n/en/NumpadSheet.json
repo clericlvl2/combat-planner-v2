@@ -9,7 +9,7 @@
   "temp": "+{{amount}} temp",
   "full": "Full",
   "wounded": "Wounded",
-  "bloodied": "Bloodied",
+  "staggered": "Staggered",
   "dead": "Dead",
   "hero": "Hero",
   "enemy": "Enemy",

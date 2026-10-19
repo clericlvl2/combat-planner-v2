@@ -102,9 +102,9 @@ export const RoundOnDazed = meta.story({
   args: { shape: 'round', checked: true, condition: 'dazed' },
 });
 
-export const RoundOnStaggered = meta.story({
-  name: 'Round · on, staggered',
-  args: { shape: 'round', checked: true, condition: 'staggered' },
+export const RoundOnHampered = meta.story({
+  name: 'Round · on, hampered',
+  args: { shape: 'round', checked: true, condition: 'hampered' },
 });
 
 export const SSquare = meta.story({
@@ -162,9 +162,9 @@ export const Helpless = meta.story({
   args: { shape: 'round', checked: true, condition: 'helpless' },
 });
 
-export const Hindered = meta.story({
-  name: 'hindered',
-  args: { shape: 'round', checked: true, condition: 'hindered' },
+export const Hampered = meta.story({
+  name: 'hampered',
+  args: { shape: 'round', checked: true, condition: 'hampered' },
 });
 
 export const Shocked = meta.story({
@@ -190,11 +190,6 @@ export const Vulnerable = meta.story({
 export const Weakened = meta.story({
   name: 'weakened',
   args: { shape: 'round', checked: true, condition: 'weakened' },
-});
-
-export const Staggered = meta.story({
-  name: 'staggered',
-  args: { shape: 'round', checked: true, condition: 'staggered' },
 });
 
 export const ExtraToggle = meta.story({

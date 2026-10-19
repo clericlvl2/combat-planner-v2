@@ -9,16 +9,15 @@ import {
 import type { Combat, PlayerCombat, Unit, Viewer } from '../src/index.ts';
 
 describe('types', () => {
-  it('lists the 12 conditions in vision order', () => {
+  it('lists the 11 conditions in vision order', () => {
     expect(CONDITIONS).toEqual([
       'charmed',
       'confused',
       'dazed',
       'fear',
       'helpless',
-      'hindered',
+      'hampered',
       'shocked',
-      'staggered',
       'stuck',
       'stunned',
       'vulnerable',
@@ -29,7 +28,7 @@ describe('types', () => {
   it('lists the roles, combat statuses, health statuses and history kinds', () => {
     expect(ROLES).toEqual(['hero', 'enemy', 'ally']);
     expect(COMBAT_STATUSES).toEqual(['setup', 'active']);
-    expect(HEALTH_STATUSES).toEqual(['full', 'wounded', 'bloodied', 'dead']);
+    expect(HEALTH_STATUSES).toEqual(['full', 'wounded', 'staggered', 'dead']);
     expect(HP_HISTORY_KINDS).toEqual(['damage', 'heal', 'temp', 'max']);
   });
 

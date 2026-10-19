@@ -60,7 +60,7 @@ const markTap = async (canvasElement: HTMLElement, condition: Condition) => {
 };
 
 export const Anatomy = meta.story({
-  args: { initial: ['dazed', 'staggered'] },
+  args: { initial: ['dazed', 'hampered'] },
 });
 
 export const NothingSelected = meta.story({
@@ -69,12 +69,12 @@ export const NothingSelected = meta.story({
 
 export const TwoSelected = meta.story({
   name: 'Two selected',
-  args: { initial: ['dazed', 'staggered'] },
+  args: { initial: ['dazed', 'hampered'] },
 });
 
 export const TapAddingWeakened = meta.story({
   name: 'Tap: adding weakened',
-  args: { initial: ['dazed', 'staggered'] },
+  args: { initial: ['dazed', 'hampered'] },
   play: async ({ canvas, canvasElement }) => {
     await markTap(canvasElement, 'weakened');
     const weakened = canvas.getByRole('checkbox', { name: 'weakened' });
@@ -98,18 +98,18 @@ export const LongUnitName = meta.story({
 
 export const ExtraFlowTapWeakened = meta.story({
   name: 'Flow: tap weakened applies at once',
-  args: { initial: ['dazed', 'staggered'] },
+  args: { initial: ['dazed', 'hampered'] },
   play: async ({ args, canvas }) => {
     const weakened = canvas.getByRole('checkbox', { name: 'weakened' });
     await expect(weakened).not.toBeChecked();
     await userEvent.click(weakened);
     await expect(args.onChange).toHaveBeenCalledOnce();
-    await expect(args.onChange).toHaveBeenCalledWith(['dazed', 'staggered', 'weakened']);
+    await expect(args.onChange).toHaveBeenCalledWith(['dazed', 'hampered', 'weakened']);
     await expect(weakened).toBeChecked();
     await expect(args.onClose).not.toHaveBeenCalled();
     await expect(canvas.getByRole('dialog', { name: 'Conditions' })).toBeVisible();
     await userEvent.click(canvas.getByRole('checkbox', { name: 'dazed' }));
-    await expect(args.onChange).toHaveBeenLastCalledWith(['staggered', 'weakened']);
+    await expect(args.onChange).toHaveBeenLastCalledWith(['hampered', 'weakened']);
   },
 });
 
@@ -171,7 +171,7 @@ export const ExtraOrderAZ = meta.story({
 export const ExtraLocaleRu = meta.story({
   name: 'Locale ru sorts А–Я',
   globals: { locale: 'ru' },
-  args: { initial: ['dazed', 'staggered'] },
+  args: { initial: ['dazed', 'hampered'] },
   play: async ({ canvas }) => {
     const group = canvas.getByRole('group', { name: 'Состояния' });
     const labels = within(group)

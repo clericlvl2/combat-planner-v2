@@ -85,7 +85,7 @@ const tokenGroups: TokenGroup[] = [
     items: [
       token('full', health.full, 'Full: 4 segments'),
       token('wounded', health.wounded, 'Wounded, 50% and up: 3 segments'),
-      token('bloodied', health.bloodied, 'Bloodied, below 50%: 2 or 1'),
+      token('staggered', health.staggered, 'Staggered, below 50%: 2 or 1'),
       token('dead', health.dead, 'Dead, 0 or below: 0 segments, name struck'),
       token('empty', health.empty, 'Empty segment'),
     ],

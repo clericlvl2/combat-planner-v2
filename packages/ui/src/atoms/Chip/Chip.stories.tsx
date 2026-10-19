@@ -58,7 +58,7 @@ const tag = () => ({ variant: 'tag', labelKey: 'goblins', onClick: fn() }) as co
 const tagActive = () =>
   ({ variant: 'tag', labelKey: 'orcs', selected: true, onRemove: fn() }) as const;
 const add = () => ({ variant: 'add', labelKey: 'addTag', onClick: fn() }) as const;
-const staggered = { variant: 'condition', condition: 'staggered', labelKey: 'staggered' } as const;
+const hampered = { variant: 'condition', condition: 'hampered', labelKey: 'hampered' } as const;
 const statusActive = { variant: 'status', labelKey: 'active', selected: true } as const;
 const metaChip = { variant: 'meta', labelKey: 'namedNpcs' } as const;
 
@@ -185,23 +185,23 @@ export const AddL36 = meta.story({
 
 export const ConditionS20 = meta.story({
   name: 'Condition S · 20',
-  args: { ...staggered, size: 'S' },
+  args: { ...hampered, size: 'S' },
   play: async ({ canvas }) => {
-    const chip = canvas.getByText('staggered').parentElement as HTMLElement;
+    const chip = canvas.getByText('hampered').parentElement as HTMLElement;
     await expect(heightOf(chip)).toBe(20);
-    await expect(getComputedStyle(chip).backgroundColor).toBe(rgb(conditions.staggered.fill));
-    await expect(getComputedStyle(chip).color).toBe(rgb(conditions.staggered.text));
+    await expect(getComputedStyle(chip).backgroundColor).toBe(rgb(conditions.hampered.fill));
+    await expect(getComputedStyle(chip).color).toBe(rgb(conditions.hampered.text));
   },
 });
 
 export const ConditionM28 = meta.story({
   name: 'Condition M · 28',
-  args: { ...staggered, size: 'M' },
+  args: { ...hampered, size: 'M' },
 });
 
 export const ConditionL36 = meta.story({
   name: 'Condition L · 36',
-  args: { ...staggered, size: 'L' },
+  args: { ...hampered, size: 'L' },
 });
 
 export const StatusS20 = meta.story({
@@ -337,18 +337,18 @@ export const ExtraPressedFills = meta.story({
   name: 'Pressed keeps condition, status and meta fills',
   render: () => (
     <div style={{ display: 'flex', gap: 8 }}>
-      <ChipCell {...staggered} data-pressed="" />
+      <ChipCell {...hampered} data-pressed="" />
       <ChipCell {...statusActive} data-pressed="" />
       <ChipCell {...metaChip} data-pressed="" />
     </div>
   ),
   play: async ({ canvas }) => {
-    const fills = ['staggered', 'Active', 'Named NPCs'].map(
+    const fills = ['hampered', 'Active', 'Named NPCs'].map(
       (text) =>
         getComputedStyle(canvas.getByText(text).closest('[data-variant]') as Element)
           .backgroundColor,
     );
-    await expect(fills).toEqual([rgb(conditions.staggered.fill), rgb(base.accent), rgb(base.soft)]);
+    await expect(fills).toEqual([rgb(conditions.hampered.fill), rgb(base.accent), rgb(base.soft)]);
   },
 });
 
@@ -368,7 +368,7 @@ export const ExtraDisplayOnly = meta.story({
   name: 'Condition, status and meta are display only',
   render: () => (
     <div style={{ display: 'flex', gap: 8 }}>
-      <ChipCell {...staggered} />
+      <ChipCell {...hampered} />
       <ChipCell variant="status" labelKey="setup" />
       <ChipCell {...statusActive} />
       <ChipCell {...metaChip} />
@@ -434,7 +434,7 @@ export const ExtraLocaleJa = meta.story({
     </div>
   ),
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('よろめき')).toBeVisible();
+    await expect(canvas.getByText('阻害')).toBeVisible();
   },
 });
 

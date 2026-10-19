@@ -39,7 +39,7 @@
 }
 
 .row.row[data-flash] {
-  border-color: var(--cp-health-bloodied);
+  border-color: var(--cp-health-staggered);
 }
 
 .initiative {

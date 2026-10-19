@@ -1,4 +1,4 @@
 Anatomy ExtraRoleFillsRow OwnHero
 ExtraFlowTapRow ExtraKeyboard ExtraKeyboardMotion
 ExtraOtherReadOnly OtherHero
-EnemyBloodied ExtraEnemyWithFields
+EnemyStaggered ExtraEnemyWithFields

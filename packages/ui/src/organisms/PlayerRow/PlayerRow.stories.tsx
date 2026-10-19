@@ -110,7 +110,7 @@ const orc = playerUnit({
   initiative: 17,
   hp: 14,
   maxHp: 40,
-  conditions: ['staggered'],
+  conditions: ['hampered'],
 });
 
 const goblin = playerUnit({
@@ -329,17 +329,17 @@ export const OtherHero = meta.story({
   },
 });
 
-export const EnemyBloodied = meta.story({
-  name: 'Enemy, Bloodied',
+export const EnemyStaggered = meta.story({
+  name: 'Enemy, Staggered',
   args: { unit: orc, mine: false },
   play: async ({ args, canvas, canvasElement }) => {
-    await expect(canvas.getByText('Bloodied')).toBeVisible();
-    await expect(canvas.getByRole('listitem')).toHaveTextContent('staggered');
+    await expect(canvas.getByText('Staggered')).toBeVisible();
+    await expect(canvas.getByRole('listitem')).toHaveTextContent('hampered');
     await expect(canvasElement.querySelector('[data-part="numbers"]')).toBeNull();
     await expect(canvas.queryByText(/\d+\/\d+/)).toBeNull();
     await expect(canvas.queryByText(/AC/)).toBeNull();
     await expect(canvas.queryByRole('button')).toBeNull();
-    await userEvent.click(canvas.getByText('Bloodied'));
+    await userEvent.click(canvas.getByText('Staggered'));
     await expect(args.onHp).not.toHaveBeenCalled();
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
@@ -387,7 +387,7 @@ export const RuFourConditions = meta.story({
       initiative: 17,
       hp: 14,
       maxHp: 40,
-      conditions: ['staggered', 'dazed', 'vulnerable', 'stuck'],
+      conditions: ['hampered', 'dazed', 'vulnerable', 'stuck'],
     }),
     mine: false,
   },
@@ -395,7 +395,7 @@ export const RuFourConditions = meta.story({
     await expect(canvas.getByText('Орк-берсерк')).toBeVisible();
     const chips = canvas.getAllByRole('listitem');
     await expect(chips.map((chip) => chip.textContent)).toEqual([
-      'staggered',
+      'hampered',
       'dazed',
       'vulnerable',
       'stuck',
@@ -629,7 +629,7 @@ export const ExtraEnemyWithFields = meta.story({
   },
   play: async ({ args, canvas, canvasElement }) => {
     await expect(canvas.getByText('Orc Berserker')).toBeVisible();
-    await expect(canvas.getByText('Bloodied')).toBeVisible();
+    await expect(canvas.getByText('Staggered')).toBeVisible();
     await expect(canvasElement.querySelector('[data-part="numbers"]')).toBeNull();
     await expect(canvas.queryByText('14')).toBeNull();
     await expect(canvas.queryByText('/40')).toBeNull();
@@ -643,7 +643,7 @@ export const ExtraEnemyWithFields = meta.story({
     await expect(canvas.queryByRole('button')).toBeNull();
     await expect(canvasElement.querySelector('[data-mine]')).toBeNull();
     await userEvent.click(canvas.getByText('Orc Berserker'));
-    await userEvent.click(canvas.getByText('Bloodied'));
+    await userEvent.click(canvas.getByText('Staggered'));
     await userEvent.click(canvas.getByText('17'));
     await expect(args.onToggle).not.toHaveBeenCalled();
     await expect(args.onHp).not.toHaveBeenCalled();

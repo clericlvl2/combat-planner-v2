@@ -71,7 +71,7 @@ export const roster = {
     hp: 14,
     maxHp: 40,
     defenses: [18, 16, 12],
-    conditions: ['staggered'],
+    conditions: ['hampered'],
     hpHistory: [
       historyEntry(10, 40, 1),
       healEntry(4, 30, 1),

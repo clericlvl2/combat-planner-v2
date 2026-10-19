@@ -1,7 +1,7 @@
 import type { HpHistoryEntry } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
-import { base, conditions, hpActions } from '../../theme.ts';
+import { base, conditions, historyTemp, hpActions } from '../../theme.ts';
 import { HistoryRow } from './HistoryRow.tsx';
 import type { HistoryRowProps } from './HistoryRow.tsx';
 
@@ -109,9 +109,9 @@ export const Temp = meta.story({
     await expect(part(canvasElement, 'amount').textContent).toBe('+5 temp');
     await expect(part(canvasElement, 'result').textContent).toBe('26/40');
     await expect(colorsOf(canvasElement)).toEqual({
-      fill: rgb(conditions.staggered.fill),
-      text: rgb(conditions.staggered.text),
-      amount: rgb(conditions.staggered.text),
+      fill: rgb(historyTemp.fill),
+      text: rgb(historyTemp.text),
+      amount: rgb(historyTemp.text),
     });
   },
 });

@@ -1,7 +1,7 @@
 {
   "full": "Ileso",
   "wounded": "Herido",
-  "bloodied": "Malherido",
+  "staggered": "Tambaleante",
   "dead": "Muerto",
   "temp": "+{{amount}} temp."
 }

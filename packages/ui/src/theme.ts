@@ -36,7 +36,7 @@ export const roles = {
 export const health = {
   full: '#2E7A43',
   wounded: '#855800',
-  bloodied: '#B33A0A',
+  staggered: '#B33A0A',
   dead: '#57534E',
   empty: '#E6DDCC',
 } as const;
@@ -44,7 +44,7 @@ export const health = {
 export const healthTints = {
   full: '#E3F1E6',
   wounded: '#F8ECD2',
-  bloodied: '#FBE3D8',
+  staggered: '#FBE3D8',
 } as const;
 
 export const hpActions = {
@@ -61,19 +61,20 @@ export const interaction = {
   dangerPressed: '#9B1C1C',
 } as const;
 
+export const historyTemp = { fill: '#DCE6F7', text: '#1E4E8C' } as const;
+
 export const conditionNames = [
   'charmed',
   'confused',
   'dazed',
   'fear',
   'helpless',
-  'hindered',
+  'hampered',
   'shocked',
   'stuck',
   'stunned',
   'vulnerable',
   'weakened',
-  'staggered',
 ] as const;
 
 export type ConditionName = (typeof conditionNames)[number];
@@ -84,13 +85,12 @@ export const conditions: Record<ConditionName, { fill: string; text: string }> =
   dazed: { fill: '#FFF1B8', text: '#6B5600' },
   fear: { fill: '#E3E1DC', text: '#3D3A35' },
   helpless: { fill: '#F6DCD5', text: '#8A2E17' },
-  hindered: { fill: '#D7EBF5', text: '#12506E' },
+  hampered: { fill: '#D7EBF5', text: '#12506E' },
   shocked: { fill: '#D5F0F0', text: '#0E5E63' },
   stuck: { fill: '#E9DFD1', text: '#5C4026' },
   stunned: { fill: '#FBE0C2', text: '#8A3F00' },
   vulnerable: { fill: '#F8D7D7', text: '#9B1C1C' },
   weakened: { fill: '#EDE6C9', text: '#5E5214' },
-  staggered: { fill: '#DCE6F7', text: '#1E4E8C' },
 };
 
 export const combatColors = [
@@ -169,6 +169,7 @@ export function paletteVariables(): Record<string, string> {
     health,
     'health-tint': healthTints,
     hp: hpActions,
+    'history-temp': historyTemp,
     state: interaction,
   };
   for (const [prefix, group] of Object.entries(groups)) {

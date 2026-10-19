@@ -29,9 +29,9 @@
     --hp-box-tint: var(--cp-health-tint-wounded);
   }
 
-  &[data-status='bloodied'] {
-    --hp-box-status: var(--cp-health-bloodied);
-    --hp-box-tint: var(--cp-health-tint-bloodied);
+  &[data-status='staggered'] {
+    --hp-box-status: var(--cp-health-staggered);
+    --hp-box-tint: var(--cp-health-tint-staggered);
   }
 
   &[data-status='dead'] {

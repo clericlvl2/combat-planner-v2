@@ -410,7 +410,7 @@ export const CSF31 = meta.story({
     const hp = await hpOf(canvasElement, names.orc, /^14 \/40/);
     hp.focus();
     await expect(hp).toHaveFocus();
-    await expect(hp).toHaveAccessibleName(/Bloodied/);
+    await expect(hp).toHaveAccessibleName(/Staggered/);
   },
 });
 
@@ -434,13 +434,13 @@ export const CSF33 = meta.story({
 });
 
 export const CSF34 = meta.story({
-  name: 'CS-F3.4 Orc Bloodied, row flashes',
+  name: 'CS-F3.4 Orc Staggered, row flashes',
   play: async ({ canvas, canvasElement, loaded }) => {
     await damageOrc(canvas, canvasElement, '12');
     await expect(dispatched(fakeApiOf(loaded))).toEqual([
       expect.objectContaining({ type: 'damage', unitId: unitIds.orc, amount: 12 }),
     ]);
-    await expect(await hpOf(canvasElement, names.orc, /^2 \/40 Bloodied/)).toBeVisible();
+    await expect(await hpOf(canvasElement, names.orc, /^2 \/40 Staggered/)).toBeVisible();
     await waitFor(async () =>
       expect(await rowOf(canvasElement, names.orc)).toHaveAttribute('data-flash'),
     );
@@ -937,7 +937,7 @@ export const ExtraHpRules = meta.story({
       await waitFor(() => expect(canvas.queryByRole('dialog', { name: names.orc })).toBeNull());
     };
     await apply(/^14 \/40/, '8', 'Damage');
-    await expect(await hpOf(canvasElement, names.orc, /^11 \/40 Bloodied/)).toBeVisible();
+    await expect(await hpOf(canvasElement, names.orc, /^11 \/40 Staggered/)).toBeVisible();
     await apply(/^11 \/40/, '30', 'Set Max');
     await expect(await hpOf(canvasElement, names.orc, /^11 \/30/)).toBeVisible();
     await apply(/^11 \/30/, '50', 'Heal');

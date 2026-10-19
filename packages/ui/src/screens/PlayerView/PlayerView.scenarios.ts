@@ -75,7 +75,7 @@ const seeds: readonly UnitSeed[] = [
     initiative: 17,
     hp: 14,
     maxHp: 40,
-    conditions: ['staggered'],
+    conditions: ['hampered'],
   },
   {
     key: 'vashti',

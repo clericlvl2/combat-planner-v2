@@ -27,7 +27,7 @@
   }
 
   &[data-flash]:not([data-dead], [data-active]) {
-    border-color: var(--cp-health-bloodied);
+    border-color: var(--cp-health-staggered);
   }
 }
 

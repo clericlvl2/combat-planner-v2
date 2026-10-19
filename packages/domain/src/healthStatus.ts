@@ -6,7 +6,7 @@ export const healthStatus = (hp: number, maxHp: number): HealthStatus => {
   if (hp <= 0) return 'dead';
   if (hp >= maxHp) return 'full';
   if (hp * 2 >= maxHp) return 'wounded';
-  return 'bloodied';
+  return 'staggered';
 };
 
 export const healthSegments = (
@@ -19,7 +19,7 @@ export const healthSegments = (
       return 4;
     case 'wounded':
       return 3;
-    case 'bloodied':
+    case 'staggered':
       return hp !== undefined && maxHp !== undefined && hp * 4 < maxHp ? 1 : 2;
     case 'dead':
       return 0;
