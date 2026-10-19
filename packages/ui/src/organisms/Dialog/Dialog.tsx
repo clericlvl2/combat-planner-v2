@@ -1,4 +1,4 @@
-import { FocusTrap, RemoveScroll } from '@mantine/core';
+import { FocusTrap, RemoveScroll, useProps } from '@mantine/core';
 import type { Icon } from '@tabler/icons-react';
 import { useId, useLayoutEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
@@ -17,18 +17,29 @@ export interface DialogProps {
   onCancel: () => void;
   tone?: DialogTone;
   opened: boolean;
+  lockScroll?: boolean;
+  trapFocus?: boolean;
 }
 
-export function Dialog({
-  icon: IconComponent,
-  title,
-  body,
-  confirmLabel,
-  onConfirm,
-  onCancel,
-  tone = 'danger',
-  opened,
-}: DialogProps) {
+const defaultProps = {
+  tone: 'danger',
+  lockScroll: true,
+  trapFocus: true,
+} satisfies Partial<DialogProps>;
+
+export function Dialog(props: DialogProps) {
+  const {
+    icon: IconComponent,
+    title,
+    body,
+    confirmLabel,
+    onConfirm,
+    onCancel,
+    tone,
+    opened,
+    lockScroll,
+    trapFocus,
+  } = useProps('CpDialog', defaultProps, props);
   const { t } = useTranslation('Dialog');
   const titleId = useId();
   const bodyId = useId();
@@ -53,11 +64,11 @@ export function Dialog({
   };
 
   return (
-    <RemoveScroll>
+    <RemoveScroll enabled={lockScroll}>
       <div className={classes.root} onKeyDown={handleKeyDown}>
         <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onCancel} />
         <div className={classes.inner}>
-          <FocusTrap active>
+          <FocusTrap active={trapFocus}>
             <div
               role="alertdialog"
               tabIndex={-1}
