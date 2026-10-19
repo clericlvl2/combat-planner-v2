@@ -73,6 +73,7 @@
 }
 
 .action {
+  position: relative;
   display: flex;
   flex: none;
   align-items: center;
@@ -97,9 +98,16 @@
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
   }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
+  }
 }
 
 .close {
+  position: relative;
   display: flex;
   flex: none;
   align-items: center;
@@ -120,5 +128,11 @@
   &[data-focus] {
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
   }
 }
