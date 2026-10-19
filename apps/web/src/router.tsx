@@ -6,6 +6,7 @@ import { createBrowserRouter, redirect } from 'react-router';
 import type { LoaderFunctionArgs, RouteObject } from 'react-router';
 import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import type { CombatRouteData, PlayerRouteData } from './pages.tsx';
+import type { LanguageSwitch } from './routeLocale.ts';
 
 export const SIGN_IN_PATH = '/auth/sign-in';
 export const HOME_PATH = '/combats';
@@ -22,6 +23,7 @@ export interface AppRouteOptions {
   queryClient: QueryClient;
   playerId: () => PlayerId;
   about: AboutLinks;
+  language: Promise<LanguageSwitch>;
 }
 
 const unreachable = (): undefined => undefined;
@@ -31,6 +33,7 @@ export function createRoutes({
   queryClient,
   playerId,
   about,
+  language,
 }: AppRouteOptions): RouteObject[] {
   const cachedSession = (): Promise<Session | null | undefined> =>
     queryClient
@@ -43,7 +46,11 @@ export function createRoutes({
       .catch(unreachable);
 
   const requireSession = async () => {
-    if ((await cachedSession()) === null) throw redirect(SIGN_IN_PATH);
+    const session = await cachedSession();
+    if (session === null) throw redirect(SIGN_IN_PATH);
+    if (session === undefined) return null;
+    const i18n = await language;
+    if (i18n.language !== session.language) await i18n.changeLanguage(session.language);
     return null;
   };
 

@@ -1,5 +1,5 @@
 import type { Locale } from '@combat-planner/ui';
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
 export const OWN_LOCALE_ROUTES: readonly string[] = ['dm', 'play'];
@@ -17,7 +17,7 @@ export interface LocaleRouter {
 
 export interface LanguageSwitch {
   language: string;
-  changeLanguage(language: string): unknown;
+  changeLanguage(language: string): Promise<unknown>;
 }
 
 const usesBrowserLocale = ({ matches, errors }: LocaleRouterState): boolean =>
@@ -44,5 +44,28 @@ export interface RouteLocaleProps {
 export function RouteLocale({ router, locale }: RouteLocaleProps) {
   const { i18n } = useTranslation();
   useEffect(() => watchRouteLocale(router, i18n, locale), [router, i18n, locale]);
+  return null;
+}
+
+export interface LanguageBridge {
+  language: Promise<LanguageSwitch>;
+  bind: (i18n: LanguageSwitch) => void;
+}
+
+export function languageBridge(): LanguageBridge {
+  let bind: (i18n: LanguageSwitch) => void = () => undefined;
+  const language = new Promise<LanguageSwitch>((resolve) => {
+    bind = resolve;
+  });
+  return { language, bind };
+}
+
+export interface BindLanguageProps {
+  bind: (i18n: LanguageSwitch) => void;
+}
+
+export function BindLanguage({ bind }: BindLanguageProps) {
+  const { i18n } = useTranslation();
+  useLayoutEffect(() => bind(i18n), [bind, i18n]);
   return null;
 }

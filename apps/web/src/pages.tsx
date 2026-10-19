@@ -8,10 +8,8 @@ import {
   PlayerView,
   UnexpectedError,
   useAccount,
-  useSettings,
 } from '@combat-planner/ui';
 import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Outlet, useLoaderData, useLocation, useNavigate } from 'react-router';
 import { watchEdgeSwipe } from './edgeSwipe.ts';
 import { sectionOf } from './sections.ts';
@@ -45,16 +43,6 @@ export function PlayerPage() {
   );
 }
 
-function DmLocale() {
-  const { settings } = useSettings();
-  const { i18n } = useTranslation();
-  const language = settings?.language;
-  useEffect(() => {
-    if (language !== undefined && i18n.language !== language) void i18n.changeLanguage(language);
-  }, [language, i18n]);
-  return null;
-}
-
 function SwipeDrawer() {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -84,7 +72,6 @@ function SwipeDrawer() {
 export function DmPages() {
   return (
     <>
-      <DmLocale />
       <Outlet />
       <SwipeDrawer />
     </>

@@ -9,6 +9,7 @@ import {
   SignIn,
   SignUp,
   UnexpectedError,
+  createI18n,
   createQueryClient,
   scenario,
 } from '@combat-planner/ui';
@@ -56,6 +57,7 @@ async function open(
     queryClient: createQueryClient(),
     playerId: () => PLAYER_ID,
     about,
+    language: Promise.resolve(createI18n('en')),
   });
   routes[0]?.children?.unshift(...extraRoutes);
   const router = createMemoryRouter(routes, { initialEntries: [path] });

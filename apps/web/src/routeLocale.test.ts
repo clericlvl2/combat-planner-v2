@@ -1,5 +1,11 @@
 import type { PlayerId } from '@combat-planner/domain';
-import { FakeApiClient, createI18n, createQueryClient, scenario } from '@combat-planner/ui';
+import {
+  DM_ACCOUNT,
+  FakeApiClient,
+  createI18n,
+  createQueryClient,
+  scenario,
+} from '@combat-planner/ui';
 import { createMemoryRouter } from 'react-router';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 import { createRoutes } from './router.tsx';
@@ -8,6 +14,14 @@ import { watchRouteLocale } from './routeLocale.ts';
 const PLAYER_ID: PlayerId = '01JA0000000000000000000000';
 const COMBAT_ID = '01JA0000000000000000000001';
 const BROWSER_LOCALE = 'de';
+const DM_LANGUAGE = 'ru';
+const DM = { ...DM_ACCOUNT, language: DM_LANGUAGE } as const;
+const DM_SESSION = {
+  userId: DM.userId,
+  email: DM.email,
+  displayName: DM.displayName,
+  language: DM.language,
+};
 
 type MemoryRouter = ReturnType<typeof createMemoryRouter>;
 
@@ -31,22 +45,43 @@ const settled = (router: MemoryRouter): Promise<void> =>
     });
   });
 
-async function start(path: string) {
-  const api = new FakeApiClient({ scenario: scenario() });
+async function start(path: string, signedIn = true) {
+  const api = new FakeApiClient({
+    scenario: scenario({
+      session: signedIn ? DM_SESSION : null,
+      accounts: [DM],
+      settings: { language: DM_LANGUAGE },
+    }),
+  });
+  const queryClient = createQueryClient();
+  const i18n = createI18n(BROWSER_LOCALE);
   const router = createMemoryRouter(
     createRoutes({
       api,
-      queryClient: createQueryClient(),
+      queryClient,
       playerId: () => PLAYER_ID,
       about: { version: '2.0.0', sourceUrl: 'https://s.example' },
+      language: Promise.resolve(i18n),
     }),
     { initialEntries: [path] },
   );
-  const i18n = createI18n(BROWSER_LOCALE);
   cleanups.push(watchRouteLocale(router, i18n, BROWSER_LOCALE), () => router.dispose());
   await settled(router);
-  return { api, router, i18n };
+  return { api, queryClient, router, i18n };
 }
+
+const recordDmFirstFrames = (router: MemoryRouter, i18n: { language: string }): string[] => {
+  const frames: string[] = [];
+  let onDm = router.state.matches.some(({ route }) => route.id === 'dm');
+  const stop = router.subscribe((state) => {
+    if (state.navigation.state !== 'idle') return;
+    const enteredDm = state.matches.some(({ route }) => route.id === 'dm');
+    if (enteredDm && !onDm) frames.push(i18n.language);
+    onDm = enteredDm;
+  });
+  cleanups.push(stop);
+  return frames;
+};
 
 const go = async (router: MemoryRouter, path: string) => {
   await router.navigate(path);
@@ -81,23 +116,39 @@ describe('watchRouteLocale', () => {
     expect(i18n.language).toBe('ru');
   });
 
-  it('never shows a DM route entered from a player route in the browser language', async () => {
+  it('shows a DM route entered from a player route in the DM language from the first frame', async () => {
     const { router, i18n } = await start(`/combats/${COMBAT_ID}/play?t=token-1`);
     await i18n.changeLanguage('ja');
     const applied: string[] = [];
     const onChange = (language: string) => applied.push(language);
     i18n.on('languageChanged', onChange);
-    const firstFrames: string[] = [];
-    const stopWatching = router.subscribe((state) => {
-      const onDmRoute = state.matches.some(({ route }) => route.id === 'dm');
-      if (onDmRoute && state.navigation.state === 'idle') firstFrames.push(i18n.language);
-    });
-    cleanups.push(stopWatching, () => i18n.off('languageChanged', onChange));
+    cleanups.push(() => i18n.off('languageChanged', onChange));
+    const firstFrames = recordDmFirstFrames(router, i18n);
     await go(router, '/combats');
+    await i18n.changeLanguage('ja');
     await go(router, `/combats/${COMBAT_ID}/play?t=token-1`);
     await go(router, `/combats/${COMBAT_ID}`);
-    expect(firstFrames).toEqual(['ja', 'ja']);
+    expect(firstFrames).toEqual([DM_LANGUAGE, DM_LANGUAGE]);
     expect(applied).not.toContain(BROWSER_LOCALE);
+  });
+
+  it('shows a DM route entered from sign-in in the DM language from the first frame', async () => {
+    const { api, queryClient, router, i18n } = await start('/auth/sign-in', false);
+    expect(i18n.language).toBe(BROWSER_LOCALE);
+    const firstFrames = recordDmFirstFrames(router, i18n);
+    await api.auth.signIn({ email: DM.email, password: DM.password });
+    queryClient.clear();
+    await go(router, '/combats');
+    expect(router.state.location.pathname).toBe('/combats');
+    expect(firstFrames).toEqual([DM_LANGUAGE]);
+  });
+
+  it('shows a DM route entered from a system page in the DM language from the first frame', async () => {
+    const { router, i18n } = await start('/missing');
+    expect(i18n.language).toBe(BROWSER_LOCALE);
+    const firstFrames = recordDmFirstFrames(router, i18n);
+    await go(router, '/library');
+    expect(firstFrames).toEqual([DM_LANGUAGE]);
   });
 
   it('stops after the cleanup', async () => {
