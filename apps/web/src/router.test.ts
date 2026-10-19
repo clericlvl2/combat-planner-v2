@@ -52,15 +52,18 @@ async function open(
   extraRoutes: RouteObject[] = [],
 ): Promise<MemoryRouter> {
   const api = new FakeApiClient({ scenario: signedIn ? scenario() : scenario({ session: null }) });
-  const routes = createRoutes({
-    api,
-    queryClient: createQueryClient(),
-    playerId: () => PLAYER_ID,
-    about,
-    language: Promise.resolve(createI18n('en')),
-  });
+  const routes = createRoutes(
+    {
+      api,
+      queryClient: createQueryClient(),
+      playerId: () => PLAYER_ID,
+      about,
+      language: Promise.resolve(createI18n('en')),
+    },
+    () => router,
+  );
   routes[0]?.children?.unshift(...extraRoutes);
-  const router = createMemoryRouter(routes, { initialEntries: [path] });
+  const router: MemoryRouter = createMemoryRouter(routes, { initialEntries: [path] });
   routers.push(router);
   await new Promise<void>((resolve) => {
     const settled = () => router.state.initialized && router.state.navigation.state === 'idle';

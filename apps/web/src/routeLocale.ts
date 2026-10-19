@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 export const OWN_LOCALE_ROUTES: readonly string[] = ['dm', 'play'];
 
-interface LocaleRouterState {
+export interface LocaleRouterState {
   matches: readonly { route: { id: string } }[];
   errors: unknown;
   navigation: { state: string };
@@ -22,6 +22,9 @@ export interface LanguageSwitch {
 
 const usesBrowserLocale = ({ matches, errors }: LocaleRouterState): boolean =>
   errors !== null || !matches.some(({ route }) => OWN_LOCALE_ROUTES.includes(route.id));
+
+export const showsDmPage = ({ matches, errors, navigation }: LocaleRouterState): boolean =>
+  navigation.state === 'idle' && errors === null && matches.some(({ route }) => route.id === 'dm');
 
 export function watchRouteLocale(
   router: LocaleRouter,

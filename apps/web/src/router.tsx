@@ -3,10 +3,11 @@ import type { PlayerId } from '@combat-planner/domain';
 import { About, Account, CombatList, Library, Settings, SignIn, SignUp } from '@combat-planner/ui';
 import type { QueryClient } from '@tanstack/react-query';
 import { createBrowserRouter, redirect } from 'react-router';
-import type { LoaderFunctionArgs, RouteObject } from 'react-router';
+import type { DataRouter, LoaderFunctionArgs, RouteObject } from 'react-router';
 import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import type { CombatRouteData, PlayerRouteData } from './pages.tsx';
-import type { LanguageSwitch } from './routeLocale.ts';
+import { showsDmPage } from './routeLocale.ts';
+import type { LanguageSwitch, LocaleRouterState } from './routeLocale.ts';
 
 export const SIGN_IN_PATH = '/auth/sign-in';
 export const HOME_PATH = '/combats';
@@ -26,15 +27,14 @@ export interface AppRouteOptions {
   language: Promise<LanguageSwitch>;
 }
 
+export type RouterStateGetter = () => { state: LocaleRouterState };
+
 const unreachable = (): undefined => undefined;
 
-export function createRoutes({
-  api,
-  queryClient,
-  playerId,
-  about,
-  language,
-}: AppRouteOptions): RouteObject[] {
+export function createRoutes(
+  { api, queryClient, playerId, about, language }: AppRouteOptions,
+  router: RouterStateGetter,
+): RouteObject[] {
   const cachedSession = (): Promise<Session | null | undefined> =>
     queryClient
       .ensureQueryData({ queryKey: SESSION_KEY, queryFn: () => api.auth.session() })
@@ -60,7 +60,7 @@ export function createRoutes({
   const followSessionLanguage = () => {
     const unsubscribe = queryClient.getQueryCache().subscribe(() => {
       const session = queryClient.getQueryData<Session | null>(SESSION_KEY);
-      if (session === undefined) return;
+      if (session === undefined || !showsDmPage(router().state)) return;
       leaveDm();
       if (session) void applySessionLanguage(session);
     });
@@ -141,6 +141,7 @@ export function createRoutes({
   ];
 }
 
-export function createAppRouter(options: AppRouteOptions) {
-  return createBrowserRouter(createRoutes(options));
+export function createAppRouter(options: AppRouteOptions): DataRouter {
+  const router: DataRouter = createBrowserRouter(createRoutes(options, () => router));
+  return router;
 }

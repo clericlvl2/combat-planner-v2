@@ -7,6 +7,7 @@ import {
   scenario,
 } from '@combat-planner/ui';
 import { createMemoryRouter } from 'react-router';
+import type { LoaderFunctionArgs, RouteObject } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { createRoutes } from './router.tsx';
 import { watchRouteLocale } from './routeLocale.ts';
@@ -49,6 +50,7 @@ async function start(
   path: string,
   signedIn = true,
   prepare: (api: FakeApiClient) => void = () => undefined,
+  dmChildren: RouteObject[] = [],
 ) {
   const api = new FakeApiClient({
     scenario: scenario({
@@ -60,16 +62,18 @@ async function start(
   prepare(api);
   const queryClient = createQueryClient();
   const i18n = createI18n(BROWSER_LOCALE);
-  const router = createMemoryRouter(
-    createRoutes({
+  const routes = createRoutes(
+    {
       api,
       queryClient,
       playerId: () => PLAYER_ID,
       about: { version: '2.0.0', sourceUrl: 'https://s.example' },
       language: Promise.resolve(i18n),
-    }),
-    { initialEntries: [path] },
+    },
+    () => router,
   );
+  routes[0]?.children?.find(({ id }) => id === 'dm')?.children?.push(...dmChildren);
+  const router: MemoryRouter = createMemoryRouter(routes, { initialEntries: [path] });
   cleanups.push(watchRouteLocale(router, i18n, BROWSER_LOCALE), () => router.dispose());
   await settled(router);
   return { api, queryClient, router, i18n };
@@ -98,6 +102,27 @@ const tick = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0
 const failSessionOnce = (api: FakeApiClient) => {
   vi.spyOn(api.auth, 'session').mockRejectedValueOnce(new Error('offline'));
 };
+
+const failingDmPage: RouteObject = {
+  id: 'failing',
+  path: 'failing',
+  loader: () => {
+    throw new Error('page failed');
+  },
+};
+
+const LOADER_URL = `http://localhost/combats/${COMBAT_ID}/play?t=token-1`;
+
+const loaderArgs = {
+  request: new Request(LOADER_URL),
+  url: new URL(LOADER_URL),
+  pattern: '/combats/:id/play',
+  params: { id: COMBAT_ID },
+  context: {},
+} as LoaderFunctionArgs;
+
+const showsPageOutsideDm = (route: { id: string; element?: unknown; children?: unknown }) =>
+  route.id !== 'dm' && (route.element !== undefined || route.children !== undefined);
 
 const holdSession = (api: FakeApiClient): (() => void) => {
   const session = api.auth.session.bind(api.auth);
@@ -189,6 +214,35 @@ describe('watchRouteLocale', () => {
     await queryClient.refetchQueries({ queryKey: ['session'] });
     await tick();
     expect(i18n.language).toBe(BROWSER_LOCALE);
+  });
+
+  it('keeps the browser language on the error page when a session that failed on entry arrives', async () => {
+    const { queryClient, router, i18n } = await start('/failing', true, failSessionOnce, [
+      failingDmPage,
+    ]);
+    expect(router.state.errors).not.toBeNull();
+    await queryClient.refetchQueries({ queryKey: ['session'] });
+    await tick();
+    expect(i18n.language).toBe(BROWSER_LOCALE);
+  });
+
+  it('stops the late-session follower in the loader of every top-level page outside DM', async () => {
+    const { router: probe } = await start('/combats');
+    const pageIds = (probe.routes[0]?.children ?? [])
+      .filter(showsPageOutsideDm)
+      .map(({ id }) => id);
+    expect(pageIds.length).toBeGreaterThan(0);
+    for (const pageId of pageIds) {
+      const { queryClient, router, i18n } = await start('/combats', true, failSessionOnce);
+      const loader = router.routes[0]?.children?.find(({ id }) => id === pageId)?.loader;
+      expect(typeof loader, pageId).toBe('function');
+      if (typeof loader !== 'function') continue;
+      await (async () => loader(loaderArgs))().catch(() => undefined);
+      await queryClient.refetchQueries({ queryKey: ['session'] });
+      await tick();
+      expect(router.state.location.pathname).toBe('/combats');
+      expect(i18n.language, pageId).toBe(BROWSER_LOCALE);
+    }
   });
 
   it('leaves the language alone when a DM navigation is aborted', async () => {
