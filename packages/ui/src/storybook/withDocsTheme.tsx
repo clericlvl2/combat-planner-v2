@@ -8,6 +8,7 @@ export const docsTheme: MantineThemeOverride = {
     Popover: { defaultProps: { withinPortal: false } },
     CpDialog: { defaultProps: { lockScroll: false, trapFocus: false } },
     CpDrawer: { defaultProps: { lockScroll: false, trapFocus: false } },
+    CpSheet: { defaultProps: { autoFocus: false } },
   },
 };
 
