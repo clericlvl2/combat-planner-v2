@@ -1,5 +1,5 @@
 {
   "title": "Initiativewert",
-  "roll": "d20 würfeln {{bonus}}",
+  "roll": "W20 {{bonus}} würfeln",
   "anchor": "Initiative festlegen"
 }

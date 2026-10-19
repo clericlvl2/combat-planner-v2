@@ -1,8 +1,8 @@
 {
   "title": "Titel",
-  "name": "Bezeichnung",
+  "name": "Name",
   "titlePlaceholder": "Neuer Kampf",
-  "namePlaceholder": "Gegner 1",
+  "namePlaceholder": "Feind 1",
   "enterTitle": "Titel eingeben",
   "enterName": "Namen eingeben",
   "upTo": "Bis zu {{max}} Zeichen",

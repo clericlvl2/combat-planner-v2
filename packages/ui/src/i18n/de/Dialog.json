@@ -10,7 +10,7 @@
   "clearBody_other": "Alle {{count}} Einheiten werden entfernt und jede Spielerzuordnung wird freigegeben.",
   "clear": "Leeren",
   "removeTitle": "{{name}} entfernen?",
-  "removeBody": "Die Einheit verlässt die Zugreihenfolge. Rückgängig holt sie zurück.",
+  "removeBody": "Die Einheit verlässt die Zugreihenfolge. Mit „Rückgängig“ lässt sie sich zurückholen.",
   "remove": "Entfernen",
   "revokeTitle": "Link widerrufen?",
   "revokeBody": "Der aktuelle Link funktioniert nicht mehr und jede Zuordnung wird freigegeben. Die Spieler brauchen den neuen Link.",

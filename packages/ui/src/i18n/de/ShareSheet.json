@@ -3,6 +3,6 @@
   "qr": "QR-Code des Spielerlinks",
   "copy": "Kopieren",
   "copied": "Kopiert",
-  "note": "Spieler übernehmen ihre Helden. Sie sehen Gegnernamen, Gesundheitszustand und Zustände, aber keine TP oder Verteidigungen.",
+  "note": "Spieler übernehmen ihre Helden. Sie sehen die Namen der Feinde, Gesundheitszustand und Zustände, aber keine TP oder Verteidigungen.",
   "reissue": "Link neu ausstellen"
 }

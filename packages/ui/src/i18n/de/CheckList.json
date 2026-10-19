@@ -1,9 +1,9 @@
 {
   "create": "„{{query}}“ erstellen",
-  "noMatch": "Keine passenden Tags",
+  "noMatch": "Keine passenden Schlagwörter",
   "orcs": "Orks",
   "ferry": "Fähre",
-  "goblins": "Kobolde",
+  "goblins": "Goblins",
   "undead": "Untote",
   "mooks": "Schergen"
 }

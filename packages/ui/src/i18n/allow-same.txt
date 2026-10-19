@@ -17,3 +17,12 @@ About.rulesValue
 About.sourceValue
 PlayerHeader.menu
 PresetFormSheet.namePlaceholder
+CheckList.goblins
+Chip.goblins
+TextField.name
+PresetFormSheet.name
+UnitForm.name
+TextArea.optional
+UnitForm.optional
+CombatFormSheet.descriptionPlaceholder
+About.version

@@ -1,7 +1,7 @@
 {
   "newPreset": "Neue Vorlage",
   "editPreset": "Vorlage bearbeiten",
-  "name": "Bezeichnung",
+  "name": "Name",
   "namePlaceholder": "{{role}} 1",
   "nameRequired": "Gib einen Namen ein",
   "type": "Typ",

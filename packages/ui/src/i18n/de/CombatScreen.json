@@ -20,6 +20,6 @@
   "undoToggleCondition": "Rückgängig: {{condition}} bei {{name}}",
   "undoEditNote": "Rückgängig: Notiz zu {{name}}",
   "nextWrap": "{{name}} · Runde {{round}}",
-  "presetFailed": "Vorlage konnte nicht gespeichert werden. Versuch es erneut.",
-  "linkFailed": "Spielerlink konnte nicht geladen werden. Versuch es erneut."
+  "presetFailed": "Vorlage konnte nicht gespeichert werden. Versuche es erneut.",
+  "linkFailed": "Spielerlink konnte nicht geladen werden. Versuche es erneut."
 }

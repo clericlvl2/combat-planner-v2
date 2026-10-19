@@ -5,7 +5,7 @@
   "titlePlaceholder": "Neuer Kampf",
   "titleRequired": "Gib einen Titel ein",
   "description": "Beschreibung",
-  "descriptionPlaceholder": "Freiwillige Angabe",
+  "descriptionPlaceholder": "Optional",
   "color": "Farbe",
   "create": "Erstellen",
   "save": "Speichern"

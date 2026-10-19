@@ -7,5 +7,5 @@
   "emptyBody": "Erstelle hier eine oder speichere eine Einheit aus einem Kampf in der Bibliothek.",
   "noResultsBody": "Keine Vorlage passt zu „{{query}}“.",
   "limitReached": "Vorlagenlimit erreicht",
-  "tagFailed": "Der Tag {{name}} konnte nicht erstellt werden"
+  "tagFailed": "Das Schlagwort {{name}} konnte nicht erstellt werden"
 }
