@@ -20,6 +20,7 @@
 }
 
 .segment {
+  position: relative;
   --segment-fill: var(--cp-color-ink);
 
   box-sizing: border-box;
@@ -84,5 +85,11 @@
   &[data-tap] {
     outline: 3px solid var(--cp-state-tap-marker);
     outline-offset: 2px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
   }
 }
