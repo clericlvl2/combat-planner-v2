@@ -154,10 +154,11 @@ export const Ru = meta.story({
   globals: { locale: 'ru' },
   args: { context: 'combats', selected: 1 },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Сортировка сражений' })).toBeVisible();
-    await expect(canvas.getByRole('radio', { name: 'Сначала последние сыгранные' })).toBeChecked();
+    await expect(canvas.getByRole('dialog', { name: 'Сортировка боёв' })).toBeVisible();
+    await expect(canvas.queryByRole('dialog', { name: 'Сортировка сражений' })).toBeNull();
+    await expect(canvas.getByRole('radio', { name: 'Последняя игра' })).toBeChecked();
     await expect(canvas.getByRole('radio', { name: 'Сначала новые' })).not.toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'По алфавиту' })).not.toBeChecked();
+    await expect(canvas.getByRole('radio', { name: 'А–Я' })).not.toBeChecked();
   },
 });
 

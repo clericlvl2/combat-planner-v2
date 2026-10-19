@@ -197,7 +197,7 @@ export const JaColumn84 = meta.story({
     maxHp: 40,
   },
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('ラウンド 3')).toBeVisible();
+    await expect(canvas.getByText('ラウンド3')).toBeVisible();
     await expect(part(canvasElement, 'kind')).toHaveTextContent('回復');
     await expect(part(canvasElement, 'result').textContent).toBe('26/40');
   },

@@ -244,7 +244,7 @@ export const Ru = meta.story({
   args: {
     preset: 'deleteCombat',
     title: 'Удалить «Засада у переправы»?',
-    body: 'Сражение, его 6 юнитов и ссылка для игроков удаляются. Это нельзя отменить.',
+    body: 'Бой, его 6 юнитов и ссылка для игроков удаляются. Это нельзя отменить.',
     ok: 'Удалить',
   },
 });
@@ -408,9 +408,7 @@ export const ExtraPluralRu = meta.story({
   args: { preset: 'deleteCombat', units: 3 },
   play: async ({ canvas }) => {
     await expect(
-      canvas.getByText(
-        'Сражение, его 3 юнита и ссылка для игроков удаляются. Это нельзя отменить.',
-      ),
+      canvas.getByText('Бой, его 3 юнита и ссылка для игроков удаляются. Это нельзя отменить.'),
     ).toBeVisible();
   },
 });

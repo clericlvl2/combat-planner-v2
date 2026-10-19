@@ -50,9 +50,9 @@ export const Russian = meta.story({
 export const German = meta.story({
   globals: { locale: 'de' },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Über' })).toBeVisible();
+    await expect(canvas.getByRole('heading', { level: 1, name: 'Info' })).toBeVisible();
     await expect(canvas.getByRole('link', { name: 'Quellcode GitHub' })).toBeVisible();
-    await expect(canvas.getByText('Versionsnummer')).toBeVisible();
+    await expect(canvas.getByText('Version')).toBeVisible();
   },
 });
 

@@ -190,7 +190,7 @@ export const ExtraLocaleJa = meta.story({
   globals: { locale: 'ja' },
   args: { value: 6 },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('エスカレーション 6')).toBeVisible();
+    await expect(canvas.getByText('エスカレーション6')).toBeVisible();
   },
 });
 

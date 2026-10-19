@@ -149,7 +149,7 @@ export const ExtraLocaleRu = meta.story({
   globals: { locale: 'ru' },
   args: { labelKey: 'newCombat', hintKey: 'combatLimitReached', disabled: true },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Новое сражение' })).toBeDisabled();
-    await expect(canvas.getByText('Достигнут лимит сражений')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Новый бой' })).toBeDisabled();
+    await expect(canvas.getByText('Достигнут лимит боёв')).toBeVisible();
   },
 });

@@ -145,7 +145,7 @@ export const ExtraRussian = meta.story({
     },
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Изменить сражение' })).toBeVisible();
+    await expect(canvas.getByRole('dialog', { name: 'Изменить бой' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Сохранить' })).toBeEnabled();
   },
 });

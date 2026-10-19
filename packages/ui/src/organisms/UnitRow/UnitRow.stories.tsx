@@ -459,7 +459,7 @@ export const DeBlutend = meta.story({
   globals: { locale: 'de' },
   args: { active: false, unit: unitOf({ ...orcSeed, name: 'Ork-Berserker' }) },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Blutend')).toBeVisible();
+    await expect(canvas.getByText('Angeschlagen')).toBeVisible();
   },
 });
 

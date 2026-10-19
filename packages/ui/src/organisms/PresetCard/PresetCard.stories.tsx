@@ -339,7 +339,7 @@ export const ExtraLocaleJa = meta.story({
   args: { tags: [], expanded: true },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('タグなし')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: '操作: Orc Berserker' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: '操作：Orc Berserker' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: '編集' })).toBeVisible();
   },
 });

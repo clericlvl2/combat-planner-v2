@@ -158,7 +158,7 @@ export const Ru = meta.story({
   args: { value: 15, bonus: 3 },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'Инициатива' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Бросить d20 +3' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Бросить к20 +3' })).toBeVisible();
   },
 });
 
@@ -321,6 +321,6 @@ export const ExtraLocaleDe = meta.story({
   args: { value: 15, bonus: 3 },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'Initiativewert' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'd20 würfeln +3' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'W20 +3 würfeln' })).toBeVisible();
   },
 });

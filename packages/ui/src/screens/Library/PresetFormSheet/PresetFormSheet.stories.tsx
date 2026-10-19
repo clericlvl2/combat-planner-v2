@@ -197,7 +197,7 @@ export const ExtraRussian = meta.story({
     value: { ...berserker, name: 'Капитан стражи переправы Святослав Огнев', role: 'ally' },
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Изменить шаблон' })).toBeVisible();
+    await expect(canvas.getByRole('dialog', { name: 'Изменить заготовку' })).toBeVisible();
     await expect(canvas.getByRole('radio', { name: 'Союзник' })).toBeChecked();
   },
 });

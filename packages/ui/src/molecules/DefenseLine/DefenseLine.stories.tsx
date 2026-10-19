@@ -139,7 +139,7 @@ export const ExtraLocaleRu = meta.story({
   globals: { locale: 'ru' },
   args: { variant: 'line', ac: 16, pd: null, md: 19 },
   play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('КБ 16 · ФЗ — · МЗ 19');
+    await expect(rootOf(canvasElement).textContent).toBe('КД 16 · ФЗ — · МЗ 19');
   },
 });
 

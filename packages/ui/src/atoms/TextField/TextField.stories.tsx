@@ -306,7 +306,7 @@ export const ExtraLocaleJa = meta.story({
   globals: { locale: 'ja' },
   args: { ...name, errorKey: 'upTo', value: jaName },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('40 文字まで')).toBeVisible();
+    await expect(canvas.getByText('40文字まで')).toBeVisible();
   },
 });
 

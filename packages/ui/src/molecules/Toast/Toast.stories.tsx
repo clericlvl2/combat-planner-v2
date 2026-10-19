@@ -354,7 +354,7 @@ export const ExtraLocaleJa = meta.story({
   args: { kind: 'cap' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('status')).toHaveTextContent(
-      'この戦闘にはすでに 99 ユニットいます',
+      'この戦闘にはすでに99体のユニットがいます',
     );
   },
 });

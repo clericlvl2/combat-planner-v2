@@ -240,7 +240,7 @@ export const ExtraLocaleJa = meta.story({
   args: { checked: true },
   render: renderGroup,
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: '最近プレイ' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: '最近プレイ順' })).toBeChecked();
   },
 });
 

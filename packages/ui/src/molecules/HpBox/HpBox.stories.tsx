@@ -259,7 +259,7 @@ export const DeBloodied = meta.story({
   globals: { locale: 'de' },
   args: bloodiedWithTemp,
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Blutend')).toBeVisible();
+    await expect(canvas.getByText('Angeschlagen')).toBeVisible();
     await expect(canvas.getByText('+5 temp')).toBeVisible();
   },
 });
@@ -290,7 +290,7 @@ export const JaBloodied = meta.story({
   args: bloodiedWithTemp,
   play: async ({ canvas }) => {
     await expect(canvas.getByText('重傷')).toBeVisible();
-    await expect(canvas.getByText('+5 一時')).toBeVisible();
+    await expect(canvas.getByText('+5一時')).toBeVisible();
   },
 });
 

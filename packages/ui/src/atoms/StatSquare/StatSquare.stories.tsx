@@ -136,7 +136,7 @@ export const ExtraLocaleRu = meta.story({
   args: { stat: 'ac', value: 18 },
   play: async ({ canvasElement }) => {
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('КБ');
+    await expect(label).toHaveTextContent('КД');
     await expect(value).toHaveTextContent('18');
   },
 });

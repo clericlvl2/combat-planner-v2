@@ -218,7 +218,7 @@ export const ExtraLocaleJa = meta.story({
   args: { ...filled, errorKey: 'upTo' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('textbox', { name: '説明' })).toBeVisible();
-    await expect(canvas.getByText('500 文字まで')).toBeVisible();
+    await expect(canvas.getByText('500文字まで')).toBeVisible();
   },
 });
 

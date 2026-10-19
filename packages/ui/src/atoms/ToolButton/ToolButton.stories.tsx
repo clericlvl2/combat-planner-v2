@@ -273,7 +273,7 @@ export const ExtraLocaleJa = meta.story({
   globals: { locale: 'ja' },
   args: sortActive,
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: '最後のプレイ' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: '最近プレイ順' })).toBeVisible();
   },
 });
 

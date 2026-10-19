@@ -369,7 +369,7 @@ export const EdgeCasesInline2 = meta.story({
   args: { expanded: true },
   play: async ({ args, canvasElement }) => {
     await expect(within(canvasElement).queryByText('Orc Berserker · 6 изм.')).toBeNull();
-    await collapseShowsCount(canvasElement, 'История ХП', '6 изм.', args.onToggle);
+    await collapseShowsCount(canvasElement, 'История ОЗ', '6 изм.', args.onToggle);
   },
 });
 
@@ -379,7 +379,7 @@ export const EdgeCasesSheet2 = meta.story({
   parameters: sheet,
   args: { variant: 'sheet' },
   play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('dialog', { name: 'История ХП' })).toBeVisible();
+    await expect(await canvas.findByRole('dialog', { name: 'История ОЗ' })).toBeVisible();
     await expect(canvas.getByText('Orc Berserker · 6 изм.')).toBeVisible();
   },
 });

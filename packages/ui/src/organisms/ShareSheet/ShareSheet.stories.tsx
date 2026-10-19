@@ -328,7 +328,7 @@ export const ExtraLocaleJa = meta.story({
   args: { combatTitle: 'フェリーでの待ち伏せ' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'プレイヤーと共有' })).toBeVisible();
-    await expectFits(canvas.getByRole('button', { name: 'リンクを無効にして再発行' }));
+    await expectFits(canvas.getByRole('button', { name: 'リンクを再発行' }));
     await expect(canvas.getByRole('button', { name: 'コピー' })).toBeVisible();
   },
 });

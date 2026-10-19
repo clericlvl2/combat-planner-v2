@@ -320,9 +320,7 @@ export const LongTitleBack = meta.story({
 
 export const Ru = meta.story({
   name: 'ru',
-  render: (args) => (
-    <SheetCell {...args} sample="sort" title="Сортировка сражений" primary="Готово" />
-  ),
+  render: (args) => <SheetCell {...args} sample="sort" title="Сортировка боёв" primary="Готово" />,
 });
 
 export const ExtraCloseButton = meta.story({
@@ -436,7 +434,7 @@ export const ExtraLocaleRu = meta.story({
   globals: { locale: 'ru' },
   args: { back: true },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Сортировка сражений' })).toBeVisible();
+    await expect(canvas.getByRole('dialog', { name: 'Сортировка боёв' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Закрыть' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Назад' })).toBeVisible();
   },

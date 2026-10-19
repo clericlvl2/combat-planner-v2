@@ -389,7 +389,7 @@ export const Deutsch = meta.story({
   name: 'Deutsch',
   globals: { locale: 'de' },
   play: async (context) => {
-    await expect(await openLocale(context, 'TP-Verlauf', 'Temp setzen')).toBeEnabled();
+    await expect(await openLocale(context, 'TP-Verlauf', 'Temp. TP setzen')).toBeEnabled();
     await expect(context.canvas.getByText('Danach')).toBeVisible();
   },
 });
@@ -425,7 +425,7 @@ export const EdgeCasesLanguages2 = meta.story({
   name: 'Русский',
   globals: { locale: 'ru' },
   play: async (context) => {
-    await expect(await openLocale(context, 'История ХП', 'Макс. ХП')).toBeEnabled();
+    await expect(await openLocale(context, 'История ОЗ', 'Макс. ОЗ')).toBeEnabled();
     await expect(context.canvas.getByText('После')).toBeVisible();
   },
 });

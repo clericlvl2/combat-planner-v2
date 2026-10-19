@@ -498,7 +498,7 @@ export const ExtraRussian = meta.story({
   name: 'Russian: list',
   globals: { locale: 'ru' },
   play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('heading', { name: 'Сражения' })).toBeVisible();
+    await expect(await canvas.findByRole('heading', { name: 'Бои' })).toBeVisible();
     await expect(await canvas.findByText('Капитан стражи переправы: засада у моста')).toBeVisible();
   },
 });
