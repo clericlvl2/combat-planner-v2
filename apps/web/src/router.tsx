@@ -110,7 +110,7 @@ export function createRoutes(
     {
       id: 'root',
       path: '/',
-      errorElement: <RouteError />,
+      errorElement: <RouteError onShow={leaveDm} />,
       children: [
         { id: 'home', index: true, loader: () => redirect(HOME_PATH) },
         {

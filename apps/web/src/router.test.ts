@@ -8,7 +8,6 @@ import {
   Settings,
   SignIn,
   SignUp,
-  UnexpectedError,
   createI18n,
   createQueryClient,
   scenario,
@@ -208,9 +207,10 @@ describe('router', () => {
     expect(html).toContain('>Reload<');
   });
 
-  it('maps RouteError to UnexpectedError with a reload action', () => {
-    const element = RouteError() as ReactElement<{ onReload: unknown }>;
-    expect(element.type).toBe(UnexpectedError);
-    expect(element.props.onReload).toBeTypeOf('function');
+  it('shows RouteError as the root error page and hands it a callback for when it is shown', async () => {
+    const router = await open('/combats', true);
+    const element = router.routes[0]?.errorElement as ReactElement<{ onShow: unknown }>;
+    expect(element.type).toBe(RouteError);
+    expect(element.props.onShow).toBeTypeOf('function');
   });
 });

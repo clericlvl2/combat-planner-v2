@@ -6,6 +6,7 @@ import {
   createQueryClient,
   scenario,
 } from '@combat-planner/ui';
+import type { ReactElement } from 'react';
 import { createMemoryRouter } from 'react-router';
 import type { LoaderFunctionArgs, RouteObject } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
@@ -223,6 +224,17 @@ describe('watchRouteLocale', () => {
     expect(router.state.errors).not.toBeNull();
     await queryClient.refetchQueries({ queryKey: ['session'] });
     await tick();
+    expect(i18n.language).toBe(BROWSER_LOCALE);
+  });
+
+  it('keeps the browser language on the root error page when a session that failed on entry arrives', async () => {
+    const { queryClient, router, i18n } = await start('/combats', true, failSessionOnce);
+    const errorPage = router.routes[0]?.errorElement as ReactElement<{ onShow?: () => void }>;
+    expect(errorPage.props.onShow).toBeTypeOf('function');
+    errorPage.props.onShow?.();
+    await queryClient.refetchQueries({ queryKey: ['session'] });
+    await tick();
+    expect(router.state.errors).toBeNull();
     expect(i18n.language).toBe(BROWSER_LOCALE);
   });
 

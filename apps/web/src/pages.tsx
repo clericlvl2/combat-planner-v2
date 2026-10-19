@@ -83,6 +83,11 @@ export function NotFoundPage() {
   return <NotFound onGoToCombats={() => void navigate('/combats')} />;
 }
 
-export function RouteError() {
+export interface RouteErrorProps {
+  onShow: () => void;
+}
+
+export function RouteError({ onShow }: RouteErrorProps) {
+  useEffect(() => onShow(), [onShow]);
   return <UnexpectedError onReload={() => window.location.reload()} />;
 }
