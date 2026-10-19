@@ -10,6 +10,8 @@ const ambush: CombatFormValue = {
   color: 0,
 };
 
+const now = new Date(2026, 9, 15, 12, 0).getTime();
+
 const meta = preview.meta({
   title: 'Screens/CombatList/CombatFormSheet',
   component: CombatFormSheet,
@@ -18,6 +20,7 @@ const meta = preview.meta({
     mode: 'create' as CombatFormMode,
     value: emptyCombatForm,
     opened: true,
+    now,
     onSubmit: fn(),
     onClose: fn(),
   },
@@ -25,32 +28,36 @@ const meta = preview.meta({
 
 export const NewCombat = meta.story({
   name: 'New combat, empty',
-  play: async ({ args, canvas }) => {
+  play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'New combat' })).toBeVisible();
-    await expect(canvas.getByRole('textbox', { name: 'Title' })).toHaveValue('');
+    const title = canvas.getByRole('textbox', { name: 'Title' });
+    await expect(title).toHaveValue('');
+    await expect(title).toHaveAttribute('placeholder', 'Combat Oct 15');
     await expect(canvas.getByText(`0/${LIMITS.combatTitle}`)).toBeVisible();
     await expect(canvas.getByText(`0/${LIMITS.combatDescription}`)).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Grey' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
-    const create = canvas.getByRole('button', { name: 'Create' });
-    await expect(create).toBeDisabled();
-    await userEvent.click(create, { pointerEventsCheck: 0 });
-    await expect(args.onSubmit).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('button', { name: 'Create' })).toBeEnabled();
   },
 });
 
 export const NoTitle = meta.story({
-  name: 'Error: no title',
-  play: async ({ canvas }) => {
+  name: 'No title saves "Combat Oct 15"',
+  play: async ({ args, canvas }) => {
     const title = canvas.getByRole('textbox', { name: 'Title' });
     await userEvent.click(title);
     await userEvent.type(title, '   ');
     await userEvent.tab();
-    await expect(canvas.getByText('Enter a title')).toBeVisible();
-    await expect(title).toHaveAttribute('aria-invalid', 'true');
-    await expect(canvas.getByRole('button', { name: 'Create' })).toBeDisabled();
+    await expect(title).not.toHaveAttribute('aria-invalid', 'true');
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await expect(args.onSubmit).toHaveBeenCalledOnce();
+    await expect(args.onSubmit).toHaveBeenCalledWith({
+      title: 'Combat Oct 15',
+      description: '',
+      color: 7,
+    });
   },
 });
 
@@ -96,17 +103,18 @@ export const EditCombat = meta.story({
 });
 
 export const ExtraEditClearedTitle = meta.story({
-  name: 'Edit: title cleared',
+  name: 'Edit: title cleared keeps the previous title',
   args: { mode: 'edit', value: ambush },
   play: async ({ args, canvas }) => {
     const title = canvas.getByRole('textbox', { name: 'Title' });
     await userEvent.clear(title);
     await userEvent.tab();
-    await expect(canvas.getByText('Enter a title')).toBeVisible();
+    await expect(title).toHaveAttribute('placeholder', ambush.title);
     const save = canvas.getByRole('button', { name: 'Save' });
-    await expect(save).toBeDisabled();
-    await userEvent.click(save, { pointerEventsCheck: 0 });
-    await expect(args.onSubmit).not.toHaveBeenCalled();
+    await expect(save).toBeEnabled();
+    await userEvent.click(save);
+    await expect(args.onSubmit).toHaveBeenCalledOnce();
+    await expect(args.onSubmit).toHaveBeenCalledWith(ambush);
   },
 });
 
@@ -155,6 +163,7 @@ export const ExtraJapaneseNew = meta.story({
   globals: { locale: 'ja' },
   play: async ({ canvas }) => {
     const title = canvas.getByRole('textbox', { name: 'タイトル' });
+    await expect(title).toHaveAttribute('placeholder', '10月15日の戦闘');
     await userEvent.click(title);
     await userEvent.type(title, '黒水の渡し守');
     await expect(canvas.getByRole('button', { name: '作成' })).toBeEnabled();

@@ -287,6 +287,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
           key={formKey}
           opened={formOpen}
           pending={pending}
+          now={now}
           mode={form.mode}
           value={
             editing

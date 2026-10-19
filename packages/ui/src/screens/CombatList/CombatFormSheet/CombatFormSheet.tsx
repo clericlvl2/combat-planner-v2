@@ -32,6 +32,7 @@ export interface CombatFormSheetProps {
   onClose: () => void;
   opened: boolean;
   pending?: boolean;
+  now?: number;
 }
 
 export function CombatFormSheet({
@@ -41,17 +42,20 @@ export function CombatFormSheet({
   onClose,
   opened,
   pending = false,
+  now = Date.now(),
 }: CombatFormSheetProps) {
-  const { t } = useTranslation('CombatFormSheet');
+  const { t, i18n } = useTranslation('CombatFormSheet');
   const [title, setTitle] = useState(value.title);
   const [description, setDescription] = useState(value.description);
   const [color, setColor] = useState<CombatColor>(value.color);
-  const [touched, setTouched] = useState(false);
-  const trimmed = title.trim();
-  const valid =
-    trimmed.length > 0 &&
-    title.length <= LIMITS.combatTitle &&
-    description.length <= LIMITS.combatDescription;
+  const fallback =
+    mode === 'create'
+      ? t('defaultTitle', {
+          date: new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'short' }).format(
+            now,
+          ),
+        })
+      : value.title;
 
   return (
     <Sheet
@@ -62,8 +66,10 @@ export function CombatFormSheet({
         <Button
           variant="primary"
           fullWidth
-          disabled={!valid || pending}
-          onClick={() => onSubmit({ title: trimmed, description: description.trim(), color })}
+          disabled={pending}
+          onClick={() =>
+            onSubmit({ title: title.trim() || fallback, description: description.trim(), color })
+          }
         >
           {mode === 'create' ? t('create') : t('save')}
         </Button>
@@ -72,12 +78,9 @@ export function CombatFormSheet({
       <TextField
         label={t('title')}
         value={title}
-        placeholder={t('titlePlaceholder')}
+        placeholder={fallback}
         maxLength={LIMITS.combatTitle}
-        required
-        error={touched && trimmed.length === 0 ? t('titleRequired') : undefined}
         onChange={setTitle}
-        onBlur={() => setTouched(true)}
       />
       <TextArea
         label={t('description')}

@@ -223,23 +223,31 @@ export const CLF22 = meta.story({
       'aria-pressed',
       'true',
     );
-    await expect(canvas.getByRole('button', { name: 'Create' })).toBeDisabled();
+    await expect(canvas.getByRole('textbox', { name: 'Title' })).toHaveAttribute(
+      'placeholder',
+      'Combat Oct 15',
+    );
+    await expect(canvas.getByRole('button', { name: 'Create' })).toBeEnabled();
   },
 });
 
 export const CLF23 = meta.story({
-  name: 'CL-F2.3 Error: no title',
-  play: async ({ canvas, loaded }) => {
+  name: 'CL-F2.3 No title: created as "Combat Oct 15"',
+  play: async ({ canvas, canvasElement, loaded }) => {
     await openCreate(canvas);
     await userEvent.click(canvas.getByRole('textbox', { name: 'Title' }));
     await userEvent.tab();
-    await expect(canvas.getByText('Enter a title')).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }), {
-      pointerEventsCheck: 0,
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    const created = fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.create');
+    await expect(created).toHaveLength(1);
+    const [input] = created[0]!.args as [{ id: string }];
+    await expect(input).toEqual({
+      id: input.id,
+      title: 'Combat Oct 15',
+      description: '',
+      color: 7,
     });
-    await expect(
-      fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.create'),
-    ).toHaveLength(0);
+    await waitFor(() => expect(locationOf(canvasElement)).toBe(`/combats/${input.id}`));
   },
 });
 

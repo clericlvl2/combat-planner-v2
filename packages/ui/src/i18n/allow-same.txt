@@ -25,6 +25,7 @@ UnitForm.name
 TextArea.optional
 UnitForm.optional
 CombatFormSheet.descriptionPlaceholder
+CombatFormSheet.defaultTitle
 About.version
 About.legal
 CombatCard.round
