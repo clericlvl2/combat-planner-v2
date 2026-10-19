@@ -2,7 +2,7 @@
   "cancel": "Annuler",
   "restartTitle": "Recommencer le combat ?",
   "restartBody": "Les unités et les attributions restent. L’initiative, les PV, les PV temporaires, les états, la désactivation, l’historique des PV, le round et le dé d’escalade sont réinitialisés.",
-  "restart": "Recommencer",
+  "restart": "Relancer",
   "clearTitle": "Vider le combat ?",
   "clearBody_one": "{{count}} unité est retirée et chaque attribution de joueur est libérée.",
   "clearBody_few": "Les {{count}} unités sont retirées et chaque attribution de joueur est libérée.",
