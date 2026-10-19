@@ -17,6 +17,10 @@ changed locale are regenerated.
 3. `fr translations`
 4. `ja translations`
 5. `ru translations`
+6. `translation stories`: story literals and baselines that follow the new
+   strings; fr/es `PlayerRow.hpHistory` and ja `HpHistory.count_*` keep their
+   previous values, because the trigger label width (97 px) and the handoff
+   literal `6 件` require them.
 
 `check-commit` path scope is red for these units: every unit touches i18n
 files of many components by design.
