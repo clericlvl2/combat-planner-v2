@@ -134,11 +134,16 @@ function HpReading({ label, health, side }: HpReadingProps) {
   const status = healthStatus(health.hp, health.maxHp);
   const segments = healthSegments(status, health.hp, health.maxHp);
   const current = formatNumber(health.hp);
-  const compact = `${current}/${health.maxHp}`.length > 5;
+  const length = `${current}/${health.maxHp}`.length;
   return (
     <div className={classes.reading} data-side={side} data-status={status}>
       <span className={classes.readingLabel}>{label}</span>
-      <span className={classes.numbers} data-part="numbers" data-compact={compact || undefined}>
+      <span
+        className={classes.numbers}
+        data-part="numbers"
+        data-compact={length > 5 || undefined}
+        data-long={length > 7 || undefined}
+      >
         <span className={classes.current}>{current}</span>
         <span className={classes.max}>/{health.maxHp}</span>
       </span>

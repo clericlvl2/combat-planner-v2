@@ -115,6 +115,10 @@
     font-size: var(--mantine-font-size-title);
   }
 
+  &[data-long] {
+    font-size: var(--mantine-font-size-heading);
+  }
+
   .reading[data-side='after'] > & {
     color: var(--numpad-health);
   }
