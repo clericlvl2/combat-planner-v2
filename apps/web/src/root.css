@@ -2,6 +2,20 @@
   --cp-layout-status-bar: env(safe-area-inset-top, 0px);
 }
 
+html,
+body,
+#root {
+  height: 100vh;
+  height: 100dvh;
+}
+
 body {
+  margin: 0;
+  background: var(--cp-color-background);
   touch-action: pan-y pinch-zoom;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
 }
