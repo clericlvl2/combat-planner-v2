@@ -89,6 +89,7 @@ export type {
   ConnectionListener,
   ConnectionState,
   DocumentListener,
+  PlayerDocumentListener,
   EndListener,
   Link,
   LinkApi,

@@ -30,7 +30,7 @@ export interface CombatSource<Document extends CombatDocument = CombatDocument> 
   load: () => Promise<CombatEntry<Document>>;
   reload: () => Promise<CombatEntry<Document>>;
   subscribe: (
-    onDocument: (document: Document) => void,
+    onDocument: (document: Document, language?: Locale) => void,
     onEnd: (event: ApiEndEvent) => void,
   ) => Unsubscribe;
   send: (action: Action) => Promise<VersionResult>;
@@ -80,9 +80,14 @@ export const mergeEntry = <Document extends CombatDocument>(
 export const writeDocument = <Document extends CombatDocument>(
   current: CombatEntry<Document> | undefined,
   document: Document,
+  language?: Locale,
 ): CombatEntry<Document> => {
-  if (current && current.document.version >= document.version) return current;
-  return { document, language: current?.language ?? null };
+  if (current && current.document.version >= document.version) {
+    return language === undefined || language === current.language
+      ? current
+      : { ...current, language };
+  }
+  return { document, language: language ?? current?.language ?? null };
 };
 
 export const entryFetcher = <Document extends CombatDocument>(
@@ -133,9 +138,9 @@ export const subscribeEntry = <Document extends CombatDocument>(
   source: CombatSource<Document>,
   onEnd: (event: ApiEndEvent) => void,
 ): Unsubscribe =>
-  source.subscribe((document) => {
+  source.subscribe((document, language) => {
     queryClient.setQueryData<CombatEntry<Document>>(key, (current) =>
-      writeDocument(current, document),
+      writeDocument(current, document, language),
     );
   }, onEnd);
 

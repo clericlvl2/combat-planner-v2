@@ -1,12 +1,13 @@
 import type { CombatId, PlayerCombat, Viewer } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
-import type { ApiEvent, DmCombat } from '../client.ts';
+import type { ApiEvent, DmCombat, Locale } from '../client.ts';
 
 export type Audience = Viewer['kind'];
 
 export interface Subscriber {
   viewer: Viewer;
   send(event: ApiEvent): void;
+  language?: () => Locale;
 }
 
 export type Unsubscribe = () => void;
@@ -37,10 +38,12 @@ export const documentFor = (combat: DmCombat, viewer: Viewer): DmCombat | Player
 
 export function broadcastDocument(combatId: CombatId, combat: DmCombat, audience?: Audience): void {
   for (const subscriber of audienceOf(combatId, audience)) {
+    const language = subscriber.language?.();
     subscriber.send({
       type: 'document',
       version: combat.version,
       document: documentFor(combat, subscriber.viewer),
+      ...(language === undefined ? {} : { language }),
     });
   }
 }

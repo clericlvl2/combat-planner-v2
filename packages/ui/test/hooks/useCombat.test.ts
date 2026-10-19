@@ -54,6 +54,10 @@ describe('combat cache', () => {
     expect(writeDocument(current, dmCombat({ version: 2 }))).toBe(current);
     expect(writeDocument(current, dmCombat({ version: 4 })).document.version).toBe(4);
     expect(writeDocument(undefined, dmCombat({ version: 1 }))).toEqual(entry(1));
+    expect(writeDocument(current, dmCombat({ version: 3 }), 'ja')).toEqual({
+      ...current,
+      language: 'ja',
+    });
   });
 
   it('merges a loaded entry without going back in version and keeps the language', () => {
@@ -123,6 +127,20 @@ describe('combat sources', () => {
     expect(context.queryClient.getQueryData<CombatEntry>(key)?.document.version).toBe(2);
     await context.api.combats.remove(COMBAT_ID);
     expect(ended).toEqual([{ type: 'deleted', title: 'Засада гоблинов' }]);
+  });
+
+  it('the player subscription writes the DM language that arrives with a document', async () => {
+    const context = harness({ combats: [combat()], settings: { language: 'ru' } });
+    const key = combatKey(COMBAT_ID, PLAYER);
+    subscribeEntry(context.queryClient, key, playerSource(context.api, PLAYER, TOKEN), vi.fn());
+    expect(context.queryClient.getQueryData<CombatEntry>(key)?.language).toBe('ru');
+    await context.api.settings.update({ language: 'ja' });
+    await context.api.combats.dispatch(COMBAT_ID, damage(1));
+    expect(context.queryClient.getQueryData<CombatEntry>(key)).toMatchObject({
+      document: { version: 2 },
+      language: 'ja',
+    });
+    expect(context.api.calls.map((call) => call.method)).not.toContain('play.get');
   });
 
   it('reports an unauthorized end when the session expires', () => {

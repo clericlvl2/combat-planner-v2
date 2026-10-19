@@ -36,9 +36,9 @@ import type {
   ConnectionListener,
   ConnectionState,
   DmCombat,
-  DocumentListener,
   EndListener,
   LinkToken,
+  Locale,
   Session,
   SignInInput,
   SignInMethod,
@@ -180,7 +180,12 @@ const combatIdOf = (token: LinkToken): CombatId => {
 
 const streamEventSchema = <Document>(document: z.ZodType<Document>) =>
   z.discriminatedUnion('type', [
-    z.object({ type: z.literal('document'), version: versionSchema, document }),
+    z.object({
+      type: z.literal('document'),
+      version: versionSchema,
+      document,
+      language: localeSchema.optional(),
+    }),
     z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
     z.object({ type: z.literal('linkRevoked') }),
   ]);
@@ -233,6 +238,11 @@ function createConnection() {
   };
 }
 
+interface Delivery<Document> {
+  document: Document;
+  language?: Locale;
+}
+
 const parseJson = (text: string): unknown => {
   try {
     return JSON.parse(text);
@@ -253,8 +263,8 @@ export function createHonoApiClient({
   function openStream<Document extends DmCombat | PlayerCombat>(
     url: string,
     documentSchema: z.ZodType<Document>,
-    refetch: (signal?: AbortSignal) => Promise<Document>,
-    onDocument: DocumentListener<Document>,
+    refetch: (signal?: AbortSignal) => Promise<Delivery<Document>>,
+    onDocument: (document: Document, language?: Locale) => void,
     onEnd: EndListener,
   ): Unsubscribe {
     const EventSourceImpl = eventSource;
@@ -295,11 +305,11 @@ export function createHonoApiClient({
       connection.untrack(stream);
     };
 
-    const deliver = (document: Document) => {
+    const deliver = ({ document, language }: Delivery<Document>) => {
       if (document.version <= version) return;
       version = document.version;
       title = document.title;
-      onDocument(document);
+      onDocument(document, language);
     };
 
     const end = (event: ApiEndEvent) => {
@@ -370,7 +380,8 @@ export function createHonoApiClient({
           return;
         }
         if (parsed.data.type === 'document') {
-          deliver(parsed.data.document);
+          const { document, language } = parsed.data;
+          deliver(language === undefined ? { document } : { document, language });
           return;
         }
         end(parsed.data);
@@ -442,7 +453,7 @@ export function createHonoApiClient({
       openStream(
         `${baseUrl}/combats/${id}/events`,
         dmCombatSchema,
-        (signal) => getCombat(id, signal),
+        async (signal) => ({ document: await getCombat(id, signal) }),
         onDocument,
         onEnd,
       ),
@@ -464,7 +475,10 @@ export function createHonoApiClient({
       return openStream(
         `${baseUrl}/play/${combatIdOf(token)}/events?${query.toString()}`,
         playerCombatSchema,
-        async (signal) => (await getPlay(token, playerId, signal)).combat,
+        async (signal) => {
+          const view = await getPlay(token, playerId, signal);
+          return { document: view.combat, language: view.language };
+        },
         onDocument,
         onEnd,
       );

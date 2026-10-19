@@ -192,6 +192,7 @@ export const apiEventSchema = z.discriminatedUnion('type', [
     type: z.literal('document'),
     version: versionSchema,
     document: z.union([dmCombatSchema, playerCombatSchema]),
+    language: localeSchema.optional(),
   }),
   z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
   z.object({ type: z.literal('linkRevoked') }),
@@ -205,6 +206,7 @@ export type Unsubscribe = () => void;
 export type DocumentListener<Document extends DmCombat | PlayerCombat> = (
   document: Document,
 ) => void;
+export type PlayerDocumentListener = (document: PlayerCombat, language?: Locale) => void;
 export type EndListener = (event: ApiEndEvent) => void;
 export type ConnectionListener = (state: ConnectionState) => void;
 
@@ -245,7 +247,7 @@ export interface PlayApi {
   subscribe(
     token: LinkToken,
     playerId: PlayerId,
-    onDocument: DocumentListener<PlayerCombat>,
+    onDocument: PlayerDocumentListener,
     onEnd: EndListener,
   ): Unsubscribe;
 }

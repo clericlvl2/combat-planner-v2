@@ -355,6 +355,17 @@ describe('GET /play/:id/events', () => {
     await settled();
   });
 
+  it('carries the DM language in every document, so a language change arrives with the next one', async () => {
+    const stream = openSse(await openEvents(token, PLAYER_ID));
+    expect((await stream.event()).event).toMatchObject({ type: 'document', language: 'ru' });
+    expect((await call(dm, 'PATCH', '/settings', { language: 'ja' })).status).toBe(200);
+    await dmAction({ type: 'damage', unitId: ENEMY_ID, amount: 1 });
+    expect((await stream.event()).event).toMatchObject({ type: 'document', language: 'ja' });
+    expect((await call(dm, 'PATCH', '/settings', { language: 'ru' })).status).toBe(200);
+    await stream.cancel();
+    await settled();
+  });
+
   it('stops accepting events once linkRevoked is sent, so a later broadcast is not delivered', async () => {
     const combat = await fetchCombat(dm);
     const stream = openSse(await openEvents(token, PLAYER_ID));

@@ -335,6 +335,40 @@ describe('createHonoApiClient connection', () => {
     unsubscribe();
   });
 
+  it('hands the player the DM language from the stream and from the refetch', async () => {
+    const token = `${combatId}.0.signature`;
+    const document = project(combatAt(7), { kind: 'player', playerId });
+    const { fetch } = stubFetch(200, { combatId, playerId, language: 'fr', combat: document });
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const received: Array<[number, string | undefined]> = [];
+    const unsubscribe = client.play.subscribe(
+      token,
+      playerId,
+      (doc, language) => received.push([doc.version, language]),
+      vi.fn(),
+    );
+    const source = StubEventSource.instances.at(-1)!;
+    source.emit('open');
+    source.emit(
+      'message',
+      JSON.stringify({
+        type: 'document',
+        version: 6,
+        document: { ...document, version: 6 },
+        language: 'ja',
+      }),
+    );
+    expect(received).toEqual([[6, 'ja']]);
+    source.emit('message', 'not json');
+    await vi.waitFor(() =>
+      expect(received).toEqual([
+        [6, 'ja'],
+        [7, 'fr'],
+      ]),
+    );
+    unsubscribe();
+  });
+
   it('closes the stream on a final event and hands it to onEnd', () => {
     const { fetch } = stubFetch(200, combatAt(1));
     const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });

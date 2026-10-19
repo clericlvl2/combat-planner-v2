@@ -240,7 +240,12 @@ describe('streamCombatEvents', () => {
     };
     const viewer = { kind: 'player', playerId: PLAYER_ID } as const;
     const stream = openSse(
-      await streamWith({ combatId: COMBAT_ID, viewer, load: () => project(broken, viewer) }),
+      await streamWith({
+        combatId: COMBAT_ID,
+        viewer,
+        load: () => project(broken, viewer),
+        language: () => 'en',
+      }),
     );
     expect(subscriberCount(COMBAT_ID)).toBe(0);
     expect(vi.getTimerCount()).toBe(0);
@@ -271,16 +276,27 @@ describe('streamCombatEvents', () => {
     const projected = project(combat, viewer);
     const app = new Hono()
       .get('/', (c) =>
-        streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load: () => projected }),
+        streamCombatEvents(c, {
+          combatId: COMBAT_ID,
+          viewer,
+          load: () => projected,
+          language: () => 'de',
+        }),
       )
-      .get('/dm-document', (c) =>
+      .get('/dm-document', (c) => {
+        const dmLoader = {
+          combatId: COMBAT_ID,
+          viewer,
+          load: () => combat,
+          language: () => 'de' as const,
+        };
         // @ts-expect-error a DmCombat never reaches a player stream
-        streamCombatEvents(c, { combatId: COMBAT_ID, viewer, load: () => combat }),
-      );
+        return streamCombatEvents(c, dmLoader);
+      });
     const stream = openSse(await app.request('/'));
     expect(await stream.event()).toEqual({
       id: String(combat.version),
-      event: { type: 'document', version: combat.version, document: projected },
+      event: { type: 'document', version: combat.version, document: projected, language: 'de' },
     });
     expect(projected).not.toHaveProperty('linkGeneration');
     await stream.cancel();

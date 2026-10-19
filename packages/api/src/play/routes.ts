@@ -100,6 +100,7 @@ export const playApp = new Hono<ApiAppEnv>()
     const db = c.get('db');
     const combatId = resolved.combat.id;
     const viewer = playerViewer(playerId);
+    const { ownerId } = resolved;
     return streamCombatEvents(c, {
       combatId,
       viewer,
@@ -107,5 +108,6 @@ export const playApp = new Hono<ApiAppEnv>()
         const combat = findCombatRow(db, combatId)?.document;
         return combat && project(combat, viewer);
       },
+      language: () => dmLanguage(db, ownerId),
     });
   });

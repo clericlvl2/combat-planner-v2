@@ -10,6 +10,7 @@ import type {
   DocumentListener,
   EndListener,
   LinkToken,
+  PlayerDocumentListener,
   Session,
   SocialProvider,
   Unsubscribe,
@@ -21,7 +22,6 @@ import type {
   CombatId,
   DomainErrorCode,
   LogEntry,
-  PlayerCombat,
   PlayerId,
   Preset,
   Tag,
@@ -64,7 +64,7 @@ interface DmSubscriber {
 
 interface PlayerSubscriber {
   playerId: PlayerId;
-  onDocument: DocumentListener<PlayerCombat>;
+  onDocument: PlayerDocumentListener;
   onEnd: EndListener;
   version: number;
 }
@@ -264,7 +264,10 @@ export class FakeApiClient implements ApiClient {
   private deliverToPlayer(subscriber: PlayerSubscriber, combat: Combat): void {
     if (combat.version <= subscriber.version) return;
     subscriber.version = combat.version;
-    subscriber.onDocument(project(combat, { kind: 'player', playerId: subscriber.playerId }));
+    subscriber.onDocument(
+      project(combat, { kind: 'player', playerId: subscriber.playerId }),
+      this.settingsValue.language,
+    );
   }
 
   private endSubscribers(combatId: CombatId, event: ApiEndEvent, audience: 'all' | 'player'): void {
