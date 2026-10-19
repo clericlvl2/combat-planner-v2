@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import { createRoot } from 'react-dom/client';
 import QRCode from 'react-qr-code';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
+import { expectNoHorizontalOverflow, expectNotTruncated } from '../../storybook/geometry.ts';
 import { ShareSheet } from './ShareSheet.tsx';
 
 interface ShareSheetCellProps {
@@ -101,19 +102,15 @@ const restFocusOnSheet = async (sheet: HTMLElement) => {
   await expect(sheet).toHaveFocus();
 };
 
-const expectFits = async (button: HTMLElement) => {
-  const label = button.querySelector('span') ?? button;
-  await expect(label.scrollWidth).toBeLessThanOrEqual(label.clientWidth);
-  await expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
-};
-
 export const Anatomy = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'Share with players' })).toBeVisible();
     await expect(canvas.getByText('Ambush at the Ferry')).toBeVisible();
     await expect(canvas.getByRole('img', { name: 'QR code of the player link' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Copy' })).toBeVisible();
-    await expectFits(canvas.getByRole('button', { name: 'Revoke and reissue link' }));
+    const reissue = canvas.getByRole('button', { name: 'Revoke and reissue link' });
+    await expectNotTruncated(reissue);
+    await expectNoHorizontalOverflow(reissue);
   },
 });
 
@@ -306,7 +303,9 @@ export const ExtraLocaleRu = meta.story({
     await userEvent.click(canvas.getByRole('button', { name: 'Копировать' }));
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
     await expect(canvas.getByRole('button', { name: 'Скопировано' })).toBeVisible();
-    await expectFits(canvas.getByRole('button', { name: 'Перевыпустить ссылку' }));
+    const reissue = canvas.getByRole('button', { name: 'Перевыпустить ссылку' });
+    await expectNotTruncated(reissue);
+    await expectNoHorizontalOverflow(reissue);
     await restFocusOnSheet(canvas.getByRole('dialog'));
   },
 });
@@ -317,7 +316,9 @@ export const ExtraLocaleDe = meta.story({
   args: { combatTitle: 'Hinterhalt an der Fähre' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'Mit Spielern teilen' })).toBeVisible();
-    await expectFits(canvas.getByRole('button', { name: 'Link neu ausstellen' }));
+    const reissue = canvas.getByRole('button', { name: 'Link neu ausstellen' });
+    await expectNotTruncated(reissue);
+    await expectNoHorizontalOverflow(reissue);
     await expect(canvas.getByRole('button', { name: 'Kopieren' })).toBeVisible();
   },
 });
@@ -328,7 +329,9 @@ export const ExtraLocaleJa = meta.story({
   args: { combatTitle: 'フェリーでの待ち伏せ' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'プレイヤーと共有' })).toBeVisible();
-    await expectFits(canvas.getByRole('button', { name: 'リンクを再発行' }));
+    const reissue = canvas.getByRole('button', { name: 'リンクを再発行' });
+    await expectNotTruncated(reissue);
+    await expectNoHorizontalOverflow(reissue);
     await expect(canvas.getByRole('button', { name: 'コピー' })).toBeVisible();
   },
 });

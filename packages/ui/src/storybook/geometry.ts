@@ -1,0 +1,290 @@
+import { expect } from 'storybook/test';
+import { layout } from '../layout.ts';
+
+export type GeometryCheck = 'overflow' | 'tapTargets' | 'frame' | 'truncation' | 'overlays';
+
+export type GeometryParameter = Partial<Record<GeometryCheck, string>>;
+
+interface Box {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+const interactiveSelector = [
+  'button',
+  'a[href]',
+  'input:not([type="hidden"])',
+  'select',
+  'textarea',
+  'summary',
+  '[role="button"]',
+  '[role="checkbox"]',
+  '[role="radio"]',
+  '[role="switch"]',
+  '[role="tab"]',
+  '[role="menuitem"]',
+  '[role="menuitemradio"]',
+  '[role="menuitemcheckbox"]',
+  '[role="option"]',
+  '[role="slider"]',
+].join(', ');
+
+function frameOf(root: HTMLElement): HTMLElement | null {
+  return root.querySelector<HTMLElement>('[data-phone-frame]');
+}
+
+function boundsOf(root: HTMLElement): HTMLElement {
+  return frameOf(root) ?? root.querySelector<HTMLElement>('[data-story-canvas]') ?? root;
+}
+
+function rounded(rect: Box): Box {
+  return {
+    left: Math.round(rect.left),
+    top: Math.round(rect.top),
+    right: Math.round(rect.right),
+    bottom: Math.round(rect.bottom),
+  };
+}
+
+function boxOf(element: Element): Box {
+  return rounded(element.getBoundingClientRect());
+}
+
+function isVisuallyHidden(style: CSSStyleDeclaration): boolean {
+  return style.clip !== 'auto' || style.clipPath !== 'none';
+}
+
+function isShown(element: Element): boolean {
+  if (!element.checkVisibility({ visibilityProperty: true, opacityProperty: true })) return false;
+  if (isVisuallyHidden(getComputedStyle(element))) return false;
+  const rect = element.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
+function describe(element: Element, box: Box = boxOf(element)): string {
+  const tag = element.tagName.toLowerCase();
+  const label =
+    element.getAttribute('aria-label') ??
+    element.getAttribute('data-testid') ??
+    element.textContent?.trim().replace(/\s+/g, ' ').slice(0, 40) ??
+    '';
+  const size = [box.left, box.top, box.right - box.left, box.bottom - box.top];
+  return `${tag} "${label}" [${size.join(', ')}]`;
+}
+
+function shownElements(container: Element): Element[] {
+  return [container, ...container.querySelectorAll('*')].filter(isShown);
+}
+
+function hasOwnText(element: Element): boolean {
+  return [...element.childNodes].some(
+    (node) => node.nodeType === Node.TEXT_NODE && (node.textContent ?? '').trim() !== '',
+  );
+}
+
+function isTextControl(element: Element): boolean {
+  return element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+}
+
+function clips(overflow: string): boolean {
+  return overflow !== 'visible';
+}
+
+function hides(overflow: string): boolean {
+  return overflow === 'hidden' || overflow === 'clip';
+}
+
+function isScroller(overflow: string): boolean {
+  return overflow === 'auto' || overflow === 'scroll';
+}
+
+function insideScroller(element: Element, frame: Element, axis: 'x' | 'y'): boolean {
+  for (let node = element.parentElement; node && node !== frame; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (isScroller(axis === 'x' ? style.overflowX : style.overflowY)) return true;
+  }
+  return false;
+}
+
+function px(value: string): number {
+  return Number.parseFloat(value) || 0;
+}
+
+function lineHeightOf(style: CSSStyleDeclaration): number {
+  return style.lineHeight === 'normal' ? px(style.fontSize) : px(style.lineHeight);
+}
+
+function union(a: Box, b: Box): Box {
+  return {
+    left: Math.min(a.left, b.left),
+    top: Math.min(a.top, b.top),
+    right: Math.max(a.right, b.right),
+    bottom: Math.max(a.bottom, b.bottom),
+  };
+}
+
+function intersection(a: Box, b: Box): Box {
+  return {
+    left: Math.max(a.left, b.left),
+    top: Math.max(a.top, b.top),
+    right: Math.min(a.right, b.right),
+    bottom: Math.min(a.bottom, b.bottom),
+  };
+}
+
+function hitAreaOf(element: Element): Box {
+  const style = getComputedStyle(element);
+  let box = boxOf(element);
+  if (style.position === 'static' || clips(style.overflowX) || clips(style.overflowY)) return box;
+  const rect = element.getBoundingClientRect();
+  for (const pseudo of ['::before', '::after']) {
+    const area = getComputedStyle(element, pseudo);
+    if (area.content === 'none' || area.position !== 'absolute') continue;
+    if (area.pointerEvents === 'none') continue;
+    box = union(
+      box,
+      rounded({
+        left: rect.left + px(style.borderLeftWidth) + px(area.left),
+        top: rect.top + px(style.borderTopWidth) + px(area.top),
+        right: rect.right - px(style.borderRightWidth) - px(area.right),
+        bottom: rect.bottom - px(style.borderBottomWidth) - px(area.bottom),
+      }),
+    );
+  }
+  return box;
+}
+
+function clippedHitArea(element: Element, root: Element): Box {
+  let box = hitAreaOf(element);
+  for (let node = element.parentElement; node && node !== root; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (hides(style.overflowX) || hides(style.overflowY)) box = intersection(box, boxOf(node));
+  }
+  return box;
+}
+
+function tapTargetOf(element: Element): Element {
+  if (isTextControl(element) || element instanceof HTMLSelectElement) {
+    const frame = element.closest('[data-field]');
+    if (frame) return frame;
+  }
+  if (isShown(element)) return element;
+  return element.closest('label') ?? element;
+}
+
+export function horizontalOverflow(root: HTMLElement): string[] {
+  return shownElements(boundsOf(root))
+    .filter((element) => {
+      if (hasOwnText(element) || isTextControl(element)) return false;
+      const style = getComputedStyle(element);
+      if (isScroller(style.overflowX)) return false;
+      if (!clips(style.overflowX) && (element.textContent ?? '').trim() === '') return false;
+      return element.scrollWidth > element.clientWidth;
+    })
+    .map(
+      (element) => `${describe(element)} overflows by ${element.scrollWidth - element.clientWidth}`,
+    );
+}
+
+export function smallTapTargets(root: HTMLElement): string[] {
+  const targets = new Set(
+    [...root.querySelectorAll(interactiveSelector)].map(tapTargetOf).filter(isShown),
+  );
+  return [...targets].flatMap((target) => {
+    const box = clippedHitArea(target, root);
+    if (box.right <= box.left || box.bottom <= box.top) return [];
+    const small =
+      box.right - box.left < layout.tapTarget || box.bottom - box.top < layout.tapTarget;
+    return small ? [describe(target, box)] : [];
+  });
+}
+
+export function outsideFrame(root: HTMLElement): string[] {
+  const frame = frameOf(root);
+  if (!frame) return [];
+  const edge = boxOf(frame);
+  return shownElements(frame)
+    .filter((element) => {
+      const box = boxOf(element);
+      const outsideX = box.left < edge.left || box.right > edge.right;
+      const outsideY = box.top < edge.top || box.bottom > edge.bottom;
+      return (
+        (outsideX && !insideScroller(element, frame, 'x')) ||
+        (outsideY && !insideScroller(element, frame, 'y'))
+      );
+    })
+    .map((element) => describe(element));
+}
+
+export function truncatedText(root: HTMLElement): string[] {
+  return shownElements(root)
+    .filter((element) => {
+      if (!hasOwnText(element) || isTextControl(element)) return false;
+      const style = getComputedStyle(element);
+      if (isScroller(style.overflowX) || isScroller(style.overflowY)) return false;
+      if (element.scrollWidth > element.clientWidth) return true;
+      if (!clips(style.overflowY)) return false;
+      const excess = element.scrollHeight - element.clientHeight;
+      return style.webkitLineClamp === 'none' ? excess * 2 >= lineHeightOf(style) : excess > 0;
+    })
+    .map((element) => describe(element));
+}
+
+export function overlaysOffFrame(root: HTMLElement): string[] {
+  const frame = frameOf(root);
+  if (!frame) return [];
+  const edge = boxOf(frame);
+  return [...root.querySelectorAll('[data-scrim]')]
+    .filter(isShown)
+    .filter((scrim) => {
+      const box = boxOf(scrim);
+      return (
+        box.left !== edge.left ||
+        box.top !== edge.top ||
+        box.right !== edge.right ||
+        box.bottom !== edge.bottom
+      );
+    })
+    .map((scrim) => describe(scrim));
+}
+
+export async function expectNoHorizontalOverflow(root: HTMLElement) {
+  await expect(horizontalOverflow(root)).toEqual([]);
+}
+
+export async function expectTapTargets(root: HTMLElement) {
+  await expect(smallTapTargets(root)).toEqual([]);
+}
+
+export async function expectInsideFrame(root: HTMLElement) {
+  await expect(outsideFrame(root)).toEqual([]);
+}
+
+export async function expectNotTruncated(root: HTMLElement) {
+  await expect(truncatedText(root)).toEqual([]);
+}
+
+export async function expectOverlayMatchesFrame(root: HTMLElement) {
+  await expect(overlaysOffFrame(root)).toEqual([]);
+}
+
+const checks: Record<GeometryCheck, (root: HTMLElement) => Promise<void>> = {
+  overflow: expectNoHorizontalOverflow,
+  tapTargets: expectTapTargets,
+  frame: expectInsideFrame,
+  truncation: expectNotTruncated,
+  overlays: expectOverlayMatchesFrame,
+};
+
+function optOutsOf(value: unknown): GeometryParameter {
+  return typeof value === 'object' && value !== null ? (value as GeometryParameter) : {};
+}
+
+export async function expectGeometry(root: HTMLElement, parameter: unknown) {
+  const optOuts = optOutsOf(parameter);
+  for (const [check, run] of Object.entries(checks)) {
+    if (!optOuts[check as GeometryCheck]) await run(root);
+  }
+}
