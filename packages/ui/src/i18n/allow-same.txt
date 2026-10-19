@@ -36,3 +36,5 @@ PageHeader.combats
 Drawer.combats
 CombatList.title
 InitiativePopover.title
+StatSquare.ac
+DefenseLine.ac

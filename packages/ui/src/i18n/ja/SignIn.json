@@ -9,10 +9,10 @@
   "or": "または",
   "google": "Googleで続ける",
   "github": "GitHubで続ける",
-  "noAccount": "アカウントがない場合は",
+  "noAccount": "アカウントをお持ちでない場合は",
   "signUp": "新規登録",
   "enterEmail": "メールアドレスを入力してください",
   "enterPassword": "パスワードを入力してください",
   "wrongCredentials": "メールアドレスまたはパスワードが違います",
-  "socialFailed": "サインインを開始できませんでした。もう一度お試しください。"
+  "socialFailed": "ログインを開始できませんでした。もう一度お試しください。"
 }

@@ -2,10 +2,10 @@
   "title": "タイトル",
   "name": "名前",
   "titlePlaceholder": "新しい戦闘",
-  "namePlaceholder": "敵 1",
+  "namePlaceholder": "敵1",
   "enterTitle": "タイトルを入力してください",
   "enterName": "名前を入力してください",
-  "upTo": "{{max}} 文字まで",
+  "upTo": "{{max}}文字まで",
   "titleValue": "渡し場の待ち伏せ",
   "email": "メールアドレス",
   "password": "パスワード"

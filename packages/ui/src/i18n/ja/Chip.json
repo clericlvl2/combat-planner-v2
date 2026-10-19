@@ -9,14 +9,14 @@
   "remove": "{{label}}を外す",
   "charmed": "魅了",
   "confused": "混乱",
-  "dazed": "朦朧",
+  "dazed": "眩暈",
   "fear": "恐怖",
   "helpless": "無力",
-  "hindered": "妨害",
+  "hindered": "阻害",
   "shocked": "感電",
   "stuck": "拘束",
-  "stunned": "気絶",
+  "stunned": "朦朧",
   "vulnerable": "脆弱",
-  "weakened": "弱体",
+  "weakened": "弱体化",
   "staggered": "よろめき"
 }

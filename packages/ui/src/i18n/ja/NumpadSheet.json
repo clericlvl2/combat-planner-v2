@@ -6,7 +6,7 @@
   "heal": "回復",
   "setTemp": "一時HP",
   "setMax": "最大HP",
-  "temp": "+{{amount}} 一時",
+  "temp": "+{{amount}}一時",
   "full": "無傷",
   "wounded": "負傷",
   "bloodied": "重傷",

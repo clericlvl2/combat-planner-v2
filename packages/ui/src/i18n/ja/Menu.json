@@ -2,7 +2,7 @@
   "menuLabel": "操作",
   "addUnit": "ユニットを追加",
   "undo": "元に戻す",
-  "undoHint": "{{n}} ダメージ",
+  "undoHint": "{{n}}ダメージ",
   "share": "共有",
   "restart": "戦闘をやり直す",
   "clear": "戦闘をクリア",
@@ -14,5 +14,5 @@
   "heroes": "ヒーロー",
   "delete": "削除",
   "round": "ラウンド",
-  "roundHint": "{{min}}–{{max}}。ラウンドを変えても手番は移りません。"
+  "roundHint": "{{min}}–{{max}}。ラウンドを変えてもターンは移りません。"
 }

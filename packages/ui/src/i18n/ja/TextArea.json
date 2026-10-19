@@ -2,6 +2,6 @@
   "description": "説明",
   "note": "メモ",
   "optional": "任意",
-  "upTo": "{{max}} 文字まで",
+  "upTo": "{{max}}文字まで",
   "descriptionValue": "セッション 12。ゴブリンが渡し場を守り、オークがいかだで待つ。"
 }

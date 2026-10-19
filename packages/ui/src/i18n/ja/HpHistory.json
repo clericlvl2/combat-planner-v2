@@ -1,8 +1,8 @@
 {
   "title": "HP履歴",
   "empty": "まだ変更はありません",
-  "count_one": "{{count}} 件",
-  "count_few": "{{count}} 件",
-  "count_many": "{{count}} 件",
-  "count_other": "{{count}} 件"
+  "count_one": "{{count}}件",
+  "count_few": "{{count}}件",
+  "count_many": "{{count}}件",
+  "count_other": "{{count}}件"
 }

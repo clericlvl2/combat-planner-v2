@@ -1,5 +1,5 @@
 {
   "amount": "数値",
   "maxHp": "最大HP",
-  "errorRange": "{{min}}〜{{max}}で入力"
+  "errorRange": "{{min}}〜{{max}}の範囲で入力してください"
 }

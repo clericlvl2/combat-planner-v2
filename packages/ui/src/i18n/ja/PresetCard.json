@@ -1,6 +1,6 @@
 {
   "noTags": "タグなし",
-  "toggle": "操作: {{name}}",
+  "toggle": "操作：{{name}}",
   "menuLabel": "プリセットの操作",
   "duplicate": "複製",
   "delete": "削除"

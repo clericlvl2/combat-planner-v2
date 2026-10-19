@@ -3,6 +3,6 @@
   "startCombat": "戦闘開始",
   "rollsMissingInitiative": "未決定のイニシアチブを振ります",
   "everyUnitDisabled": "すべてのユニットが無効です",
-  "lastRound": "ラウンド {{round}} が最後です",
+  "lastRound": "ラウンド{{round}}が最後です",
   "addUnitFirst": "まずユニットを追加してください"
 }
