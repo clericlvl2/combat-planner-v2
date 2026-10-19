@@ -101,7 +101,9 @@
 | fix-6 | guarded `.claude/artifacts/guard/fix-6.md` (P3 ×7, owner list) | secrets, Dockerfile, compose, README |
 | fix-6-zero-config | guarded `.claude/artifacts/guard/fix-6-zero-config.md` (clean clone verified by the orchestrator; Docker not run — P2; P3 ×7, owner list) | secrets, node version, compose, README |
 | fix-7-layout | guarded `.claude/artifacts/guard/fix-7-layout.md` (P2 scrolled-sheet clip edge accepted by the owner 2026-10-19 (1a); P3 ×3) | viewport, Sheet, Dialog |
-| docs-autodocs | merged c288bec..08f6f8e (gate green, 69 docs = 69 stories files, no baseline changed), browser check running (static build on 6106) | autodocs |
+| docs-autodocs | merged c288bec..08f6f8e (gate green, 69 docs = 69 stories files, no baseline changed), browser check: Dialog and Drawer docs locked scroll and trapped focus, fixed by fix-9 | autodocs |
+| fix-8-docs-overlays | merged 55cdc59 (gate green); docs.story.inline false on Dialog and Drawer stole focus and ran play in the docs iframes, superseded by fix-9 | Dialog, Drawer |
+| fix-9-docs-overlays | merged 9064706 (gate green); browser check: no scroll lock, no focus trap, no play on both docs pages; Sheet in `organisms-dialog--extra-over-sheet` still focuses itself on open (Sheet autofocus left as is by the owner 2026-10-19) | Dialog, Drawer, docs theme |
 
 ## Вопросы владельцу
 
