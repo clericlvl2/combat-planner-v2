@@ -356,6 +356,23 @@ export function createHonoApiClient({
       );
     };
 
+    let repairing = false;
+
+    const repair = () => {
+      if (repairing) return;
+      repairing = true;
+      refetch()
+        .then(
+          (document) => {
+            if (!closed) deliver(document);
+          },
+          () => {},
+        )
+        .finally(() => {
+          repairing = false;
+        });
+    };
+
     const connect = (): EventSourceLike => {
       const next = new EventSourceImpl(url, { withCredentials: true });
       const current = () => !closed && source === next;
@@ -363,12 +380,7 @@ export function createHonoApiClient({
         if (!current() || typeof event.data !== 'string') return;
         const parsed = eventSchema.safeParse(parseJson(event.data));
         if (!parsed.success) {
-          refetch().then(
-            (document) => {
-              if (current()) deliver(document);
-            },
-            () => {},
-          );
+          repair();
           return;
         }
         if (parsed.data.type === 'document') {

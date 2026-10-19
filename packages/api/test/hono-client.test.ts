@@ -335,6 +335,36 @@ describe('createHonoApiClient connection', () => {
     unsubscribe();
   });
 
+  it('answers a burst of malformed events with one refetch and refetches again after it', async () => {
+    const answers: Array<() => void> = [];
+    const paths: string[] = [];
+    const fetch = ((input: string | URL | Request, init?: RequestInit) => {
+      paths.push(new URL(new Request(input, init).url).pathname);
+      const version = 5 + paths.length;
+      return new Promise<Response>((resolve) => {
+        answers.push(() => resolve(Response.json(combatAt(version))));
+      });
+    }) as typeof globalThis.fetch;
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const documents: DmCombat[] = [];
+    const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
+    const source = StubEventSource.instances.at(-1)!;
+    source.emit('open');
+    source.emit('message', 'not json');
+    source.emit('message', '{"type":"document",');
+    source.emit('message', JSON.stringify({ type: 'document', version: 2, document: { id: 1 } }));
+    await vi.waitFor(() => expect(paths).toHaveLength(1));
+    source.emit('message', 'not json');
+    expect(paths).toEqual([`/api/combats/${combatId}`]);
+    answers[0]!();
+    await vi.waitFor(() => expect(documents.map((doc) => doc.version)).toEqual([6]));
+    source.emit('message', 'not json');
+    await vi.waitFor(() => expect(paths).toHaveLength(2));
+    answers[1]!();
+    await vi.waitFor(() => expect(documents.map((doc) => doc.version)).toEqual([6, 7]));
+    unsubscribe();
+  });
+
   it('hands the player the DM language from the stream and from the refetch', async () => {
     const token = `${combatId}.0.signature`;
     const document = project(combatAt(7), { kind: 'player', playerId });
