@@ -74,6 +74,7 @@
 }
 
 .round {
+  position: relative;
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -91,6 +92,12 @@
 
   &[data-open] {
     background: var(--cp-state-tap-marker);
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
   }
 }
 
@@ -126,6 +133,7 @@
 }
 
 .face {
+  position: relative;
   box-sizing: border-box;
   display: flex;
   align-items: stretch;
@@ -159,6 +167,12 @@
   &[data-focus] {
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
   }
 }
 
