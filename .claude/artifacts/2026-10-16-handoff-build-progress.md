@@ -100,7 +100,7 @@
 | 6-docker | guarded `.claude/artifacts/guard/6-docker.md` (P2 ×1 placeholder secrets accepted in production, P3 ×4 → `fix-6`; P3 ×4 hypotheses, owner list) | Dockerfile, compose, README |
 | fix-6 | guarded `.claude/artifacts/guard/fix-6.md` (P3 ×7, owner list) | secrets, Dockerfile, compose, README |
 | fix-6-zero-config | guarded `.claude/artifacts/guard/fix-6-zero-config.md` (clean clone verified by the orchestrator; Docker not run — P2; P3 ×7, owner list) | secrets, node version, compose, README |
-| fix-7-layout | guarded `.claude/artifacts/guard/fix-7-layout.md` (P2 scrolled-sheet clip edge → owner; P3 ×3) | viewport, Sheet, Dialog |
+| fix-7-layout | guarded `.claude/artifacts/guard/fix-7-layout.md` (P2 scrolled-sheet clip edge accepted by the owner 2026-10-19 (1a); P3 ×3) | viewport, Sheet, Dialog |
 
 ## Вопросы владельцу
 
