@@ -12,7 +12,6 @@ import type {
   CombatId,
   Condition,
   HpHistoryKind,
-  Role,
   UndoSummary,
   Unit,
   UnitId,
@@ -112,12 +111,6 @@ const rollOf = (random: () => number): number => {
   const faces = LIMITS.roll.max - LIMITS.roll.min + 1;
   return Math.min(LIMITS.roll.max, LIMITS.roll.min + Math.floor(random() * faces));
 };
-
-const roleCountsOf = (units: readonly Unit[]): Record<Role, number> => ({
-  hero: units.filter((unit) => unit.role === 'hero').length,
-  enemy: units.filter((unit) => unit.role === 'enemy').length,
-  ally: units.filter((unit) => unit.role === 'ally').length,
-});
 
 const playUrl = (origin: string, combatId: CombatId, token: string): string =>
   `${origin}/combats/${combatId}/play?t=${encodeURIComponent(token)}`;
@@ -586,7 +579,7 @@ export function CombatScreen({
             count: (presets ?? []).filter((preset) => preset.tags.includes(tag.id)).length,
           }))}
           combatTitle={combat.title}
-          roleCounts={roleCountsOf(combat.units)}
+          unitNames={combat.units.map((unit) => unit.name)}
           hint={setup ? 'setup' : 'active'}
           onSubmit={submitForm}
           onCancel={() => setForm(null)}

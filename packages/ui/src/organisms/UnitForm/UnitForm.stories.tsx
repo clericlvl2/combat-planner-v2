@@ -14,7 +14,7 @@ interface UnitFormCellProps {
   lockRole?: boolean;
   lockMaxHp?: boolean;
   library?: boolean;
-  roleCounts?: Partial<Record<Role, number>>;
+  unitNames?: readonly string[];
   hint?: UnitFormHint;
   closeOnDone?: boolean;
   onSubmit?: (draft: UnitDraft) => void;
@@ -116,7 +116,7 @@ function UnitFormCell({
   lockRole,
   lockMaxHp,
   library = true,
-  roleCounts,
+  unitNames,
   hint,
   closeOnDone = false,
   onSubmit,
@@ -134,7 +134,7 @@ function UnitFormCell({
         presets={library ? presets : undefined}
         tags={tags}
         combatTitle="Ambush at the Ferry"
-        roleCounts={roleCounts}
+        unitNames={unitNames}
         hint={hint}
         onSubmit={(draft) => {
           if (closeOnDone) setOpened(false);
@@ -366,11 +366,11 @@ export const ExtraSubmitTypedValues = meta.story({
 });
 
 export const ExtraEmptyNameDefault = meta.story({
-  name: 'An empty name becomes the default name',
-  args: { roleCounts: { enemy: 2 } },
+  name: 'An empty name becomes the first free default name',
+  args: { unitNames: ['Enemy 1', 'Enemy 3'] },
   play: async ({ canvas, args }) => {
     const name = canvas.getByRole('textbox', { name: 'Name' });
-    await expect(name).toHaveAttribute('placeholder', 'Enemy 3');
+    await expect(name).toHaveAttribute('placeholder', 'Enemy 2');
     await userEvent.click(canvas.getByRole('radio', { name: 'Hero' }));
     await expect(name).toHaveAttribute('placeholder', 'Hero 1');
     await userEvent.click(canvas.getByRole('button', { name: 'Add unit' }));
@@ -380,24 +380,20 @@ export const ExtraEmptyNameDefault = meta.story({
   },
 });
 
-export const ExtraBlankNameBlocks = meta.story({
-  name: 'A blank name blocks submit',
+export const ExtraBlankNameKeepsPrevious = meta.story({
+  name: 'Edit: a blank name keeps the previous name',
   args: { mode: 'edit', value: vashti },
   play: async ({ canvas, args }) => {
     const name = canvas.getByRole('textbox', { name: 'Name' });
     await userEvent.clear(name);
     await userEvent.type(name, '   ');
-    await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
-    await expect(args.onSubmit).not.toHaveBeenCalled();
-    await expect(name).toHaveAttribute('aria-invalid', 'true');
-    await expect(canvas.getByText('Enter a name')).toBeVisible();
-    await userEvent.clear(name);
-    await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
-    await expect(args.onSubmit).not.toHaveBeenCalled();
-    await userEvent.type(name, '  Vashti ');
-    await expect(canvas.queryByText('Enter a name')).toBeNull();
-    await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
-    await expect(args.onSubmit).toHaveBeenCalledWith({ ...vashti, name: 'Vashti' });
+    await expect(name).toHaveAttribute('placeholder', vashti.name);
+    await expect(name).not.toHaveAttribute('aria-invalid', 'true');
+    const save = canvas.getByRole('button', { name: 'Save changes' });
+    await expect(save).toBeEnabled();
+    await userEvent.click(save);
+    await expect(args.onSubmit).toHaveBeenCalledOnce();
+    await expect(args.onSubmit).toHaveBeenCalledWith(vashti);
   },
 });
 

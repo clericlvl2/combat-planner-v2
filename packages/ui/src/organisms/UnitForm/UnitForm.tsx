@@ -36,7 +36,7 @@ export interface UnitFormProps {
   presets?: readonly Preset[];
   tags?: readonly TagSheetTag[];
   combatTitle?: string;
-  roleCounts?: Partial<Record<Role, number>>;
+  unitNames?: readonly string[];
   hint?: UnitFormHint;
 }
 
@@ -98,14 +98,13 @@ export function UnitForm({
   presets,
   tags = [],
   combatTitle,
-  roleCounts,
+  unitNames = [],
   hint,
 }: UnitFormProps) {
   const { t } = useTranslation('UnitForm');
   const [wasOpened, setWasOpened] = useState(opened);
   const [draft, setDraft] = useState<UnitDraft>(() => draftOf(value));
   const [setKeys, setSetKeys] = useState<ReadonlySet<NumberKey>>(() => setKeysOf(value));
-  const [nameError, setNameError] = useState(false);
   const [source, setSource] = useState<UnitFormSource>('new');
   const [query, setQuery] = useState('');
   const [tagFilter, setTagFilter] = useState<string[]>([]);
@@ -117,7 +116,6 @@ export function UnitForm({
     if (opened) {
       setDraft(draftOf(value));
       setSetKeys(setKeysOf(value));
-      setNameError(false);
       setSource('new');
       setQuery('');
       setTagFilter([]);
@@ -130,10 +128,12 @@ export function UnitForm({
   const withLibrary = adding && presets !== undefined;
   const library = withLibrary && source === 'library';
   const roleLabel = (role: Role) => t(role);
-  const defaultName = t('defaultName', {
-    role: roleLabel(draft.role),
-    n: (roleCounts?.[draft.role] ?? 0) + 1,
-  });
+  const taken = new Set(unitNames);
+  let n = 1;
+  while (taken.has(t('defaultName', { role: roleLabel(draft.role), n }))) n += 1;
+  const fallbackName = adding
+    ? t('defaultName', { role: roleLabel(draft.role), n })
+    : (value?.name ?? '');
 
   const needle = fold(query.trim());
   const listed = (presets ?? []).filter(
@@ -165,7 +165,6 @@ export function UnitForm({
 
   const pick = (preset: Preset) => {
     setPicked(preset.id);
-    setNameError(false);
     setDraft((current) => withPreset(current, preset));
     setSetKeys(allNumberKeys);
   };
@@ -190,13 +189,7 @@ export function UnitForm({
       if (pickedPreset) onSubmit(withPreset(draft, pickedPreset));
       return;
     }
-    const typed = draft.name.trim();
-    const name = typed === '' && draft.name === '' && adding ? defaultName : typed;
-    if (name === '') {
-      setNameError(true);
-      return;
-    }
-    onSubmit({ ...draft, name });
+    onSubmit({ ...draft, name: draft.name.trim() || fallbackName });
   };
 
   const emptyText =
@@ -336,13 +329,9 @@ export function UnitForm({
               className={draft.name === '' ? classes.name : `${classes.name} ${classes.named}`}
               label={t('name')}
               value={draft.name}
-              placeholder={adding ? defaultName : undefined}
+              placeholder={fallbackName}
               maxLength={LIMITS.unitName}
-              error={nameError ? t('nameRequired') : undefined}
-              onChange={(next) => {
-                setNameError(false);
-                update('name', next);
-              }}
+              onChange={(next) => update('name', next)}
             />
             <div className={classes.field}>
               <span className={classes.caption} aria-hidden="true">
