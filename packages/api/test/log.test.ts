@@ -185,6 +185,23 @@ describe('undo summary over a long log', () => {
   });
 });
 
+describe('undo over a long log', () => {
+  it('reads only the entries undo can reach', async () => {
+    const target = damage(8);
+    const undone = Array.from({ length: LIMITS.undoDepth - 1 }, (_, index) => damage(index + 1));
+    for (const action of [...undone].reverse()) undoOf(action);
+    expect(fullLog().length).toBeGreaterThan(2 * ROW_BOUND);
+    const combat = await fetchCombat(dm);
+    const undo: Action = { id: seededId(), version: combat.version, type: 'undo' };
+    const reads = countLogReads();
+    const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/actions`, undo);
+    vi.restoreAllMocks();
+    expect(response.status).toBe(200);
+    expect(fullLog().find((entry) => entry.action.id === target.id)?.undoneBy).toBe(undo.id);
+    expect(reads.rows).toBeLessThanOrEqual(2 * ROW_BOUND + 1);
+  });
+});
+
 describe('player SSE connect', () => {
   it('reads no log', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
