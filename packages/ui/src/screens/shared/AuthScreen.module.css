@@ -66,6 +66,7 @@
 }
 
 .link {
+  position: relative;
   border-radius: 4px;
   color: var(--cp-color-ink);
   font-weight: 700;
@@ -76,5 +77,11 @@
   &[data-focus] {
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
   }
 }
