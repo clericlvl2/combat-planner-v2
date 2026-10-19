@@ -1,7 +1,6 @@
 import preview from '#.storybook/preview';
 import { LIMITS } from '@combat-planner/domain';
 import { useLayoutEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import type { Mock } from 'storybook/test';
 import { Button } from '../../atoms/Button/Button.tsx';
@@ -39,7 +38,6 @@ function InitiativePopoverCell({
   withTrigger = false,
   ...props
 }: InitiativePopoverCellProps) {
-  const { t } = useTranslation('InitiativePopover');
   const stageRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(initialValue);
@@ -55,7 +53,7 @@ function InitiativePopoverCell({
       {withTrigger ? (
         <span ref={triggerRef} style={{ display: 'inline-flex', alignSelf: 'flex-start' }}>
           <Button variant="secondary" size="S" onClick={() => setOpen(!open)}>
-            {t('anchor')}
+            Set initiative
           </Button>
         </span>
       ) : null}
@@ -67,7 +65,7 @@ function InitiativePopoverCell({
         anchor={
           withAnchor ? (
             <Button variant="secondary" size="S" onClick={() => setOpen(true)}>
-              {t('anchor')}
+              Set initiative
             </Button>
           ) : undefined
         }

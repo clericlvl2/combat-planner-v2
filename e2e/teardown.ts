@@ -1,6 +1,6 @@
 import { rm } from 'node:fs/promises';
 
-const CREATED_DIR: unique symbol = Symbol.for('combat-planner.e2e.created-dir');
+export const CREATED_DIR: unique symbol = Symbol.for('combat-planner.e2e.created-dir');
 
 type E2eGlobal = typeof globalThis & { [CREATED_DIR]?: string };
 

@@ -1,11 +1,10 @@
 import os from 'node:os';
 import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
+import { CREATED_DIR } from './e2e/teardown.ts';
 
 const PORT = Number(process.env.E2E_PORT) || 3000;
 const baseURL = `http://localhost:${PORT}`;
-
-const CREATED_DIR: unique symbol = Symbol.for('combat-planner.e2e.created-dir');
 
 const createDataDir = (): string => {
   const dir = path.join(os.tmpdir(), `combat-planner-e2e-${Date.now().toString(36)}`);

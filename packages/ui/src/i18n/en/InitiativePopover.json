@@ -1,5 +1,4 @@
 {
   "title": "Initiative",
-  "roll": "Roll d20 {{bonus}}",
-  "anchor": "Set initiative"
+  "roll": "Roll d20 {{bonus}}"
 }

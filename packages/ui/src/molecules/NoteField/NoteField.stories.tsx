@@ -1,7 +1,6 @@
 import preview from '#.storybook/preview';
 import { LIMITS } from '@combat-planner/domain';
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { NoteField } from './NoteField.tsx';
 import type { NoteFieldProps } from './NoteField.tsx';
@@ -34,7 +33,6 @@ function NoteFieldCell({
   withRemove = false,
   ...props
 }: NoteFieldCellProps) {
-  const { t } = useTranslation('NoteField');
   const [value, setValue] = useState(initialValue);
   const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [mounted, setMounted] = useState(true);
@@ -74,7 +72,7 @@ function NoteFieldCell({
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setCollapsed(true)}
         >
-          {t('collapseRow')}
+          Collapse row
         </button>
       ) : null}
     </div>
