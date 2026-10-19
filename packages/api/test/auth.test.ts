@@ -231,6 +231,29 @@ describe('user update', () => {
   });
 });
 
+describe('display name clamp', () => {
+  it('never splits a surrogate pair at the limit', async () => {
+    const auth = createAuth({ db: opened.db, env });
+    const signedUp = await auth.api.signUpEmail({
+      body: { name: 'Erin', email: 'surrogate@example.com', password: PASSWORD },
+      returnHeaders: true,
+    });
+    const cookie = signedUp.headers
+      .getSetCookie()
+      .map((line) => line.split(';')[0])
+      .join('; ');
+    const headers = new Headers({ cookie });
+    const prefix = LIMITS.displayName % 2 === 0 ? 'a' : '';
+    const name = `${prefix}${'😀'.repeat(LIMITS.displayName)}`;
+    await auth.api.updateUser({ headers, body: { name } });
+    const found = await auth.api.getSession({ headers });
+    const expected = `${prefix}${'😀'.repeat((LIMITS.displayName - prefix.length - 1) / 2)}`;
+    expect(found?.user.name).toBe(expected);
+    expect(found?.user.name.length).toBe(LIMITS.displayName - 1);
+    expect(found?.user.name).not.toMatch(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/);
+  });
+});
+
 describe('disabled Better Auth endpoints', () => {
   it('answer 404 for change-password and update-user with a valid session', async () => {
     const browser = createBrowser(opened.app);

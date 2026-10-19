@@ -1,6 +1,7 @@
 import type { Action } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
 import type { DmCombat } from '../src/client.ts';
+import { dmCombatSchema } from '../src/client.ts';
 import { Hono } from 'hono';
 import {
   afterAll,
@@ -231,7 +232,9 @@ describe('streamCombatEvents', () => {
   it('unsubscribes and clears the heartbeat when project() throws', async () => {
     const logged = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const failure = new Error('project failed');
-    const combat = await fetchCombat(dm);
+    const liveId = ulidAt(900);
+    expect((await call(dm, 'POST', '/combats', combatInput(liveId))).status).toBe(200);
+    const combat = dmCombatSchema.parse(await fetchCombat(dm, liveId));
     const broken: DmCombat = {
       ...combat,
       get units(): DmCombat['units'] {
@@ -241,13 +244,13 @@ describe('streamCombatEvents', () => {
     const viewer = { kind: 'player', playerId: PLAYER_ID } as const;
     const stream = openSse(
       await streamWith({
-        combatId: COMBAT_ID,
+        combatId: liveId,
         viewer,
         load: () => project(broken, viewer),
         language: () => 'en',
       }),
     );
-    expect(subscriberCount(COMBAT_ID)).toBe(0);
+    expect(subscriberCount(liveId)).toBe(0);
     expect(vi.getTimerCount()).toBe(0);
     expect(await stream.closed()).toBe(true);
     expect(logged).toHaveBeenCalledWith(failure);
