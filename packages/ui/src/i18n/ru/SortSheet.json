@@ -1,9 +1,9 @@
 {
-  "sortCombats": "Сортировка сражений",
+  "sortCombats": "Сортировка боёв",
   "sortPresets": "Сортировка заготовок",
   "newestFirst": "Сначала новые",
-  "lastPlayed": "Сначала последние сыгранные",
-  "alphabetical": "По алфавиту",
+  "lastPlayed": "Последняя игра",
+  "alphabetical": "А–Я",
   "byType": "По типу",
   "done": "Готово"
 }

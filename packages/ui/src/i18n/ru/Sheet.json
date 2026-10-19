@@ -1,7 +1,7 @@
 {
   "close": "Закрыть",
   "back": "Назад",
-  "sortCombats": "Сортировка сражений",
+  "sortCombats": "Сортировка боёв",
   "done": "Готово",
   "tagsTitle": "Теги · {{name}}",
   "doneTags_one": "Готово · {{count}} тег",
@@ -12,7 +12,7 @@
   "editCombat": "Изменить бой",
   "save": "Сохранить",
   "newCombat": "Новый бой",
-  "titleRequired": "Нужно название",
+  "titleRequired": "Введите название",
   "cancel": "Отмена",
   "create": "Создать",
   "color": "Цвет",

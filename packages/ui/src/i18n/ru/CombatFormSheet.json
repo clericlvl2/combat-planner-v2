@@ -1,8 +1,8 @@
 {
-  "newCombat": "Новое сражение",
-  "editCombat": "Изменить сражение",
+  "newCombat": "Новый бой",
+  "editCombat": "Изменить бой",
   "title": "Название",
-  "titlePlaceholder": "Новое сражение",
+  "titlePlaceholder": "Новый бой",
   "titleRequired": "Введите название",
   "description": "Описание",
   "descriptionPlaceholder": "Необязательно",

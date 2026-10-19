@@ -19,8 +19,8 @@
   "duplicate": "Дублировать",
   "disable": "Отключить",
   "enable": "Включить",
-  "saveAsPreset": "Сохранить как пресет",
-  "releaseClaim": "Снять занятость",
-  "remove": "Удалить",
+  "saveAsPreset": "Сохранить как заготовку",
+  "releaseClaim": "Освободить героя",
+  "remove": "Убрать",
   "rollInitiative": "Бросить инициативу"
 }
