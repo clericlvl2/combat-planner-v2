@@ -58,12 +58,10 @@ Library, `PV` PlayerView. Story `CLF12` is step 2 of flow `CL-F1`; its render is
 ## Tests
 
 - `pnpm check`: format, lint, type check, `tsc -b` and the `scripts/check-*.mjs`
-  checks. Without Docker-made screenshots it needs `COMBAT_PLANNER_NO_DOCKER=1`.
+  checks.
 - `pnpm test`: unit tests and every story with its `play` in headless Chromium.
 - `pnpm e2e`: Playwright end-to-end tests against the real server and database.
-- `pnpm screenshots:update`: regenerates the visual baselines in
-  `packages/ui/__screenshots__/` inside the `mcr.microsoft.com/playwright` Docker
-  image. It is the only command that writes baselines and needs Docker.
+- `pnpm screenshots:update`: regenerates the visual baselines with the local Chromium.
 
 ## Production
 

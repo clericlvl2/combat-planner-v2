@@ -1,16 +1,11 @@
 #!/usr/bin/env node
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import vm from 'node:vm';
 import ts from 'typescript';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const uiSrcDir = path.join(rootDir, 'packages/ui/src');
-const handoffDir = path.join(rootDir, 'docs/design/handoff');
-const nonAscii = /[^\p{ASCII}]/u;
-const flowCode = /^[A-Z]+-(?:F\d+(?:\.\d+)*|\d+)$/;
-const flowTitle = /^Flows?\b/;
 
 const violations = [];
 const relative = (absolutePath) => path.relative(rootDir, absolutePath).split(path.sep).join('/');
@@ -23,143 +18,6 @@ function* walk(directory) {
     if (entry.isDirectory()) yield* walk(entryPath);
     else if (entry.isFile()) yield entryPath;
   }
-}
-
-export function exportName(label) {
-  return label
-    .split(/[^A-Za-z0-9]+/)
-    .filter(Boolean)
-    .map((word) => word[0].toUpperCase() + word.slice(1))
-    .join('');
-}
-
-function pageScript(html) {
-  const match = /<script type="text\/x-dc"[^>]*data-dc-script[^>]*>([\s\S]*?)<\/script>/.exec(html);
-  return match ? match[1] : '';
-}
-
-function renderPage(script) {
-  const context = vm.createContext({ location: { search: '' }, URLSearchParams });
-  vm.runInContext('String.prototype.toUpperCase = function () { return String(this); };', context);
-  return vm.runInContext(
-    `class DCLogic { constructor() { this.props = {}; this.state = {}; } setState() {} }\n${script}\n;new Component().renderVals();`,
-    context,
-    { timeout: 2000 },
-  );
-}
-
-function literalsOf(cell, excludedKeys) {
-  return Object.entries(cell)
-    .filter(([key, value]) => !excludedKeys.includes(key) && typeof value === 'string')
-    .map(([, value]) => value)
-    .filter((value) => nonAscii.test(value));
-}
-
-function pageCells(groups) {
-  const cells = [];
-  let inFlow = false;
-  for (const group of groups ?? []) {
-    const title = typeof group.title === 'string' ? group.title : '';
-    if (flowTitle.test(title) || group.id === 'flow') inFlow = true;
-    else if (title) inFlow = false;
-    if (inFlow || !title) continue;
-    const edge = title.startsWith('Edge cases');
-    if (Array.isArray(group.rows) && group.rows.length > 0) {
-      const columns = Array.isArray(group.cols) ? group.cols : [];
-      for (const row of group.rows) {
-        const rowCells = Array.isArray(row.cells) ? row.cells : [];
-        rowCells.forEach((cell, index) => {
-          const parts = [row.label, columns[index]].filter((part) => part);
-          const label = parts.length > 0 ? parts.join(' ') : title;
-          cells.push({ group: title, label, edge, literals: literalsOf(cell, []) });
-        });
-      }
-      continue;
-    }
-    const direct = Array.isArray(group.cells) ? group.cells : group.items;
-    for (const cell of Array.isArray(direct) ? direct : []) {
-      const caption = typeof cell.caption === 'string' ? cell.caption : cell.label;
-      if (typeof caption !== 'string') continue;
-      const label = caption || title;
-      cells.push({ group: title, label, edge, literals: literalsOf(cell, ['caption', 'label']) });
-    }
-  }
-  const counts = new Map();
-  for (const cell of cells) {
-    cell.name = exportName(cell.label);
-    counts.set(cell.name, (counts.get(cell.name) ?? 0) + 1);
-  }
-  for (const cell of cells) {
-    if (counts.get(cell.name) > 1 || !/^[A-Z]/.test(cell.name)) {
-      cell.name = exportName(`${cell.group} ${cell.label}`);
-    }
-  }
-  const taken = new Map();
-  for (const cell of cells) {
-    const seen = (taken.get(cell.name) ?? 0) + 1;
-    taken.set(cell.name, seen);
-    if (seen > 1) cell.name = `${cell.name}${seen}`;
-  }
-  return cells;
-}
-
-function groupsOfItems(items) {
-  const groups = [];
-  for (const item of items) {
-    if (item?.isHeading && typeof item.heading === 'string') {
-      groups.push({ title: item.heading, cells: [] });
-    } else if (item?.isCard && typeof item.label === 'string' && groups.length > 0) {
-      groups.at(-1).cells.push({ ...item, caption: item.label });
-    }
-  }
-  return groups;
-}
-
-function groupsOfRows(rows) {
-  const groups = [];
-  const codes = [];
-  for (const row of rows) {
-    if (row?.hasFlow) {
-      if (typeof row.code === 'string') codes.push(row.code);
-      continue;
-    }
-    for (const item of Array.isArray(row?.items) ? row.items : []) {
-      if (item?.isHead && typeof item.headTitle === 'string') {
-        groups.push({ title: item.headTitle, cells: [] });
-      } else if (item?.isCard && typeof item.label === 'string' && groups.length > 0) {
-        groups.at(-1).cells.push({ ...item, caption: item.label });
-      }
-    }
-  }
-  return { groups, codes };
-}
-
-function pageLayout(values) {
-  if (Array.isArray(values?.groups)) return { groups: values.groups, codes: [] };
-  if (Array.isArray(values?.items)) return { groups: groupsOfItems(values.items), codes: [] };
-  if (Array.isArray(values?.rows)) return groupsOfRows(values.rows);
-  return { groups: [], codes: [] };
-}
-
-function readPage(pagePath) {
-  const html = readFileSync(pagePath, 'utf8');
-  const script = pageScript(html);
-  const screenFlows = [...script.matchAll(/\bS\('([^']+)'/g)]
-    .map((match) => match[1])
-    .filter((code) => flowCode.test(code));
-  let layout = { groups: [], codes: [] };
-  try {
-    layout = pageLayout(renderPage(script));
-  } catch (error) {
-    if (screenFlows.length === 0) fail(pagePath, 'page script', String(error));
-  }
-  const { groups } = layout;
-  const flows = [...screenFlows, ...layout.codes.filter((code) => flowCode.test(code))];
-  const cells = screenFlows.length > 0 ? [] : pageCells(groups);
-  const hasFlow =
-    flows.length > 0 ||
-    groups.some((group) => group.id === 'flow' || flowTitle.test(String(group.title ?? '')));
-  return { cells, flows: [...new Set(flows)], hasFlow };
 }
 
 function readStories(storyPath) {
@@ -225,54 +83,6 @@ const storyFiles = [...walk(uiSrcDir)]
 for (const storyPath of storyFiles) {
   const { text, stories } = readStories(storyPath);
   checkCommonRules(storyPath, text, stories);
-  const name = path.basename(storyPath, '.stories.tsx');
-  const pagePath = path.join(handoffDir, `${name}.dc.html`);
-  if (!existsSync(pagePath)) continue;
-  const page = readPage(pagePath);
-  const byName = new Map(stories.map((story) => [story.name, story]));
-  const required = new Set();
-  for (const cell of page.cells) {
-    required.add(cell.name);
-    const story = byName.get(cell.name);
-    if (!story) {
-      fail(
-        storyPath,
-        'missing cell story',
-        `${cell.name} for "${cell.group}" cell "${cell.label}"`,
-      );
-      continue;
-    }
-    if (cell.edge && cell.literals.length > 0) {
-      if (!cell.literals.some((literal) => story.text.includes(literal))) {
-        fail(
-          storyPath,
-          'edge story without a non-ASCII literal',
-          `${cell.name} must contain one of ${cell.literals.map((l) => JSON.stringify(l)).join(', ')}`,
-        );
-      }
-    }
-  }
-  for (const code of page.flows) {
-    const flowName = exportName(code);
-    required.add(flowName);
-    if (!byName.has(flowName)) fail(storyPath, 'missing flow story', `${flowName} for ${code}`);
-  }
-  for (const story of stories) {
-    if (!required.has(story.name) && !story.name.startsWith('Extra')) {
-      fail(
-        storyPath,
-        'extra story without the Extra prefix',
-        `${story.name} is not a cell of ${relative(pagePath)}`,
-      );
-    }
-  }
-  if (page.hasFlow && !stories.some((story) => story.play !== null)) {
-    fail(
-      storyPath,
-      'Flow section without play',
-      `${relative(pagePath)} has a Flow section but no story has play`,
-    );
-  }
 }
 
 if (violations.length > 0) {

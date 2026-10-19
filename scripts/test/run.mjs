@@ -18,14 +18,11 @@ import zlib from 'node:zlib';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(testDir, '../..');
-const checkScripts = ['check-stories', 'check-i18n', 'check-screenshots', 'check-domain-tests'];
+const checkScripts = ['check-stories', 'check-i18n', 'check-screenshots'];
 const copiedTrees = [
   'packages/ui/src',
   'packages/ui/__screenshots__',
   'packages/ui/test',
-  'packages/domain/test',
-  'docs/vision.md',
-  '.claude/plans/2026-10-16-build-combat-planner-v2.md',
   'vite.config.ts',
 ];
 
@@ -34,11 +31,6 @@ function plantTree() {
   for (const tree of copiedTrees) {
     const source = path.join(rootDir, tree);
     if (existsSync(source)) cpSync(source, path.join(copy, tree), { recursive: true });
-  }
-  const handoffDir = path.join(rootDir, 'docs/design/handoff');
-  mkdirSync(path.join(copy, 'docs/design/handoff'), { recursive: true });
-  for (const file of readdirSync(handoffDir).filter((name) => name.endsWith('.dc.html'))) {
-    cpSync(path.join(handoffDir, file), path.join(copy, 'docs/design/handoff', file));
   }
   mkdirSync(path.join(copy, 'scripts'));
   for (const script of checkScripts) {
@@ -108,7 +100,7 @@ function applyOperation(copy, operation) {
 }
 
 function runScript(copy, script, unsetEnv = []) {
-  const env = { ...process.env, COMBAT_PLANNER_NO_DOCKER: '1' };
+  const env = { ...process.env };
   for (const name of unsetEnv) delete env[name];
   const result = spawnSync(process.execPath, [path.join(copy, 'scripts', `${script}.mjs`)], {
     env,

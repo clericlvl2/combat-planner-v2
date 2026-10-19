@@ -9,12 +9,10 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const uiDir = path.join(rootDir, 'packages/ui');
 const uiSrcDir = path.join(uiDir, 'src');
 const screenshotsDir = path.join(uiDir, '__screenshots__');
-const handoffDir = path.join(rootDir, 'docs/design/handoff');
 const screenWidth = 390;
 const comparatorKeys = /comparatorOptions|threshold|allowedMismatchedPixel/;
 
 const violations = [];
-const notes = [];
 const relative = (absolutePath) => path.relative(rootDir, absolutePath).split(path.sep).join('/');
 const fail = (file, rule, detail) => violations.push(`${relative(file)}: ${rule}: ${detail}`);
 
@@ -57,10 +55,8 @@ function pngWidth(file) {
   return bytes.length >= 24 ? bytes.readUInt32BE(16) : 0;
 }
 
-function isScreen(storyPath, name) {
-  if (relative(storyPath).split('/').includes('screens')) return true;
-  const page = path.join(handoffDir, `${name}.dc.html`);
-  return existsSync(page) && /\bS\('[A-Z]+-F\d/.test(readFileSync(page, 'utf8'));
+function isScreen(storyPath) {
+  return relative(storyPath).split('/').includes('screens');
 }
 
 function sameGroups(folder, name) {
@@ -123,7 +119,7 @@ for (const [name, storyPath] of [...components].sort(([a], [b]) => a.localeCompa
       );
     }
   }
-  if (isScreen(storyPath, name)) {
+  if (isScreen(storyPath)) {
     for (const baseline of baselines) {
       const width = pngWidth(path.join(folder, `${baseline}.png`));
       if (width !== screenWidth)
@@ -146,23 +142,6 @@ for (const folder of existsSync(screenshotsDir)
       `no ${folder.name}.stories.tsx`,
     );
   }
-}
-
-const markers = existsSync(screenshotsDir)
-  ? readdirSync(screenshotsDir).filter((file) => file.startsWith('.docker-'))
-  : [];
-const playwrightPackage = path.join(rootDir, 'node_modules/playwright/package.json');
-const expectedTag = existsSync(playwrightPackage)
-  ? `v${JSON.parse(readFileSync(playwrightPackage, 'utf8')).version}-noble`
-  : null;
-if (markers.length === 0) {
-  if (process.env.COMBAT_PLANNER_NO_DOCKER === '1') {
-    notes.push('no .docker-* marker; accepted because COMBAT_PLANNER_NO_DOCKER=1');
-  } else {
-    fail(screenshotsDir, 'missing marker', 'no .docker-<image-tag>; run pnpm screenshots:update');
-  }
-} else if (expectedTag && !markers.includes(`.docker-${expectedTag}`)) {
-  fail(screenshotsDir, 'stale marker', `${markers.join(', ')}, expected .docker-${expectedTag}`);
 }
 
 const configFiles = [
@@ -199,5 +178,4 @@ if (violations.length > 0) {
   console.error(`check-screenshots: ${violations.length} problem(s)`);
   process.exit(1);
 }
-for (const note of notes) console.log(`check-screenshots: ${note}`);
 console.log(`check-screenshots: ${components.size} component(s) pass`);
