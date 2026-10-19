@@ -3,7 +3,7 @@
   "editTitle": "Editar unidad",
   "source": "Origen de la unidad",
   "new": "Nueva",
-  "library": "De la biblioteca",
+  "library": "De la Biblioteca",
   "name": "Nombre",
   "nameRequired": "Escribe un nombre",
   "type": "Tipo",
@@ -32,7 +32,7 @@
   "noMatchQuery": "Ninguna plantilla coincide con «{{query}}».",
   "noMatchTags": "Ninguna plantilla coincide con {{tags}}.",
   "noMatchQueryTags": "Ninguna plantilla coincide con «{{query}}» en {{tags}}.",
-  "noPresets": "La biblioteca aún no tiene plantillas.",
+  "noPresets": "La Biblioteca aún no tiene plantillas.",
   "removeTag": "Quitar {{name}}",
   "hintSetup": "La iniciativa se tira al empezar el combate",
   "hintActive": "La iniciativa se tira al añadir: d20 {{bonus}}"

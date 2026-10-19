@@ -1,7 +1,7 @@
 {
   "cancel": "Cancelar",
   "restartTitle": "¿Reiniciar el combate?",
-  "restartBody": "Las unidades y las reclamaciones se mantienen. Se reinician iniciativa, PG, PG temporales, estados, desactivación, historial de PG, ronda y dado de escalada.",
+  "restartBody": "Las unidades y las reclamaciones se mantienen. Se reinician iniciativa, PG, PG temporales, estados, estado desactivado, historial de PG, ronda y dado de escalada.",
   "restart": "Reiniciar",
   "clearTitle": "¿Vaciar el combate?",
   "clearBody_one": "Se elimina la única unidad y se liberan todas las reclamaciones de jugadores.",

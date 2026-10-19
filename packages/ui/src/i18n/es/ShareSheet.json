@@ -3,6 +3,6 @@
   "qr": "Código QR del enlace para jugadores",
   "copy": "Copiar",
   "copied": "Copiado",
-  "note": "Los jugadores reclaman a sus héroes. Ven los nombres de los enemigos, su estado de salud y sus condiciones, pero no los PG ni las defensas.",
-  "reissue": "Emitir nuevo enlace"
+  "note": "Los jugadores eligen a sus héroes. Ven los nombres de los enemigos, su estado de salud y sus estados, pero no los PG ni las defensas.",
+  "reissue": "Renovar enlace"
 }
