@@ -26,9 +26,9 @@
 
 .input {
   position: absolute;
-  inset: -2px;
-  width: calc(100% + 4px);
-  height: calc(100% + 4px);
+  inset: min(-2px, (100% - 44px) / 2);
+  width: auto;
+  height: auto;
   margin: 0;
   padding: 0;
   opacity: 0;
