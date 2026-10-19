@@ -342,7 +342,7 @@ export const FranAisSheet = meta.story({
   },
 });
 
-export const EdgeCasesInline = meta.story({
+export const EdgeCasesJaInline = meta.story({
   name: '日本語, inline',
   globals: { locale: 'ja' },
   args: { expanded: true },
@@ -352,7 +352,7 @@ export const EdgeCasesInline = meta.story({
   },
 });
 
-export const EdgeCasesSheet = meta.story({
+export const EdgeCasesJaSheet = meta.story({
   name: '日本語, sheet',
   globals: { locale: 'ja' },
   parameters: sheet,
@@ -363,7 +363,7 @@ export const EdgeCasesSheet = meta.story({
   },
 });
 
-export const EdgeCasesInline2 = meta.story({
+export const EdgeCasesRuInline = meta.story({
   name: 'Русский, inline',
   globals: { locale: 'ru' },
   args: { expanded: true },
@@ -373,7 +373,7 @@ export const EdgeCasesInline2 = meta.story({
   },
 });
 
-export const EdgeCasesSheet2 = meta.story({
+export const EdgeCasesRuSheet = meta.story({
   name: 'Русский, sheet',
   globals: { locale: 'ru' },
   parameters: sheet,
