@@ -81,6 +81,25 @@ describe('watchRouteLocale', () => {
     expect(i18n.language).toBe('ru');
   });
 
+  it('never shows a DM route entered from a player route in the browser language', async () => {
+    const { router, i18n } = await start(`/combats/${COMBAT_ID}/play?t=token-1`);
+    await i18n.changeLanguage('ja');
+    const applied: string[] = [];
+    const onChange = (language: string) => applied.push(language);
+    i18n.on('languageChanged', onChange);
+    const firstFrames: string[] = [];
+    const stopWatching = router.subscribe((state) => {
+      const onDmRoute = state.matches.some(({ route }) => route.id === 'dm');
+      if (onDmRoute && state.navigation.state === 'idle') firstFrames.push(i18n.language);
+    });
+    cleanups.push(stopWatching, () => i18n.off('languageChanged', onChange));
+    await go(router, '/combats');
+    await go(router, `/combats/${COMBAT_ID}/play?t=token-1`);
+    await go(router, `/combats/${COMBAT_ID}`);
+    expect(firstFrames).toEqual(['ja', 'ja']);
+    expect(applied).not.toContain(BROWSER_LOCALE);
+  });
+
   it('stops after the cleanup', async () => {
     const { router, i18n } = await start('/combats');
     cleanups.shift()?.();
