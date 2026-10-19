@@ -56,6 +56,7 @@ export function SearchField({
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-size={size}
+      data-field=""
       onMouseDown={handleFrameMouseDown}
     >
       <IconSearch className={classes.icon} size={iconSize[size]} stroke={2} aria-hidden="true" />
