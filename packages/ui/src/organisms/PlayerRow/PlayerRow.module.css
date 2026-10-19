@@ -66,6 +66,13 @@
 
   &:is(button) {
     cursor: pointer;
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: min(0px, (100% - 44px) / 2);
+    }
   }
 
   &:focus-visible,
