@@ -389,7 +389,7 @@ export const Deutsch = meta.story({
   name: 'Deutsch',
   globals: { locale: 'de' },
   play: async (context) => {
-    await expect(await openLocale(context, 'TP-Verlauf', 'Temp. TP setzen')).toBeEnabled();
+    await expect(await openLocale(context, 'TP-Verlauf', 'Temp. setzen')).toBeEnabled();
     await expect(context.canvas.getByText('Danach')).toBeVisible();
   },
 });

@@ -4,7 +4,7 @@
   "amount": "Wert",
   "damage": "Schaden",
   "heal": "Heilen",
-  "setTemp": "Temp. TP setzen",
+  "setTemp": "Temp. setzen",
   "setMax": "Max setzen",
   "temp": "+{{amount}} temp",
   "full": "Unverletzt",
