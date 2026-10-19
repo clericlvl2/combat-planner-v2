@@ -225,6 +225,11 @@ export const ExtraCollapsedEmpty = meta.story({
 
 export const ExtraFlowCollapseSaves = meta.story({
   name: 'Flow: edit, collapse row saves',
+  parameters: {
+    geometry: {
+      tapTargets: 'the story harness button that drives the host is a test fixture, not product UI',
+    },
+  },
   args: { value: '', withCollapse: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
@@ -239,6 +244,11 @@ export const ExtraFlowCollapseSaves = meta.story({
 
 export const ExtraSaveOnUnmount = meta.story({
   name: 'Tapping the host collapse saves the draft before the swap',
+  parameters: {
+    geometry: {
+      tapTargets: 'the story harness button that drives the host is a test fixture, not product UI',
+    },
+  },
   args: { value: '', withUnmount: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
@@ -254,6 +264,11 @@ export const ExtraSaveOnUnmount = meta.story({
 
 export const ExtraHostRemovalDoesNotSave = meta.story({
   name: 'The host removing the editing instance does not save',
+  parameters: {
+    geometry: {
+      tapTargets: 'the story harness button that drives the host is a test fixture, not product UI',
+    },
+  },
   args: { value: '', withRemove: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Note' }));

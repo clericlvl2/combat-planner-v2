@@ -205,6 +205,7 @@ export const SetupMenuOpen = meta.story({
 
 export const LongTitleRound99 = meta.story({
   name: 'Long title, round 99',
+  parameters: { geometry: { truncation: 'the long combat title ends with an ellipsis by design' } },
   args: { title: 'Капитан стражи переправы: засада у моста', round: 99, escalation: 6 },
   play: async ({ canvas }) => {
     const title = canvas.getByText('Капитан стражи переправы: засада у моста');

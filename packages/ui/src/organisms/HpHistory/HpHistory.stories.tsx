@@ -491,7 +491,10 @@ export const ExtraSheetCloses = meta.story({
 
 export const ExtraSheetEscape = meta.story({
   name: 'Sheet: Escape closes, Tab stays inside',
-  parameters: sheet,
+  parameters: {
+    ...sheet,
+    geometry: { tapTargets: 'the HP History opener is a story fixture, not product UI' },
+  },
   args: { variant: 'sheet', entries: short, maxHp: 36 },
   play: async ({ args, canvas }) => {
     const dialog = await canvas.findByRole('dialog', { name: 'HP History' });
@@ -511,7 +514,11 @@ export const ExtraSheetEscape = meta.story({
 
 export const ExtraSheetEscapeMotionOn = meta.story({
   name: 'Sheet with motion: long list scrolls by keyboard, Escape closes',
-  parameters: { ...sheet, motion: 'on' },
+  parameters: {
+    geometry: { tapTargets: 'the HP History opener is a story fixture, not product UI' },
+    ...sheet,
+    motion: 'on',
+  },
   args: { variant: 'sheet', entries: [...long, ...long] },
   play: async ({ args, canvas }) => {
     const dialog = await canvas.findByRole('dialog', { name: 'HP History' });

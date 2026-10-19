@@ -10,6 +10,7 @@ import '@fontsource/noto-sans-jp/500.css';
 import '@fontsource/noto-sans-jp/700.css';
 import addonDocs from '@storybook/addon-docs';
 import { definePreview } from '@storybook/react-vite';
+import { expectGeometry } from '../src/storybook/geometry.ts';
 import { withPhoneFrame } from '../src/storybook/PhoneFrame.tsx';
 import { apiLoader, withApi } from '../src/storybook/withApi.tsx';
 import { withDocsTheme } from '../src/storybook/withDocsTheme.tsx';
@@ -28,4 +29,7 @@ export default definePreview({
   },
   loaders: [apiLoader],
   decorators: [withDocsTheme, withPhoneFrame, withLocale, withApi],
+  afterEach: async ({ canvasElement, parameters }) => {
+    await expectGeometry(canvasElement, parameters.geometry);
+  },
 });

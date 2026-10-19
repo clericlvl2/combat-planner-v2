@@ -13,6 +13,12 @@ import { ThemeAudit } from './ThemeAudit.tsx';
 
 const meta = preview.meta({
   component: ThemeAudit,
+  parameters: {
+    geometry: {
+      overflow: 'the audit table pins token samples to fixed columns; it is not product UI',
+      truncation: 'the audit table clips token names to fixed columns; it is not product UI',
+    },
+  },
 });
 
 const groupOrder = [

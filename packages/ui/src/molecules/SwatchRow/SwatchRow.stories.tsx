@@ -79,6 +79,12 @@ export const Widths296Wide = meta.story({
 
 export const Widths366Wide = meta.story({
   name: 'Widths · 366 wide',
+  parameters: {
+    geometry: {
+      overflow:
+        'the story pins the row to the 366 px phone content width inside the wider story padding',
+    },
+  },
   args: { value: 4, width: 366 },
   play: async ({ canvas }) => {
     const teal = canvas.getByRole('button', { name: 'Teal' });

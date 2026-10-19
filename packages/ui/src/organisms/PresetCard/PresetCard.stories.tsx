@@ -322,6 +322,7 @@ export const ExtraBodyIsNotATarget = meta.story({
 
 export const ExtraTagLineEllipsis = meta.story({
   name: 'Tag line ellipsises after two lines',
+  parameters: { geometry: { truncation: 'the tag line ellipsises after two lines by design' } },
   args: {
     tags: ['Orcs', 'Ferry', 'Bosses', 'Named NPCs', 'Mountains', 'Night ambush', 'Chapter 3'],
   },

@@ -124,6 +124,11 @@ export const NoLabelFocus = meta.story({
 
 export const StepperS = meta.story({
   name: 'Stepper · S',
+  parameters: {
+    geometry: {
+      tapTargets: 'size S keeps the 36 px input of the handoff; no screen uses Stepper S',
+    },
+  },
   args: { range: LIMITS.defense, value: 15, size: 'S', width: 240 },
 });
 

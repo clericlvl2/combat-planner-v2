@@ -267,6 +267,9 @@ export const ExtraKeyDownComposed = meta.story({
 
 export const ExtraTriggerCloses = meta.story({
   name: 'Tapping its own trigger closes the popover',
+  parameters: {
+    geometry: { overflow: 'the 264 px story stage holds both the trigger and the open popover' },
+  },
   args: { value: 15, bonus: 3, withTrigger: true },
   play: async ({ args, canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();

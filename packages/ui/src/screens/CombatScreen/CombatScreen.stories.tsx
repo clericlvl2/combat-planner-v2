@@ -759,6 +759,7 @@ export const CSF72 = meta.story({
 
 export const CSF73 = meta.story({
   name: 'CS-F7.3 Link and QR',
+  parameters: { geometry: { truncation: 'the player link ends with an ellipsis by design' } },
   play: async ({ canvas, loaded }) => {
     const sheet = await openShare(canvas);
     await waitFor(() => expect(getComputedStyle(sheet).opacity).toBe('1'));
@@ -791,6 +792,7 @@ export const CSF74 = meta.story({
 
 export const CSF75 = meta.story({
   name: 'CS-F7.5 Revoke link',
+  parameters: { geometry: { truncation: 'the player link ends with an ellipsis by design' } },
   play: async ({ canvas, loaded }) => {
     const sheet = await openShare(canvas);
     await userEvent.click(within(sheet).getByRole('button', { name: 'Revoke and reissue link' }));
@@ -1057,6 +1059,7 @@ export const ExtraRemoveUndoAfterNextTurn = meta.story({
 
 export const ExtraRevokeConfirmed = meta.story({
   name: 'Extra: Revoke reissues the link after confirm',
+  parameters: { geometry: { truncation: 'the player link ends with an ellipsis by design' } },
   play: async ({ canvas, loaded }) => {
     const sheet = await openShare(canvas);
     await userEvent.click(within(sheet).getByRole('button', { name: 'Revoke and reissue link' }));

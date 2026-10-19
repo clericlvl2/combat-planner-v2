@@ -258,6 +258,7 @@ export const ExtraDone = meta.story({
 
 export const ExtraClose = meta.story({
   name: 'Close and Escape call onClose only',
+  parameters: { geometry: { tapTargets: 'the Reopen button is a story fixture, not product UI' } },
   args: { ...filterArgs, withReopen: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
@@ -275,6 +276,7 @@ export const ExtraClose = meta.story({
 
 export const ExtraSearchResets = meta.story({
   name: 'Search resets when the sheet closes',
+  parameters: { geometry: { tapTargets: 'the Reopen button is a story fixture, not product UI' } },
   args: { ...filterArgs, withReopen: true },
   play: async ({ canvas }) => {
     await userEvent.type(canvas.getByRole('searchbox', { name: 'Search tags' }), 'gob');

@@ -156,48 +156,100 @@ function hitAreaOf(element: Element): Box {
   return box;
 }
 
-function clippedHitArea(element: Element, root: Element): Box {
-  let box = hitAreaOf(element);
+function clipped(element: Element, area: Box, root: Element): Box {
+  let box = area;
   for (let node = element.parentElement; node && node !== root; node = node.parentElement) {
     const style = getComputedStyle(node);
-    if (hides(style.overflowX) || hides(style.overflowY)) box = intersection(box, boxOf(node));
+    if (isScroller(style.overflowX) || isScroller(style.overflowY)) break;
+    if (hides(style.overflowX) || hides(style.overflowY)) {
+      box = intersection(box, paddingBoxOf(node, style));
+    }
   }
   return box;
 }
 
-function tapTargetOf(element: Element): Element {
+function isHittable(element: Element): boolean {
+  if (!element.checkVisibility({ visibilityProperty: true })) return false;
+  if (isVisuallyHidden(getComputedStyle(element))) return false;
+  const rect = element.getBoundingClientRect();
+  return rect.width > 0 && rect.height > 0;
+}
+
+function ownerOf(element: Element): Element {
   if (isTextControl(element) || element instanceof HTMLSelectElement) {
     const frame = element.closest('[data-field]');
     if (frame) return frame;
   }
-  if (isShown(element)) return element;
-  return element.closest('label') ?? element;
+  if (element instanceof HTMLInputElement) return element.closest('label') ?? element;
+  return element;
+}
+
+function isOutOfFlow(style: CSSStyleDeclaration): boolean {
+  return style.position === 'absolute' || style.position === 'fixed';
+}
+
+function paddingBoxOf(element: Element, style: CSSStyleDeclaration): Box {
+  const rect = element.getBoundingClientRect();
+  return rounded({
+    left: rect.left + px(style.borderLeftWidth),
+    top: rect.top + px(style.borderTopWidth),
+    right: rect.right - px(style.borderRightWidth),
+    bottom: rect.bottom - px(style.borderBottomWidth),
+  });
 }
 
 export function horizontalOverflow(root: HTMLElement): string[] {
-  return shownElements(boundsOf(root))
-    .filter((element) => {
-      if (hasOwnText(element) || isTextControl(element)) return false;
-      const style = getComputedStyle(element);
-      if (isScroller(style.overflowX)) return false;
-      if (!clips(style.overflowX) && (element.textContent ?? '').trim() === '') return false;
-      return element.scrollWidth > element.clientWidth;
-    })
-    .map(
-      (element) => `${describe(element)} overflows by ${element.scrollWidth - element.clientWidth}`,
-    );
+  const bounds = boundsOf(root);
+  const styles = new Map<Element, CSSStyleDeclaration>();
+  const styleOf = (element: Element) => {
+    const known = styles.get(element);
+    if (known) return known;
+    const style = getComputedStyle(element);
+    styles.set(element, style);
+    return style;
+  };
+  const overflowing = new Map<Element, number>();
+  for (const element of shownElements(bounds)) {
+    if (element === bounds) continue;
+    let text = hasOwnText(element);
+    const box = boxOf(element);
+    for (let node: Element | null = element; node && node !== bounds;) {
+      if (isOutOfFlow(styleOf(node))) text = false;
+      node = node.parentElement;
+      if (!node) break;
+      const style = styleOf(node);
+      if (isScroller(style.overflowX)) break;
+      const clipping = clips(style.overflowX) || node === bounds;
+      const sized = node.clientWidth > 0;
+      if ((clipping || text) && sized && style.display !== 'inline' && !isTextControl(node)) {
+        const edge = paddingBoxOf(node, style);
+        const excess = Math.max(edge.left - box.left, box.right - edge.right);
+        if (excess > 0) overflowing.set(node, Math.max(excess, overflowing.get(node) ?? 0));
+      }
+    }
+  }
+  return [...overflowing].map(([element, excess]) => `${describe(element)} overflows by ${excess}`);
 }
 
 export function smallTapTargets(root: HTMLElement): string[] {
-  const targets = new Set(
-    [...root.querySelectorAll(interactiveSelector)].map(tapTargetOf).filter(isShown),
-  );
-  return [...targets].flatMap((target) => {
-    const box = clippedHitArea(target, root);
+  const areas = new Map<Element, Box>();
+  for (const element of root.querySelectorAll(interactiveSelector)) {
+    const owner = ownerOf(element);
+    if (!isHittable(element) || !isShown(owner)) continue;
+    const labels = 'labels' in element ? [...((element.labels as NodeList | null) ?? [])] : [];
+    const area = [owner, ...labels]
+      .filter((node): node is Element => node instanceof Element && isShown(node))
+      .map(hitAreaOf)
+      .reduce(union, hitAreaOf(element));
+    const known = areas.get(owner);
+    areas.set(owner, known ? union(known, area) : area);
+  }
+  return [...areas].flatMap(([owner, area]) => {
+    const box = clipped(owner, area, root);
     if (box.right <= box.left || box.bottom <= box.top) return [];
     const small =
       box.right - box.left < layout.tapTarget || box.bottom - box.top < layout.tapTarget;
-    return small ? [describe(target, box)] : [];
+    return small ? [describe(owner, box)] : [];
   });
 }
 

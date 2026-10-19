@@ -69,7 +69,10 @@ function ShareSheetCell({
 const meta = preview.meta({
   title: 'Organisms/ShareSheet',
   component: ShareSheetCell,
-  parameters: { phoneFrame: { overlay: true } },
+  parameters: {
+    phoneFrame: { overlay: true },
+    geometry: { truncation: 'the player link ends with an ellipsis by design' },
+  },
   args: { onCopy: fn(), onReissue: fn(), onClose: fn() },
 });
 
@@ -280,6 +283,7 @@ export const ExtraClose = meta.story({
 
 export const ExtraReopenResetsCopied = meta.story({
   name: 'Reopening shows Copy again',
+  parameters: { geometry: { tapTargets: 'the Share opener is a story fixture, not product UI' } },
   args: { withOpener: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
