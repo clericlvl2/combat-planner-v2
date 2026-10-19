@@ -4,7 +4,6 @@ export { AUTH_BASE_PATH, createAuth, createAuthApp } from './auth/index.ts';
 export type { AuthInstance, AuthRoutes, AuthUser, CreateAuthOptions } from './auth/index.ts';
 export { requireUser } from './auth/require-user.ts';
 export type { ResolvedSession, SessionResolver } from './auth/require-user.ts';
-export { actionsApp } from './combats/actions.ts';
 export { dispatch } from './combats/dispatch.ts';
 export type {
   DispatchApplied,
@@ -13,9 +12,6 @@ export type {
   DispatchRequest,
   DispatchStatus,
 } from './combats/dispatch.ts';
-export { combatsApp } from './combats/routes.ts';
-export { eventsApp } from './combats/events.ts';
-export { linkApp } from './link/routes.ts';
 export { playApp } from './play/routes.ts';
 export { dmLanguage, recordPlayer } from './play/store.ts';
 export { signLink, verifyLink } from './link/token.ts';

@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 import type { ApiEvent } from '../src/client.ts';
 import { combatSummarySchema, dmCombatSchema } from '../src/client.ts';
 import { combats } from '../src/db/schema.ts';
+import * as packageEntry from '../src/index.ts';
 import { subscribe, subscriberCount } from '../src/live/registry.ts';
 import type { TestApp } from './helpers.ts';
 import {
@@ -49,6 +50,12 @@ const listen = (combatId: string, kind: 'dm' | 'player' = 'dm') => {
 };
 
 describe('requireUser', () => {
+  it('exports no owner sub-app that bypasses the session check', () => {
+    expect(Object.keys(packageEntry)).not.toEqual(
+      expect.arrayContaining([expect.stringMatching(/^(actions|combats|events|link)App$/)]),
+    );
+  });
+
   it('answers 401 without a session or an auth instance', async () => {
     const response = await opened.app.request('/combats');
     expect(response.status).toBe(401);
