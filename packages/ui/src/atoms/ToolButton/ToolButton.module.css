@@ -1,4 +1,5 @@
 .root {
+  position: relative;
   box-sizing: border-box;
   display: inline-flex;
   flex: none;
@@ -67,6 +68,12 @@
   &[data-tap] {
     outline: 3px solid var(--cp-state-tap-marker);
     outline-offset: 2px;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - 44px) / 2);
   }
 }
 
