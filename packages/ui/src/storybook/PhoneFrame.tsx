@@ -6,6 +6,7 @@ import classes from './PhoneFrame.module.css';
 export interface PhoneFrameProps {
   children: ReactNode;
   overlay?: boolean;
+  docs?: boolean;
 }
 
 export interface PhoneFrameParameter {
@@ -18,12 +19,13 @@ const phoneStyle = {
   '--cp-layout-status-bar': `${layout.statusBar}px`,
 } as CSSProperties;
 
-export function PhoneFrame({ children, overlay = false }: PhoneFrameProps) {
+export function PhoneFrame({ children, overlay = false, docs = false }: PhoneFrameProps) {
   return (
     <div
       className={classes.phone}
       data-phone-frame=""
       data-overlay={overlay || undefined}
+      data-docs={docs || undefined}
       style={phoneStyle}
     >
       <div className={classes.statusBar} style={{ height: layout.statusBar }} aria-hidden="true">
@@ -52,10 +54,10 @@ function phoneFrameOf(value: unknown): PhoneFrameParameter | null {
   return null;
 }
 
-export const withPhoneFrame: Decorator = (Story, { parameters }) => {
+export const withPhoneFrame: Decorator = (Story, { parameters, viewMode }) => {
   const phoneFrame = phoneFrameOf(parameters.phoneFrame);
   return phoneFrame ? (
-    <PhoneFrame overlay={phoneFrame.overlay === true}>
+    <PhoneFrame overlay={phoneFrame.overlay === true} docs={viewMode === 'docs'}>
       <Story />
     </PhoneFrame>
   ) : (

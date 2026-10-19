@@ -21,6 +21,10 @@
   font-family: var(--cp-font-ui);
 }
 
+.phone[data-docs] {
+  contain: layout;
+}
+
 .statusBar {
   position: absolute;
   top: 0;
