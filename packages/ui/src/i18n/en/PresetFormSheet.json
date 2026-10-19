@@ -3,7 +3,6 @@
   "editPreset": "Edit preset",
   "name": "Name",
   "namePlaceholder": "{{role}} 1",
-  "nameRequired": "Enter a name",
   "type": "Type",
   "hero": "Hero",
   "enemy": "Enemy",

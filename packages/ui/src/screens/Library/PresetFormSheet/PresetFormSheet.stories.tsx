@@ -52,30 +52,35 @@ const meta = preview.meta({
 
 export const NewPreset = meta.story({
   name: 'New preset, empty',
-  play: async ({ args, canvas }) => {
+  play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'New preset' })).toBeVisible();
-    await expect(canvas.getByRole('textbox', { name: 'Name' })).toHaveValue('');
+    const name = canvas.getByRole('textbox', { name: 'Name' });
+    await expect(name).toHaveValue('');
+    await expect(name).toHaveAttribute('placeholder', 'Enemy 1');
     await expect(canvas.getByText(`0/${LIMITS.unitName}`)).toBeVisible();
     await expect(canvas.getByRole('radio', { name: 'Enemy' })).toBeChecked();
     await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('10');
     await expect(canvas.getByRole('spinbutton', { name: 'Initiative bonus' })).toHaveValue('+0');
-    const create = canvas.getByRole('button', { name: 'Create' });
-    await expect(create).toBeDisabled();
-    await userEvent.click(create, { pointerEventsCheck: 0 });
-    await expect(args.onSubmit).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('button', { name: 'Create' })).toBeEnabled();
   },
 });
 
 export const NoName = meta.story({
-  name: 'Error: no name',
-  play: async ({ canvas }) => {
+  name: 'No name saves "Ally 1"',
+  play: async ({ args, canvas }) => {
     const name = canvas.getByRole('textbox', { name: 'Name' });
     await userEvent.click(name);
     await userEvent.type(name, '   ');
-    await userEvent.tab();
-    await expect(canvas.getByText('Enter a name')).toBeVisible();
-    await expect(name).toHaveAttribute('aria-invalid', 'true');
-    await expect(canvas.getByRole('button', { name: 'Create' })).toBeDisabled();
+    await userEvent.click(canvas.getByRole('radio', { name: 'Ally' }));
+    await expect(name).toHaveAttribute('placeholder', 'Ally 1');
+    await expect(name).not.toHaveAttribute('aria-invalid', 'true');
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await expect(args.onSubmit).toHaveBeenCalledOnce();
+    await expect(args.onSubmit).toHaveBeenCalledWith({
+      ...emptyPresetForm,
+      name: 'Ally 1',
+      role: 'ally',
+    });
   },
 });
 
@@ -109,6 +114,22 @@ export const EditPreset = meta.story({
     await expect(canvas.getByRole('button', { name: 'Remove Orcs' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Remove Ferry' })).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
+    await expect(args.onSubmit).toHaveBeenCalledWith(berserker);
+  },
+});
+
+export const ExtraEditClearedName = meta.story({
+  name: 'Edit: name cleared keeps the previous name',
+  args: { mode: 'edit', value: berserker },
+  play: async ({ args, canvas }) => {
+    const name = canvas.getByRole('textbox', { name: 'Name' });
+    await userEvent.clear(name);
+    await userEvent.tab();
+    await expect(name).toHaveAttribute('placeholder', berserker.name);
+    const save = canvas.getByRole('button', { name: 'Save' });
+    await expect(save).toBeEnabled();
+    await userEvent.click(save);
+    await expect(args.onSubmit).toHaveBeenCalledOnce();
     await expect(args.onSubmit).toHaveBeenCalledWith(berserker);
   },
 });

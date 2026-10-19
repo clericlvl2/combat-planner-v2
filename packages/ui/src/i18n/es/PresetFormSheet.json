@@ -3,7 +3,6 @@
   "editPreset": "Editar plantilla",
   "name": "Nombre",
   "namePlaceholder": "{{role}} 1",
-  "nameRequired": "Escribe un nombre",
   "type": "Tipo",
   "hero": "Héroe",
   "enemy": "Enemigo",

@@ -3,7 +3,6 @@
   "editPreset": "Vorlage bearbeiten",
   "name": "Name",
   "namePlaceholder": "{{role}} 1",
-  "nameRequired": "Gib einen Namen ein",
   "type": "Typ",
   "hero": "Held",
   "enemy": "Feind",

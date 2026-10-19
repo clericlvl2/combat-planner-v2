@@ -302,23 +302,36 @@ export const LBF32 = meta.story({
     await expect(name).toHaveValue('');
     await expect(canvas.getByRole('radio', { name: 'Enemy' })).toBeChecked();
     await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('10');
-    await expect(canvas.getByRole('button', { name: 'Create' })).toBeDisabled();
+    await expect(name).toHaveAttribute('placeholder', 'Enemy 1');
+    await expect(canvas.getByRole('button', { name: 'Create' })).toBeEnabled();
     name.focus();
     await expect(name).toHaveFocus();
   },
 });
 
 export const LBF33 = meta.story({
-  name: 'LB-F3.3 Error: no name',
+  name: 'LB-F3.3 No name: created as "Enemy 1"',
   play: async ({ canvas, loaded }) => {
     await openCreate(canvas);
     await userEvent.click(canvas.getByRole('textbox', { name: 'Name' }));
     await userEvent.tab();
-    await expect(canvas.getByText('Enter a name')).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }), {
-      pointerEventsCheck: 0,
+    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    const created = callsOf(loaded, 'presets.create');
+    await expect(created).toHaveLength(1);
+    const [input] = created[0]!.args as [{ id: string }];
+    await expect(input).toEqual({
+      id: input.id,
+      name: 'Enemy 1',
+      role: 'enemy',
+      maxHp: 10,
+      ac: 10,
+      pd: 10,
+      md: 10,
+      initiativeBonus: 0,
+      tags: [],
     });
-    await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
+    await expect(await canvas.findByRole('status')).toHaveTextContent('Enemy 1 added to Library');
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
 

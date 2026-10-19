@@ -69,11 +69,11 @@ export function PresetFormSheet({
 }: PresetFormSheetProps) {
   const { t } = useTranslation('PresetFormSheet');
   const [draft, setDraft] = useState<PresetFormValue>(value);
-  const [touched, setTouched] = useState(false);
   const [sheetTags, setSheetTags] = useState<string[] | null>(null);
   const [created, setCreated] = useState<readonly TagSheetTag[]>([]);
   const trimmed = draft.name.trim();
-  const valid = trimmed.length > 0 && draft.name.length <= LIMITS.unitName;
+  const fallbackName =
+    mode === 'create' ? t('namePlaceholder', { role: t(draft.role) }) : value.name;
 
   const known = [...tags, ...created.filter((tag) => !tags.some((item) => item.id === tag.id))];
   const tagName = (id: string) => known.find((tag) => tag.id === id)?.name ?? id;
@@ -108,8 +108,8 @@ export function PresetFormSheet({
           <Button
             variant="primary"
             fullWidth
-            disabled={!valid || pending}
-            onClick={() => onSubmit({ ...draft, name: trimmed })}
+            disabled={pending}
+            onClick={() => onSubmit({ ...draft, name: trimmed || fallbackName })}
           >
             {mode === 'create' ? t('create') : t('save')}
           </Button>
@@ -118,12 +118,9 @@ export function PresetFormSheet({
         <TextField
           label={t('name')}
           value={draft.name}
-          placeholder={t('namePlaceholder', { role: t(draft.role) })}
+          placeholder={fallbackName}
           maxLength={LIMITS.unitName}
-          required
-          error={touched && trimmed.length === 0 ? t('nameRequired') : undefined}
           onChange={(next) => update('name', next)}
-          onBlur={() => setTouched(true)}
         />
         <Segmented
           className={classes.roles}

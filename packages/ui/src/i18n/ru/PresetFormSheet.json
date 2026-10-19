@@ -3,7 +3,6 @@
   "editPreset": "Изменить заготовку",
   "name": "Имя",
   "namePlaceholder": "{{role}} 1",
-  "nameRequired": "Введите имя",
   "type": "Тип",
   "hero": "Герой",
   "enemy": "Враг",

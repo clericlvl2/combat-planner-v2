@@ -3,7 +3,6 @@
   "editPreset": "Modifier le modèle",
   "name": "Nom",
   "namePlaceholder": "{{role}} 1",
-  "nameRequired": "Saisissez un nom",
   "type": "Catégorie",
   "hero": "Héros",
   "enemy": "Ennemi",
