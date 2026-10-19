@@ -3,7 +3,7 @@ import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-r
 import { expect, userEvent } from 'storybook/test';
 import { About } from './About.tsx';
 
-const sourceUrl = 'https://github.com/combat-planner/combat-planner';
+const sourceUrl = 'https://github.com/clericlvl2/combat-planner-v2';
 
 const meta = preview.meta({
   title: 'Screens/About',
