@@ -9,10 +9,10 @@
   "or": "ou",
   "google": "Continuer avec Google",
   "github": "Continuer avec GitHub",
-  "noAccount": "Pas de compte ?",
+  "noAccount": "Pas de compte ?",
   "signUp": "Créer un compte",
   "enterEmail": "Saisissez votre e-mail",
   "enterPassword": "Saisissez votre mot de passe",
   "wrongCredentials": "E-mail ou mot de passe incorrect",
-  "socialFailed": "Impossible de lancer la connexion. Réessaie."
+  "socialFailed": "Impossible de lancer la connexion. Réessayez."
 }

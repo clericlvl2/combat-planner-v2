@@ -2,7 +2,7 @@
   "addTitle": "Ajouter une unité",
   "editTitle": "Modifier l’unité",
   "source": "Source de l’unité",
-  "new": "Nouveau",
+  "new": "Nouvelle",
   "library": "Bibliothèque",
   "name": "Nom",
   "nameRequired": "Saisissez un nom",
@@ -29,11 +29,11 @@
   "presets": "Modèles",
   "presetStats": "PV {{hp}} · CA {{ac}} · DP {{pd}} · DM {{md}}",
   "nothingFound": "Aucun résultat",
-  "noMatchQuery": "Aucun modèle ne correspond à « {{query}} ».",
+  "noMatchQuery": "Aucun modèle ne correspond à « {{query}} ».",
   "noMatchTags": "Aucun modèle ne correspond à {{tags}}.",
-  "noMatchQueryTags": "Aucun modèle ne correspond à « {{query}} » dans {{tags}}.",
+  "noMatchQueryTags": "Aucun modèle ne correspond à « {{query}} » dans {{tags}}.",
   "noPresets": "La bibliothèque ne contient encore aucun modèle.",
   "removeTag": "Retirer {{name}}",
   "hintSetup": "L’initiative est lancée au début du combat",
-  "hintActive": "L’initiative est lancée à l’ajout : d20 {{bonus}}"
+  "hintActive": "L’initiative est lancée à l’ajout : d20 {{bonus}}"
 }

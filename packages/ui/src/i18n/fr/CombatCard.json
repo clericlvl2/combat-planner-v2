@@ -1,7 +1,7 @@
 {
   "active": "Actif",
   "setup": "Préparation",
-  "round": "Tour {{round}}",
+  "round": "Round {{round}}",
   "units_one": "{{count}} unité",
   "units_few": "{{count}} unités",
   "units_many": "{{count}} unités",

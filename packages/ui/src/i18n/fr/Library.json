@@ -5,7 +5,7 @@
   "tags": "Étiquettes",
   "emptyTitle": "Aucun modèle pour l’instant",
   "emptyBody": "Créez-en un ici ou enregistrez une unité d’un combat dans la Bibliothèque.",
-  "noResultsBody": "Aucun modèle ne correspond à « {{query}} ».",
+  "noResultsBody": "Aucun modèle ne correspond à « {{query}} ».",
   "limitReached": "Limite de modèles atteinte",
   "tagFailed": "Impossible de créer l’étiquette {{name}}"
 }

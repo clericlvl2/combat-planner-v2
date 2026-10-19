@@ -2,8 +2,8 @@
   "noCombatsTitle": "Aucun combat pour l’instant",
   "noCombatsBody": "Créez un combat, ajoutez des unités et partagez le lien avec vos joueurs.",
   "noResultsTitle": "Aucun résultat",
-  "noResultsBody": "Aucun combat ne correspond à « {{query}} ».",
+  "noResultsBody": "Aucun combat ne correspond à « {{query}} ».",
   "noUnitsTitle": "Aucune unité pour l’instant",
-  "noUnitsBody": "Ajoutez des héros, des ennemis et des alliés. Vous pourrez commencer dès qu’il y a une unité.",
+  "noUnitsBody": "Ajoutez des héros, des ennemis et des alliés. Vous pourrez commencer dès qu’il y aura une unité.",
   "addUnit": "Ajouter une unité"
 }

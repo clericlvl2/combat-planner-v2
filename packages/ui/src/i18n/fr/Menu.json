@@ -4,15 +4,15 @@
   "undo": "Annuler",
   "undoHint": "{{n}} dégâts",
   "share": "Partager",
-  "restart": "Relancer le combat",
+  "restart": "Recommencer le combat",
   "clear": "Vider le combat",
   "duplicate": "Dupliquer",
   "disable": "Désactiver",
   "saveAsPreset": "Enregistrer comme modèle",
-  "releaseClaim": "Libérer la réservation",
+  "releaseClaim": "Libérer l’attribution",
   "remove": "Retirer",
   "heroes": "Héros",
   "delete": "Supprimer",
-  "round": "Tour",
-  "roundHint": "{{min}}–{{max}}. Changer le tour ne change pas l’unité active."
+  "round": "Round",
+  "roundHint": "{{min}}–{{max}}. Changer de round ne change pas le tour en cours."
 }
