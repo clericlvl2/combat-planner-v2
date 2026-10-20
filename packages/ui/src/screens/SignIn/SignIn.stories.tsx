@@ -12,6 +12,7 @@ import { queryKeys } from '../../hooks/queryKeys.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { SignIn } from './SignIn.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const ferryAccount: FakeAccount = {
   userId: 'dm-ferry',
@@ -77,46 +78,54 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ canvas, loaded }) => {
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
     await providersLoaded(loaded);
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Sign in' })).toBeDisabled();
-    await expect(canvas.getByRole('link', { name: 'Sign up' })).toHaveAttribute(
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('submit') })).toBeDisabled();
+    await expect(canvas.getByRole('link', { name: t('signUp') })).toHaveAttribute(
       'href',
       '/auth/sign-up',
     );
-    await waitFor(() => expect(canvas.queryByText('or')).toBeNull());
-    await expect(canvas.queryByRole('button', { name: /Continue with/ })).toBeNull();
-    canvas.getByRole('textbox', { name: 'Email' }).focus();
+    await waitFor(() => expect(canvas.queryByText(t('or'))).toBeNull());
+    await expect(
+      canvas.queryByRole('button', {
+        name: (label: string) => label === t('SignIn:google') || label === t('SignIn:github'),
+      }),
+    ).toBeNull();
+    canvas.getByRole('textbox', { name: t('email') }).focus();
   },
 });
 
 export const Filled = meta.story({
-  play: async ({ canvas }) => {
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Email' }), 'dm@ferry.games');
-    await expect(canvas.getByRole('button', { name: 'Sign in' })).toBeDisabled();
-    await userEvent.type(canvas.getByLabelText('Password'), 'secret');
-    await expect(canvas.getByRole('button', { name: 'Sign in' })).toBeEnabled();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SignIn');
+    await userEvent.type(canvas.getByRole('textbox', { name: t('email') }), 'dm@ferry.games');
+    await expect(canvas.getByRole('button', { name: t('submit') })).toBeDisabled();
+    await userEvent.type(canvas.getByLabelText(t('password')), 'secret');
+    await expect(canvas.getByRole('button', { name: t('submit') })).toBeEnabled();
   },
 });
 
 export const WrongPassword = meta.story({
-  play: async ({ canvas, canvasElement, loaded }) => {
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Email' }), 'dm@ferry.games');
-    await userEvent.type(canvas.getByLabelText('Password'), 'secret');
-    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }));
-    await expect(await canvas.findByText('Wrong email or password')).toBeVisible();
-    await expect(canvas.getByLabelText('Password')).toHaveAttribute('aria-invalid', 'true');
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
+    await userEvent.type(canvas.getByRole('textbox', { name: t('email') }), 'dm@ferry.games');
+    await userEvent.type(canvas.getByLabelText(t('password')), 'secret');
+    await userEvent.click(canvas.getByRole('button', { name: t('submit') }));
+    await expect(await canvas.findByText(t('wrongCredentials'))).toBeVisible();
+    await expect(canvas.getByLabelText(t('password'))).toHaveAttribute('aria-invalid', 'true');
     await expect(fakeApiOf(loaded).calls.map((call) => call.method)).toContain('auth.signIn');
     await expect(locationOf(canvasElement)).toBe('/auth/sign-in');
   },
 });
 
 export const SignedIn = meta.story({
-  play: async ({ canvas, canvasElement, loaded }) => {
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Email' }), 'dm@ferry.games');
-    await userEvent.type(canvas.getByLabelText('Password'), 'ferry-crossing');
-    await userEvent.click(canvas.getByRole('button', { name: 'Sign in' }));
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
+    await userEvent.type(canvas.getByRole('textbox', { name: t('email') }), 'dm@ferry.games');
+    await userEvent.type(canvas.getByLabelText(t('password')), 'ferry-crossing');
+    await userEvent.click(canvas.getByRole('button', { name: t('submit') }));
     await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
     const signIns = fakeApiOf(loaded).calls.filter((call) => call.method === 'auth.signIn');
     await expect(signIns).toHaveLength(1);
@@ -127,30 +136,33 @@ export const SignedIn = meta.story({
 });
 
 export const KeyboardEnter = meta.story({
-  play: async ({ canvas, canvasElement }) => {
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Email' }), 'dm@ferry.games');
-    await userEvent.type(canvas.getByLabelText('Password'), 'ferry-crossing{Enter}');
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'SignIn');
+    await userEvent.type(canvas.getByRole('textbox', { name: t('email') }), 'dm@ferry.games');
+    await userEvent.type(canvas.getByLabelText(t('password')), 'ferry-crossing{Enter}');
     await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
   },
 });
 
 export const EmptyFields = meta.story({
-  play: async ({ canvas, loaded }) => {
-    await userEvent.click(canvas.getByRole('textbox', { name: 'Email' }));
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
+    await userEvent.click(canvas.getByRole('textbox', { name: t('email') }));
     await userEvent.tab();
     await userEvent.tab();
-    await expect(canvas.getByText('Enter your email')).toBeVisible();
-    await expect(canvas.getByText('Enter your password')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Sign in' })).toBeDisabled();
+    await expect(canvas.getByText(t('enterEmail'))).toBeVisible();
+    await expect(canvas.getByText(t('enterPassword'))).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('submit') })).toBeDisabled();
     await expect(fakeApiOf(loaded).calls.map((call) => call.method)).not.toContain('auth.signIn');
   },
 });
 
 export const Social = meta.story({
   parameters: { scenario: withSocial },
-  play: async ({ args, canvas, loaded }) => {
-    const google = await canvas.findByRole('button', { name: 'Continue with Google' });
-    await expect(canvas.getByRole('button', { name: 'Continue with GitHub' })).toBeVisible();
+  play: async ({ args, canvas, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
+    const google = await canvas.findByRole('button', { name: t('google') });
+    await expect(canvas.getByRole('button', { name: t('github') })).toBeVisible();
     await userEvent.click(google);
     const callbackUrl = `${window.location.origin}/combats`;
     await waitFor(() =>
@@ -168,9 +180,10 @@ export const GoogleOnly = meta.story({
   parameters: {
     scenario: scenario({ session: null, accounts: [ferryAccount], providers: ['google'] }),
   },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('button', { name: 'Continue with Google' })).toBeVisible();
-    await expect(canvas.queryByRole('button', { name: 'Continue with GitHub' })).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SignIn');
+    await expect(await canvas.findByRole('button', { name: t('google') })).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: t('github') })).toBeNull();
   },
 });
 
@@ -181,8 +194,9 @@ export const AccountDeleted = meta.story({
       <LocationProbe />
     </SeedDeletedToast>
   ),
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('status')).toHaveTextContent('Your account was deleted');
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SignIn');
+    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:accountDeleted'));
     await expect(canvas.getAllByRole('status')).toHaveLength(1);
   },
 });
@@ -214,7 +228,8 @@ export const ExtraStaleDeletedState = meta.story({
 export const ExtraSocialFails = meta.story({
   name: 'A double tap sends once; a failed social sign-in shows an error',
   parameters: { scenario: withSocial },
-  play: async ({ args, canvas, loaded }) => {
+  play: async ({ args, canvas, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
     const api = fakeApiOf(loaded);
     let fail: (reason: unknown) => void = () => {};
     const calls: string[] = [];
@@ -224,14 +239,12 @@ export const ExtraSocialFails = meta.story({
         fail = reject;
       });
     };
-    const google = await canvas.findByRole('button', { name: 'Continue with Google' });
+    const google = await canvas.findByRole('button', { name: t('google') });
     await userEvent.dblClick(google);
     await expect(calls).toEqual(['google']);
     await expect(google).toBeDisabled();
     fail(new ApiError({ status: 422, code: 'invalid' }));
-    await expect(await canvas.findByRole('alert')).toHaveTextContent(
-      'Couldn’t start the sign-in. Try again.',
-    );
+    await expect(await canvas.findByRole('alert')).toHaveTextContent(t('socialFailed'));
     await expect(args.onRedirect).not.toHaveBeenCalled();
     await expect(google).toBeEnabled();
   },

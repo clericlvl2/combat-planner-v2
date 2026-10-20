@@ -1,4 +1,5 @@
 import preview from '#.storybook/preview';
+import type { TFunction } from 'i18next';
 import type { ApiErrorCode } from '@combat-planner/api/client';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -20,6 +21,8 @@ import {
   savedFromCombat,
   tagIdOf,
 } from './Library.scenarios.ts';
+import { anyValue, storyT } from '../../storybook/storyT.ts';
+import { storyLocale } from '../../storybook/withLocale.tsx';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -58,24 +61,32 @@ function FailFirstCall({ code, children }: { code: ApiErrorCode; children: React
   return children;
 }
 
-const togglePrefix = 'Actions: ';
+const toggleOf = (t: TFunction, name: string) => t('PresetCard:toggle', { name });
 
-const namesOf = (canvas: Canvas): string[] =>
-  canvas
-    .queryAllByRole('button', { name: /^Actions: / })
-    .map((button: HTMLElement) =>
-      (button.getAttribute('aria-label') ?? '').slice(togglePrefix.length),
-    );
+const namesOf = (canvas: Canvas, t: TFunction): string[] => {
+  const [before = '', after = ''] = toggleOf(t, '\n').split('\n');
+  return canvas
+    .queryAllByRole('button', { name: anyValue((name) => toggleOf(t, name)) })
+    .map((button: HTMLElement) => {
+      const label = button.getAttribute('aria-label') ?? '';
+      return label.slice(before.length, label.length - after.length);
+    });
+};
 
-const ready = async (canvas: Canvas) => {
-  await canvas.findByRole('button', { name: `${togglePrefix}${berserker.name}` });
+const showPresets = (t: TFunction) => (label: string) =>
+  ['one', 'few', 'many', 'other'].some((form) =>
+    anyValue((count) => t(`TagSheet:showPresets_${form}`, { count })).test(label),
+  );
+
+const ready = async (canvas: Canvas, t: TFunction) => {
+  await canvas.findByRole('button', { name: toggleOf(t, berserker.name) });
 };
 
 const callsOf = (loaded: Record<string, unknown>, method: string) =>
   fakeApiOf(loaded).calls.filter((call) => call.method === method);
 
-const expand = async (canvas: Canvas, name: string) => {
-  await userEvent.click(await canvas.findByRole('button', { name: `${togglePrefix}${name}` }));
+const expand = async (canvas: Canvas, name: string, t: TFunction) => {
+  await userEvent.click(await canvas.findByRole('button', { name: toggleOf(t, name) }));
 };
 
 const openSheet = async (canvas: Canvas, opener: HTMLElement, name: string | RegExp) => {
@@ -86,23 +97,33 @@ const openSheet = async (canvas: Canvas, opener: HTMLElement, name: string | Reg
   return sheet;
 };
 
-const openFilter = async (canvas: Canvas) => {
-  await ready(canvas);
-  return openSheet(canvas, canvas.getByRole('button', { name: /^Tags/ }), 'Filter by tag');
+const openFilter = async (canvas: Canvas, t: TFunction) => {
+  await ready(canvas, t);
+  return openSheet(
+    canvas,
+    canvas.getByRole('button', {
+      name: (label: string) => label.startsWith(t('PageHeader:tags')),
+    }),
+    t('TagSheet:filterTitle'),
+  );
 };
 
-const applyFilter = async (canvas: Canvas, tags: readonly string[]) => {
-  const sheet = await openFilter(canvas);
+const applyFilter = async (canvas: Canvas, tags: readonly string[], t: TFunction) => {
+  const sheet = await openFilter(canvas, t);
   for (const tag of tags) {
     await userEvent.click(within(sheet).getByRole('checkbox', { name: new RegExp(`^${tag}`) }));
   }
-  await userEvent.click(within(sheet).getByRole('button', { name: /^Show / }));
+  await userEvent.click(within(sheet).getByRole('button', { name: showPresets(t) }));
   await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
 };
 
-const openCreate = async (canvas: Canvas) => {
-  await ready(canvas);
-  return openSheet(canvas, canvas.getByRole('button', { name: 'New preset' }), 'New preset');
+const openCreate = async (canvas: Canvas, t: TFunction) => {
+  await ready(canvas, t);
+  return openSheet(
+    canvas,
+    canvas.getByRole('button', { name: t('BottomBar:newPreset') }),
+    t('BottomBar:newPreset'),
+  );
 };
 
 const setStepper = async (canvas: Canvas, label: string, value: string) => {
@@ -112,36 +133,56 @@ const setStepper = async (canvas: Canvas, label: string, value: string) => {
   await userEvent.tab();
 };
 
-const fillCreate = async (canvas: Canvas) => {
-  const name = canvas.getByRole('textbox', { name: 'Name' });
+const fillCreate = async (canvas: Canvas, t: TFunction) => {
+  const name = canvas.getByRole('textbox', { name: t('UnitForm:name') });
   await userEvent.click(name);
   await userEvent.type(name, 'Orc Warchief');
-  await setStepper(canvas, 'Max HP', '72');
-  await setStepper(canvas, 'Armor Class', '20');
-  await setStepper(canvas, 'Physical Defense', '18');
-  await setStepper(canvas, 'Mental Defense', '14');
-  const tags = await openSheet(canvas, canvas.getByRole('button', { name: 'Add tag' }), /^Tags/);
+  await setStepper(canvas, t('NumberField:maxHp'), '72');
+  await setStepper(canvas, t('UnitForm:ac'), '20');
+  await setStepper(canvas, t('UnitForm:pd'), '18');
+  await setStepper(canvas, t('UnitForm:md'), '14');
+  const tags = await openSheet(
+    canvas,
+    canvas.getByRole('button', { name: t('Chip:addTag') }),
+    anyValue((name) => t('TagSheet:assignTitle', { name })),
+  );
   await userEvent.click(within(tags).getByRole('checkbox', { name: /^Orcs/ }));
   await userEvent.click(within(tags).getByRole('checkbox', { name: /^Bosses/ }));
-  await userEvent.click(within(tags).getByRole('button', { name: 'Done · 2 tags' }));
-  await waitFor(() => expect(canvas.queryByRole('dialog', { name: /^Tags/ })).toBeNull());
+  await userEvent.click(
+    within(tags).getByRole('button', { name: t('TagSheet:doneTags', { count: 2 }) }),
+  );
+  await waitFor(() =>
+    expect(
+      canvas.queryByRole('dialog', {
+        name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+      }),
+    ).toBeNull(),
+  );
   name.focus();
 };
 
-const openEdit = async (canvas: Canvas) => {
-  await expand(canvas, berserker.name);
-  return openSheet(canvas, canvas.getByRole('button', { name: 'Edit' }), 'Edit preset');
+const openEdit = async (canvas: Canvas, t: TFunction) => {
+  await expand(canvas, berserker.name, t);
+  return openSheet(
+    canvas,
+    canvas.getByRole('button', { name: t('CardActions:edit') }),
+    t('PresetFormSheet:editPreset'),
+  );
 };
 
-const openTagSheet = async (canvas: Canvas) => {
-  await openEdit(canvas);
-  return openSheet(canvas, canvas.getByRole('button', { name: 'Add tag' }), 'Tags · Orc Berserker');
+const openTagSheet = async (canvas: Canvas, t: TFunction) => {
+  await openEdit(canvas, t);
+  return openSheet(
+    canvas,
+    canvas.getByRole('button', { name: t('Chip:addTag') }),
+    t('TagSheet:assignTitle', { name: 'Orc Berserker' }),
+  );
 };
 
-const openMenu = async (canvas: Canvas) => {
-  await expand(canvas, berserker.name);
-  await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
-  await expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toBeVisible();
+const openMenu = async (canvas: Canvas, t: TFunction) => {
+  await expand(canvas, berserker.name, t);
+  await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
+  await expect(canvas.getByRole('menuitem', { name: t('Menu:duplicate') })).toBeVisible();
 };
 
 const meta = preview.meta({
@@ -170,14 +211,15 @@ const meta = preview.meta({
 
 export const LBF11 = meta.story({
   name: 'LB-F1.1 List',
-  play: async ({ canvas, loaded }) => {
-    await ready(canvas);
-    await expect(namesOf(canvas)).toEqual(libraryPresets.map((preset) => preset.name));
-    await expect(canvas.getByRole('button', { name: 'Sort' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Tags' })).toBeVisible();
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await ready(canvas, t);
+    await expect(namesOf(canvas, t)).toEqual(libraryPresets.map((preset) => preset.name));
+    await expect(canvas.getByRole('button', { name: t('sort') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('tags') })).toBeVisible();
     await expect(canvas.getByText('Orcs · Ferry')).toBeVisible();
     await expect(callsOf(loaded, 'presets.list')).not.toHaveLength(0);
-    const chevron = canvas.getByRole('button', { name: `${togglePrefix}${shaman.name}` });
+    const chevron = canvas.getByRole('button', { name: toggleOf(t, shaman.name) });
     chevron.focus();
     await expect(chevron).toHaveFocus();
   },
@@ -185,73 +227,94 @@ export const LBF11 = meta.story({
 
 export const LBF12 = meta.story({
   name: 'LB-F1.2 Card expanded',
-  play: async ({ canvas }) => {
-    await expand(canvas, shaman.name);
-    await expect(
-      canvas.getByRole('button', { name: `${togglePrefix}${shaman.name}` }),
-    ).toHaveAttribute('aria-expanded', 'true');
-    await expect(canvas.getByRole('button', { name: 'Edit' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'More actions' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await expand(canvas, shaman.name, t);
+    await expect(canvas.getByRole('button', { name: toggleOf(t, shaman.name) })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('CardActions:more') })).toBeVisible();
   },
 });
 
 export const LBF13 = meta.story({
   name: 'LB-F1.3 Filter sheet',
-  play: async ({ canvas }) => {
-    const sheet = await openFilter(canvas);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openFilter(canvas, t);
     const names = within(sheet)
       .getAllByRole('checkbox')
       .map((box: HTMLElement) => box.closest('label')?.textContent ?? '');
     await expect(names).toHaveLength(8);
     await expect(names.some((name: string) => name.startsWith('Veterans'))).toBe(false);
-    await expect(within(sheet).getByRole('button', { name: 'Show all' })).toBeVisible();
+    await expect(within(sheet).getByRole('button', { name: t('TagSheet:showAll') })).toBeVisible();
     await userEvent.click(within(sheet).getByRole('checkbox', { name: /^Orcs/ }));
     await expect(within(sheet).getByRole('checkbox', { name: /^Orcs/ })).toBeChecked();
-    await expect(within(sheet).getByRole('button', { name: 'Show 2 presets' })).toBeVisible();
+    await expect(
+      within(sheet).getByRole('button', { name: t('TagSheet:showPresets', { count: 2 }) }),
+    ).toBeVisible();
   },
 });
 
 export const LBF14 = meta.story({
   name: 'LB-F1.4 Filter: Orcs',
-  play: async ({ canvas }) => {
-    await applyFilter(canvas, ['Orcs']);
-    await expect(namesOf(canvas)).toEqual([berserker.name, shaman.name]);
-    await expect(canvas.getByRole('button', { name: /^Tags/ })).toHaveTextContent('1');
-    await expect(canvas.getByRole('button', { name: 'Remove filter Orcs' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Clear' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await applyFilter(canvas, ['Orcs'], t);
+    await expect(namesOf(canvas, t)).toEqual([berserker.name, shaman.name]);
+    await expect(
+      canvas.getByRole('button', {
+        name: (label: string) => label.startsWith(t('PageHeader:tags')),
+      }),
+    ).toHaveTextContent('1');
+    await expect(
+      canvas.getByRole('button', { name: t('PageHeader:removeFilter', { name: 'Orcs' }) }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('PageHeader:clear') })).toBeVisible();
   },
 });
 
 export const LBF15 = meta.story({
   name: 'LB-F1.5 Search “archer” + Goblins',
-  play: async ({ canvas }) => {
-    await applyFilter(canvas, ['Goblins']);
-    await expect(namesOf(canvas)).toEqual(['Goblin Archer', '影の射手ゴブリン']);
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search presets' }), 'archer');
-    await expect(namesOf(canvas)).toEqual(['Goblin Archer']);
-    await expect(canvas.getByRole('button', { name: 'Remove filter Goblins' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await applyFilter(canvas, ['Goblins'], t);
+    await expect(namesOf(canvas, t)).toEqual(['Goblin Archer', '影の射手ゴブリン']);
+    await userEvent.type(canvas.getByRole('searchbox', { name: t('search') }), 'archer');
+    await expect(namesOf(canvas, t)).toEqual(['Goblin Archer']);
+    await expect(
+      canvas.getByRole('button', { name: t('PageHeader:removeFilter', { name: 'Goblins' }) }),
+    ).toBeVisible();
   },
 });
 
 export const LBF16 = meta.story({
   name: 'LB-F1.6 Nothing found',
-  play: async ({ canvas }) => {
-    await ready(canvas);
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search presets' }), 'dragon');
-    await expect(canvas.getByRole('heading', { name: 'Nothing found' })).toBeVisible();
-    await expect(canvas.getByText('No preset matches “dragon”.')).toBeVisible();
-    await expect(namesOf(canvas)).toHaveLength(0);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await ready(canvas, t);
+    await userEvent.type(canvas.getByRole('searchbox', { name: t('search') }), 'dragon');
+    await expect(canvas.getByRole('heading', { name: t('UnitForm:nothingFound') })).toBeVisible();
+    await expect(canvas.getByText(t('noResultsBody', { query: 'dragon' }))).toBeVisible();
+    await expect(namesOf(canvas, t)).toHaveLength(0);
   },
 });
 
 export const LBF17 = meta.story({
   name: 'LB-F1.7 Library is empty',
   parameters: { scenario: emptyLibraryScenario },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('heading', { name: 'No presets yet' })).toBeVisible();
-    await expect(canvas.queryByRole('button', { name: 'Sort' })).toBeNull();
-    await expect(canvas.queryByRole('button', { name: /^Tags/ })).toBeNull();
-    const create = canvas.getByRole('button', { name: 'New preset' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await expect(await canvas.findByRole('heading', { name: t('emptyTitle') })).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: t('sort') })).toBeNull();
+    await expect(
+      canvas.queryByRole('button', {
+        name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+      }),
+    ).toBeNull();
+    const create = canvas.getByRole('button', { name: t('BottomBar:newPreset') });
     await expect(create).toBeEnabled();
     create.focus();
     await expect(create).toHaveFocus();
@@ -260,34 +323,43 @@ export const LBF17 = meta.story({
 
 export const LBF21 = meta.story({
   name: 'LB-F2.1 Sort sheet',
-  play: async ({ canvas }) => {
-    await ready(canvas);
-    await openSheet(canvas, canvas.getByRole('button', { name: 'Sort' }), 'Sort presets');
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'By type' })).not.toBeChecked();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await ready(canvas, t);
+    await openSheet(
+      canvas,
+      canvas.getByRole('button', { name: t('sort') }),
+      t('SortSheet:sortPresets'),
+    );
+    await expect(canvas.getByRole('radio', { name: t('Radio:newestFirst') })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('SortSheet:byType') })).not.toBeChecked();
   },
 });
 
 export const LBF22 = meta.story({
   name: 'LB-F2.2 A–Z: button filled',
-  play: async ({ canvas }) => {
-    await ready(canvas);
-    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
-    await userEvent.click(await canvas.findByRole('radio', { name: 'A–Z' }));
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await ready(canvas, t);
+    await userEvent.click(canvas.getByRole('button', { name: t('sort') }));
+    await userEvent.click(await canvas.findByRole('radio', { name: t('RadioList:alphabetical') }));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-    await expect(canvas.getByRole('button', { name: 'A–Z' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('RadioList:alphabetical') })).toBeVisible();
     await expect(localStorage.getItem(PRESET_SORT_KEY)).toBe('alphabetical');
-    await expect(namesOf(canvas)).toEqual(
-      libraryPresets.map((preset) => preset.name).toSorted((a, b) => a.localeCompare(b, 'en')),
+    await expect(namesOf(canvas, t)).toEqual(
+      libraryPresets
+        .map((preset) => preset.name)
+        .toSorted((a, b) => a.localeCompare(b, storyLocale(globals))),
     );
   },
 });
 
 export const LBF31 = meta.story({
   name: 'LB-F3.1 Tap New preset',
-  play: async ({ canvas }) => {
-    await ready(canvas);
-    const create = canvas.getByRole('button', { name: 'New preset' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await ready(canvas, t);
+    const create = canvas.getByRole('button', { name: t('BottomBar:newPreset') });
     await expect(create).toBeEnabled();
     create.focus();
     await expect(create).toHaveFocus();
@@ -296,14 +368,20 @@ export const LBF31 = meta.story({
 
 export const LBF32 = meta.story({
   name: 'LB-F3.2 Empty form',
-  play: async ({ canvas }) => {
-    await openCreate(canvas);
-    const name = canvas.getByRole('textbox', { name: 'Name' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
+    const name = canvas.getByRole('textbox', { name: t('UnitForm:name') });
     await expect(name).toHaveValue('');
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).toBeChecked();
-    await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('10');
-    await expect(name).toHaveAttribute('placeholder', 'Enemy 1');
-    await expect(canvas.getByRole('button', { name: 'Create' })).toBeEnabled();
+    await expect(canvas.getByRole('radio', { name: t('UnitForm:enemy') })).toBeChecked();
+    await expect(canvas.getByRole('spinbutton', { name: t('NumberField:maxHp') })).toHaveValue(
+      '10',
+    );
+    await expect(name).toHaveAttribute(
+      'placeholder',
+      t('PresetFormSheet:namePlaceholder', { role: t('PresetFormSheet:enemy') }),
+    );
+    await expect(canvas.getByRole('button', { name: t('Sheet:create') })).toBeEnabled();
     name.focus();
     await expect(name).toHaveFocus();
   },
@@ -311,17 +389,18 @@ export const LBF32 = meta.story({
 
 export const LBF33 = meta.story({
   name: 'LB-F3.3 No name: created as "Enemy 1"',
-  play: async ({ canvas, loaded }) => {
-    await openCreate(canvas);
-    await userEvent.click(canvas.getByRole('textbox', { name: 'Name' }));
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
+    await userEvent.click(canvas.getByRole('textbox', { name: t('UnitForm:name') }));
     await userEvent.tab();
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
     const created = callsOf(loaded, 'presets.create');
     await expect(created).toHaveLength(1);
     const [input] = created[0]!.args as [{ id: string }];
     await expect(input).toEqual({
       id: input.id,
-      name: 'Enemy 1',
+      name: t('PresetFormSheet:namePlaceholder', { role: t('PresetFormSheet:enemy') }),
       role: 'enemy',
       maxHp: 10,
       ac: 10,
@@ -330,30 +409,42 @@ export const LBF33 = meta.story({
       initiativeBonus: 0,
       tags: [],
     });
-    await expect(await canvas.findByRole('status')).toHaveTextContent('Enemy 1 added to Library');
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('Toast:presetAdded', {
+        name: t('PresetFormSheet:namePlaceholder', { role: t('PresetFormSheet:enemy') }),
+      }),
+    );
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
 
 export const LBF34 = meta.story({
   name: 'LB-F3.4 Form filled',
-  play: async ({ canvas }) => {
-    await openCreate(canvas);
-    await fillCreate(canvas);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
+    await fillCreate(canvas, t);
     await expect(canvas.getByText('12/40')).toBeVisible();
-    await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('72');
-    await expect(canvas.getByRole('button', { name: 'Remove Orcs' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Remove Bosses' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Create' })).toBeEnabled();
+    await expect(canvas.getByRole('spinbutton', { name: t('NumberField:maxHp') })).toHaveValue(
+      '72',
+    );
+    await expect(
+      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Orcs' }) }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Bosses' }) }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('Sheet:create') })).toBeEnabled();
   },
 });
 
 export const LBF35 = meta.story({
   name: 'LB-F3.5 Preset created',
-  play: async ({ canvas, loaded }) => {
-    await openCreate(canvas);
-    await fillCreate(canvas);
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
+    await fillCreate(canvas, t);
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
     const created = callsOf(loaded, 'presets.create');
     await expect(created).toHaveLength(1);
     const [input] = created[0]!.args as [{ id: string }];
@@ -370,18 +461,19 @@ export const LBF35 = meta.story({
     });
     await expect(input.id).toMatch(ulidPattern);
     await expect(await canvas.findByRole('status')).toHaveTextContent(
-      'Orc Warchief added to Library',
+      t('Toast:presetAdded', { name: 'Orc Warchief' }),
     );
-    await waitFor(() => expect(namesOf(canvas)[0]).toBe('Orc Warchief'));
+    await waitFor(() => expect(namesOf(canvas, t)[0]).toBe('Orc Warchief'));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
 
 export const LBF41 = meta.story({
   name: 'LB-F4.1 Tap Edit',
-  play: async ({ canvas }) => {
-    await expand(canvas, berserker.name);
-    const edit = canvas.getByRole('button', { name: 'Edit' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await expand(canvas, berserker.name, t);
+    const edit = canvas.getByRole('button', { name: t('CardActions:edit') });
     await expect(edit).toBeEnabled();
     edit.focus();
     await expect(edit).toHaveFocus();
@@ -390,13 +482,22 @@ export const LBF41 = meta.story({
 
 export const LBF42 = meta.story({
   name: 'LB-F4.2 Form: tap Add tag',
-  play: async ({ canvas }) => {
-    await openEdit(canvas);
-    await expect(canvas.getByRole('textbox', { name: 'Name' })).toHaveValue(berserker.name);
-    await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('40');
-    await expect(canvas.getByRole('button', { name: 'Remove Orcs' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Remove Ferry' })).toBeVisible();
-    const add = canvas.getByRole('button', { name: 'Add tag' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await openEdit(canvas, t);
+    await expect(canvas.getByRole('textbox', { name: t('UnitForm:name') })).toHaveValue(
+      berserker.name,
+    );
+    await expect(canvas.getByRole('spinbutton', { name: t('NumberField:maxHp') })).toHaveValue(
+      '40',
+    );
+    await expect(
+      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Orcs' }) }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Ferry' }) }),
+    ).toBeVisible();
+    const add = canvas.getByRole('button', { name: t('Chip:addTag') });
     add.focus();
     await expect(add).toHaveFocus();
   },
@@ -404,86 +505,119 @@ export const LBF42 = meta.story({
 
 export const LBF43 = meta.story({
   name: 'LB-F4.3 Tag sheet over the form',
-  play: async ({ canvas }) => {
-    const sheet = await openTagSheet(canvas);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
     await expect(within(sheet).getByRole('checkbox', { name: /^Orcs/ })).toBeChecked();
     await expect(within(sheet).getByRole('checkbox', { name: /^Ferry/ })).toBeChecked();
     await expect(within(sheet).getByRole('checkbox', { name: /^Mooks/ })).not.toBeChecked();
-    await expect(within(sheet).getByRole('button', { name: 'Done · 2 tags' })).toBeVisible();
+    await expect(
+      within(sheet).getByRole('button', { name: t('TagSheet:doneTags', { count: 2 }) }),
+    ).toBeVisible();
   },
 });
 
 export const LBF44 = meta.story({
   name: 'LB-F4.4 No such tag: Create',
-  play: async ({ canvas, loaded }) => {
-    const sheet = await openTagSheet(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
     await userEvent.type(within(sheet).getByRole('searchbox'), 'Elite');
-    await expect(within(sheet).getByRole('button', { name: 'Create “Elite”' })).toBeVisible();
-    await expect(within(sheet).getByText('No tags match')).toBeVisible();
+    await expect(
+      within(sheet).getByRole('button', { name: t('CheckList:create', { query: 'Elite' }) }),
+    ).toBeVisible();
+    await expect(within(sheet).getByText(t('CheckList:noMatch'))).toBeVisible();
     await expect(callsOf(loaded, 'tags.create')).toHaveLength(0);
   },
 });
 
 export const LBF45 = meta.story({
   name: 'LB-F4.5 Created and checked',
-  play: async ({ canvas, loaded }) => {
-    const sheet = await openTagSheet(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
     await userEvent.type(within(sheet).getByRole('searchbox'), 'Elite');
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Create “Elite”' }));
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: t('CheckList:create', { query: 'Elite' }) }),
+    );
     const created = callsOf(loaded, 'tags.create');
     await expect(created).toHaveLength(1);
     const [input] = created[0]!.args as [{ id: string; name: string }];
     await expect(input.name).toBe('Elite');
     await expect(input.id).toMatch(ulidPattern);
     await expect(within(sheet).getByRole('checkbox', { name: /^Elite/ })).toBeChecked();
-    await expect(within(sheet).getByRole('button', { name: 'Done · 3 tags' })).toBeVisible();
+    await expect(
+      within(sheet).getByRole('button', { name: t('TagSheet:doneTags', { count: 3 }) }),
+    ).toBeVisible();
   },
 });
 
 export const LBF46 = meta.story({
   name: 'LB-F4.6 Form with the new tag',
-  play: async ({ canvas, loaded }) => {
-    const sheet = await openTagSheet(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
     await userEvent.type(within(sheet).getByRole('searchbox'), 'Elite');
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Create “Elite”' }));
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Done · 3 tags' }));
-    await waitFor(() => expect(canvas.queryByRole('dialog', { name: /^Tags/ })).toBeNull());
-    await expect(canvas.getByRole('button', { name: 'Remove Elite' })).toBeVisible();
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: t('CheckList:create', { query: 'Elite' }) }),
+    );
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: t('TagSheet:doneTags', { count: 3 }) }),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('dialog', {
+          name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+        }),
+      ).toBeNull(),
+    );
+    await expect(
+      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Elite' }) }),
+    ).toBeVisible();
     await expect(callsOf(loaded, 'presets.update')).toHaveLength(0);
   },
 });
 
 export const LBF47 = meta.story({
   name: 'LB-F4.7 Typing “mo”',
-  play: async ({ canvas }) => {
-    const sheet = await openTagSheet(canvas);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
     await userEvent.type(within(sheet).getByRole('searchbox'), 'mo');
     await expect(within(sheet).getAllByRole('checkbox')).toHaveLength(1);
     await expect(within(sheet).getByRole('checkbox', { name: /^Mooks/ })).not.toBeChecked();
-    await expect(within(sheet).queryByRole('button', { name: /^Create/ })).toBeNull();
+    await expect(
+      within(sheet).queryByRole('button', {
+        name: anyValue((query) => t('CheckList:create', { query })),
+      }),
+    ).toBeNull();
   },
 });
 
 export const LBF51 = meta.story({
   name: 'LB-F5.1 ⋯ → Duplicate',
-  play: async ({ canvas }) => {
-    await openMenu(canvas);
-    await expect(canvas.getByRole('menuitem', { name: 'Delete' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
+    await expect(canvas.getByRole('menuitem', { name: t('Button:delete') })).toBeVisible();
   },
 });
 
 export const LBF52 = meta.story({
   name: 'LB-F5.2 Copy below the original',
-  play: async ({ canvas, loaded }) => {
-    await openMenu(canvas);
-    await userEvent.click(canvas.getByRole('menuitem', { name: 'Duplicate' }));
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
+    await userEvent.click(canvas.getByRole('menuitem', { name: t('Menu:duplicate') }));
     const copies = callsOf(loaded, 'presets.duplicate');
     await expect(copies).toHaveLength(1);
     const [source, copyId] = copies[0]!.args as [string, string];
     await expect(source).toBe(berserker.id);
     await expect(copyId).toMatch(ulidPattern);
-    await expect(await canvas.findByRole('status')).toHaveTextContent('Orc Berserker 2 created');
-    await waitFor(() => expect(namesOf(canvas)[0]).toBe('Orc Berserker 2'));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('Toast:presetDuplicated', { name: 'Orc Berserker 2' }),
+    );
+    await waitFor(() => expect(namesOf(canvas, t)[0]).toBe('Orc Berserker 2'));
     const copy = canvas.getAllByRole('article')[0]!;
     await expect(within(copy).getByText('Orcs · Ferry')).toBeVisible();
   },
@@ -491,38 +625,43 @@ export const LBF52 = meta.story({
 
 export const LBF53 = meta.story({
   name: 'LB-F5.3 ⋯ → Delete',
-  play: async ({ canvas }) => {
-    await openMenu(canvas);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
     await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: 'Delete' })).toHaveFocus();
+    await expect(canvas.getByRole('menuitem', { name: t('Button:delete') })).toHaveFocus();
   },
 });
 
 export const LBF54 = meta.story({
   name: 'LB-F5.4 Confirmation',
-  play: async ({ canvas, loaded }) => {
-    await openMenu(canvas);
-    await userEvent.click(canvas.getByRole('menuitem', { name: 'Delete' }));
-    const dialog = await canvas.findByRole('alertdialog', { name: 'Delete Orc Berserker?' });
-    await expect(dialog).toHaveAccessibleDescription(
-      'The preset leaves the Library. Units already added to combats stay.',
-    );
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
+    await userEvent.click(canvas.getByRole('menuitem', { name: t('Button:delete') }));
+    const dialog = await canvas.findByRole('alertdialog', {
+      name: t('Dialog:deletePresetTitle', { name: 'Orc Berserker' }),
+    });
+    await expect(dialog).toHaveAccessibleDescription(t('Dialog:deletePresetBody'));
     await expect(callsOf(loaded, 'presets.remove')).toHaveLength(0);
   },
 });
 
 export const LBF55 = meta.story({
   name: 'LB-F5.5 Preset deleted',
-  play: async ({ canvas, loaded }) => {
-    await openMenu(canvas);
-    await userEvent.click(canvas.getByRole('menuitem', { name: 'Delete' }));
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
+    await userEvent.click(canvas.getByRole('menuitem', { name: t('Button:delete') }));
     const dialog = await canvas.findByRole('alertdialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Button:delete') }));
     const removed = callsOf(loaded, 'presets.remove');
     await expect(removed).toHaveLength(1);
     await expect(removed[0]!.args).toEqual([berserker.id]);
-    await expect(await canvas.findByRole('status')).toHaveTextContent('Orc Berserker deleted');
-    await waitFor(() => expect(namesOf(canvas)).not.toContain(berserker.name));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('Toast:deleted', { title: 'Orc Berserker' }),
+    );
+    await waitFor(() => expect(namesOf(canvas, t)).not.toContain(berserker.name));
   },
 });
 
@@ -536,25 +675,39 @@ export const LBF61 = meta.story({
       <LocationProbe />
     </>
   ),
-  play: async ({ canvas }) => {
-    await expand(canvas, savedFromCombat.name);
-    await expect(namesOf(canvas)[0]).toBe(savedFromCombat.name);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await expand(canvas, savedFromCombat.name, t);
+    await expect(namesOf(canvas, t)[0]).toBe(savedFromCombat.name);
     const card = canvas.getAllByRole('article')[0]!;
-    await expect(within(card).getByText('No tags')).toBeVisible();
-    await expect(within(card).getByRole('button', { name: 'Edit' })).toBeVisible();
-    await expect(canvas.getByRole('status')).toHaveTextContent('Orc Berserker added to Library');
+    await expect(within(card).getByText(t('PresetCard:noTags'))).toBeVisible();
+    await expect(within(card).getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    await expect(canvas.getByRole('status')).toHaveTextContent(
+      t('Toast:presetAdded', { name: 'Orc Berserker' }),
+    );
   },
 });
 
 export const ExtraEditSaved = meta.story({
   name: 'Edit saved with the new tag',
-  play: async ({ canvas, loaded }) => {
-    const sheet = await openTagSheet(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
     await userEvent.type(within(sheet).getByRole('searchbox'), 'Elite');
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Create “Elite”' }));
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Done · 3 tags' }));
-    await waitFor(() => expect(canvas.queryByRole('dialog', { name: /^Tags/ })).toBeNull());
-    await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: t('CheckList:create', { query: 'Elite' }) }),
+    );
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: t('TagSheet:doneTags', { count: 3 }) }),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('dialog', {
+          name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+        }),
+      ).toBeNull(),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: t('Button:save') }));
     const [tag] = callsOf(loaded, 'tags.create')[0]!.args as [{ id: string }];
     const updates = callsOf(loaded, 'presets.update');
     await expect(updates).toHaveLength(1);
@@ -577,35 +730,56 @@ export const ExtraEditSaved = meta.story({
 
 export const ExtraTagReused = meta.story({
   name: 'Create reuses an existing tag, ignoring case',
-  play: async ({ canvas, loaded }) => {
-    const sheet = await openTagSheet(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
     await userEvent.type(within(sheet).getByRole('searchbox'), 'VETERANS');
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Create “VETERANS”' }));
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: t('CheckList:create', { query: 'VETERANS' }) }),
+    );
     await expect(callsOf(loaded, 'tags.create')).toHaveLength(0);
     await expect(within(sheet).getByRole('checkbox', { name: /^Veterans/ })).toBeChecked();
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Done · 3 tags' }));
-    await expect(await canvas.findByRole('button', { name: 'Remove Veterans' })).toBeVisible();
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: t('TagSheet:doneTags', { count: 3 }) }),
+    );
+    await expect(
+      await canvas.findByRole('button', {
+        name: t('PresetFormSheet:removeTag', { name: 'Veterans' }),
+      }),
+    ).toBeVisible();
   },
 });
 
 export const ExtraSeveralTags = meta.story({
   name: 'Several tags match any of them',
-  play: async ({ canvas }) => {
-    await applyFilter(canvas, ['Orcs', 'Undead']);
-    await expect(namesOf(canvas)).toEqual([berserker.name, shaman.name, 'Skeletal Ferryman']);
-    await expect(canvas.getByRole('button', { name: /^Tags/ })).toHaveTextContent('2');
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await applyFilter(canvas, ['Orcs', 'Undead'], t);
+    await expect(namesOf(canvas, t)).toEqual([berserker.name, shaman.name, 'Skeletal Ferryman']);
+    await expect(
+      canvas.getByRole('button', {
+        name: (label: string) => label.startsWith(t('PageHeader:tags')),
+      }),
+    ).toHaveTextContent('2');
   },
 });
 
 export const ExtraRemoveFilter = meta.story({
   name: 'Remove a filter chip, then Clear',
-  play: async ({ canvas }) => {
-    await applyFilter(canvas, ['Orcs', 'Undead']);
-    await userEvent.click(canvas.getByRole('button', { name: 'Remove filter Undead' }));
-    await expect(namesOf(canvas)).toEqual([berserker.name, shaman.name]);
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
-    await expect(namesOf(canvas)).toHaveLength(libraryPresets.length);
-    await expect(canvas.queryByRole('button', { name: /^Remove filter/ })).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await applyFilter(canvas, ['Orcs', 'Undead'], t);
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('PageHeader:removeFilter', { name: 'Undead' }) }),
+    );
+    await expect(namesOf(canvas, t)).toEqual([berserker.name, shaman.name]);
+    await userEvent.click(canvas.getByRole('button', { name: t('PageHeader:clear') }));
+    await expect(namesOf(canvas, t)).toHaveLength(libraryPresets.length);
+    await expect(
+      canvas.queryByRole('button', {
+        name: anyValue((name) => t('PageHeader:removeFilter', { name })),
+      }),
+    ).toBeNull();
   },
 });
 
@@ -614,17 +788,24 @@ export const ExtraSortRemembered = meta.story({
   beforeEach: () => {
     localStorage.setItem(PRESET_SORT_KEY, 'byType');
   },
-  play: async ({ canvas }) => {
-    await ready(canvas);
-    await expect(canvas.getByRole('button', { name: 'By type' })).toBeVisible();
-    await expect(namesOf(canvas)).toEqual([
-      'Goblin Archer',
-      'Orc Berserker',
-      'Orc Shaman',
-      'Skeletal Ferryman',
-      '影の射手ゴブリン',
-      'Brother Tomas of the Silver Lantern Order',
-      'Капитан стражи переправы Святослав Огнев',
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await ready(canvas, t);
+    await expect(canvas.getByRole('button', { name: t('SortSheet:byType') })).toBeVisible();
+    const collate = (names: string[]) =>
+      names.toSorted((a, b) => a.localeCompare(b, storyLocale(globals)));
+    await expect(namesOf(canvas, t)).toEqual([
+      ...collate([
+        'Goblin Archer',
+        'Orc Berserker',
+        'Orc Shaman',
+        'Skeletal Ferryman',
+        '影の射手ゴブリン',
+      ]),
+      ...collate([
+        'Brother Tomas of the Silver Lantern Order',
+        'Капитан стражи переправы Святослав Огнев',
+      ]),
     ]);
   },
 });
@@ -632,11 +813,12 @@ export const ExtraSortRemembered = meta.story({
 export const ExtraLimitReached = meta.story({
   name: 'Limit reached',
   parameters: { scenario: fullLibraryScenario },
-  play: async ({ canvas, loaded }) => {
-    await canvas.findByRole('button', { name: `${togglePrefix}Goblin 1` });
-    const create = canvas.getByRole('button', { name: 'New preset' });
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await canvas.findByRole('button', { name: toggleOf(t, 'Goblin 1') });
+    const create = canvas.getByRole('button', { name: t('BottomBar:newPreset') });
     await expect(create).toBeDisabled();
-    await expect(create).toHaveAccessibleDescription('Preset limit reached');
+    await expect(create).toHaveAccessibleDescription(t('limitReached'));
     await userEvent.click(create, { pointerEventsCheck: 0 });
     await expect(canvas.queryByRole('dialog')).toBeNull();
     await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
@@ -645,28 +827,30 @@ export const ExtraLimitReached = meta.story({
 
 export const ExtraDeleteCancelled = meta.story({
   name: 'Delete cancelled',
-  play: async ({ canvas, loaded }) => {
-    await openMenu(canvas);
-    await userEvent.click(canvas.getByRole('menuitem', { name: 'Delete' }));
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
+    await userEvent.click(canvas.getByRole('menuitem', { name: t('Button:delete') }));
     const dialog = await canvas.findByRole('alertdialog');
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Button:cancel') }));
     await expect(canvas.queryByRole('alertdialog')).toBeNull();
     await expect(callsOf(loaded, 'presets.remove')).toHaveLength(0);
-    await expect(namesOf(canvas)).toContain(berserker.name);
+    await expect(namesOf(canvas, t)).toContain(berserker.name);
   },
 });
 
 export const ExtraDrawer = meta.story({
   name: 'Drawer: Combats',
-  play: async ({ canvas, canvasElement }) => {
-    await ready(canvas);
-    await userEvent.click(canvas.getByRole('button', { name: 'Open navigation' }));
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Library');
+    await ready(canvas, t);
+    await userEvent.click(canvas.getByRole('button', { name: t('IconButton:openNavigation') }));
     const drawer = await canvas.findByRole('dialog', { name: 'Combat Planner' });
-    await expect(within(drawer).getByRole('button', { name: 'Library' })).toHaveAttribute(
+    await expect(within(drawer).getByRole('button', { name: t('title') })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await userEvent.click(within(drawer).getByRole('button', { name: 'Combats' }));
+    await userEvent.click(within(drawer).getByRole('button', { name: t('CombatList:title') }));
     await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
   },
 });
@@ -688,9 +872,10 @@ export const ExtraFirstLoadFails = meta.story({
       <LocationProbe />
     </FailFirstCall>
   ),
-  play: async ({ canvas, loaded }) => {
-    await userEvent.click(await canvas.findByRole('button', { name: 'Try again' }));
-    await ready(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await userEvent.click(await canvas.findByRole('button', { name: t('MessageScreen:tryAgain') }));
+    await ready(canvas, t);
     await expect(callsOf(loaded, 'presets.list')).toHaveLength(2);
   },
 });
@@ -710,58 +895,77 @@ export const ExtraSignedOut = meta.story({
 
 export const ExtraCreateRetry = meta.story({
   name: 'Create is disabled in flight; Retry creates once with the same id',
-  play: async ({ canvas, loaded }) => {
-    await openCreate(canvas);
-    await fillCreate(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
+    await fillCreate(canvas, t);
     fakeApiOf(loaded).failNext('network');
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
-    await expect(await canvas.findByRole('button', { name: 'Create' })).toBeDisabled();
-    await userEvent.click(await canvas.findByRole('button', { name: 'Retry' }));
-    await waitFor(() => expect(canvas.queryByRole('dialog', { name: 'New preset' })).toBeNull());
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
+    await expect(await canvas.findByRole('button', { name: t('Sheet:create') })).toBeDisabled();
+    await userEvent.click(await canvas.findByRole('button', { name: t('Toast:retry') }));
+    await waitFor(() =>
+      expect(canvas.queryByRole('dialog', { name: t('BottomBar:newPreset') })).toBeNull(),
+    );
     const created = callsOf(loaded, 'presets.create');
     await expect(created).toHaveLength(2);
     const [first] = created[0]!.args as [{ id: string }];
     const [second] = created[1]!.args as [{ id: string }];
     await expect(second.id).toBe(first.id);
     const toast = await canvas.findByRole('status');
-    await expect(toast).toHaveTextContent('Orc Warchief added to Library');
+    await expect(toast).toHaveTextContent(t('Toast:presetAdded', { name: 'Orc Warchief' }));
     await expect(toast.querySelector('.tabler-icon-check')).not.toBeNull();
   },
 });
 
-const createEliteTag = async (canvas: Canvas) => {
-  const name = canvas.getByRole('textbox', { name: 'Name' });
+const createEliteTag = async (canvas: Canvas, t: TFunction) => {
+  const name = canvas.getByRole('textbox', { name: t('UnitForm:name') });
   await userEvent.click(name);
   await userEvent.type(name, 'Orc Warchief');
-  const tags = await openSheet(canvas, canvas.getByRole('button', { name: 'Add tag' }), /^Tags/);
+  const tags = await openSheet(
+    canvas,
+    canvas.getByRole('button', { name: t('Chip:addTag') }),
+    anyValue((name) => t('TagSheet:assignTitle', { name })),
+  );
   await userEvent.type(within(tags).getByRole('searchbox'), 'Elite');
-  await userEvent.click(within(tags).getByRole('button', { name: 'Create “Elite”' }));
-  await userEvent.click(within(tags).getByRole('button', { name: 'Done · 1 tag' }));
-  await waitFor(() => expect(canvas.queryByRole('dialog', { name: /^Tags/ })).toBeNull());
+  await userEvent.click(
+    within(tags).getByRole('button', { name: t('CheckList:create', { query: 'Elite' }) }),
+  );
+  await userEvent.click(
+    within(tags).getByRole('button', { name: t('TagSheet:doneTags', { count: 1 }) }),
+  );
+  await waitFor(() =>
+    expect(
+      canvas.queryByRole('dialog', {
+        name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+      }),
+    ).toBeNull(),
+  );
 };
 
 export const ExtraTagCreateAwaited = meta.story({
   name: 'Save waits for the new tag; a failed tag shows an error and keeps the form',
-  play: async ({ canvas, loaded }) => {
-    await openCreate(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
     fakeApiOf(loaded).failNext('invalid');
-    await createEliteTag(canvas);
-    await expect(await canvas.findByText('Couldn’t create the tag Elite')).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await createEliteTag(canvas, t);
+    await expect(await canvas.findByText(t('Library:tagFailed', { name: 'Elite' }))).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
     await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
-    await expect(canvas.getByRole('dialog', { name: 'New preset' })).toBeVisible();
+    await expect(canvas.getByRole('dialog', { name: t('BottomBar:newPreset') })).toBeVisible();
   },
 });
 
 export const ExtraTagRetryThenSave = meta.story({
   name: 'Save after a tag Retry sends the preset with the created tag',
-  play: async ({ canvas, loaded }) => {
-    await openCreate(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
     fakeApiOf(loaded).failNext('network');
-    await createEliteTag(canvas);
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await createEliteTag(canvas, t);
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
     await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
-    await userEvent.click(await canvas.findByRole('button', { name: 'Retry' }));
+    await userEvent.click(await canvas.findByRole('button', { name: t('Toast:retry') }));
     await waitFor(() => expect(callsOf(loaded, 'presets.create')).toHaveLength(1));
     const [tag] = callsOf(loaded, 'tags.create').at(-1)!.args as [{ id: string }];
     const [preset] = callsOf(loaded, 'presets.create')[0]!.args as [{ tags: string[] }];
@@ -771,56 +975,85 @@ export const ExtraTagRetryThenSave = meta.story({
 
 export const ExtraFailedTagSave = meta.story({
   name: 'Save after a dismissed tag Retry shows the error and is not stuck',
-  play: async ({ canvas, loaded }) => {
-    await openCreate(canvas);
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
     fakeApiOf(loaded).failNext('network');
-    await createEliteTag(canvas);
-    await userEvent.click(await canvas.findByRole('button', { name: 'Dismiss' }));
-    await waitFor(() => expect(canvas.queryByRole('button', { name: 'Retry' })).toBeNull());
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
-    await expect(await canvas.findByText('Couldn’t create the tag Elite')).toBeVisible();
+    await createEliteTag(canvas, t);
+    await userEvent.click(
+      within(await canvas.findByRole('status')).getByRole('button', { name: t('Toast:dismiss') }),
+    );
+    await waitFor(() =>
+      expect(canvas.queryByRole('button', { name: t('Toast:retry') })).toBeNull(),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
+    await expect(await canvas.findByText(t('Library:tagFailed', { name: 'Elite' }))).toBeVisible();
     await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
-    await userEvent.click(canvas.getByRole('button', { name: 'Remove Elite' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Elite' }) }),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
     await waitFor(() => expect(callsOf(loaded, 'presets.create')).toHaveLength(1));
     const [preset] = callsOf(loaded, 'presets.create')[0]!.args as [{ tags: string[] }];
     await expect(preset.tags).toEqual([]);
-    await expect(await canvas.findByText('Orc Warchief added to Library')).toBeVisible();
+    await expect(
+      await canvas.findByText(t('Toast:presetAdded', { name: 'Orc Warchief' })),
+    ).toBeVisible();
   },
 });
 
 export const ExtraFailedTagListedLater = meta.story({
   name: 'A failed tag that the tag list shows later no longer blocks Save',
-  play: async ({ canvas, loaded }) => {
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
     const api = fakeApiOf(loaded);
-    await openCreate(canvas);
+    await openCreate(canvas, t);
     api.failNext('invalid');
-    await createEliteTag(canvas);
-    await expect(await canvas.findByText('Couldn’t create the tag Elite')).toBeVisible();
+    await createEliteTag(canvas, t);
+    await expect(await canvas.findByText(t('Library:tagFailed', { name: 'Elite' }))).toBeVisible();
     const [elite] = callsOf(loaded, 'tags.create').at(-1)!.args as [{ id: string; name: string }];
     await api.tags.create(elite);
-    const tags = await openSheet(canvas, canvas.getByRole('button', { name: 'Add tag' }), /^Tags/);
+    const tags = await openSheet(
+      canvas,
+      canvas.getByRole('button', { name: t('Chip:addTag') }),
+      anyValue((name) => t('TagSheet:assignTitle', { name })),
+    );
     await userEvent.type(within(tags).getByRole('searchbox'), 'Champion');
-    await userEvent.click(within(tags).getByRole('button', { name: 'Create “Champion”' }));
-    await userEvent.click(within(tags).getByRole('button', { name: /^Done/ }));
-    await waitFor(() => expect(canvas.queryByRole('dialog', { name: /^Tags/ })).toBeNull());
+    await userEvent.click(
+      within(tags).getByRole('button', { name: t('CheckList:create', { query: 'Champion' }) }),
+    );
+    await userEvent.click(
+      within(tags).getByRole('button', {
+        name: (label: string) => label.startsWith(t('TagSheet:done')),
+      }),
+    );
+    await waitFor(() =>
+      expect(
+        canvas.queryByRole('dialog', {
+          name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+        }),
+      ).toBeNull(),
+    );
     await waitFor(() => expect(callsOf(loaded, 'tags.create')).toHaveLength(3));
-    await userEvent.click(canvas.getByRole('button', { name: 'Create' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
     await waitFor(() => expect(callsOf(loaded, 'presets.create')).toHaveLength(1));
     const [champion] = callsOf(loaded, 'tags.create').at(-1)!.args as [{ id: string }];
     const [preset] = callsOf(loaded, 'presets.create')[0]!.args as [{ tags: string[] }];
     await expect(preset.tags).toEqual([elite.id, champion.id]);
-    await expect(await canvas.findByText('Orc Warchief added to Library')).toBeVisible();
+    await expect(
+      await canvas.findByText(t('Toast:presetAdded', { name: 'Orc Warchief' })),
+    ).toBeVisible();
   },
 });
 
 export const ExtraDuplicateAtLimit = meta.story({
   name: 'Duplicate is disabled at the preset limit',
   parameters: { scenario: fullLibraryScenario },
-  play: async ({ canvas, loaded }) => {
-    await expand(canvas, 'Goblin 1');
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
-    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await expand(canvas, 'Goblin 1', t);
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
+    const duplicate = await canvas.findByRole('menuitem', { name: t('Menu:duplicate') });
     await expect(duplicate).toBeDisabled();
     await userEvent.click(duplicate, { pointerEventsCheck: 0 });
     await expect(callsOf(loaded, 'presets.duplicate')).toHaveLength(0);

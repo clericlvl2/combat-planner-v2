@@ -6,6 +6,7 @@ import { scenario } from '../../api/scenarios.ts';
 import type { FakeAccount } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { Account } from './Account.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const ferryAccount: FakeAccount = {
   userId: 'dm-ferry',
@@ -62,55 +63,60 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Account' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Account');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
     await expect(await canvas.findByText('dm@ferry.games')).toBeVisible();
-    await expect(canvas.getByText('Signed in with email')).toBeVisible();
-    await expect(canvas.getByRole('textbox', { name: 'Display name' })).toHaveValue('Ferry DM');
-    await expect(canvas.getByRole('button', { name: 'Sign out' })).toBeEnabled();
-    await expect(canvas.getByRole('button', { name: 'Delete account' })).toBeEnabled();
+    await expect(canvas.getByText(t('method_email'))).toBeVisible();
+    await expect(canvas.getByRole('textbox', { name: t('displayName') })).toHaveValue('Ferry DM');
+    await expect(canvas.getByRole('button', { name: t('signOut') })).toBeEnabled();
+    await expect(canvas.getByRole('button', { name: t('deleteAccount') })).toBeEnabled();
   },
 });
 
 export const SignOut = meta.story({
-  play: async ({ canvas, canvasElement, loaded }) => {
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
-    await userEvent.click(canvas.getByRole('button', { name: 'Sign out' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('signOut') }));
     await waitFor(() => expect(probeOf(canvasElement).location).toBe('/auth/sign-in'));
     await expect(methodsOf(loaded)).toContain('auth.signOut');
   },
 });
 
 export const ConfirmDelete = meta.story({
-  play: async ({ canvas, canvasElement, loaded }) => {
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
-    await userEvent.click(canvas.getByRole('button', { name: 'Delete account' }));
-    const dialog = await canvas.findByRole('alertdialog', { name: 'Delete your account?' });
-    await expect(within(dialog).getByRole('button', { name: 'Delete' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('deleteAccount') }));
+    const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:deleteAccountTitle') });
+    await expect(within(dialog).getByRole('button', { name: t('Button:delete') })).toBeVisible();
     await expect(methodsOf(loaded)).not.toContain('account.remove');
     await expect(probeOf(canvasElement).location).toBe('/account');
   },
 });
 
 export const AccountDeleted = meta.story({
-  play: async ({ canvas, canvasElement, loaded }) => {
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
-    await userEvent.click(canvas.getByRole('button', { name: 'Delete account' }));
-    const dialog = await canvas.findByRole('alertdialog', { name: 'Delete your account?' });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Delete' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('deleteAccount') }));
+    const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:deleteAccountTitle') });
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Button:delete') }));
     await waitFor(() => expect(probeOf(canvasElement).location).toBe('/auth/sign-in'));
     await expect(probeOf(canvasElement).state).toBeNull();
-    await expect(await canvas.findByRole('status')).toHaveTextContent('Your account was deleted');
+    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:accountDeleted'));
     await expect(methodsOf(loaded).filter((method) => method === 'account.remove')).toHaveLength(1);
   },
 });
 
 export const CancelDelete = meta.story({
-  play: async ({ canvas, canvasElement, loaded }) => {
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
-    await userEvent.click(canvas.getByRole('button', { name: 'Delete account' }));
-    const dialog = await canvas.findByRole('alertdialog', { name: 'Delete your account?' });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('deleteAccount') }));
+    const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:deleteAccountTitle') });
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Button:cancel') }));
     await waitFor(() => expect(canvas.queryByRole('alertdialog')).toBeNull());
     await expect(methodsOf(loaded)).not.toContain('account.remove');
     await expect(probeOf(canvasElement).location).toBe('/account');
@@ -118,8 +124,9 @@ export const CancelDelete = meta.story({
 });
 
 export const Rename = meta.story({
-  play: async ({ canvas, loaded }) => {
-    const name = canvas.getByRole('textbox', { name: 'Display name' });
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
+    const name = canvas.getByRole('textbox', { name: t('displayName') });
     await waitFor(() => expect(name).toHaveValue('Ferry DM'));
     await userEvent.clear(name);
     await userEvent.type(name, 'Мастер переправы{Enter}');
@@ -132,12 +139,13 @@ export const Rename = meta.story({
 });
 
 export const EmptyName = meta.story({
-  play: async ({ canvas, loaded }) => {
-    const name = canvas.getByRole('textbox', { name: 'Display name' });
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
+    const name = canvas.getByRole('textbox', { name: t('displayName') });
     await waitFor(() => expect(name).toHaveValue('Ferry DM'));
     await userEvent.clear(name);
     name.blur();
-    await expect(await canvas.findByText('Enter a display name')).toBeVisible();
+    await expect(await canvas.findByText(t('enterName'))).toBeVisible();
     await expect(methodsOf(loaded)).not.toContain('account.update');
   },
 });
@@ -165,15 +173,17 @@ export const ExtraSignedInWithGitHub = meta.story({
       accounts: [ferryAccount],
     }),
   },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByText('Signed in with GitHub')).toBeVisible();
-    await expect(canvas.queryByText('Signed in with email')).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Account');
+    await expect(await canvas.findByText(t('method_github'))).toBeVisible();
+    await expect(canvas.queryByText(t('method_email'))).toBeNull();
   },
 });
 
 export const ExtraEnterThenBlurSavesOnce = meta.story({
   name: 'Enter then blur saves the name once',
-  play: async ({ canvas, loaded }) => {
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
     const api = fakeApiOf(loaded);
     let finish: () => void = () => {};
     const update = api.account.update.bind(api.account);
@@ -184,7 +194,7 @@ export const ExtraEnterThenBlurSavesOnce = meta.story({
         finish = () => resolve(update(patch));
       });
     };
-    const name = canvas.getByRole('textbox', { name: 'Display name' });
+    const name = canvas.getByRole('textbox', { name: t('displayName') });
     await waitFor(() => expect(name).toHaveValue('Ferry DM'));
     await userEvent.clear(name);
     await userEvent.type(name, 'Мастер переправы{Enter}');
@@ -198,39 +208,42 @@ export const ExtraEnterThenBlurSavesOnce = meta.story({
 
 export const ExtraEmptyNameWhileTyping = meta.story({
   name: 'An emptied name shows no error while the field has focus',
-  play: async ({ canvas }) => {
-    const name = canvas.getByRole('textbox', { name: 'Display name' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Account');
+    const name = canvas.getByRole('textbox', { name: t('displayName') });
     await waitFor(() => expect(name).toHaveValue('Ferry DM'));
     await userEvent.clear(name);
     await expect(name).toHaveFocus();
-    await expect(canvas.queryByText('Enter a display name')).toBeNull();
+    await expect(canvas.queryByText(t('enterName'))).toBeNull();
   },
 });
 
 export const ExtraEmptyNameAfterEarlierBlur = meta.story({
   name: 'After an earlier blur, an emptied name shows the error only after the next blur',
-  play: async ({ canvas }) => {
-    const name = canvas.getByRole('textbox', { name: 'Display name' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Account');
+    const name = canvas.getByRole('textbox', { name: t('displayName') });
     await waitFor(() => expect(name).toHaveValue('Ferry DM'));
     await userEvent.type(name, ' Ирина');
     await userEvent.tab();
     await waitFor(() => expect(name).toHaveValue('Ferry DM Ирина'));
     await userEvent.clear(name);
     await expect(name).toHaveFocus();
-    await expect(canvas.queryByText('Enter a display name')).toBeNull();
+    await expect(canvas.queryByText(t('enterName'))).toBeNull();
     await userEvent.tab();
-    await expect(await canvas.findByText('Enter a display name')).toBeVisible();
+    await expect(await canvas.findByText(t('enterName'))).toBeVisible();
   },
 });
 
 export const ExtraSignOutFailed = meta.story({
   name: 'A failed sign-out shows the error toast and stays on Account',
-  play: async ({ canvas, canvasElement, loaded }) => {
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
     fakeApiOf(loaded).failNext('invalid');
-    await userEvent.click(canvas.getByRole('button', { name: 'Sign out' }));
-    await expect(await canvas.findByText('Couldn’t sign out. Try again.')).toBeVisible();
-    await expect(canvas.queryByRole('button', { name: 'Retry' })).toBeNull();
+    await userEvent.click(canvas.getByRole('button', { name: t('signOut') }));
+    await expect(await canvas.findByText(t('signOutFailed'))).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: t('Toast:retry') })).toBeNull();
     await expect(probeOf(canvasElement).location).toBe('/account');
     await expect(canvas.getByText('dm@ferry.games')).toBeVisible();
   },

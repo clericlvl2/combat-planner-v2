@@ -2,6 +2,7 @@ import preview from '#.storybook/preview';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, userEvent } from 'storybook/test';
 import { About } from './About.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const sourceUrl = 'https://github.com/clericlvl2/combat-planner-v2';
 
@@ -20,11 +21,12 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'About' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'About');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
     await expect(canvas.getByText('2.0.0')).toBeVisible();
     await expect(canvas.getByText('13th Age')).toBeVisible();
-    await expect(canvas.getByRole('link', { name: 'Source GitHub' })).toHaveAttribute(
+    await expect(canvas.getByRole('link', { name: `${t('source')} GitHub` })).toHaveAttribute(
       'href',
       sourceUrl,
     );
@@ -49,16 +51,18 @@ export const Russian = meta.story({
 
 export const German = meta.story({
   globals: { locale: 'de' },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'About');
     await expect(canvas.getByRole('heading', { level: 1, name: 'Info' })).toBeVisible();
     await expect(canvas.getByRole('link', { name: 'Quellcode GitHub' })).toBeVisible();
-    await expect(canvas.getByText('Version')).toBeVisible();
+    await expect(canvas.getByText(t('version'))).toBeVisible();
   },
 });
 
 export const KeyboardLinks = meta.story({
-  play: async ({ canvas }) => {
-    const source = canvas.getByRole('link', { name: 'Source GitHub' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'About');
+    const source = canvas.getByRole('link', { name: `${t('source')} GitHub` });
     source.focus();
     await expect(source).toHaveFocus();
     await userEvent.tab();

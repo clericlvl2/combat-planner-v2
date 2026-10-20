@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
 import { LinkExpired } from './LinkExpired.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
   title: 'Screens/LinkExpired',
@@ -9,13 +10,12 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'LinkExpired');
     await expect(
-      canvas.getByRole('heading', { level: 1, name: 'This link no longer works' }),
+      canvas.getByRole('heading', { level: 1, name: t('MessageScreen:linkRevokedTitle') }),
     ).toBeVisible();
-    await expect(
-      canvas.getByText('The DM issued a new link. Ask them to share it again.'),
-    ).toBeVisible();
+    await expect(canvas.getByText(t('MessageScreen:linkRevokedBody'))).toBeVisible();
     await expect(canvas.queryByRole('button')).toBeNull();
   },
 });

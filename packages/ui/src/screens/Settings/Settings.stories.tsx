@@ -5,6 +5,8 @@ import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { Settings } from './Settings.tsx';
+import { storyT } from '../../storybook/storyT.ts';
+import { localeNames, storyLocale } from '../../storybook/withLocale.tsx';
 
 const session = {
   userId: 'dm-ferry',
@@ -44,11 +46,15 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Settings' })).toBeVisible();
-    await expect(canvas.getByRole('radio', { name: 'English' })).toBeChecked();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Settings');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    const current = storyLocale(globals);
+    await expect(canvas.getByRole('radio', { name: localeNames[current] })).toBeChecked();
     await expect(canvas.getAllByRole('radio')).toHaveLength(6);
-    await expect(canvas.getByRole('radio', { name: '日本語' })).not.toBeChecked();
+    await expect(
+      canvas.getByRole('radio', { name: localeNames[current === 'ja' ? 'en' : 'ja'] }),
+    ).not.toBeChecked();
   },
 });
 
@@ -92,10 +98,11 @@ export const Japanese = meta.story({
 });
 
 export const DrawerOpen = meta.story({
-  play: async ({ canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Open navigation' }));
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Settings');
+    await userEvent.click(canvas.getByRole('button', { name: t('IconButton:openNavigation') }));
     const drawer = await canvas.findByRole('dialog', { name: 'Combat Planner' });
-    await expect(within(drawer).getByRole('button', { name: 'Settings' })).toHaveAttribute(
+    await expect(within(drawer).getByRole('button', { name: t('title') })).toHaveAttribute(
       'aria-current',
       'page',
     );

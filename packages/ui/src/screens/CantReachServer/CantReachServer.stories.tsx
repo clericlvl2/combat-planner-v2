@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
 import { CantReachServer } from './CantReachServer.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
   title: 'Screens/CantReachServer',
@@ -10,11 +11,12 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CantReachServer');
     await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Can’t reach the server' }),
+      canvas.getByRole('heading', { level: 1, name: t('MessageScreen:offlineTitle') }),
     ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toHaveAttribute(
       'data-variant',
       'secondary',
     );
@@ -44,9 +46,10 @@ export const Russian = meta.story({
 
 export const ExtraKeyboardEnter = meta.story({
   name: 'Keyboard: Enter on the action',
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CantReachServer');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onRetry).toHaveBeenCalledOnce();
   },
@@ -54,8 +57,9 @@ export const ExtraKeyboardEnter = meta.story({
 
 export const ExtraTapAction = meta.story({
   name: 'Tap on the action',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CantReachServer');
+    await userEvent.click(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') }));
     await expect(args.onRetry).toHaveBeenCalledOnce();
   },
 });

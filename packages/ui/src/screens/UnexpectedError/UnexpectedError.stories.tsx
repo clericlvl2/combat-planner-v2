@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
 import { UnexpectedError } from './UnexpectedError.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
   title: 'Screens/UnexpectedError',
@@ -10,11 +11,10 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ args, canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Something went wrong' }),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Reload' })).toHaveAttribute(
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnexpectedError');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('reload') })).toHaveAttribute(
       'data-variant',
       'primary',
     );
@@ -54,9 +54,10 @@ export const Japanese = meta.story({
 
 export const ExtraKeyboardEnter = meta.story({
   name: 'Keyboard: Enter on the action',
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnexpectedError');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Reload' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('reload') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onReload).toHaveBeenCalledOnce();
   },
@@ -64,8 +65,9 @@ export const ExtraKeyboardEnter = meta.story({
 
 export const ExtraTapAction = meta.story({
   name: 'Tap on the action',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Reload' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnexpectedError');
+    await userEvent.click(canvas.getByRole('button', { name: t('reload') }));
     await expect(args.onReload).toHaveBeenCalledOnce();
   },
 });

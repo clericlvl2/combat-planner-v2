@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
 import { NotFound } from './NotFound.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
   title: 'Screens/NotFound',
@@ -10,9 +11,10 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Page not found' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Go to combats' })).toHaveAttribute(
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NotFound');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('goToCombats') })).toHaveAttribute(
       'data-variant',
       'primary',
     );
@@ -52,9 +54,10 @@ export const Japanese = meta.story({
 
 export const ExtraKeyboardEnter = meta.story({
   name: 'Keyboard: Enter on the action',
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NotFound');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Go to combats' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('goToCombats') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onGoToCombats).toHaveBeenCalledOnce();
   },
@@ -62,8 +65,9 @@ export const ExtraKeyboardEnter = meta.story({
 
 export const ExtraTapAction = meta.story({
   name: 'Tap on the action',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Go to combats' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NotFound');
+    await userEvent.click(canvas.getByRole('button', { name: t('goToCombats') }));
     await expect(args.onGoToCombats).toHaveBeenCalledOnce();
   },
 });

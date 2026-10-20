@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
 import { CombatDeleted } from './CombatDeleted.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
   title: 'Screens/CombatDeleted',
@@ -10,11 +11,12 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CombatDeleted');
     await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Goblin ambush was deleted' }),
+      canvas.getByRole('heading', { level: 1, name: t('title', { title: 'Goblin ambush' }) }),
     ).toBeVisible();
-    await expect(canvas.getByText('The DM deleted it. Ask them for a new link.')).toBeVisible();
+    await expect(canvas.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
     await expect(canvas.queryByRole('button')).toBeNull();
   },
 });
@@ -55,11 +57,12 @@ export const Japanese = meta.story({
 export const ExtraLongTitle = meta.story({
   name: 'Long title wraps',
   args: { combatTitle: 'The Siege of the Obsidian Tower, Part II' },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CombatDeleted');
     await expect(args.combatTitle).toHaveLength(40);
     const heading = canvas.getByRole('heading', {
       level: 1,
-      name: 'The Siege of the Obsidian Tower, Part II was deleted',
+      name: t('title', { title: 'The Siege of the Obsidian Tower, Part II' }),
     });
     await expect(heading).toBeVisible();
     await expect(heading.getBoundingClientRect().height).toBeGreaterThan(30);
