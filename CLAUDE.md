@@ -20,7 +20,7 @@ from the repository root.
   `scripts/check-{stories,i18n,screenshots,comments}.mjs`.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
 - `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story with its `play`, headless
-  Chromium).
+  Chromium, in the `narrow` frame and viewport, 320×568).
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
 - `pnpm exec vp test --project visual`: compares every story against
   `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844.
@@ -83,9 +83,17 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `UiProvider` takes `motion: 'off'` in Storybook.
 - Geometry invariants run after every story (`packages/ui/.storybook/preview.tsx` → `expectGeometry`):
   no horizontal overflow, tap targets at least `layout.tapTarget` (44 px), content inside the phone
-  frame, no unintended truncation, overlays aligned with the frame. A story opts out per check
-  through `parameters.geometry`, with a reason string or `{ reason, except: '<selector>' }`. The
-  selector must match an element.
+  frame, no unintended truncation, overlays aligned with the frame, no Latin or Cyrillic word split
+  across lines (`wordBreaks`), every `[data-sheet-action]` of an open sheet visible without scrolling
+  (`actionsVisible`), a drawer scrim strip at least `layout.tapTarget` wide (`scrimTarget`). A story
+  opts out per check through `parameters.geometry`, with a reason string or
+  `{ reason, except: '<selector>' }`. The selector must match an element.
+- The storybook project renders every story at `layout.viewports.narrow` (320×568); the Storybook
+  toolbar switches the frame to `phone` (390×844). `packages/ui/src/storybook/narrow-known.ts` is a
+  ratchet of `{ story, check }` entries, sorted by story id, that fail only at `narrow`; `check` is a
+  geometry check or `play`. An unlisted failure fails the story, and a listed entry that passes fails
+  it with "remove from narrow-known". A `play` that fails at 320 because of a layout defect is wrapped
+  in `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
 - Tap areas smaller than their control use the `::after` pattern
   `inset: min(0px, (100% - var(--cp-tap-target)) / 2)` on a positioned control.
 - Screenshot baselines change only together with a change in the component they show. Run
@@ -104,8 +112,10 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `npm:@voidzero-dev/vite-plus-core@1.3.0` and `vitest` to 5.0.5 in `pnpm-workspace.yaml`. Test
   code imports from `vite-plus/test` and `vite-plus/test/browser`.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
-  `viewport` global, so the 390×844 test viewport is set in `preview.tsx` (`initialGlobals`), not in
-  `vite.config.ts`.
+  `viewport` global, so the 320×568 test viewport is set in `preview.tsx` (`initialGlobals`
+  `frame: 'narrow'`, `viewport: 'narrow'`), not in `vite.config.ts`. The `visual` project stays at
+  390×844: `vite.config.ts` sets its viewport and `test/visual.test.tsx` runs each story with the
+  `phone` frame and viewport globals.
 - Playwright 1.64.1 exact.
 - React Router 7 data mode.
 - Mantine 9; `postcss-preset-mantine` runs from `postcss.config.cjs`.
