@@ -28,7 +28,12 @@ export default defineConfig({
     ignorePatterns: ['.claude/**', 'CLAUDE.md', 'pnpm-lock.yaml', '**/__screenshots__/**'],
   },
   lint: {
-    ignorePatterns: ['.claude/**', '**/dist/**', '**/storybook-static/**'],
+    ignorePatterns: [
+      '.claude/**',
+      '**/dist/**',
+      '**/storybook-static/**',
+      '.design-sync/previews/**',
+    ],
     options: {
       typeAware: true,
       typeCheck: true,
