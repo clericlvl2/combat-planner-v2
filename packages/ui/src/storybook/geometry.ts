@@ -476,15 +476,21 @@ function sheetActionFindings(root: HTMLElement): Finding[] {
   const sheets = [...root.querySelectorAll('[data-sheet-content]')]
     .map((content) => content.parentElement)
     .filter((sheet): sheet is HTMLElement => sheet !== null && isShown(sheet));
-  return sheets.flatMap((sheet) =>
-    [...sheet.querySelectorAll('[data-sheet-action]')].flatMap((action) => {
+  return sheets.flatMap((sheet) => {
+    const scrolled = [sheet, ...sheet.querySelectorAll('*')]
+      .filter((element) => element.scrollTop !== 0)
+      .map((element) => ({ element, top: element.scrollTop }));
+    for (const { element } of scrolled) element.scrollTo({ top: 0, behavior: 'instant' });
+    const findings = [...sheet.querySelectorAll('[data-sheet-action]')].flatMap((action) => {
       if (!action.checkVisibility({ visibilityProperty: true })) return [];
       const visible = visibleBoxOf(action, sheet, root);
       if (inside(boxOf(action), visible)) return [];
       const edge = [visible.left, visible.top, visible.right, visible.bottom].join(', ');
       return [{ element: action, message: `${describe(action)} lies outside [${edge}]` }];
-    }),
-  );
+    });
+    for (const { element, top } of scrolled) element.scrollTo({ top, behavior: 'instant' });
+    return findings;
+  });
 }
 
 export function hiddenSheetActions(root: HTMLElement): string[] {
