@@ -1,7 +1,15 @@
 import { expect } from 'storybook/test';
 import { layout } from '../layout.ts';
 
-export type GeometryCheck = 'overflow' | 'tapTargets' | 'frame' | 'truncation' | 'overlays';
+export type GeometryCheck =
+  | 'overflow'
+  | 'tapTargets'
+  | 'frame'
+  | 'truncation'
+  | 'overlays'
+  | 'wordBreaks'
+  | 'actionsVisible'
+  | 'scrimTarget';
 
 export type GeometryOptOut = string | { reason: string; except: string };
 
@@ -367,6 +375,119 @@ export function overlaysOffFrame(root: HTMLElement): string[] {
   return messagesOf(overlayFindings(root));
 }
 
+const wordPattern = /[\p{Script=Latin}\p{Script=Cyrillic}\p{M}\p{Nd}'’]+/gu;
+const letterPattern = /[\p{Script=Latin}\p{Script=Cyrillic}]/u;
+
+function lineCountOf(rects: DOMRectList): number {
+  const lines: DOMRect[] = [];
+  for (const rect of rects) {
+    if (rect.width === 0 || rect.height === 0) continue;
+    const sameLine = lines.some((line) => rect.top < line.bottom - 1 && line.top < rect.bottom - 1);
+    if (!sameLine) lines.push(rect);
+  }
+  return lines.length;
+}
+
+function textNodesOf(root: HTMLElement): Text[] {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes: Text[] = [];
+  for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+    if (node instanceof Text) nodes.push(node);
+  }
+  return nodes;
+}
+
+function wordBreakFindings(root: HTMLElement): Finding[] {
+  const range = document.createRange();
+  const findings: Finding[] = [];
+  for (const node of textNodesOf(root)) {
+    const parent = node.parentElement;
+    const text = node.data;
+    if (!parent || !letterPattern.test(text) || isTextControl(parent)) continue;
+    range.selectNodeContents(node);
+    if (lineCountOf(range.getClientRects()) < 2 || !isShown(parent)) continue;
+    for (const match of text.matchAll(wordPattern)) {
+      const word = match[0];
+      if (!letterPattern.test(word)) continue;
+      range.setStart(node, match.index);
+      range.setEnd(node, match.index + word.length);
+      const lines = lineCountOf(range.getClientRects());
+      if (lines > 1) {
+        findings.push({
+          element: parent,
+          message: `${describe(parent)} breaks "${word}" across ${lines} lines`,
+        });
+      }
+    }
+  }
+  return findings;
+}
+
+export function brokenWords(root: HTMLElement): string[] {
+  return messagesOf(wordBreakFindings(root));
+}
+
+function viewportBoxOf(root: HTMLElement): Box {
+  const frame = frameOf(root);
+  if (frame) return boxOf(frame);
+  return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+}
+
+function visibleBoxOf(element: Element, sheet: Element, root: HTMLElement): Box {
+  let box = intersection(boxOf(sheet), viewportBoxOf(root));
+  for (let node = element.parentElement; node && node !== sheet; node = node.parentElement) {
+    const style = getComputedStyle(node);
+    if (clips(style.overflowX) || clips(style.overflowY)) {
+      box = intersection(box, paddingBoxOf(node, style));
+    }
+  }
+  return box;
+}
+
+function inside(box: Box, edge: Box): boolean {
+  return (
+    box.left >= edge.left &&
+    box.top >= edge.top &&
+    box.right <= edge.right &&
+    box.bottom <= edge.bottom
+  );
+}
+
+function sheetActionFindings(root: HTMLElement): Finding[] {
+  const sheets = [...root.querySelectorAll('[data-sheet-content]')]
+    .map((content) => content.parentElement)
+    .filter((sheet): sheet is HTMLElement => sheet !== null && isShown(sheet));
+  return sheets.flatMap((sheet) =>
+    [...sheet.querySelectorAll('[data-sheet-action]')].flatMap((action) => {
+      if (!action.checkVisibility({ visibilityProperty: true })) return [];
+      const visible = visibleBoxOf(action, sheet, root);
+      if (inside(boxOf(action), visible)) return [];
+      const edge = [visible.left, visible.top, visible.right, visible.bottom].join(', ');
+      return [{ element: action, message: `${describe(action)} lies outside [${edge}]` }];
+    }),
+  );
+}
+
+export function hiddenSheetActions(root: HTMLElement): string[] {
+  return messagesOf(sheetActionFindings(root));
+}
+
+function scrimTargetFindings(root: HTMLElement): Finding[] {
+  return [...root.querySelectorAll('[data-drawer]')].filter(isShown).flatMap((panel) => {
+    const scrim = panel.parentElement?.querySelector(':scope > [data-scrim]');
+    if (!scrim || !isShown(scrim)) return [];
+    const strip = intersection(boxOf(scrim), viewportBoxOf(root));
+    const panelBox = boxOf(panel);
+    const width = Math.max(panelBox.left - strip.left, strip.right - panelBox.right);
+    if (width >= layout.tapTarget) return [];
+    return [{ element: scrim, message: `${describe(scrim)} leaves a ${width} px strip` }];
+  });
+}
+
+export function thinScrims(root: HTMLElement): string[] {
+  return messagesOf(scrimTargetFindings(root));
+}
+
 export async function expectNoHorizontalOverflow(root: HTMLElement) {
   await expect(horizontalOverflow(root)).toEqual([]);
 }
@@ -393,6 +514,9 @@ const checks: Record<GeometryCheck, (root: HTMLElement) => Finding[]> = {
   frame: frameFindings,
   truncation: truncationFindings,
   overlays: overlayFindings,
+  wordBreaks: wordBreakFindings,
+  actionsVisible: sheetActionFindings,
+  scrimTarget: scrimTargetFindings,
 };
 
 const checkNames = Object.keys(checks) as GeometryCheck[];

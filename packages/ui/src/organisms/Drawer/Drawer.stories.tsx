@@ -94,6 +94,9 @@ export const LibraryActive = meta.story({
 
 export const LongEmail = meta.story({
   name: 'Long email',
+  parameters: {
+    geometry: { wordBreaks: 'an email address wraps at any character by design' },
+  },
   args: { current: 'settings', email: 'aleksandra.konstantinovna.vishnevetskaya@example.com' },
   play: async ({ canvas }) => {
     const email = canvas.getByText('aleksandra.konstantinovna.vishnevetskaya@example.com');

@@ -57,7 +57,7 @@ export function SortSheet(props: SortSheetProps) {
       title={title}
       onClose={props.onClose}
       actions={
-        <Button variant="primary" fullWidth onClick={props.onClose}>
+        <Button variant="primary" fullWidth onClick={props.onClose} data-sheet-action="">
           {t('done')}
         </Button>
       }

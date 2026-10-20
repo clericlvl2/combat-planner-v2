@@ -73,6 +73,7 @@ export function ShareSheet({
             component="button"
             type="button"
             className={classes.copy}
+            data-sheet-action=""
             data-copied={copied || undefined}
             onClick={() => {
               const result = onCopy(url);

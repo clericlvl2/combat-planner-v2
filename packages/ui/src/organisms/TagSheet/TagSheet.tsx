@@ -93,7 +93,7 @@ export function TagSheet({
       title={title}
       onClose={onClose}
       actions={
-        <Button variant="primary" fullWidth onClick={onDone}>
+        <Button variant="primary" fullWidth onClick={onDone} data-sheet-action="">
           {doneLabel}
         </Button>
       }

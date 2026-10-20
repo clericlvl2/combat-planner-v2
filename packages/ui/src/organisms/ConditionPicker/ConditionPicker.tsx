@@ -45,7 +45,7 @@ export function ConditionPicker({
       subtitle={unitName}
       onClose={onClose}
       actions={
-        <Button variant="primary" fullWidth onClick={onClose}>
+        <Button variant="primary" fullWidth onClick={onClose} data-sheet-action="">
           {t('done')}
         </Button>
       }

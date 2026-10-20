@@ -337,6 +337,7 @@ export function NumpadSheet({
               key={kind}
               className={classes.action}
               data-kind={kind}
+              data-sheet-action=""
               data-tap={tap === kind ? '' : undefined}
               fullWidth
               disabled={!enabled(kind)}

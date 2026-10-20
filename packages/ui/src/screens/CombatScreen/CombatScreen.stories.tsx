@@ -865,9 +865,16 @@ export const CSF79 = meta.story({
   },
 });
 
+const longNameBreak = {
+  wordBreaks: {
+    reason: 'the longest German unit name is wider than the unit row name column',
+    except: '[data-part="name"]',
+  },
+};
+
 export const CSF81 = meta.story({
   name: 'CS-F8.1 Long list, scrolled, 6 languages',
-  parameters: { scenario: longScenario() },
+  parameters: { geometry: longNameBreak, scenario: longScenario() },
   play: async ({ canvas, canvasElement }) => {
     await scrollList(canvasElement);
     await expect(
@@ -884,7 +891,7 @@ export const CSF81 = meta.story({
 
 export const CSF82 = meta.story({
   name: 'CS-F8.2 99-unit limit',
-  parameters: { scenario: longScenario(99) },
+  parameters: { geometry: longNameBreak, scenario: longScenario(99) },
   play: async ({ canvas, canvasElement, loaded }) => {
     await scrollList(canvasElement);
     await pickMenu(canvas, 'Add unit');
@@ -1288,7 +1295,7 @@ export const ExtraUndoRemovalBeforeDocument = meta.story({
 
 export const ExtraDuplicateAtLimit = meta.story({
   name: 'Extra: Duplicate disabled at the 99-unit limit',
-  parameters: { scenario: longScenario(99) },
+  parameters: { geometry: longNameBreak, scenario: longScenario(99) },
   play: async ({ canvas, canvasElement, loaded }) => {
     const menu = await openRowMenu(
       canvas,

@@ -211,6 +211,11 @@ export const ExtraUnchangedDoesNotSave = meta.story({
 
 export const ExtraLimit = meta.story({
   name: 'Limit 250 characters',
+  parameters: {
+    geometry: {
+      wordBreaks: 'the note is one 250-character token that no column keeps on one line',
+    },
+  },
   args: { value: '' },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Note' }));

@@ -94,6 +94,7 @@ export function Drawer(props: DrawerProps) {
         <FocusTrap active={trapFocus} innerRef={panelRef}>
           <div
             role="dialog"
+            data-drawer=""
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}

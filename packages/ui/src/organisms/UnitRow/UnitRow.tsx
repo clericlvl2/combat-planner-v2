@@ -230,7 +230,9 @@ export function UnitRow({
         </div>
       ) : null}
       <div className={classes.main}>
-        <span className={classes.name}>{unit.name}</span>
+        <span className={classes.name} data-part="name">
+          {unit.name}
+        </span>
         {claimName ? (
           <span className={classes.claim}>
             <IconUser
