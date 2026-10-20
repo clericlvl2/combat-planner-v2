@@ -11,8 +11,7 @@
     "build": "pnpm --filter @combat-planner/web run build",
     "dev": "pnpm --parallel --filter @combat-planner/web --filter @combat-planner/server run dev",
     "screenshots:update": "vp test --project visual --update",
-    "e2e": "playwright test",
-    "status": "bash scripts/status.sh"
+    "e2e": "playwright test"
   },
   "devDependencies": {
     "@playwright/test": "1.64.1",

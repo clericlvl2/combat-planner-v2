@@ -19,9 +19,7 @@
 **/data
 **/*.db
 **/*.db-*
-docs
 packages/ui/__screenshots__
-REPORT.md
 Dockerfile
 .dockerignore
 docker-compose.yml

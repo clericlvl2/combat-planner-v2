@@ -126,7 +126,7 @@ export const StepperS = meta.story({
   name: 'Stepper · S',
   parameters: {
     geometry: {
-      tapTargets: 'size S keeps the 36 px input of the handoff; no screen uses Stepper S',
+      tapTargets: 'size S keeps its 36 px input; no screen uses Stepper S',
     },
   },
   args: { range: LIMITS.defense, value: 15, size: 'S', width: 240 },

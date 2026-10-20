@@ -11,12 +11,9 @@ test-results/
 *.db-*
 data/
 .DS_Store
-docs/archive/inventory/*.png
 .idea/
+.claude/
 
-.claude/run/
-REPORT.md
-.claude/settings.local.json
 .tsbuild/
 *.tsbuildinfo
 .vitest/
