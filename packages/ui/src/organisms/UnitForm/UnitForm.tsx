@@ -221,6 +221,7 @@ export function UnitForm({
         onClose={onCancel}
         actions={
           <Button
+            className={classes.submit}
             variant="primary"
             fullWidth
             disabled={library && !pickedPreset}

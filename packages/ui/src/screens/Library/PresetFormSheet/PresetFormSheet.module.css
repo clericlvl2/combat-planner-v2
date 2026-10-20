@@ -10,6 +10,19 @@
   display: flex;
   flex: none;
   flex-direction: column;
+  container-type: inline-size;
+
+  & > * {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 4px;
+  }
+}
+
+@container (width < 320px) {
+  .steppers label {
+    flex-basis: 100%;
+  }
 }
 
 .tags {

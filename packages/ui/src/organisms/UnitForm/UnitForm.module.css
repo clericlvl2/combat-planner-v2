@@ -56,6 +56,19 @@
   display: flex;
   flex: none;
   flex-direction: column;
+  container-type: inline-size;
+
+  & > * {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    row-gap: 4px;
+  }
+}
+
+@container (width < 320px) {
+  .steppers label {
+    flex-basis: 100%;
+  }
 }
 
 .stepper:not([data-empty]) input[role='spinbutton'] {
@@ -102,9 +115,10 @@
 
 .list {
   box-sizing: border-box;
-  display: flex;
+  display: grid;
   flex: 1;
-  flex-direction: column;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-content: start;
   min-height: 0;
   overflow-y: auto;
   border: 2px solid var(--cp-color-border);
@@ -113,8 +127,9 @@
 
 .preset {
   box-sizing: border-box;
-  display: flex;
-  flex: none;
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
   align-items: center;
   gap: 12px;
   width: 100%;
@@ -151,9 +166,9 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 44px;
+  min-width: 44px;
   height: 44px;
-  padding: 0 2px;
+  padding: 0 6px;
   overflow: hidden;
   border-radius: var(--mantine-radius-field);
   color: var(--cp-color-surface);
@@ -199,7 +214,19 @@
 }
 
 .check {
-  flex: none;
+  grid-column: 3;
+}
+
+button.submit {
+  height: auto;
+  min-height: 58px;
+  padding-block: 8px;
+
+  & > span {
+    line-height: var(--mantine-line-height-snug);
+    text-align: center;
+    white-space: normal;
+  }
 }
 
 .fade {
