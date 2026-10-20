@@ -413,6 +413,13 @@ export async function expectGeometry(root: HTMLElement, parameter: unknown) {
     const optOut = optOuts[check];
     if (typeof optOut === 'string') continue;
     const excused = excusedSelectorOf(optOut);
+    if (excused !== null) {
+      await expect({
+        [check]: { except: excused, matches: root.querySelector(excused) !== null },
+      }).toEqual({
+        [check]: { except: excused, matches: true },
+      });
+    }
     const findings = checks[check](root).filter(
       (finding) => excused === null || !finding.element.matches(excused),
     );

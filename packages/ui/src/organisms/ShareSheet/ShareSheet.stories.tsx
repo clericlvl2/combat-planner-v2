@@ -66,18 +66,17 @@ function ShareSheetCell({
   );
 }
 
+const openSheetGeometry = {
+  truncation: {
+    reason: 'the player link ends with an ellipsis by design',
+    except: '[data-url]',
+  },
+};
+
 const meta = preview.meta({
   title: 'Organisms/ShareSheet',
   component: ShareSheetCell,
-  parameters: {
-    phoneFrame: { overlay: true },
-    geometry: {
-      truncation: {
-        reason: 'the player link ends with an ellipsis by design',
-        except: '[data-url]',
-      },
-    },
-  },
+  parameters: { phoneFrame: { overlay: true } },
   args: { onCopy: fn(), onReissue: fn(), onClose: fn() },
 });
 
@@ -111,6 +110,7 @@ const restFocusOnSheet = async (sheet: HTMLElement) => {
 };
 
 export const Anatomy = meta.story({
+  parameters: { geometry: openSheetGeometry },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('dialog', { name: 'Share with players' })).toBeVisible();
     await expect(canvas.getByText('Ambush at the Ferry')).toBeVisible();
@@ -123,6 +123,7 @@ export const Anatomy = meta.story({
 });
 
 export const Link = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'Link',
   play: async ({ args, canvas, canvasElement }) => {
     const link = canvas.getByText(linkG3);
@@ -137,6 +138,7 @@ export const Link = meta.story({
 });
 
 export const LinkCopied = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'Link copied',
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
@@ -151,6 +153,7 @@ export const LinkCopied = meta.story({
 });
 
 export const AfterReissueNewLink = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'After reissue: new link',
   play: async ({ args, canvas, canvasElement }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Revoke and reissue link' }));
@@ -165,6 +168,7 @@ export const AfterReissueNewLink = meta.story({
 });
 
 export const ExtraFlow = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'Flow: tap Copy, then tap Reissue',
   play: async ({ args, canvas, canvasElement }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
@@ -184,6 +188,7 @@ export const ExtraFlow = meta.story({
 });
 
 export const ExtraCopyFails = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'A failed copy does not show Copied',
   args: { copyResult: false },
   play: async ({ args, canvas }) => {
@@ -196,6 +201,7 @@ export const ExtraCopyFails = meta.story({
 });
 
 export const ExtraCopyResolves = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'A successful async copy shows Copied',
   args: { copyResult: true },
   play: async ({ args, canvas }) => {
@@ -209,6 +215,7 @@ export const ExtraCopyResolves = meta.story({
 });
 
 export const ExtraQrEncodesUrl = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'The QR encodes exactly the url',
   args: { url: 'https://combat.example/combats/01J9ZQ/play?t=g12.Zx9' },
   play: async ({ canvasElement }) => {
@@ -243,6 +250,7 @@ export const ExtraKeyboard = meta.story({
 });
 
 export const ExtraShiftTab = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'Shift+Tab right after opening stays inside',
   play: async ({ canvas }) => {
     const sheet = canvas.getByRole('dialog', { name: 'Share with players' });
@@ -290,10 +298,7 @@ export const ExtraReopenResetsCopied = meta.story({
   name: 'Reopening shows Copy again',
   parameters: {
     geometry: {
-      truncation: {
-        reason: 'the player link ends with an ellipsis by design',
-        except: '[data-url]',
-      },
+      ...openSheetGeometry,
       tapTargets: {
         reason: 'the Share opener is a story fixture, not product UI',
         except: '[data-story-fixture]',
@@ -315,6 +320,7 @@ export const ExtraReopenResetsCopied = meta.story({
 });
 
 export const ExtraLocaleRu = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'Locale ru',
   globals: { locale: 'ru' },
   args: { combatTitle: 'Засада у переправы' },
@@ -331,6 +337,7 @@ export const ExtraLocaleRu = meta.story({
 });
 
 export const ExtraLocaleDe = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'Locale de',
   globals: { locale: 'de' },
   args: { combatTitle: 'Hinterhalt an der Fähre' },
@@ -344,6 +351,7 @@ export const ExtraLocaleDe = meta.story({
 });
 
 export const ExtraLocaleJa = meta.story({
+  parameters: { geometry: openSheetGeometry },
   name: 'Locale ja',
   globals: { locale: 'ja' },
   args: { combatTitle: 'フェリーでの待ち伏せ' },
