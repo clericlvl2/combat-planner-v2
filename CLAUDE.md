@@ -22,7 +22,7 @@ from the repository root.
 - `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story with its `play`, headless
   Chromium, in the `narrow` frame and viewport, 320×568).
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
-- `pnpm exec vp test --project visual`: compares every story against
+- `pnpm exec vp test --project visual`: compares every story tagged `visual` against
   `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844.
 - `pnpm screenshots:update`: regenerates those baselines with the local Chromium.
 - `pnpm e2e`: Playwright against the real server and a temporary database; port from `E2E_PORT`,
@@ -96,10 +96,15 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   in `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
 - Tap areas smaller than their control use the `::after` pattern
   `inset: min(0px, (100% - var(--cp-tap-target)) / 2)` on a positioned control.
+- Only stories with `tags: ['visual']` have screenshot baselines: each component's main or anatomy
+  story and each state that differs in layout, each screen's main states in `en` plus one story in
+  `ru`, `de` and `ja`. A new story that changes layout gets the tag and a baseline; a story that
+  only differs by interaction outcome stays untagged and is covered by its `play` and the geometry
+  checks.
 - Screenshot baselines change only together with a change in the component they show. Run
-  `pnpm screenshots:update`, then check each changed PNG. `check-screenshots` requires one baseline
-  per story and 390-wide screen baselines. Byte-identical PNGs in one folder must be listed in
-  `<Name>.same.txt`.
+  `pnpm screenshots:update`, then check each changed PNG. `check-screenshots` requires exactly one
+  baseline per `visual` story, none for other stories, and 390-wide screen baselines.
+  Byte-identical PNGs in one folder must be listed in `<Name>.same.txt`.
 - Format: Oxfmt, `singleQuote`, `printWidth: 100`.
 - Commits: Conventional Commits whose subject states the user-visible result, e.g.
   `fix(ui): the ru restart label fits its button`. Types `feat`, `fix`, `perf`, `revert` show in
@@ -114,7 +119,7 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
   `viewport` global, so the 320×568 test viewport is set in `preview.tsx` (`initialGlobals`
   `frame: 'narrow'`, `viewport: 'narrow'`), not in `vite.config.ts`. The `visual` project stays at
-  390×844: `vite.config.ts` sets its viewport and `test/visual.test.tsx` runs each story with the
+  390×844: `vite.config.ts` sets its viewport and `test/visual.test.tsx` runs each `visual` story with the
   `phone` frame and viewport globals.
 - Playwright 1.64.1 exact.
 - React Router 7 data mode.
