@@ -47,6 +47,7 @@ function phoneStyle(viewport: Viewport): CSSProperties {
     width: layout.viewports[viewport],
     height: layout.phone.height,
     '--cp-layout-status-bar': `${layout.statusBar}px`,
+    '--cp-layout-viewport-width': `${layout.viewports[viewport]}px`,
   } as CSSProperties;
 }
 
