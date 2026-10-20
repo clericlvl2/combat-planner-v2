@@ -253,9 +253,22 @@ export function smallTapTargets(root: HTMLElement): string[] {
   });
 }
 
+function overlaysOf(root: HTMLElement): Element[] {
+  return shownElements(root).filter(
+    (element) =>
+      element.hasAttribute('data-scrim') || getComputedStyle(element).position === 'fixed',
+  );
+}
+
+function unframedOverlays(root: HTMLElement): string[] {
+  return overlaysOf(root).map(
+    (overlay) => `${describe(overlay)} renders without [data-phone-frame]`,
+  );
+}
+
 export function outsideFrame(root: HTMLElement): string[] {
   const frame = frameOf(root);
-  if (!frame) return [];
+  if (!frame) return unframedOverlays(root);
   const edge = boxOf(frame);
   return shownElements(frame)
     .filter((element) => {
@@ -286,7 +299,7 @@ export function truncatedText(root: HTMLElement): string[] {
 
 export function overlaysOffFrame(root: HTMLElement): string[] {
   const frame = frameOf(root);
-  if (!frame) return [];
+  if (!frame) return unframedOverlays(root);
   const edge = boxOf(frame);
   return [...root.querySelectorAll('[data-scrim]')]
     .filter(isShown)
