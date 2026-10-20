@@ -3,7 +3,18 @@ import { layout } from '../layout.ts';
 
 export type GeometryCheck = 'overflow' | 'tapTargets' | 'frame' | 'truncation' | 'overlays';
 
-export type GeometryParameter = Partial<Record<GeometryCheck, string>>;
+export type GeometryOptOut = string | { reason: string; except: string };
+
+export type GeometryParameter = Partial<Record<GeometryCheck, GeometryOptOut>>;
+
+interface Finding {
+  element: Element;
+  message: string;
+}
+
+function messagesOf(findings: Finding[]): string[] {
+  return findings.map((finding) => finding.message);
+}
 
 interface Box {
   left: number;
@@ -198,7 +209,7 @@ function paddingBoxOf(element: Element, style: CSSStyleDeclaration): Box {
   });
 }
 
-export function horizontalOverflow(root: HTMLElement): string[] {
+function overflowFindings(root: HTMLElement): Finding[] {
   const bounds = boundsOf(root);
   const styles = new Map<Element, CSSStyleDeclaration>();
   const styleOf = (element: Element) => {
@@ -228,10 +239,17 @@ export function horizontalOverflow(root: HTMLElement): string[] {
       }
     }
   }
-  return [...overflowing].map(([element, excess]) => `${describe(element)} overflows by ${excess}`);
+  return [...overflowing].map(([element, excess]) => ({
+    element,
+    message: `${describe(element)} overflows by ${excess}`,
+  }));
 }
 
-export function smallTapTargets(root: HTMLElement): string[] {
+export function horizontalOverflow(root: HTMLElement): string[] {
+  return messagesOf(overflowFindings(root));
+}
+
+function tapTargetFindings(root: HTMLElement): Finding[] {
   const areas = new Map<Element, Box>();
   for (const element of root.querySelectorAll(interactiveSelector)) {
     const owner = ownerOf(element);
@@ -249,8 +267,12 @@ export function smallTapTargets(root: HTMLElement): string[] {
     if (box.right <= box.left || box.bottom <= box.top) return [];
     const small =
       box.right - box.left < layout.tapTarget || box.bottom - box.top < layout.tapTarget;
-    return small ? [describe(owner, box)] : [];
+    return small ? [{ element: owner, message: describe(owner, box) }] : [];
   });
+}
+
+export function smallTapTargets(root: HTMLElement): string[] {
+  return messagesOf(tapTargetFindings(root));
 }
 
 function overlaysOf(root: HTMLElement): Element[] {
@@ -260,18 +282,23 @@ function overlaysOf(root: HTMLElement): Element[] {
   );
 }
 
-function unframedOverlays(root: HTMLElement): string[] {
-  return overlaysOf(root).map(
-    (overlay) => `${describe(overlay)} renders without [data-phone-frame]`,
-  );
+function unframedOverlays(root: HTMLElement): Finding[] {
+  return overlaysOf(root).map((overlay) => ({
+    element: overlay,
+    message: `${describe(overlay)} renders without [data-phone-frame]`,
+  }));
 }
 
-export function outsideFrame(root: HTMLElement): string[] {
+function findingsOf(elements: Element[]): Finding[] {
+  return elements.map((element) => ({ element, message: describe(element) }));
+}
+
+function frameFindings(root: HTMLElement): Finding[] {
   const frame = frameOf(root);
   if (!frame) return unframedOverlays(root);
   const edge = boxOf(frame);
-  return shownElements(frame)
-    .filter((element) => {
+  return findingsOf(
+    shownElements(frame).filter((element) => {
       const box = boxOf(element);
       const outsideX = box.left < edge.left || box.right > edge.right;
       const outsideY = box.top < edge.top || box.bottom > edge.bottom;
@@ -279,13 +306,17 @@ export function outsideFrame(root: HTMLElement): string[] {
         (outsideX && !insideScroller(element, frame, 'x')) ||
         (outsideY && !insideScroller(element, frame, 'y'))
       );
-    })
-    .map((element) => describe(element));
+    }),
+  );
 }
 
-export function truncatedText(root: HTMLElement): string[] {
-  return shownElements(root)
-    .filter((element) => {
+export function outsideFrame(root: HTMLElement): string[] {
+  return messagesOf(frameFindings(root));
+}
+
+function truncationFindings(root: HTMLElement): Finding[] {
+  return findingsOf(
+    shownElements(root).filter((element) => {
       if (!hasOwnText(element) || isTextControl(element)) return false;
       const style = getComputedStyle(element);
       if (isScroller(style.overflowX) || isScroller(style.overflowY)) return false;
@@ -293,17 +324,20 @@ export function truncatedText(root: HTMLElement): string[] {
       if (!clips(style.overflowY)) return false;
       const excess = element.scrollHeight - element.clientHeight;
       return style.webkitLineClamp === 'none' ? excess * 2 >= lineHeightOf(style) : excess > 0;
-    })
-    .map((element) => describe(element));
+    }),
+  );
 }
 
-export function overlaysOffFrame(root: HTMLElement): string[] {
+export function truncatedText(root: HTMLElement): string[] {
+  return messagesOf(truncationFindings(root));
+}
+
+function overlayFindings(root: HTMLElement): Finding[] {
   const frame = frameOf(root);
   if (!frame) return unframedOverlays(root);
   const edge = boxOf(frame);
-  return [...root.querySelectorAll('[data-scrim]')]
-    .filter(isShown)
-    .filter((scrim) => {
+  return findingsOf(
+    [...root.querySelectorAll('[data-scrim]')].filter(isShown).filter((scrim) => {
       const box = boxOf(scrim);
       return (
         box.left !== edge.left ||
@@ -311,8 +345,12 @@ export function overlaysOffFrame(root: HTMLElement): string[] {
         box.right !== edge.right ||
         box.bottom !== edge.bottom
       );
-    })
-    .map((scrim) => describe(scrim));
+    }),
+  );
+}
+
+export function overlaysOffFrame(root: HTMLElement): string[] {
+  return messagesOf(overlayFindings(root));
 }
 
 export async function expectNoHorizontalOverflow(root: HTMLElement) {
@@ -335,21 +373,33 @@ export async function expectOverlayMatchesFrame(root: HTMLElement) {
   await expect(overlaysOffFrame(root)).toEqual([]);
 }
 
-const checks: Record<GeometryCheck, (root: HTMLElement) => Promise<void>> = {
-  overflow: expectNoHorizontalOverflow,
-  tapTargets: expectTapTargets,
-  frame: expectInsideFrame,
-  truncation: expectNotTruncated,
-  overlays: expectOverlayMatchesFrame,
+const checks: Record<GeometryCheck, (root: HTMLElement) => Finding[]> = {
+  overflow: overflowFindings,
+  tapTargets: tapTargetFindings,
+  frame: frameFindings,
+  truncation: truncationFindings,
+  overlays: overlayFindings,
 };
+
+const checkNames = Object.keys(checks) as GeometryCheck[];
 
 function optOutsOf(value: unknown): GeometryParameter {
   return typeof value === 'object' && value !== null ? (value as GeometryParameter) : {};
 }
 
+function excusedSelectorOf(optOut: GeometryOptOut | undefined): string | null {
+  return optOut === undefined || typeof optOut === 'string' ? null : optOut.except;
+}
+
 export async function expectGeometry(root: HTMLElement, parameter: unknown) {
   const optOuts = optOutsOf(parameter);
-  for (const [check, run] of Object.entries(checks)) {
-    if (!optOuts[check as GeometryCheck]) await run(root);
+  for (const check of checkNames) {
+    const optOut = optOuts[check];
+    if (typeof optOut === 'string') continue;
+    const excused = excusedSelectorOf(optOut);
+    const findings = checks[check](root).filter(
+      (finding) => excused === null || !finding.element.matches(excused),
+    );
+    await expect({ [check]: messagesOf(findings) }).toEqual({ [check]: [] });
   }
 }

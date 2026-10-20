@@ -53,12 +53,13 @@ function NoteFieldCell({
         <NoteField key="collapsed" value={value} onChange={onChange} collapsed />
       )}
       {withUnmount ? (
-        <button type="button" onClick={() => setMounted(false)}>
+        <button type="button" data-story-fixture="" onClick={() => setMounted(false)}>
           Swap to the collapsed instance
         </button>
       ) : null}
       {withRemove ? (
         <button
+          data-story-fixture=""
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setMounted(false)}
@@ -68,6 +69,7 @@ function NoteFieldCell({
       ) : null}
       {withCollapse ? (
         <button
+          data-story-fixture=""
           type="button"
           onMouseDown={(event) => event.preventDefault()}
           onClick={() => setCollapsed(true)}
@@ -227,7 +229,10 @@ export const ExtraFlowCollapseSaves = meta.story({
   name: 'Flow: edit, collapse row saves',
   parameters: {
     geometry: {
-      tapTargets: 'the story harness button that drives the host is a test fixture, not product UI',
+      tapTargets: {
+        reason: 'the story harness button that drives the host is a test fixture, not product UI',
+        except: '[data-story-fixture]',
+      },
     },
   },
   args: { value: '', withCollapse: true },
@@ -246,7 +251,10 @@ export const ExtraSaveOnUnmount = meta.story({
   name: 'Tapping the host collapse saves the draft before the swap',
   parameters: {
     geometry: {
-      tapTargets: 'the story harness button that drives the host is a test fixture, not product UI',
+      tapTargets: {
+        reason: 'the story harness button that drives the host is a test fixture, not product UI',
+        except: '[data-story-fixture]',
+      },
     },
   },
   args: { value: '', withUnmount: true },
@@ -266,7 +274,10 @@ export const ExtraHostRemovalDoesNotSave = meta.story({
   name: 'The host removing the editing instance does not save',
   parameters: {
     geometry: {
-      tapTargets: 'the story harness button that drives the host is a test fixture, not product UI',
+      tapTargets: {
+        reason: 'the story harness button that drives the host is a test fixture, not product UI',
+        except: '[data-story-fixture]',
+      },
     },
   },
   args: { value: '', withRemove: true },

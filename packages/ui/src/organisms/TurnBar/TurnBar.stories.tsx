@@ -77,7 +77,14 @@ export const LongNextNameJa = meta.story({
 
 export const RuLongestLabels = meta.story({
   name: 'ru: longest labels',
-  parameters: { geometry: { truncation: 'the longest unit name ends with an ellipsis by design' } },
+  parameters: {
+    geometry: {
+      truncation: {
+        reason: 'the longest unit name ends with an ellipsis by design',
+        except: '[data-mode] > span + span',
+      },
+    },
+  },
   globals: { locale: 'ru' },
   args: { mode: 'next', nextName: 'Капитан стражи переправы Святослав Огнев' },
   play: async ({ canvas }) => {
@@ -158,7 +165,12 @@ export const ExtraKeyboard = meta.story({
 export const ExtraEllipsis = meta.story({
   name: 'Name at the length limit ends with an ellipsis',
   parameters: {
-    geometry: { truncation: 'the name at the length limit ends with an ellipsis by design' },
+    geometry: {
+      truncation: {
+        reason: 'the name at the length limit ends with an ellipsis by design',
+        except: '[data-mode] > span + span',
+      },
+    },
   },
   args: { mode: 'next', nextName: longestName },
   play: async ({ canvas }) => {

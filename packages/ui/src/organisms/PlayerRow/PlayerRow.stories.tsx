@@ -178,7 +178,7 @@ function PlayerRowCell({
         }}
       />
       {hostCollapse ? (
-        <button type="button" onClick={() => setExpanded(false)}>
+        <button type="button" data-story-fixture="" onClick={() => setExpanded(false)}>
           Collapse from the host
         </button>
       ) : null}
@@ -460,7 +460,10 @@ export const ExtraHostCollapseSavesNote = meta.story({
   name: 'A host collapse tap while editing saves the note',
   parameters: {
     geometry: {
-      tapTargets: 'the story harness button that drives the host is a test fixture, not product UI',
+      tapTargets: {
+        reason: 'the story harness button that drives the host is a test fixture, not product UI',
+        except: '[data-story-fixture]',
+      },
     },
   },
   args: { expanded: true, hostCollapse: true },

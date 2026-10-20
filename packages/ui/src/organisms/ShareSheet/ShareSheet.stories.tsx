@@ -41,7 +41,7 @@ function ShareSheetCell({
   return (
     <div style={stage}>
       {withOpener ? (
-        <button type="button" style={opener} onClick={() => setOpened(true)}>
+        <button type="button" data-story-fixture="" style={opener} onClick={() => setOpened(true)}>
           Share
         </button>
       ) : null}
@@ -71,7 +71,12 @@ const meta = preview.meta({
   component: ShareSheetCell,
   parameters: {
     phoneFrame: { overlay: true },
-    geometry: { truncation: 'the player link ends with an ellipsis by design' },
+    geometry: {
+      truncation: {
+        reason: 'the player link ends with an ellipsis by design',
+        except: '[data-url]',
+      },
+    },
   },
   args: { onCopy: fn(), onReissue: fn(), onClose: fn() },
 });
@@ -283,7 +288,18 @@ export const ExtraClose = meta.story({
 
 export const ExtraReopenResetsCopied = meta.story({
   name: 'Reopening shows Copy again',
-  parameters: { geometry: { tapTargets: 'the Share opener is a story fixture, not product UI' } },
+  parameters: {
+    geometry: {
+      truncation: {
+        reason: 'the player link ends with an ellipsis by design',
+        except: '[data-url]',
+      },
+      tapTargets: {
+        reason: 'the Share opener is a story fixture, not product UI',
+        except: '[data-story-fixture]',
+      },
+    },
+  },
   args: { withOpener: true },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));

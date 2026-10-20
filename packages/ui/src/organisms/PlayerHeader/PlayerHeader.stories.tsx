@@ -105,7 +105,14 @@ export const HeroPicker = meta.story({
 
 export const LongTitleRound12 = meta.story({
   name: 'Long title, round 12',
-  parameters: { geometry: { truncation: 'the long combat title ends with an ellipsis by design' } },
+  parameters: {
+    geometry: {
+      truncation: {
+        reason: 'the long combat title ends with an ellipsis by design',
+        except: 'span:has(+ h1)',
+      },
+    },
+  },
   args: { title: 'Капитан стражи переправы: засада у моста', round: 12, escalation: 6 },
   play: async ({ canvas }) => {
     const title = canvas.getByText('Капитан стражи переправы: засада у моста');

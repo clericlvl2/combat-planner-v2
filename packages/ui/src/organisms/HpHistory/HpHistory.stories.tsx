@@ -86,7 +86,12 @@ function HpHistoryCell({
     return (
       <div style={sheetStage}>
         {opened ? null : (
-          <button type="button" style={reopen} onClick={() => setOpened(true)}>
+          <button
+            type="button"
+            data-story-fixture=""
+            style={reopen}
+            onClick={() => setOpened(true)}
+          >
             {t('title')}
           </button>
         )}
@@ -493,7 +498,12 @@ export const ExtraSheetEscape = meta.story({
   name: 'Sheet: Escape closes, Tab stays inside',
   parameters: {
     ...sheet,
-    geometry: { tapTargets: 'the HP History opener is a story fixture, not product UI' },
+    geometry: {
+      tapTargets: {
+        reason: 'the HP History opener is a story fixture, not product UI',
+        except: '[data-story-fixture]',
+      },
+    },
   },
   args: { variant: 'sheet', entries: short, maxHp: 36 },
   play: async ({ args, canvas }) => {
@@ -515,7 +525,12 @@ export const ExtraSheetEscape = meta.story({
 export const ExtraSheetEscapeMotionOn = meta.story({
   name: 'Sheet with motion: long list scrolls by keyboard, Escape closes',
   parameters: {
-    geometry: { tapTargets: 'the HP History opener is a story fixture, not product UI' },
+    geometry: {
+      tapTargets: {
+        reason: 'the HP History opener is a story fixture, not product UI',
+        except: '[data-story-fixture]',
+      },
+    },
     ...sheet,
     motion: 'on',
   },
