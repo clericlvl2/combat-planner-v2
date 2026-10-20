@@ -7,6 +7,7 @@ import { layout } from '../../layout.ts';
 import { frameViewportOf } from '../../storybook/PhoneFrame.tsx';
 import { Button } from './Button.tsx';
 import type { ButtonProps } from './Button.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -70,8 +71,9 @@ export const PrimaryMPressed = meta.story({
 export const PrimaryMDisabled = meta.story({
   name: 'Primary M · disabled',
   args: { variant: 'primary', size: 'M', labelKey: 'save', disabled: true, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Save' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Button');
+    const button = canvas.getByRole('button', { name: t('save') });
     await expect(button).toBeDisabled();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
@@ -236,8 +238,9 @@ export const SecondarySIconFullWidth = meta.story({
 export const ExtraClick = meta.story({
   name: 'Click',
   args: { variant: 'primary', size: 'M', labelKey: 'save', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Save' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Button');
+    await userEvent.click(canvas.getByRole('button', { name: t('save') }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
@@ -245,8 +248,9 @@ export const ExtraClick = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { variant: 'primary', size: 'M', labelKey: 'save', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Save' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Button');
+    const button = canvas.getByRole('button', { name: t('save') });
     await userEvent.tab();
     await expect(button).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -261,13 +265,14 @@ export const ExtraPhoneFrame = meta.story({
   parameters: { phoneFrame: true },
   args: { variant: 'primary', size: 'M', icon: IconPlus, labelKey: 'newCombat', fullWidth: true },
   play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Button');
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
     const viewport = layout.viewports[frameViewportOf(globals.frame)];
     await expect(frame?.getBoundingClientRect().width).toBe(viewport.width);
     await expect(frame?.getBoundingClientRect().height).toBe(viewport.height);
     await expect(canvas.getByText('9:41')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'New combat' })).toBeVisible();
-    const button = canvas.getByRole('button', { name: 'New combat' });
+    await expect(canvas.getByRole('button', { name: t('newCombat') })).toBeVisible();
+    const button = canvas.getByRole('button', { name: t('newCombat') });
     const frameTop = frame?.getBoundingClientRect().top ?? 0;
     await expect(button.getBoundingClientRect().top - frameTop).toBeGreaterThanOrEqual(44);
   },

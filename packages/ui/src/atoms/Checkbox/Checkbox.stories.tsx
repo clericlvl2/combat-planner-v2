@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Checkbox.json';
 import { Checkbox } from './Checkbox.tsx';
 import type { CheckboxProps } from './Checkbox.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -78,8 +79,9 @@ export const SquareTap = meta.story({
 export const SquareDisabled = meta.story({
   name: 'Square · disabled',
   args: { shape: 'square', checked: false, disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const box = canvas.getByRole('checkbox', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    const box = canvas.getByRole('checkbox', { name: t('select') });
     await expect(box).toBeDisabled();
     await userEvent.click(box, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -195,8 +197,9 @@ export const Weakened = meta.story({
 export const ExtraToggle = meta.story({
   name: 'Toggle on tap',
   args: { checked: false, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const box = canvas.getByRole('checkbox', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    const box = canvas.getByRole('checkbox', { name: t('select') });
     await userEvent.click(box);
     await expect(args.onChange).toHaveBeenLastCalledWith(true);
     await expect(box).toBeChecked();
@@ -209,19 +212,21 @@ export const ExtraToggle = meta.story({
 export const ExtraLabelClick = meta.story({
   name: 'Label click toggles',
   args: { checked: false, labelKey: 'tagUndead', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Undead'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    await userEvent.click(canvas.getByText(t('tagUndead')));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith(true);
-    await expect(canvas.getByRole('checkbox', { name: 'Undead' })).toBeChecked();
+    await expect(canvas.getByRole('checkbox', { name: t('tagUndead') })).toBeChecked();
   },
 });
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Space toggles',
   args: { checked: false, labelKey: 'tagUndead', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const box = canvas.getByRole('checkbox', { name: 'Undead' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    const box = canvas.getByRole('checkbox', { name: t('tagUndead') });
     await userEvent.tab();
     await expect(box).toHaveFocus();
     await userEvent.keyboard('[Space]');
@@ -236,10 +241,11 @@ export const ExtraKeyboard = meta.story({
 export const ExtraDisabledLabel = meta.story({
   name: 'Disabled with label',
   args: { checked: true, labelKey: 'tagUndead', disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Undead'), { pointerEventsCheck: 0 });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    await userEvent.click(canvas.getByText(t('tagUndead')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('checkbox', { name: 'Undead' })).toBeChecked();
+    await expect(canvas.getByRole('checkbox', { name: t('tagUndead') })).toBeChecked();
   },
 });
 

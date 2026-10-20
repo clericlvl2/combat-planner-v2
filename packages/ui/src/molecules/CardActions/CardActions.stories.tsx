@@ -2,6 +2,7 @@ import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
 import { CardActions } from './CardActions.tsx';
 import type { CardActionsProps } from './CardActions.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface CardActionsCellProps extends CardActionsProps {
   width?: number;
@@ -44,9 +45,10 @@ export const Anatomy = meta.story({
 export const Default = meta.story({
   name: 'Default',
   args: {},
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Edit' })).toBeVisible();
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CardActions');
+    await expect(canvas.getByRole('button', { name: t('edit') })).toBeVisible();
+    const more = canvas.getByRole('button', { name: t('more') });
     await expect(more).toHaveAttribute('aria-expanded', 'false');
     await expect(more.getBoundingClientRect().width).toBe(48);
   },
@@ -67,8 +69,9 @@ export const Tap = meta.story({
 export const OpenCardDuplicateDelete = meta.story({
   name: 'Open: card (Duplicate, Delete)',
   args: { open: true },
-  play: async ({ canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CardActions');
+    const more = canvas.getByRole('button', { name: t('more') });
     await expect(more).toHaveAttribute('aria-expanded', 'true');
     await expect(more).toHaveAttribute('aria-haspopup', 'menu');
     await expect(getComputedStyle(more).backgroundColor).toBe('rgb(255, 231, 163)');
@@ -123,8 +126,9 @@ export const Ru320UnitMenu = meta.story({
 export const ExtraEdit = meta.story({
   name: 'Edit fires onEdit',
   args: { onEdit: fn(), onMore: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CardActions');
+    await userEvent.click(canvas.getByRole('button', { name: t('edit') }));
     await expect(args.onEdit).toHaveBeenCalledOnce();
     await expect(args.onMore).not.toHaveBeenCalled();
   },
@@ -133,8 +137,9 @@ export const ExtraEdit = meta.story({
 export const ExtraMore = meta.story({
   name: '⋯ fires onMore',
   args: { onEdit: fn(), onMore: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CardActions');
+    await userEvent.click(canvas.getByRole('button', { name: t('more') }));
     await expect(args.onMore).toHaveBeenCalledOnce();
     await expect(args.onEdit).not.toHaveBeenCalled();
   },
@@ -143,13 +148,14 @@ export const ExtraMore = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { onEdit: fn(), onMore: fn() },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CardActions');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Edit' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('edit') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onEdit).toHaveBeenCalledOnce();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'More actions' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('more') })).toHaveFocus();
     await userEvent.keyboard('[Space]');
     await expect(args.onMore).toHaveBeenCalledOnce();
   },
@@ -158,9 +164,10 @@ export const ExtraKeyboard = meta.story({
 export const ExtraDisabled = meta.story({
   name: 'Disabled',
   args: { disabled: true, onEdit: fn(), onMore: fn() },
-  play: async ({ args, canvas }) => {
-    const edit = canvas.getByRole('button', { name: 'Edit' });
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CardActions');
+    const edit = canvas.getByRole('button', { name: t('edit') });
+    const more = canvas.getByRole('button', { name: t('more') });
     await expect(edit).toBeDisabled();
     await expect(more).toBeDisabled();
     await userEvent.click(edit, { pointerEventsCheck: 0 });

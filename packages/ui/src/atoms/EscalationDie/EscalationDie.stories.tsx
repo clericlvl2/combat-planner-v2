@@ -2,6 +2,7 @@ import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
 import { EscalationDie } from './EscalationDie.tsx';
 import type { EscalationDieProps } from './EscalationDie.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
   title: 'Atoms/EscalationDie',
@@ -31,8 +32,9 @@ export const Anatomy = meta.story({
 export const VariantsStates0 = meta.story({
   name: '0',
   args: { value: 0 },
-  play: async ({ canvas, canvasElement }) => {
-    const caption = canvas.getByText('No escalation');
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    const caption = canvas.getByText(t('none'));
     await expect(caption).toBeVisible();
     await expect(getComputedStyle(caption).color).toBe('rgb(95, 87, 77)');
     await expect(pipCount(canvasElement)).toBe(0);
@@ -46,8 +48,9 @@ export const VariantsStates0 = meta.story({
 export const VariantsStates1 = meta.story({
   name: '1',
   args: { value: 1 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Escalation 1')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await expect(canvas.getByText(t('value', { value: 1 }))).toBeVisible();
     await expect(pipCount(canvasElement)).toBe(1);
     await expect(tileFill(canvasElement)).toBe(inkFill);
   },
@@ -56,8 +59,9 @@ export const VariantsStates1 = meta.story({
 export const VariantsStates2 = meta.story({
   name: '2',
   args: { value: 2 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Escalation 2')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await expect(canvas.getByText(t('value', { value: 2 }))).toBeVisible();
     await expect(pipCount(canvasElement)).toBe(2);
     await expect(tileFill(canvasElement)).toBe(inkFill);
   },
@@ -66,8 +70,9 @@ export const VariantsStates2 = meta.story({
 export const VariantsStates3 = meta.story({
   name: '3',
   args: { value: 3 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Escalation 3')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await expect(canvas.getByText(t('value', { value: 3 }))).toBeVisible();
     await expect(pipCount(canvasElement)).toBe(3);
     await expect(tileFill(canvasElement)).toBe(inkFill);
   },
@@ -76,8 +81,9 @@ export const VariantsStates3 = meta.story({
 export const VariantsStates4 = meta.story({
   name: '4',
   args: { value: 4 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Escalation 4')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await expect(canvas.getByText(t('value', { value: 4 }))).toBeVisible();
     await expect(pipCount(canvasElement)).toBe(4);
     await expect(tileFill(canvasElement)).toBe(inkFill);
   },
@@ -86,8 +92,9 @@ export const VariantsStates4 = meta.story({
 export const VariantsStates5 = meta.story({
   name: '5',
   args: { value: 5 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Escalation 5')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await expect(canvas.getByText(t('value', { value: 5 }))).toBeVisible();
     await expect(pipCount(canvasElement)).toBe(5);
     await expect(tileFill(canvasElement)).toBe(inkFill);
   },
@@ -96,8 +103,9 @@ export const VariantsStates5 = meta.story({
 export const VariantsStates6 = meta.story({
   name: '6',
   args: { value: 6 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Escalation 6')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await expect(canvas.getByText(t('value', { value: 6 }))).toBeVisible();
     await expect(pipCount(canvasElement)).toBe(6);
     await expect(tileFill(canvasElement)).toBe(inkFill);
   },
@@ -107,8 +115,9 @@ export const TapDM = meta.story({
   name: 'Tap (DM)',
   args: { value: 2, onClick: fn() },
   render: renderTap,
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('button', { name: 'Escalation 2' })).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await expect(canvas.getByRole('button', { name: t('value', { value: 2 }) })).toBeVisible();
     const tile = tileOf(canvasElement);
     await expect(tile && getComputedStyle(tile).outlineColor).toBe('rgb(255, 231, 163)');
     await expect(tile && getComputedStyle(tile).outlineWidth).toBe('3px');
@@ -118,8 +127,9 @@ export const TapDM = meta.story({
 export const ExtraClick = meta.story({
   name: 'DM taps the die',
   args: { value: 3, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Escalation 3' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    await userEvent.click(canvas.getByRole('button', { name: t('value', { value: 3 }) }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
@@ -127,8 +137,9 @@ export const ExtraClick = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { value: 1, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Escalation 1' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
+    const button = canvas.getByRole('button', { name: t('value', { value: 1 }) });
     await userEvent.tab();
     await expect(button).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -151,9 +162,10 @@ export const ExtraFocus = meta.story({
 export const ExtraReadOnly = meta.story({
   name: 'Player view: read only',
   args: { value: 4, readOnly: true, onClick: fn() },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'EscalationDie');
     await expect(canvas.queryByRole('button')).toBeNull();
-    await userEvent.click(canvas.getByText('Escalation 4'));
+    await userEvent.click(canvas.getByText(t('value', { value: 4 })));
     await expect(args.onClick).not.toHaveBeenCalled();
   },
 });

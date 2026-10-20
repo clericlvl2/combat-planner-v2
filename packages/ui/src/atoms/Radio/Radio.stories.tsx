@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Radio.json';
 import { Radio } from './Radio.tsx';
 import type { RadioProps } from './Radio.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -110,8 +111,9 @@ export const Tap = meta.story({
 export const Disabled = meta.story({
   name: 'Disabled',
   args: { checked: false, disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const radio = canvas.getByRole('radio', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    const radio = canvas.getByRole('radio', { name: t('select') });
     await expect(radio).toBeDisabled();
     await userEvent.click(radio, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -142,8 +144,9 @@ export const L = meta.story({
 export const ExtraSelect = meta.story({
   name: 'Tap selects',
   args: { checked: false, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const radio = canvas.getByRole('radio', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    const radio = canvas.getByRole('radio', { name: t('select') });
     await userEvent.click(radio);
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('newestFirst');
@@ -157,21 +160,23 @@ export const ExtraLabelClick = meta.story({
   name: 'Label click selects',
   args: { checked: false, onChange: fn() },
   render: renderGroup,
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
-    await userEvent.click(canvas.getByText('Last played'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
+    await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('lastPlayed');
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).not.toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).not.toBeChecked();
   },
 });
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Space selects',
   args: { checked: false, labelKey: 'lastPlayed', value: 'lastPlayed', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const radio = canvas.getByRole('radio', { name: 'Last played' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    const radio = canvas.getByRole('radio', { name: t('lastPlayed') });
     await userEvent.tab();
     await expect(radio).toHaveFocus();
     await userEvent.keyboard('[Space]');
@@ -184,12 +189,13 @@ export const ExtraGroupArrows = meta.story({
   name: 'Group: arrow keys move the selection',
   args: { checked: false, onChange: fn() },
   render: renderGroup,
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('lastPlayed');
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
   },
 });
 
@@ -197,10 +203,11 @@ export const ExtraDisabledLabel = meta.story({
   name: 'Disabled group',
   args: { checked: false, disabled: true, onChange: fn() },
   render: renderGroup,
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Last played'), { pointerEventsCheck: 0 });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    await userEvent.click(canvas.getByText(t('lastPlayed')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
   },
 });
 

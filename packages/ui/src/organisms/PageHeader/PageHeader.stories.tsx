@@ -6,6 +6,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/PageHeader.json';
 import { PageHeader } from './PageHeader.tsx';
 import type { PageHeaderFilter, PageHeaderProps, PageHeaderTool } from './PageHeader.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -122,11 +123,16 @@ const combats = {
 
 export const Anatomy = meta.story({
   args: library,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Library' })).toBeVisible();
-    await expect(canvas.getByRole('searchbox', { name: 'Search presets' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Tags 1' })).toHaveAttribute('data-active');
-    await expect(canvas.getByRole('button', { name: 'Remove filter Orcs' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('library') })).toBeVisible();
+    await expect(canvas.getByRole('searchbox', { name: t('searchPresets') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: `${t('tags')} 1` })).toHaveAttribute(
+      'data-active',
+    );
+    await expect(
+      canvas.getByRole('button', { name: t('removeFilter', { name: t('orcs') }) }),
+    ).toBeVisible();
   },
 });
 
@@ -148,10 +154,11 @@ export const LibrarySortTagsFiltered = meta.story({
 export const NestedScreen = meta.story({
   name: 'Nested screen',
   args: { titleKey: 'settings', nav: 'back' },
-  play: async ({ canvas }) => {
-    await expect(canvas.queryByRole('button', { name: 'Open navigation' })).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    await expect(canvas.queryByRole('button', { name: t('openNavigation') })).toBeNull();
     await expect(canvas.queryByRole('searchbox')).toBeNull();
-    await expect(canvas.getByRole('button', { name: 'Back' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('back') })).toBeVisible();
   },
 });
 
@@ -165,17 +172,21 @@ export const RuFiltered = meta.story({
     tagCount: 12,
     filterLabels: ['Нежить и призраки', 'Орки', 'Переправа'],
   },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
     await expect(canvas.getByRole('button', { name: 'Теги 12' })).toBeVisible();
-    await expect(canvas.getAllByRole('button', { name: /^Remove filter/ })).toHaveLength(3);
+    const [before = '', after = ''] = t('removeFilter', { name: '\n' }).split('\n');
+    const removeFilter = (label: string) => label.startsWith(before) && label.endsWith(after);
+    await expect(canvas.getAllByRole('button', { name: removeFilter })).toHaveLength(3);
   },
 });
 
 export const ExtraBurger = meta.story({
   name: 'Burger opens navigation',
   args: combats,
-  play: async ({ args, canvas }) => {
-    const burger = canvas.getByRole('button', { name: 'Open navigation' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    const burger = canvas.getByRole('button', { name: t('openNavigation') });
     await userEvent.click(burger);
     await expect(args.onMenu).toHaveBeenCalledOnce();
     await userEvent.keyboard('{Enter}');
@@ -189,8 +200,9 @@ export const ExtraBurger = meta.story({
 export const ExtraBack = meta.story({
   name: 'Back returns',
   args: { titleKey: 'settings', nav: 'back' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Back' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    await userEvent.click(canvas.getByRole('button', { name: t('back') }));
     await expect(args.onBack).toHaveBeenCalledOnce();
     await expect(args.onMenu).not.toHaveBeenCalled();
   },
@@ -199,13 +211,14 @@ export const ExtraBack = meta.story({
 export const ExtraSearch = meta.story({
   name: 'Typing filters the list',
   args: combats,
-  play: async ({ args, canvas }) => {
-    const search = canvas.getByRole('searchbox', { name: 'Search combats' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    const search = canvas.getByRole('searchbox', { name: t('searchCombats') });
     await userEvent.type(search, 'Ogre');
     await expect(search).toHaveValue('Ogre');
     await expect(args.onSearch).toHaveBeenCalledTimes(4);
     await expect(args.onSearch).toHaveBeenLastCalledWith('Ogre');
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear search' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('SearchField:clear') }));
     await expect(args.onSearch).toHaveBeenLastCalledWith('');
   },
 });
@@ -213,11 +226,12 @@ export const ExtraSearch = meta.story({
 export const ExtraTools = meta.story({
   name: 'Sort and Tags open their sheets',
   args: library,
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    await userEvent.click(canvas.getByRole('button', { name: t('sort') }));
     await expect(args.onTool).toHaveBeenCalledOnce();
     await expect(args.onTool).toHaveBeenLastCalledWith('sort');
-    await userEvent.click(canvas.getByRole('button', { name: 'Tags 1' }));
+    await userEvent.click(canvas.getByRole('button', { name: `${t('tags')} 1` }));
     await expect(args.onTool).toHaveBeenCalledTimes(2);
     await expect(args.onTool).toHaveBeenLastCalledWith('tags');
   },
@@ -226,11 +240,12 @@ export const ExtraTools = meta.story({
 export const ExtraToolsDisabled = meta.story({
   name: 'Disabled tools never fire',
   args: { ...library, toolDisabled: true },
-  play: async ({ args, canvas }) => {
-    const sort = canvas.getByRole('button', { name: 'Sort' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    const sort = canvas.getByRole('button', { name: t('sort') });
     await expect(sort).toBeDisabled();
     await userEvent.click(sort, { pointerEventsCheck: 0 });
-    await userEvent.click(canvas.getByRole('button', { name: 'Tags 1' }), {
+    await userEvent.click(canvas.getByRole('button', { name: `${t('tags')} 1` }), {
       pointerEventsCheck: 0,
     });
     await expect(args.onTool).not.toHaveBeenCalled();
@@ -240,12 +255,15 @@ export const ExtraToolsDisabled = meta.story({
 export const ExtraRemoveFilter = meta.story({
   name: 'Chip × removes the filter, Clear removes all',
   args: library,
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Remove filter Orcs' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('removeFilter', { name: t('orcs') }) }),
+    );
     await expect(args.onRemoveFilter).toHaveBeenCalledOnce();
     await expect(args.onRemoveFilter).toHaveBeenCalledWith('orcs');
     await expect(args.onClearFilters).not.toHaveBeenCalled();
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('clear') }));
     await expect(args.onClearFilters).toHaveBeenCalledOnce();
   },
 });
@@ -253,8 +271,9 @@ export const ExtraRemoveFilter = meta.story({
 export const ExtraAction = meta.story({
   name: 'Header button',
   args: { titleKey: 'settings', nav: 'back', actionKey: 'done' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Done' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    await userEvent.click(canvas.getByRole('button', { name: t('done') }));
     await expect(args.onAction).toHaveBeenCalledOnce();
   },
 });
@@ -262,8 +281,9 @@ export const ExtraAction = meta.story({
 export const ExtraActionDisabled = meta.story({
   name: 'Disabled header button never fires',
   args: { titleKey: 'settings', nav: 'back', actionKey: 'done', actionDisabled: true },
-  play: async ({ args, canvas }) => {
-    const done = canvas.getByRole('button', { name: 'Done' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    const done = canvas.getByRole('button', { name: t('done') });
     await expect(done).toBeDisabled();
     await userEvent.click(done, { pointerEventsCheck: 0 });
     await expect(args.onAction).not.toHaveBeenCalled();

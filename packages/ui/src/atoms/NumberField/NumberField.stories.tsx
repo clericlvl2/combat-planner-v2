@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/NumberField.json';
 import { NumberField } from './NumberField.tsx';
 import type { NumberFieldProps } from './NumberField.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -91,8 +92,9 @@ export const AmountEs = meta.story({
 export const ExtraTyping = meta.story({
   name: 'Typing and backspace',
   args: { value: null, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Amount' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
     await expect(input).toHaveAttribute('inputmode', 'numeric');
     await userEvent.type(input, '12');
     await expect(args.onChange).toHaveBeenNthCalledWith(1, 1);
@@ -107,8 +109,9 @@ export const ExtraTyping = meta.story({
 export const ExtraClampMax = meta.story({
   name: 'Clamps to max',
   args: { value: null, max: 999, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Amount' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
     await userEvent.type(input, '1234');
     await expect(args.onChange).toHaveBeenLastCalledWith(999);
     await expect(input).toHaveValue('999');
@@ -121,8 +124,9 @@ export const ExtraClampMax = meta.story({
 export const ExtraClampMin = meta.story({
   name: 'Clamps to min on blur',
   args: { value: null, labelKey: 'maxHp', min: 1, max: 999, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Max HP' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('maxHp') });
     await userEvent.type(input, '0');
     await expect(args.onChange).toHaveBeenLastCalledWith(0);
     await userEvent.tab();
@@ -137,8 +141,9 @@ export const ExtraClampMin = meta.story({
 export const ExtraRejectsNonNumeric = meta.story({
   name: 'Rejects non-numeric input',
   args: { value: null, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Amount' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
     await userEvent.type(input, 'abc-.e');
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(input).toHaveValue('');
@@ -152,8 +157,9 @@ export const ExtraRejectsNonNumeric = meta.story({
 export const ExtraNegative = meta.story({
   name: 'Sign when min is negative',
   args: { value: null, min: -999, max: 999, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Amount' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
     await userEvent.type(input, '-45');
     await expect(args.onChange).toHaveBeenLastCalledWith(-45);
     await expect(input).toHaveValue('-45');
@@ -166,8 +172,9 @@ export const ExtraNegative = meta.story({
 export const ExtraArrowKeys = meta.story({
   name: 'Arrow keys step',
   args: { value: 10, step: 5, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Amount' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
     await userEvent.click(input);
     await userEvent.keyboard('{ArrowUp}');
     await expect(args.onChange).toHaveBeenLastCalledWith(15);
@@ -180,8 +187,9 @@ export const ExtraArrowKeys = meta.story({
 export const ExtraDisabled = meta.story({
   name: 'Disabled',
   args: { value: 12, disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Amount' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
     await expect(input).toBeDisabled();
     await userEvent.type(input, '3', { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -192,18 +200,20 @@ export const ExtraDisabled = meta.story({
 export const ExtraError = meta.story({
   name: 'Error',
   args: { value: null, labelKey: 'maxHp', min: 1, max: 999, errorKey: 'errorRange' },
-  play: async ({ canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Max HP' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('maxHp') });
     await expect(input).toHaveAttribute('aria-invalid', 'true');
-    await expect(input).toHaveAccessibleDescription('From 1 to 999');
+    await expect(input).toHaveAccessibleDescription(t('errorRange', { min: 1, max: 999 }));
   },
 });
 
 export const ExtraFrameClick = meta.story({
   name: 'Clicking the frame focuses the input',
   args: { value: 12, onChange: fn() },
-  play: async ({ canvas }) => {
-    const input = canvas.getByRole('textbox', { name: 'Amount' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
     const frame = input.closest<HTMLElement>('[data-field]');
     if (frame) {
       await userEvent.pointer({ keys: '[MouseLeft]', target: frame, coords: { x: 4, y: 4 } });
@@ -221,8 +231,9 @@ export const ExtraDefenseWidth = meta.story({
       <NumberFieldCell {...args} min={1} max={999} value={999} />
     </div>
   ),
-  play: async ({ canvas }) => {
-    const [defense, maxHp] = canvas.getAllByRole('textbox', { name: 'Amount' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const [defense, maxHp] = canvas.getAllByRole('textbox', { name: t('amount') });
     await expect(defense).toHaveAttribute('size', '2');
     await expect(maxHp).toHaveAttribute('size', '3');
     const widths = [defense, maxHp].map((input) => input?.getBoundingClientRect().width ?? 0);

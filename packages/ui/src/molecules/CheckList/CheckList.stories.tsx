@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/CheckList.json';
 import { CheckList } from './CheckList.tsx';
 import type { CheckListOption, CheckListProps } from './CheckList.tsx';
+import { anyValue, storyT } from '../../storybook/storyT.ts';
 
 type TagKey = Exclude<keyof typeof en, 'create' | 'noMatch'>;
 
@@ -59,6 +60,14 @@ const tags: readonly CellOption[] = [
 
 const library: readonly CellOption[] = [...tags, { key: 'mooks', count: 8 }];
 
+const typedLibrary: readonly CellOption[] = [
+  { label: 'Orcs', count: 2 },
+  { label: 'Ferry', count: 6 },
+  { label: 'Goblins', count: 3 },
+  { label: 'Undead', count: 4 },
+  { label: 'Mooks', count: 8 },
+];
+
 const sizeTags: readonly CellOption[] = [
   { key: 'orcs', count: 2 },
   { key: 'goblins', count: 3 },
@@ -81,11 +90,12 @@ export const VariantsTags = meta.story({
 
 export const VariantsQueryMatch = meta.story({
   name: 'Variants · query match',
-  args: { tags: library, values: [], query: 'mo', onCreate: fn() },
-  play: async ({ args, canvas }) => {
+  args: { tags: typedLibrary, values: [], query: 'mo', onCreate: fn() },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
     await expect(canvas.getByText('Mooks')).toBeVisible();
-    await expect(canvas.queryByRole('checkbox', { name: 'Orcs 2' })).toBeNull();
-    await expect(canvas.queryByRole('button', { name: 'Create “mo”' })).toBeNull();
+    await expect(canvas.queryByRole('checkbox', { name: `${t('orcs')} 2` })).toBeNull();
+    await expect(canvas.queryByRole('button', { name: t('create', { query: 'mo' }) })).toBeNull();
     const rows = canvas.getByRole('group').children;
     await expect(rows).toHaveLength(1);
     await expect(rows[0]).toHaveAttribute('data-active');
@@ -96,11 +106,12 @@ export const VariantsQueryMatch = meta.story({
 export const VariantsNoMatch = meta.story({
   name: 'Variants · no match',
   args: { tags: library, values: [], query: 'Elite', onCreate: fn() },
-  play: async ({ canvas }) => {
-    const create = canvas.getByRole('button', { name: 'Create “Elite”' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
+    const create = canvas.getByRole('button', { name: t('create', { query: 'Elite' }) });
     await expect(canvas.getByRole('group').firstElementChild).toBe(create);
     await expect(create).toHaveAttribute('data-active');
-    await expect(canvas.getByText('No tags match')).toBeVisible();
+    await expect(canvas.getByText(t('noMatch'))).toBeVisible();
     await expect(canvas.queryAllByRole('checkbox')).toHaveLength(0);
   },
 });
@@ -135,21 +146,23 @@ export const TagsMixed = meta.story({
 export const ExtraToggle = meta.story({
   name: 'Toggle rows',
   args: { tags, values: ['orcs', 'ferry'], onChange: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Goblins'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
+    await userEvent.click(canvas.getByText(t('goblins')));
     await expect(args.onChange).toHaveBeenLastCalledWith(['orcs', 'ferry', 'goblins']);
-    await expect(canvas.getByRole('checkbox', { name: 'Goblins 3' })).toBeChecked();
-    await userEvent.click(canvas.getByText('Orcs'));
+    await expect(canvas.getByRole('checkbox', { name: `${t('goblins')} 3` })).toBeChecked();
+    await userEvent.click(canvas.getByText(t('orcs')));
     await expect(args.onChange).toHaveBeenLastCalledWith(['ferry', 'goblins']);
-    await expect(canvas.getByRole('checkbox', { name: 'Orcs 2' })).not.toBeChecked();
+    await expect(canvas.getByRole('checkbox', { name: `${t('orcs')} 2` })).not.toBeChecked();
   },
 });
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Space and Enter',
   args: { tags, values: [], onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const orcs = canvas.getByRole('checkbox', { name: 'Orcs 2' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
+    const orcs = canvas.getByRole('checkbox', { name: `${t('orcs')} 2` });
     await userEvent.tab();
     await expect(orcs).toHaveFocus();
     await userEvent.keyboard('[Space]');
@@ -165,21 +178,27 @@ export const ExtraKeyboard = meta.story({
 
 export const ExtraExactMatch = meta.story({
   name: 'Exact match hides Create',
-  args: { tags: library, values: [], query: ' orcs ', onCreate: fn() },
-  play: async ({ canvas }) => {
+  args: { tags: typedLibrary, values: [], query: ' orcs ', onCreate: fn() },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
     await expect(canvas.getByText('Orcs')).toBeVisible();
-    await expect(canvas.queryByRole('button', { name: /Create/ })).toBeNull();
-    await expect(canvas.queryByText('No tags match')).toBeNull();
+    await expect(
+      canvas.queryByRole('button', { name: anyValue((value) => t('create', { query: value })) }),
+    ).toBeNull();
+    await expect(canvas.queryByText(t('noMatch'))).toBeNull();
   },
 });
 
 export const ExtraPartialMatch = meta.story({
   name: 'A query contained in an option hides Create',
-  args: { tags: library, values: [], query: 'S', onCreate: fn() },
-  play: async ({ canvas }) => {
+  args: { tags: typedLibrary, values: [], query: 'S', onCreate: fn() },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
     await expect(canvas.getByText('Mooks')).toBeVisible();
-    await expect(canvas.queryByRole('button', { name: /Create/ })).toBeNull();
-    await expect(canvas.queryByText('No tags match')).toBeNull();
+    await expect(
+      canvas.queryByRole('button', { name: anyValue((value) => t('create', { query: value })) }),
+    ).toBeNull();
+    await expect(canvas.queryByText(t('noMatch'))).toBeNull();
   },
 });
 
@@ -189,14 +208,15 @@ export const ExtraNewBadge = meta.story({
     tags: [{ label: 'Elite', count: 0, badge: 'new' }, ...tags],
     values: ['Elite'],
   },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
     const created = canvas.getByRole('checkbox', { name: 'Elite new' });
     await expect(created).toBeChecked();
     const row = created.closest('label');
     await expect(row).toHaveAttribute('data-new');
     await expect(row && getComputedStyle(row).backgroundColor).toBe('rgb(255, 244, 210)');
     await expect(canvas.queryByText('0')).toBeNull();
-    const plain = canvas.getByRole('checkbox', { name: 'Orcs 2' }).closest('label');
+    const plain = canvas.getByRole('checkbox', { name: `${t('orcs')} 2` }).closest('label');
     await expect(plain).not.toHaveAttribute('data-new');
   },
 });
@@ -204,8 +224,9 @@ export const ExtraNewBadge = meta.story({
 export const ExtraCreate = meta.story({
   name: 'Create the typed tag',
   args: { tags: library, values: [], query: ' Elite ', onCreate: fn(), onChange: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Create “Elite”' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
+    await userEvent.click(canvas.getByRole('button', { name: t('create', { query: 'Elite' }) }));
     await expect(args.onCreate).toHaveBeenCalledWith('Elite');
     await expect(args.onChange).not.toHaveBeenCalled();
   },
@@ -214,10 +235,11 @@ export const ExtraCreate = meta.story({
 export const ExtraDisabled = meta.story({
   name: 'Disabled',
   args: { tags, values: ['orcs'], disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const goblins = canvas.getByRole('checkbox', { name: 'Goblins 3' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CheckList');
+    const goblins = canvas.getByRole('checkbox', { name: `${t('goblins')} 3` });
     await expect(goblins).toBeDisabled();
-    await userEvent.click(canvas.getByText('Goblins'), { pointerEventsCheck: 0 });
+    await userEvent.click(canvas.getByText(t('goblins')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(goblins).not.toBeChecked();
   },

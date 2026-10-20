@@ -4,6 +4,7 @@ import { expect } from 'storybook/test';
 import { base, conditions, historyTemp, hpActions } from '../../theme.ts';
 import { HistoryRow } from './HistoryRow.tsx';
 import type { HistoryRowProps } from './HistoryRow.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 function HistoryRowCell(props: HistoryRowProps) {
   return (
@@ -56,12 +57,15 @@ export const Anatomy = meta.story({
     entry: entry({ kind: 'damage', amount: 8, absorbed: 5, previous: 26, result: 23, round: 2 }),
     maxHp: 40,
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Round 2')).toBeVisible();
-    await expect(part(canvasElement, 'kind')).toHaveTextContent('Damage');
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HistoryRow');
+    await expect(canvas.getByText(t('round', { round: 2 }))).toBeVisible();
+    await expect(part(canvasElement, 'kind')).toHaveTextContent(t('damage'));
     await expect(part(canvasElement, 'kind').tagName).toBe('SPAN');
     await expect(part(canvasElement, 'kind')).not.toHaveAttribute('data-condition');
-    await expect(part(canvasElement, 'amount').textContent).toBe('−8 (5 temp)');
+    await expect(part(canvasElement, 'amount').textContent).toBe(
+      `−8 ${t('absorbed', { amount: 5 })}`,
+    );
     await expect(part(canvasElement, 'result').textContent).toBe('23/40');
     const row = canvasElement.querySelector<HTMLElement>('[data-kind]');
     await expect(row?.getBoundingClientRect().height).toBe(40);
@@ -105,8 +109,9 @@ export const Heal = meta.story({
 export const Temp = meta.story({
   name: 'Temp',
   args: { entry: entry({ kind: 'temp', amount: 5, previous: 0, result: 26, round: 2 }), maxHp: 40 },
-  play: async ({ canvasElement }) => {
-    await expect(part(canvasElement, 'amount').textContent).toBe('+5 temp');
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HistoryRow');
+    await expect(part(canvasElement, 'amount').textContent).toBe(t('tempAmount', { amount: 5 }));
     await expect(part(canvasElement, 'result').textContent).toBe('26/40');
     await expect(colorsOf(canvasElement)).toEqual({
       fill: rgb(historyTemp.fill),
@@ -136,8 +141,9 @@ export const Max = meta.story({
 export const NoKindStart = meta.story({
   name: 'No kind (start)',
   args: { entry: null, hp: 36, maxHp: 36 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Start')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HistoryRow');
+    await expect(canvas.getByText(t('start'))).toBeVisible();
     await expect(canvasElement.querySelector('[data-part="kind"]')).toBeNull();
     await expect(part(canvasElement, 'result').textContent).toBe('36/36');
   },
@@ -156,8 +162,11 @@ export const DamageThroughTemp3Digits = meta.story({
     }),
     maxHp: 320,
   },
-  play: async ({ canvasElement }) => {
-    await expect(part(canvasElement, 'amount').textContent).toBe('−120 (40 temp)');
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HistoryRow');
+    await expect(part(canvasElement, 'amount').textContent).toBe(
+      `−120 ${t('absorbed', { amount: 40 })}`,
+    );
     await expect(part(canvasElement, 'result').textContent).toBe('167/320');
   },
 });
@@ -209,8 +218,9 @@ export const ExtraSetupRound = meta.story({
     entry: entry({ kind: 'damage', amount: 4, previous: 36, result: 32, round: null }),
     maxHp: 36,
   },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Start')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HistoryRow');
+    await expect(canvas.getByText(t('start'))).toBeVisible();
     await expect(part(canvasElement, 'amount').textContent).toBe('−4');
   },
 });

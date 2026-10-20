@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { EmptyState } from './EmptyState.tsx';
 import type { EmptyStateAction } from './EmptyState.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type EmptyStateKind = 'noCombats' | 'noResults' | 'emptyCombat';
 
@@ -105,9 +106,10 @@ export const DeAction = meta.story({
 export const ExtraAction = meta.story({
   name: 'Action fires onAction',
   args: { kind: 'emptyCombat', onAction: fn() },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('heading', { name: 'No units yet' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Add unit' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'EmptyState');
+    await expect(canvas.getByRole('heading', { name: t('noUnitsTitle') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('addUnit') }));
     await expect(args.onAction).toHaveBeenCalledOnce();
   },
 });
@@ -115,9 +117,10 @@ export const ExtraAction = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter on the action',
   args: { kind: 'emptyCombat', onAction: fn() },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'EmptyState');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Add unit' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('addUnit') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onAction).toHaveBeenCalledOnce();
   },
@@ -126,9 +129,10 @@ export const ExtraKeyboard = meta.story({
 export const ExtraWithoutAction = meta.story({
   name: 'Without an action',
   args: { kind: 'noResults', onAction: fn() },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('heading', { name: 'Nothing found' })).toBeVisible();
-    await expect(canvas.getByText('No combat matches “dragon”.')).toBeVisible();
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'EmptyState');
+    await expect(canvas.getByRole('heading', { name: t('noResultsTitle') })).toBeVisible();
+    await expect(canvas.getByText(t('noResultsBody', { query: 'dragon' }))).toBeVisible();
     await expect(canvas.queryByRole('button')).toBeNull();
     await expect(args.onAction).not.toHaveBeenCalled();
   },
@@ -137,8 +141,9 @@ export const ExtraWithoutAction = meta.story({
 export const ExtraSecondaryAction = meta.story({
   name: 'Secondary action',
   args: { kind: 'emptyCombat', actionVariant: 'secondary', onAction: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Add unit' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'EmptyState');
+    const button = canvas.getByRole('button', { name: t('addUnit') });
     await expect(button).toHaveAttribute('data-variant', 'secondary');
     await userEvent.click(button);
     await expect(args.onAction).toHaveBeenCalledOnce();

@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/SearchField.json';
 import { SearchField } from './SearchField.tsx';
 import type { SearchFieldProps } from './SearchField.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -70,8 +71,9 @@ export const CombatsFilled = meta.story({
 export const CombatsDisabled = meta.story({
   name: 'Combats · disabled',
   args: { value: '', placeholderKey: 'searchCombats', disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('searchbox', { name: 'Search combats' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SearchField');
+    const input = canvas.getByRole('searchbox', { name: t('searchCombats') });
     await expect(input).toBeDisabled();
     await userEvent.type(input, 'ferry', { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -115,22 +117,24 @@ export const QueriesJa = meta.story({
 export const ExtraTyping = meta.story({
   name: 'Typing',
   args: { value: '', placeholderKey: 'searchCombats', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('searchbox', { name: 'Search combats' });
-    await expect(canvas.queryByRole('button', { name: 'Clear search' })).toBeNull();
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SearchField');
+    const input = canvas.getByRole('searchbox', { name: t('searchCombats') });
+    await expect(canvas.queryByRole('button', { name: t('clear') })).toBeNull();
     await userEvent.type(input, 'ferry');
     await expect(args.onChange).toHaveBeenCalledTimes(5);
     await expect(args.onChange).toHaveBeenLastCalledWith('ferry');
     await expect(input).toHaveValue('ferry');
-    await expect(canvas.getByRole('button', { name: 'Clear search' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('clear') })).toBeVisible();
   },
 });
 
 export const ExtraMaxLength = meta.story({
   name: 'Typing stops at maxLength',
   args: { value: '', placeholderKey: 'searchCombats', maxLength: 4, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('searchbox', { name: 'Search combats' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SearchField');
+    const input = canvas.getByRole('searchbox', { name: t('searchCombats') });
     await expect(input).toHaveAttribute('maxlength', '4');
     await userEvent.type(input, 'ferry');
     await expect(args.onChange).toHaveBeenCalledTimes(4);
@@ -142,29 +146,31 @@ export const ExtraMaxLength = meta.story({
 export const ExtraClear = meta.story({
   name: 'Clear',
   args: { value: 'ferry', placeholderKey: 'searchCombats', onChange: fn(), onClear: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('searchbox', { name: 'Search combats' });
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear search' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SearchField');
+    const input = canvas.getByRole('searchbox', { name: t('searchCombats') });
+    await userEvent.click(canvas.getByRole('button', { name: t('clear') }));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('');
     await expect(args.onClear).toHaveBeenCalledOnce();
     await expect(input).toHaveValue('');
     await expect(input).toHaveFocus();
-    await expect(canvas.queryByRole('button', { name: 'Clear search' })).toBeNull();
+    await expect(canvas.queryByRole('button', { name: t('clear') })).toBeNull();
   },
 });
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: type, Tab to ×, Enter',
   args: { value: '', placeholderKey: 'searchCombats', onChange: fn(), onClear: fn() },
-  play: async ({ args, canvas }) => {
-    const input = canvas.getByRole('searchbox', { name: 'Search combats' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SearchField');
+    const input = canvas.getByRole('searchbox', { name: t('searchCombats') });
     await userEvent.tab();
     await expect(input).toHaveFocus();
     await userEvent.keyboard('orc');
     await expect(args.onChange).toHaveBeenLastCalledWith('orc');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Clear search' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('clear') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onChange).toHaveBeenLastCalledWith('');
     await expect(args.onClear).toHaveBeenCalledOnce();
@@ -175,18 +181,20 @@ export const ExtraKeyboard = meta.story({
 export const ExtraEmptyPlaceholder = meta.story({
   name: 'Empty placeholder keeps the search label',
   args: { value: '', placeholder: '' },
-  play: async ({ canvas }) => {
-    const input = canvas.getByRole('searchbox', { name: 'Search' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SearchField');
+    const input = canvas.getByRole('searchbox', { name: t('search') });
     await expect(input).toHaveAttribute('placeholder', '');
-    await expect(input).toHaveAttribute('aria-label', 'Search');
+    await expect(input).toHaveAttribute('aria-label', t('search'));
   },
 });
 
 export const ExtraFrameClick = meta.story({
   name: 'Clicking the frame focuses the input',
   args: { value: 'ferry' },
-  play: async ({ canvas }) => {
-    const input = canvas.getByRole('searchbox', { name: 'Search' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SearchField');
+    const input = canvas.getByRole('searchbox', { name: t('search') });
     const frame = input.parentElement;
     if (frame) {
       await userEvent.pointer({ keys: '[MouseLeft]', target: frame, coords: { x: 4, y: 4 } });

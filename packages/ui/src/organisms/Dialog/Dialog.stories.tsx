@@ -9,6 +9,7 @@ import { Button } from '../../atoms/Button/Button.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import { Dialog } from './Dialog.tsx';
 import type { DialogTone } from './Dialog.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type Preset =
   | 'restart'
@@ -192,10 +193,11 @@ export const Anatomy = meta.story({});
 export const Restart = meta.story({
   name: 'restart',
   args: { preset: 'restart' },
-  play: async ({ canvas }) => {
-    const dialog = canvas.getByRole('alertdialog', { name: 'Restart combat?' });
-    await expect(dialog).toHaveAccessibleDescription(/Units and claims stay/);
-    await expect(canvas.getByRole('button', { name: 'Restart' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const dialog = canvas.getByRole('alertdialog', { name: t('restartTitle') });
+    await expect(dialog).toHaveAccessibleDescription(t('restartBody'));
+    await expect(canvas.getByRole('button', { name: t('restart') })).toBeVisible();
   },
 });
 
@@ -265,9 +267,10 @@ export const DeleteAccount = meta.story({
 export const LongUnitName = meta.story({
   name: 'Long unit name',
   args: { preset: 'remove', title: 'Remove Brother Tomas of the Silver Lantern Order?' },
-  play: async ({ canvas }) => {
-    const cancel = canvas.getByRole('button', { name: 'Cancel' });
-    const remove = canvas.getByRole('button', { name: 'Remove' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const cancel = canvas.getByRole('button', { name: t('cancel') });
+    const remove = canvas.getByRole('button', { name: t('remove') });
     await expect(cancel.getBoundingClientRect().width).toBe(remove.getBoundingClientRect().width);
   },
 });
@@ -284,8 +287,9 @@ export const Ru = meta.story({
 
 export const ExtraCancel = meta.story({
   name: 'Cancel calls onCancel only',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await userEvent.click(canvas.getByRole('button', { name: t('cancel') }));
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onConfirm).not.toHaveBeenCalled();
     await expect(canvas.queryByRole('alertdialog')).toBeNull();
@@ -294,8 +298,9 @@ export const ExtraCancel = meta.story({
 
 export const ExtraEscape = meta.story({
   name: 'Escape calls onCancel only',
-  play: async ({ args, canvas }) => {
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await waitFor(() => expect(canvas.getByRole('button', { name: t('cancel') })).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onConfirm).not.toHaveBeenCalled();
@@ -315,8 +320,9 @@ export const ExtraScrimTap = meta.story({
 
 export const ExtraConfirm = meta.story({
   name: 'The verb calls onConfirm once',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await userEvent.click(canvas.getByRole('button', { name: t('clear') }));
     await expect(args.onConfirm).toHaveBeenCalledOnce();
     await expect(args.onCancel).not.toHaveBeenCalled();
   },
@@ -324,9 +330,10 @@ export const ExtraConfirm = meta.story({
 
 export const ExtraKeyboard = meta.story({
   name: 'Focus starts on Cancel and Tab stays inside',
-  play: async ({ args, canvas }) => {
-    const cancel = canvas.getByRole('button', { name: 'Cancel' });
-    const clear = canvas.getByRole('button', { name: 'Clear' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const cancel = canvas.getByRole('button', { name: t('cancel') });
+    const clear = canvas.getByRole('button', { name: t('clear') });
     await waitFor(() => expect(cancel).toHaveFocus());
     await userEvent.tab();
     await expect(clear).toHaveFocus();
@@ -343,12 +350,13 @@ export const ExtraKeyboard = meta.story({
 export const ExtraFocusReturn = meta.story({
   name: 'Focus returns to the opener on close',
   args: { opened: false, withOpener: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
     await expect(canvas.queryByRole('alertdialog')).toBeNull();
     const opener = canvas.getByRole('button', { name: 'Clear combat' });
     await userEvent.click(opener);
-    await canvas.findByRole('alertdialog', { name: 'Clear combat?' });
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+    await canvas.findByRole('alertdialog', { name: t('clearTitle') });
+    await waitFor(() => expect(canvas.getByRole('button', { name: t('cancel') })).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await waitFor(() => expect(opener).toHaveFocus());
@@ -367,14 +375,15 @@ export const ExtraLocaleRu = meta.story({
 
 export const ExtraTapTextThenEscape = meta.story({
   name: 'Tap on the text, then Escape',
-  play: async ({ args, canvas }) => {
-    const dialog = canvas.getByRole('alertdialog', { name: 'Clear combat?' });
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Cancel' })).toHaveFocus());
-    await userEvent.click(canvas.getByText(/All 6 units are removed/));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const dialog = canvas.getByRole('alertdialog', { name: t('clearTitle') });
+    await waitFor(() => expect(canvas.getByRole('button', { name: t('cancel') })).toHaveFocus());
+    await userEvent.click(canvas.getByText(t('clearBody', { count: 6 })));
     await expect(dialog).toContainElement(document.activeElement as HTMLElement);
     await userEvent.tab();
     await expect(dialog).toContainElement(document.activeElement as HTMLElement);
-    await userEvent.click(canvas.getByRole('heading', { name: 'Clear combat?' }));
+    await userEvent.click(canvas.getByRole('heading', { name: t('clearTitle') }));
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onConfirm).not.toHaveBeenCalled();
@@ -384,9 +393,10 @@ export const ExtraTapTextThenEscape = meta.story({
 export const ExtraOverSheet = meta.story({
   name: 'Escape over an open Sheet closes only the Dialog',
   render: (args) => <OverSheetCell {...args} />,
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
-    const cancel = await canvas.findByRole('button', { name: 'Cancel' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await userEvent.click(canvas.getByRole('button', { name: t('clear') }));
+    const cancel = await canvas.findByRole('button', { name: t('cancel') });
     await waitFor(() => expect(cancel).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
@@ -399,7 +409,8 @@ export const ExtraOverSheet = meta.story({
 export const ExtraScrollLock = meta.story({
   name: 'Page scroll is locked while open',
   args: { opened: false, withOpener: true },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Dialog');
     const before = document.body.style.overflow;
     await userEvent.click(canvas.getByRole('button', { name: 'Clear combat' }));
     await canvas.findByRole('alertdialog');
@@ -408,7 +419,7 @@ export const ExtraScrollLock = meta.story({
     const wheel = new WheelEvent('wheel', { deltaY: 120, bubbles: true, cancelable: true });
     canvasElement.dispatchEvent(wheel);
     await expect(wheel.defaultPrevented).toBe(true);
-    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('cancel') }));
     await expect(document.body.style.overflow).toBe(before);
   },
 });
@@ -416,10 +427,9 @@ export const ExtraScrollLock = meta.story({
 export const ExtraOneUnit = meta.story({
   name: 'Clear with one unit',
   args: { units: 1 },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByText('The only unit is removed and every player claim is released.'),
-    ).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await expect(canvas.getByText(t('clearBody', { count: 1 }))).toBeVisible();
   },
 });
 

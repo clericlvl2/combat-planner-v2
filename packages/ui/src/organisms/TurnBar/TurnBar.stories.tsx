@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { TurnBar } from './TurnBar.tsx';
 import type { TurnBarProps } from './TurnBar.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 const longestName = 'W'.repeat(LIMITS.unitName);
 
@@ -36,20 +37,26 @@ export const Active = meta.story({
 
 export const Setup = meta.story({
   args: { mode: 'start' },
-  play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: /Start combat/ });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('startCombat')),
+    });
     await expect(button).toBeEnabled();
-    await expect(canvas.getByText('Rolls missing initiative')).toBeVisible();
+    await expect(canvas.getByText(t('rollsMissingInitiative'))).toBeVisible();
   },
 });
 
 export const BlockedAllUnitsDisabled = meta.story({
   name: 'Blocked: all units disabled',
   args: { mode: 'next', disabled: true, reasonKey: 'everyUnitDisabled', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: /Next turn/ });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('nextTurn')),
+    });
     await expect(button).toBeDisabled();
-    await expect(canvas.getByText('Every unit is disabled')).toBeVisible();
+    await expect(canvas.getByText(t('everyUnitDisabled'))).toBeVisible();
     await expect(canvas.queryByText('Brother Tomas')).toBeNull();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
@@ -59,9 +66,12 @@ export const BlockedAllUnitsDisabled = meta.story({
 export const BlockedRound99 = meta.story({
   name: 'Blocked: round 99',
   args: { mode: 'next', disabled: true, reasonKey: 'lastRound' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: /Next turn/ })).toBeDisabled();
-    await expect(canvas.getByText(`Round ${LIMITS.round.max} is the last`)).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
+    await expect(
+      canvas.getByRole('button', { name: (label: string) => label.includes(t('nextTurn')) }),
+    ).toBeDisabled();
+    await expect(canvas.getByText(t('lastRound', { round: LIMITS.round.max }))).toBeVisible();
   },
 });
 
@@ -119,11 +129,14 @@ export const FrBlocked = meta.story({
 export const ExtraBlockedNoUnits = meta.story({
   name: 'Blocked: no units yet',
   args: { mode: 'start', disabled: true, reasonKey: 'addUnitFirst', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: /Start combat/ });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('startCombat')),
+    });
     await expect(button).toBeDisabled();
-    await expect(canvas.getByText('Add a unit first')).toBeVisible();
-    await expect(canvas.queryByText('Rolls missing initiative')).toBeNull();
+    await expect(canvas.getByText(t('addUnitFirst'))).toBeVisible();
+    await expect(canvas.queryByText(t('rollsMissingInitiative'))).toBeNull();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
   },
@@ -142,8 +155,11 @@ export const ExtraDataDisabledLine = meta.story({
 export const ExtraClick = meta.story({
   name: 'Click',
   args: { mode: 'next', nextName: 'Brother Tomas', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: /Next turn/ }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
+    await userEvent.click(
+      canvas.getByRole('button', { name: (label: string) => label.includes(t('nextTurn')) }),
+    );
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
@@ -151,8 +167,11 @@ export const ExtraClick = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { mode: 'start', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: /Start combat/ });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('startCombat')),
+    });
     await userEvent.tab();
     await expect(button).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -173,9 +192,12 @@ export const ExtraEllipsis = meta.story({
     },
   },
   args: { mode: 'next', nextName: longestName },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
     await document.fonts.ready;
-    const button = canvas.getByRole('button', { name: /Next turn/ });
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('nextTurn')),
+    });
     const secondary = canvas.getByText(longestName);
     await expect(getComputedStyle(secondary).textOverflow).toBe('ellipsis');
     await expect(secondary.scrollWidth).toBeGreaterThan(secondary.clientWidth);
@@ -189,9 +211,12 @@ export const ExtraEllipsis = meta.story({
 export const ExtraBottomOfScreen = meta.story({
   name: 'Sits at the bottom of the screen',
   args: { mode: 'next', nextName: 'Brother Tomas' },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'TurnBar');
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
-    const button = canvas.getByRole('button', { name: /Next turn/ });
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('nextTurn')),
+    });
     const frameRect = frame?.getBoundingClientRect();
     const barRect = button.parentElement?.getBoundingClientRect();
     await expect(barRect?.bottom).toBe(frameRect?.bottom);

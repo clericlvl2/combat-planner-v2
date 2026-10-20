@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { Segmented } from './Segmented.tsx';
 import type { SegmentedOption, SegmentedProps } from './Segmented.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type Source = 'new' | 'library';
 
@@ -90,10 +91,11 @@ export const TypeRoleTap = meta.story({
 export const TypeRoleDisabled = meta.story({
   name: 'Type · role · disabled',
   args: { disabled: true },
-  play: async ({ args, canvas }) => {
-    const ally = canvas.getByRole('radio', { name: 'Ally' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    const ally = canvas.getByRole('radio', { name: t('ally') });
     await expect(ally).toBeDisabled();
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('enemy') })).toBeChecked();
     await userEvent.click(ally, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(ally).not.toBeChecked();
@@ -162,29 +164,31 @@ export const SourceFr = meta.story({
 
 export const ExtraClick = meta.story({
   name: 'Tap selects at once',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('radio', { name: 'Ally' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    await userEvent.click(canvas.getByRole('radio', { name: t('ally') }));
     await expect(args.onChange).toHaveBeenCalledWith('ally');
-    await expect(canvas.getByRole('radio', { name: 'Ally' })).toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).not.toBeChecked();
-    await userEvent.click(canvas.getByRole('radio', { name: 'Ally' }));
+    await expect(canvas.getByRole('radio', { name: t('ally') })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('enemy') })).not.toBeChecked();
+    await userEvent.click(canvas.getByRole('radio', { name: t('ally') }));
     await expect(args.onChange).toHaveBeenCalledOnce();
   },
 });
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: arrows move and select',
-  play: async ({ args, canvas }) => {
-    const group = canvas.getByRole('radiogroup', { name: 'Type' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    const group = canvas.getByRole('radiogroup', { name: t('type') });
     await expect(group).toBeVisible();
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('enemy') })).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(args.onChange).toHaveBeenLastCalledWith('ally');
-    await expect(canvas.getByRole('radio', { name: 'Ally' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('ally') })).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(args.onChange).toHaveBeenLastCalledWith('hero');
-    await expect(canvas.getByRole('radio', { name: 'Hero' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('hero') })).toBeChecked();
     await userEvent.keyboard('{ArrowLeft}');
     await expect(args.onChange).toHaveBeenLastCalledWith('ally');
     await userEvent.keyboard('{End}{Home}');
@@ -196,8 +200,9 @@ export const ExtraKeyboard = meta.story({
 export const ExtraOptionDisabled = meta.story({
   name: 'One option disabled',
   args: { disabledValues: ['hero'] },
-  play: async ({ args, canvas }) => {
-    const hero = canvas.getByRole('radio', { name: 'Hero' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    const hero = canvas.getByRole('radio', { name: t('hero') });
     await expect(hero).toBeDisabled();
     await userEvent.click(hero, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -214,12 +219,13 @@ export const ExtraOptionDisabled = meta.story({
 export const ExtraNoMatch = meta.story({
   name: 'Value matching no option',
   args: { value: 'neutral' },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
     for (const radio of canvas.getAllByRole('radio')) {
       await expect(radio).not.toBeChecked();
     }
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Hero' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('hero') })).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(args.onChange).toHaveBeenLastCalledWith('enemy');
   },

@@ -6,6 +6,7 @@ import type { Mock } from 'storybook/test';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { InitiativePopover } from './InitiativePopover.tsx';
 import type { InitiativePopoverProps } from './InitiativePopover.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type TapTarget = 'plus' | 'roll';
 
@@ -114,11 +115,12 @@ export const Set = meta.story({
 export const NoInitiativeYet = meta.story({
   name: 'No initiative yet',
   args: { value: null, bonus: 2 },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     const field = canvas.getByRole('spinbutton');
     await expect(field).toHaveValue('—');
     await expect(field).not.toHaveAttribute('aria-valuenow');
-    await expect(canvas.getByRole('button', { name: 'Roll d20 +2' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('roll', { bonus: '+2' }) })).toBeVisible();
   },
 });
 
@@ -135,8 +137,9 @@ export const TapRoll = meta.story({
 export const NegativeBonus = meta.story({
   name: 'Negative bonus',
   args: { value: 4, bonus: -1 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Roll d20 −1' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
+    await expect(canvas.getByRole('button', { name: t('roll', { bonus: '−1' }) })).toBeVisible();
     await expect(canvas.getByText('(−1)')).toBeVisible();
     await expect(canvas.getByRole('spinbutton')).toHaveValue('4');
   },
@@ -163,13 +166,14 @@ export const Ru = meta.story({
 export const ExtraStep = meta.story({
   name: 'Minus and plus set the value',
   args: { value: 15, bonus: 3 },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     const field = canvas.getByRole('spinbutton');
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:increase') }));
     await expect(args.onSet).toHaveBeenLastCalledWith(16);
     await expect(field).toHaveAttribute('aria-valuenow', '16');
-    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:decrease') }));
     await expect(args.onSet).toHaveBeenLastCalledWith(14);
     await expect(field).toHaveAttribute('aria-valuenow', '14');
     await expect(args.onRoll).not.toHaveBeenCalled();
@@ -193,8 +197,9 @@ export const ExtraTypeValue = meta.story({
 export const ExtraMax = meta.story({
   name: 'Plus stops at the maximum',
   args: { value: LIMITS.initiative.max, bonus: 3 },
-  play: async ({ args, canvas }) => {
-    const increase = canvas.getByRole('button', { name: 'Increase' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
+    const increase = canvas.getByRole('button', { name: t('Stepper:increase') });
     await expect(increase).toBeDisabled();
     await userEvent.click(increase, { pointerEventsCheck: 0 });
     await expect(args.onSet).not.toHaveBeenCalled();
@@ -208,9 +213,10 @@ export const ExtraRollBounds = meta.story({
     bonus: 3,
     random: fn<() => number>(),
   },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     (args.random as Mock<() => number>).mockReturnValueOnce(0).mockReturnValueOnce(0.9999);
-    const roll = canvas.getByRole('button', { name: 'Roll d20 +3' });
+    const roll = canvas.getByRole('button', { name: t('roll', { bonus: '+3' }) });
     await userEvent.click(roll);
     await expect(args.onRoll).toHaveBeenLastCalledWith(LIMITS.roll.min + 3, LIMITS.roll.min);
     await userEvent.click(roll);
@@ -223,9 +229,10 @@ export const ExtraRollBounds = meta.story({
 export const ExtraRollRandom = meta.story({
   name: 'Roll d20 with Math.random',
   args: { value: 15, bonus: -1, random: Math.random },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     for (let index = 0; index < 20; index += 1) {
-      await userEvent.click(canvas.getByRole('button', { name: 'Roll d20 −1' }));
+      await userEvent.click(canvas.getByRole('button', { name: t('roll', { bonus: '−1' }) }));
     }
     await expect(args.onRoll).toHaveBeenCalledTimes(20);
     for (const [initiative, roll] of (args.onRoll as Mock<InitiativePopoverProps['onRoll']>).mock
@@ -242,9 +249,10 @@ export const ExtraRollRandom = meta.story({
 export const ExtraEscape = meta.story({
   name: 'Keyboard: Escape closes',
   args: { value: 15, bonus: 3 },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Decrease' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('Stepper:decrease') })).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onSet).not.toHaveBeenCalled();
@@ -271,25 +279,27 @@ export const ExtraTriggerCloses = meta.story({
     geometry: { overflow: 'the 264 px story stage holds both the trigger and the open popover' },
   },
   args: { value: 15, bonus: 3, withTrigger: true },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
     await expect(canvas.queryByRole('dialog')).toBeNull();
     await expect(args.onClose).not.toHaveBeenCalled();
     await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
-    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
   },
 });
 
 export const ExtraFlow = meta.story({
   name: 'Flow: roll, plus, tap outside closes',
   args: { value: null, bonus: 3, random: () => 0.65 },
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Roll d20 +3' }));
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
+    await userEvent.click(canvas.getByRole('button', { name: t('roll', { bonus: '+3' }) }));
     await expect(args.onRoll).toHaveBeenCalledWith(17, 14);
     await expect(canvas.getByRole('spinbutton')).toHaveAttribute('aria-valuenow', '17');
     await expect(canvas.getByRole('spinbutton')).toHaveValue('17');
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:increase') }));
     await expect(args.onSet).toHaveBeenCalledWith(18);
     await expect(canvas.getByRole('spinbutton')).toHaveValue('18');
     await expect(args.onClose).not.toHaveBeenCalled();
@@ -302,12 +312,13 @@ export const ExtraFlow = meta.story({
 export const ExtraAnchor = meta.story({
   name: 'Opens from the anchor',
   args: { value: 15, bonus: 3, open: false, withAnchor: true },
-  play: async ({ args, canvas, canvasElement }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     const body = within(canvasElement.ownerDocument.body);
     await expect(body.queryByRole('dialog')).toBeNull();
     await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
-    const dialog = await body.findByRole('dialog', { name: 'Initiative' });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Increase' }));
+    const dialog = await body.findByRole('dialog', { name: t('title') });
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Stepper:increase') }));
     await expect(args.onSet).toHaveBeenCalledWith(16);
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();

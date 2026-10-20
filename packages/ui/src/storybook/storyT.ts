@@ -6,3 +6,13 @@ export function storyT(globals: Record<string, unknown>, namespace: string): TFu
   const locale = storyLocale(globals);
   return createI18n(locale).getFixedT(locale, namespace);
 }
+
+const slot = '\u0000';
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export function anyValue(template: (value: string) => string): RegExp {
+  return new RegExp(`^${template(slot).split(slot).map(escapeRegExp).join('.+')}$`);
+}

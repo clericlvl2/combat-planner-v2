@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/TextArea.json';
 import { TextArea } from './TextArea.tsx';
 import type { TextAreaProps } from './TextArea.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type TextKey = keyof typeof en;
 
@@ -73,8 +74,9 @@ export const Anatomy = meta.story({
 export const Description500Empty = meta.story({
   name: 'Description · 500 · empty',
   args: { ...description, placeholderKey: 'optional' },
-  play: async ({ canvas }) => {
-    const field = canvas.getByRole('textbox', { name: 'Description' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    const field = canvas.getByRole('textbox', { name: t('description') });
     await expect(field.getBoundingClientRect().height).toBe(72);
     await expect(canvas.getByText('0/500')).toBeVisible();
   },
@@ -89,22 +91,24 @@ export const Description500Focus = meta.story({
 export const Description500Filled = meta.story({
   name: 'Description · 500 · filled',
   args: filled,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('textbox', { name: 'Description' })).toHaveValue(
-      'Session 12. Goblins hold the crossing, the orc waits on the raft.',
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    await expect(canvas.getByRole('textbox', { name: t('description') })).toHaveValue(
+      t('descriptionValue'),
     );
-    await expect(canvas.getByText('65/500')).toBeVisible();
+    await expect(canvas.getByText(`${t('descriptionValue').length}/500`)).toBeVisible();
   },
 });
 
 export const Description500Error = meta.story({
   name: 'Description · 500 · error',
   args: { ...description, value: overLimit, errorKey: 'upTo' },
-  play: async ({ canvas }) => {
-    const field = canvas.getByRole('textbox', { name: 'Description' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    const field = canvas.getByRole('textbox', { name: t('description') });
     await expect(field).toHaveAttribute('aria-invalid', 'true');
     await expect(canvas.getByText('512/500')).toHaveAttribute('data-over');
-    await expect(canvas.getByText('Up to 500 characters')).toBeVisible();
+    await expect(canvas.getByText(t('upTo', { max: 500 }))).toBeVisible();
   },
 });
 
@@ -115,8 +119,9 @@ export const LongTextRu = meta.story({
     value:
       'Сессия 12. Гоблины держат переправу, орк ждёт на плоту. Если герои пойдут по мосту, лучники стреляют с крыши мельницы; если вплавь, берсерк прыгает в воду.',
   },
-  play: async ({ canvas }) => {
-    const field = canvas.getByRole('textbox', { name: 'Description' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    const field = canvas.getByRole('textbox', { name: t('description') });
     await expect(field.getBoundingClientRect().height).toBeGreaterThan(72);
     await expect(field.scrollHeight).toBe(field.clientHeight);
   },
@@ -140,8 +145,9 @@ export const LongTextNote250 = meta.story({
 export const ExtraTyping = meta.story({
   name: 'Typing updates the value and the counter',
   args: { ...description, placeholderKey: 'optional', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const field = canvas.getByRole('textbox', { name: 'Description' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    const field = canvas.getByRole('textbox', { name: t('description') });
     await userEvent.type(field, 'Goblins{Enter}Orc');
     await expect(field).toHaveValue('Goblins\nOrc');
     await expect(args.onChange).toHaveBeenLastCalledWith('Goblins\nOrc');
@@ -152,8 +158,9 @@ export const ExtraTyping = meta.story({
 export const ExtraMaxLength = meta.story({
   name: 'Typing stops at the limit',
   args: { labelKey: 'note', maxLength: 250, value: note.padEnd(248, '.'), onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const field = canvas.getByRole('textbox', { name: 'Note' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    const field = canvas.getByRole('textbox', { name: t('note') });
     await userEvent.type(field, 'abcd');
     await expect(field).toHaveValue(`${note.padEnd(248, '.')}ab`);
     await expect(args.onChange).toHaveBeenCalledTimes(2);
@@ -164,8 +171,9 @@ export const ExtraMaxLength = meta.story({
 export const ExtraDisabled = meta.story({
   name: 'Disabled',
   args: { ...filled, disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const field = canvas.getByRole('textbox', { name: 'Description' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    const field = canvas.getByRole('textbox', { name: t('description') });
     await expect(field).toBeDisabled();
     await userEvent.type(field, 'x', { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -175,8 +183,9 @@ export const ExtraDisabled = meta.story({
 export const ExtraGrows = meta.story({
   name: 'The field grows while typing',
   args: { ...description, onChange: fn() },
-  play: async ({ canvas }) => {
-    const field = canvas.getByRole('textbox', { name: 'Description' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TextArea');
+    const field = canvas.getByRole('textbox', { name: t('description') });
     await expect(field.getBoundingClientRect().height).toBe(72);
     await userEvent.type(field, 'One{Enter}Two{Enter}Three{Enter}Four{Enter}Five');
     await expect(field.getBoundingClientRect().height).toBeGreaterThan(72);

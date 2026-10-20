@@ -17,6 +17,7 @@ import { layout } from '../../layout.ts';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { Toast, toastDuration } from './Toast.tsx';
 import type { ToastProps, ToastTone } from './Toast.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type ToastKind = 'preset' | 'cap' | 'link' | 'failed' | 'undone' | 'duplicated' | 'deleted';
 
@@ -147,8 +148,9 @@ export const LongUnitName = meta.story({
 export const ExtraAction = meta.story({
   name: 'Action fires onAction',
   args: { kind: 'failed', onAction: fn(), onHide: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Retry' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('retry') }));
     await expect(args.onAction).toHaveBeenCalledOnce();
     await expect(args.onHide).toHaveBeenCalledOnce();
   },
@@ -157,8 +159,9 @@ export const ExtraAction = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter on the action',
   args: { kind: 'failed', onAction: fn(), onHide: fn() },
-  play: async ({ args, canvas }) => {
-    const retry = canvas.getByRole('button', { name: 'Retry' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    const retry = canvas.getByRole('button', { name: t('retry') });
     await userEvent.tab();
     await expect(retry).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -170,10 +173,11 @@ export const ExtraKeyboard = meta.story({
 export const ExtraKeyboardDismiss = meta.story({
   name: 'Keyboard: Space on dismiss',
   args: { kind: 'failed', onAction: fn(), onHide: fn() },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     await userEvent.tab();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Dismiss' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('dismiss') })).toHaveFocus();
     await expect(args.onHide).not.toHaveBeenCalled();
     await userEvent.keyboard('[Space]');
     await expect(args.onHide).toHaveBeenCalledOnce();
@@ -184,9 +188,10 @@ export const ExtraKeyboardDismiss = meta.story({
 export const ExtraDismissMotionOff = meta.story({
   name: 'Dismiss with motion off hides at once',
   args: { kind: 'link', onHide: fn() },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     await expect(args.onHide).not.toHaveBeenCalled();
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('dismiss') }));
     await expect(args.onHide).toHaveBeenCalledOnce();
   },
 });
@@ -195,9 +200,10 @@ export const ExtraDismissMotionOn = meta.story({
   name: 'Dismiss with motion on hides after the exit',
   parameters: { motion: 'on' },
   args: { kind: 'link', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('show') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('dismiss') }));
     await expect(args.onHide).not.toHaveBeenCalled();
     await waitFor(() => expect(args.onHide).toHaveBeenCalledOnce());
     await expect(canvas.queryByRole('status')).toBeNull();
@@ -208,9 +214,10 @@ export const ExtraActionOnceDuringExit = meta.story({
   name: 'A second tap on the action during the exit runs nothing',
   parameters: { motion: 'on' },
   args: { kind: 'failed', onAction: fn(), onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
-    const retry = canvas.getByRole('button', { name: 'Retry' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('show') }));
+    const retry = canvas.getByRole('button', { name: t('retry') });
     await userEvent.click(retry);
     await userEvent.click(retry);
     await expect(args.onHide).not.toHaveBeenCalled();
@@ -225,9 +232,10 @@ export const ExtraAutoHide = meta.story({
   name: 'Auto-hide after an injected duration',
   parameters: { motion: 'on' },
   args: { kind: 'link', onHide: fn(), duration: 200, deferred: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
-    await expect(canvas.getByRole('status')).toHaveTextContent('Link copied');
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('show') }));
+    await expect(canvas.getByRole('status')).toHaveTextContent(t('linkCopied'));
     await expect(args.onHide).not.toHaveBeenCalled();
     await waitFor(() => expect(args.onHide).toHaveBeenCalledOnce(), { timeout: 2000 });
     await expect(canvas.queryByRole('status')).toBeNull();
@@ -238,10 +246,11 @@ export const ExtraDefaultDuration = meta.story({
   name: 'Default duration 4 s',
   parameters: { motion: 'on' },
   args: { kind: 'link', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     const setTimeoutSpy = spyOn(globalThis, 'setTimeout');
     try {
-      await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
+      await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
       for (const animation of status.getAnimations()) animation.finish();
       await expect(status.getAnimations()).toHaveLength(0);
@@ -263,14 +272,15 @@ export const ExtraActionDuration = meta.story({
   name: 'Default duration 8 s with an action',
   parameters: { motion: 'on' },
   args: { kind: 'failed', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     const setTimeoutSpy = spyOn(globalThis, 'setTimeout');
     try {
-      await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
+      await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
       for (const animation of status.getAnimations()) animation.finish();
       await expect(status.getAnimations()).toHaveLength(0);
-      await expect(canvas.getByRole('button', { name: 'Retry' })).toBeVisible();
+      await expect(canvas.getByRole('button', { name: t('retry') })).toBeVisible();
       await expect(setTimeoutSpy).toHaveBeenCalledWith(
         expect.any(Function),
         toastDuration.withAction,
@@ -286,7 +296,8 @@ export const ExtraActionDuration = meta.story({
 export const ExtraMotionOffStays = meta.story({
   name: 'Motion off keeps the toast past its duration',
   args: { kind: 'link', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     const realSetTimeout = globalThis.setTimeout;
     const elapse = (handler: TimerHandler, delay?: number, ...rest: unknown[]) => {
       if (delay === toastDuration.plain && typeof handler === 'function') {
@@ -299,17 +310,17 @@ export const ExtraMotionOffStays = meta.story({
       elapse as typeof setTimeout,
     );
     try {
-      await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
+      await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       await expect(setTimeoutSpy).not.toHaveBeenCalledWith(
         expect.any(Function),
         toastDuration.plain,
       );
-      await expect(canvas.getByRole('status')).toHaveTextContent('Link copied');
+      await expect(canvas.getByRole('status')).toHaveTextContent(t('linkCopied'));
       await expect(args.onHide).not.toHaveBeenCalled();
     } finally {
       setTimeoutSpy.mockRestore();
     }
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('dismiss') }));
     await expect(args.onHide).toHaveBeenCalledOnce();
     await expect(canvas.queryByRole('status')).toBeNull();
   },

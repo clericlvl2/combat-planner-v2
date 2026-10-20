@@ -5,6 +5,7 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { HpHistory } from './HpHistory.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type Variant = 'inline' | 'sheet';
 
@@ -159,30 +160,31 @@ const collapseShowsCount = async (
 
 export const Anatomy = meta.story({
   args: { expanded: true },
-  play: async ({ canvasElement, canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'HP History' })).toHaveAttribute(
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(canvas.getByRole('button', { name: t('title') })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
     await expect(rowTexts(canvasElement)).toEqual([
-      'Round 3 Damage−12 14/40',
-      'Round 3 Heal+3 26/40',
-      'Round 2 Damage−8 (5 temp) 23/40',
-      'Round 2 Temp+5 temp 26/40',
-      'Round 1 Damage−14 26/40',
-      'Round 1 Max45 → 40 40/40',
+      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:damage')}−12 14/40`,
+      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:heal')}+3 26/40`,
+      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:damage')}−8 ${t('HistoryRow:absorbed', { amount: 5 })} 23/40`,
+      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:temp')}${t('HistoryRow:tempAmount', { amount: 5 })} 26/40`,
+      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:damage')}−14 26/40`,
+      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:max')}45 → 40 40/40`,
     ]);
   },
 });
 
 export const Collapsed = meta.story({
   name: 'Collapsed',
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'HP History 6 changes' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-    await expect(canvas.getByText('6 changes')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(
+      canvas.getByRole('button', { name: `${t('title')} ${t('count', { count: 6 })}` }),
+    ).toHaveAttribute('aria-expanded', 'false');
+    await expect(canvas.getByText(`${t('count', { count: 6 })}`)).toBeVisible();
     await expect(canvas.queryByRole('list')).toBeNull();
   },
 });
@@ -190,16 +192,18 @@ export const Collapsed = meta.story({
 export const CollapsedNoChanges = meta.story({
   name: 'Collapsed, no changes',
   args: { entries: [] },
-  play: async ({ canvas }) => {
-    await expect(canvas.queryByText(/changes/)).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(canvas.queryByText(t('count', { count: 0 }))).toBeNull();
   },
 });
 
 export const OpenNoChangesYet = meta.story({
   name: 'Open, no changes yet',
   args: { expanded: true, entries: [] },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('No changes yet')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(canvas.getByText(t('empty'))).toBeVisible();
     await expect(canvas.queryByRole('listitem')).toBeNull();
   },
 });
@@ -217,8 +221,9 @@ export const OpenEveryKind = meta.story({
 export const OpenLongScrolls = meta.story({
   name: 'Open, long: scrolls',
   args: { expanded: true, entries: long },
-  play: async ({ canvas, canvasElement }) => {
-    const list = canvas.getByRole('list', { name: 'HP History' });
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    const list = canvas.getByRole('list', { name: t('title') });
     await expect(canvas.getAllByRole('listitem')).toHaveLength(10);
     await expect(list.clientHeight).toBe(248);
     await expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
@@ -231,9 +236,10 @@ export const AFewChanges = meta.story({
   name: 'A few changes',
   parameters: sheet,
   args: { variant: 'sheet', entries: short, maxHp: 36 },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('dialog', { name: 'HP History' })).toBeVisible();
-    await expect(canvas.getByText('Orc Berserker · 3 changes')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(await canvas.findByRole('dialog', { name: t('title') })).toBeVisible();
+    await expect(canvas.getByText(`Orc Berserker · ${t('count', { count: 3 })}`)).toBeVisible();
   },
 });
 
@@ -241,8 +247,11 @@ export const EveryKind = meta.story({
   name: 'Every kind',
   parameters: sheet,
   args: { variant: 'sheet' },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByText('Orc Berserker · 6 changes')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(
+      await canvas.findByText(`Orc Berserker · ${t('count', { count: 6 })}`),
+    ).toBeVisible();
     await expect(canvas.getAllByRole('listitem')).toHaveLength(6);
   },
 });
@@ -251,9 +260,10 @@ export const NoChangesYet = meta.story({
   name: 'No changes yet',
   parameters: sheet,
   args: { variant: 'sheet', entries: [] },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByText('Orc Berserker · No changes yet')).toBeVisible();
-    await expect(canvas.getByText('No changes yet')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(await canvas.findByText(`Orc Berserker · ${t('empty')}`)).toBeVisible();
+    await expect(canvas.getByText(t('empty'))).toBeVisible();
     await expect(canvas.queryByRole('listitem')).toBeNull();
   },
 });
@@ -261,15 +271,23 @@ export const NoChangesYet = meta.story({
 export const ThreeDigitInline = meta.story({
   name: 'Three-digit, inline',
   args: { expanded: true, entries: threeDigit, maxHp: 320 },
-  play: async ({ args, canvasElement }) => {
+  play: async ({ args, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpHistory');
     await expect(rowTexts(canvasElement)).toEqual([
-      'Round 4 Damage−120 (40 temp) 167/320',
-      'Round 3 Heal+105 287/320',
-      'Round 2 Max320 → 999 999/999',
-      'Round 1 Damage−400 −113/320',
+      `${t('HistoryRow:round', { round: 4 })} ${t('HistoryRow:damage')}−120 ${t('HistoryRow:absorbed', { amount: 40 })} 167/320`,
+      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:heal')}+105 287/320`,
+      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:max')}320 → 999 999/999`,
+      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:damage')}−400 −113/320`,
     ]);
-    await expect(within(canvasElement).queryByText('Orc Berserker · 4 changes')).toBeNull();
-    await collapseShowsCount(canvasElement, 'HP History', '4 changes', args.onToggle);
+    await expect(
+      within(canvasElement).queryByText(`Orc Berserker · ${t('count', { count: 4 })}`),
+    ).toBeNull();
+    await collapseShowsCount(
+      canvasElement,
+      t('title'),
+      `${t('count', { count: 4 })}`,
+      args.onToggle,
+    );
   },
 });
 
@@ -277,9 +295,14 @@ export const ThreeDigitSheet = meta.story({
   name: 'Three-digit, sheet',
   parameters: sheet,
   args: { variant: 'sheet', entries: threeDigit, maxHp: 320 },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByText('Orc Berserker · 4 changes')).toBeVisible();
-    await expect(canvas.getByText('−120 (40 temp)')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    await expect(
+      await canvas.findByText(`Orc Berserker · ${t('count', { count: 4 })}`),
+    ).toBeVisible();
+    await expect(
+      canvas.getByText(`−120 ${t('HistoryRow:absorbed', { amount: 40 })}`),
+    ).toBeVisible();
     await expect(canvas.getByText('−113/320')).toBeVisible();
   },
 });
@@ -392,22 +415,33 @@ export const EdgeCasesRuSheet = meta.story({
 export const AllFour = meta.story({
   name: 'All four',
   args: { expanded: true, entries: allFour },
-  play: async ({ args, canvasElement }) => {
+  play: async ({ args, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpHistory');
     const kinds = [...canvasElement.querySelectorAll('[role="listitem"]')].map((row) =>
       row.getAttribute('data-kind'),
     );
     await expect(kinds).toEqual(['damage', 'heal', 'temp', 'max']);
-    await expect(within(canvasElement).queryByText('Orc Berserker · 4 changes')).toBeNull();
-    await collapseShowsCount(canvasElement, 'HP History', '4 changes', args.onToggle);
+    await expect(
+      within(canvasElement).queryByText(`Orc Berserker · ${t('count', { count: 4 })}`),
+    ).toBeNull();
+    await collapseShowsCount(
+      canvasElement,
+      t('title'),
+      `${t('count', { count: 4 })}`,
+      args.onToggle,
+    );
   },
 });
 
 export const ExtraInlineTapHeader = meta.story({
   name: 'Inline · closed, tap header',
   args: { entries: short, maxHp: 36 },
-  play: async ({ args, canvas }) => {
-    const header = canvas.getByRole('button', { name: 'HP History 3 changes' });
-    await expect(canvas.getByText('3 changes')).toBeVisible();
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    const header = canvas.getByRole('button', {
+      name: `${t('title')} ${t('count', { count: 3 })}`,
+    });
+    await expect(canvas.getByText(`${t('count', { count: 3 })}`)).toBeVisible();
     await userEvent.click(header);
     await expect(args.onToggle).toHaveBeenCalledOnce();
     await expect(header).toHaveAttribute('aria-expanded', 'true');
@@ -424,11 +458,12 @@ export const ExtraInlineTapHeader = meta.story({
 export const ExtraInlineOpen = meta.story({
   name: 'Inline · open',
   args: { expanded: true, entries: short, maxHp: 36 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpHistory');
     await expect(rowTexts(canvasElement)).toEqual([
-      'Round 3 Damage−7 20/36',
-      'Round 2 Damage−9 27/36',
-      'Round 1 Max32 → 36 36/36',
+      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:damage')}−7 20/36`,
+      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:damage')}−9 27/36`,
+      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:max')}32 → 36 36/36`,
     ]);
   },
 });
@@ -436,8 +471,11 @@ export const ExtraInlineOpen = meta.story({
 export const ExtraInlineKeyboard = meta.story({
   name: 'Inline: Enter and Space toggle the header',
   args: { entries: short, maxHp: 36 },
-  play: async ({ args, canvas }) => {
-    const header = canvas.getByRole('button', { name: 'HP History 3 changes' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    const header = canvas.getByRole('button', {
+      name: `${t('title')} ${t('count', { count: 3 })}`,
+    });
     await userEvent.tab();
     await expect(header).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -453,11 +491,12 @@ export const ExtraInlineKeyboard = meta.story({
 export const ExtraRowsInGivenOrder = meta.story({
   name: 'Rows render in the given order',
   args: { expanded: true, entries: [...short].reverse(), maxHp: 36 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpHistory');
     await expect(rowTexts(canvasElement)).toEqual([
-      'Round 1 Max32 → 36 36/36',
-      'Round 2 Damage−9 27/36',
-      'Round 3 Damage−7 20/36',
+      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:max')}32 → 36 36/36`,
+      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:damage')}−9 27/36`,
+      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:damage')}−7 20/36`,
     ]);
   },
 });
@@ -465,12 +504,13 @@ export const ExtraRowsInGivenOrder = meta.story({
 export const ExtraReadOnly = meta.story({
   name: 'Rows are read only',
   args: { expanded: true, entries: short, maxHp: 36 },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
     await expect(canvas.getAllByRole('button')).toHaveLength(1);
     for (const row of canvas.getAllByRole('listitem')) await userEvent.click(row);
     await expect(args.onToggle).not.toHaveBeenCalled();
     await expect(args.onClose).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('button', { name: 'HP History' })).toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('title') })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
@@ -481,14 +521,15 @@ export const ExtraSheetCloses = meta.story({
   name: 'Sheet · × closes',
   parameters: sheet,
   args: { variant: 'sheet', entries: short, maxHp: 36, unitName: 'Vashti the Hexer' },
-  play: async ({ args, canvas }) => {
-    const dialog = await canvas.findByRole('dialog', { name: 'HP History' });
-    await expect(canvas.getByText('Vashti the Hexer · 3 changes')).toBeVisible();
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Close' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    const dialog = await canvas.findByRole('dialog', { name: t('title') });
+    await expect(canvas.getByText(`Vashti the Hexer · ${t('count', { count: 3 })}`)).toBeVisible();
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Sheet:close') }));
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-    await userEvent.click(canvas.getByRole('button', { name: 'HP History' }));
-    const reopened = await canvas.findByRole('dialog', { name: 'HP History' });
+    await userEvent.click(canvas.getByRole('button', { name: t('title') }));
+    const reopened = await canvas.findByRole('dialog', { name: t('title') });
     await waitFor(() => expect(reopened).toBeVisible());
     await expect(args.onClose).toHaveBeenCalledOnce();
   },
@@ -506,11 +547,12 @@ export const ExtraSheetEscape = meta.story({
     },
   },
   args: { variant: 'sheet', entries: short, maxHp: 36 },
-  play: async ({ args, canvas }) => {
-    const dialog = await canvas.findByRole('dialog', { name: 'HP History' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    const dialog = await canvas.findByRole('dialog', { name: t('title') });
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
     await userEvent.tab();
-    const close = within(dialog).getByRole('button', { name: 'Close' });
+    const close = within(dialog).getByRole('button', { name: t('Sheet:close') });
     await expect(close).toHaveFocus();
     await userEvent.tab();
     await expect(close).toHaveFocus();
@@ -535,11 +577,12 @@ export const ExtraSheetEscapeMotionOn = meta.story({
     motion: 'on',
   },
   args: { variant: 'sheet', entries: [...long, ...long] },
-  play: async ({ args, canvas }) => {
-    const dialog = await canvas.findByRole('dialog', { name: 'HP History' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'HpHistory');
+    const dialog = await canvas.findByRole('dialog', { name: t('title') });
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
-    const close = within(dialog).getByRole('button', { name: 'Close' });
-    const list = within(dialog).getByRole('list', { name: 'HP History' });
+    const close = within(dialog).getByRole('button', { name: t('Sheet:close') });
+    const list = within(dialog).getByRole('list', { name: t('title') });
     await userEvent.tab();
     await expect(close).toHaveFocus();
     await userEvent.tab();

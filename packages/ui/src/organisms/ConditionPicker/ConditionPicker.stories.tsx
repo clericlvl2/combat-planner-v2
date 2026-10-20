@@ -5,6 +5,8 @@ import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { ConditionPicker } from './ConditionPicker.tsx';
+import { storyT } from '../../storybook/storyT.ts';
+import { storyLocale } from '../../storybook/withLocale.tsx';
 
 interface ConditionPickerCellProps {
   unitName?: string;
@@ -75,9 +77,10 @@ export const TwoSelected = meta.story({
 export const TapAddingWeakened = meta.story({
   name: 'Tap: adding weakened',
   args: { initial: ['dazed', 'hampered'] },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'ConditionPicker');
     await markTap(canvasElement, 'weakened');
-    const weakened = canvas.getByRole('checkbox', { name: 'weakened' });
+    const weakened = canvas.getByRole('checkbox', { name: t('weakened') });
     await expect(weakened).not.toBeChecked();
     const row = weakened.closest('label');
     const mark = weakened.parentElement;
@@ -99,16 +102,17 @@ export const LongUnitName = meta.story({
 export const ExtraFlowTapWeakened = meta.story({
   name: 'Flow: tap weakened applies at once',
   args: { initial: ['dazed', 'hampered'] },
-  play: async ({ args, canvas }) => {
-    const weakened = canvas.getByRole('checkbox', { name: 'weakened' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ConditionPicker');
+    const weakened = canvas.getByRole('checkbox', { name: t('weakened') });
     await expect(weakened).not.toBeChecked();
     await userEvent.click(weakened);
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith(['dazed', 'hampered', 'weakened']);
     await expect(weakened).toBeChecked();
     await expect(args.onClose).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('dialog', { name: 'Conditions' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('checkbox', { name: 'dazed' }));
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('checkbox', { name: t('dazed') }));
     await expect(args.onChange).toHaveBeenLastCalledWith(['hampered', 'weakened']);
   },
 });
@@ -116,8 +120,9 @@ export const ExtraFlowTapWeakened = meta.story({
 export const ExtraDoneCloses = meta.story({
   name: 'Done closes without a change',
   args: { initial: ['dazed'] },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Done' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ConditionPicker');
+    await userEvent.click(canvas.getByRole('button', { name: t('done') }));
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onChange).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
@@ -127,8 +132,9 @@ export const ExtraDoneCloses = meta.story({
 export const ExtraCloseButton = meta.story({
   name: 'Close button closes without a change',
   args: { initial: ['dazed'] },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ConditionPicker');
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onChange).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
@@ -137,15 +143,17 @@ export const ExtraCloseButton = meta.story({
 
 export const ExtraKeyboard = meta.story({
   name: 'Space toggles the focused row, Escape closes',
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ConditionPicker');
     const dialog = canvas.getByRole('dialog');
     await waitFor(() => expect(dialog).toContainElement(document.activeElement as HTMLElement));
-    const charmed = canvas.getByRole('checkbox', { name: 'charmed' });
+    const charmed = canvas.getByRole('checkbox', { name: t('charmed') });
     charmed.focus();
     await userEvent.keyboard(' ');
     await expect(args.onChange).toHaveBeenCalledWith(['charmed']);
+    const rows = canvas.getAllByRole('checkbox');
     await userEvent.tab();
-    await expect(canvas.getByRole('checkbox', { name: 'confused' })).toHaveFocus();
+    await expect(rows[rows.indexOf(charmed) + 1]).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
   },
@@ -153,11 +161,14 @@ export const ExtraKeyboard = meta.story({
 
 export const ExtraOrderAZ = meta.story({
   name: 'A–Z down the first column',
-  play: async ({ canvas }) => {
-    const group = canvas.getByRole('group', { name: 'Conditions' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ConditionPicker');
+    const group = canvas.getByRole('group', { name: t('title') });
     const boxes = within(group).getAllByRole('checkbox');
     const labels = boxes.map((box) => box.closest('label')?.textContent ?? '');
-    await expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'en')));
+    await expect(labels).toEqual(
+      [...labels].sort((a, b) => a.localeCompare(b, storyLocale(globals))),
+    );
     const first = boxes[0]?.getBoundingClientRect();
     const sixth = boxes[5]?.getBoundingClientRect();
     const seventh = boxes[6]?.getBoundingClientRect();

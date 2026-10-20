@@ -6,6 +6,7 @@ import type en from '../../i18n/en/Chip.json';
 import { base, conditionNames, conditions } from '../../theme.ts';
 import { Chip } from './Chip.tsx';
 import type { ChipProps } from './Chip.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -71,9 +72,10 @@ const heightOf = (element: HTMLElement) => element.getBoundingClientRect().heigh
 
 export const Anatomy = meta.story({
   args: { ...tagActive(), count: 2 },
-  play: async ({ canvas }) => {
-    const chip = canvas.getByRole('button', { name: 'Remove Orcs' });
-    await expect(chip).toHaveTextContent('Orcs2');
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByRole('button', { name: t('remove', { label: t('orcs') }) });
+    await expect(chip).toHaveTextContent(`${t('orcs')}2`);
     await expect(heightOf(chip)).toBe(36);
   },
 });
@@ -132,24 +134,27 @@ export const AddTap = meta.story({
 export const TagS20 = meta.story({
   name: 'Tag S · 20',
   args: { ...tag(), size: 'S' },
-  play: async ({ canvas }) => {
-    await expect(heightOf(canvas.getByRole('button', { name: 'Goblins' }))).toBe(20);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    await expect(heightOf(canvas.getByRole('button', { name: t('goblins') }))).toBe(20);
   },
 });
 
 export const TagM28 = meta.story({
   name: 'Tag M · 28',
   args: { ...tag(), size: 'M' },
-  play: async ({ canvas }) => {
-    await expect(heightOf(canvas.getByRole('button', { name: 'Goblins' }))).toBe(28);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    await expect(heightOf(canvas.getByRole('button', { name: t('goblins') }))).toBe(28);
   },
 });
 
 export const TagL36 = meta.story({
   name: 'Tag L · 36',
   args: { ...tag(), size: 'L' },
-  play: async ({ canvas }) => {
-    await expect(heightOf(canvas.getByRole('button', { name: 'Goblins' }))).toBe(36);
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    await expect(heightOf(canvas.getByRole('button', { name: t('goblins') }))).toBe(36);
   },
 });
 
@@ -186,8 +191,9 @@ export const AddL36 = meta.story({
 export const ConditionS20 = meta.story({
   name: 'Condition S · 20',
   args: { ...hampered, size: 'S' },
-  play: async ({ canvas }) => {
-    const chip = canvas.getByText('hampered').parentElement as HTMLElement;
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByText(t('hampered')).parentElement as HTMLElement;
     await expect(heightOf(chip)).toBe(20);
     await expect(getComputedStyle(chip).backgroundColor).toBe(rgb(conditions.hampered.fill));
     await expect(getComputedStyle(chip).color).toBe(rgb(conditions.hampered.text));
@@ -252,9 +258,10 @@ export const TagLJa = meta.story({
 export const TagLCount12 = meta.story({
   name: 'Tag, L count 12',
   args: { ...tagActive(), labelKey: 'ferry', count: 12 },
-  play: async ({ canvas }) => {
-    const chip = canvas.getByRole('button', { name: 'Remove Ferry' });
-    await expect(chip).toHaveTextContent('Ferry12');
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByRole('button', { name: t('remove', { label: t('ferry') }) });
+    await expect(chip).toHaveTextContent(`${t('ferry')}12`);
     await expect(heightOf(chip)).toBe(36);
   },
 });
@@ -277,8 +284,9 @@ export const ConditionSJa = meta.story({
 export const ExtraToggle = meta.story({
   name: 'Toggle a tag',
   args: tag(),
-  play: async ({ args, canvas }) => {
-    const chip = canvas.getByRole('button', { name: 'Goblins' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByRole('button', { name: t('goblins') });
     await expect(chip).toHaveAttribute('aria-pressed', 'false');
     await userEvent.click(chip);
     await expect(args.onClick).toHaveBeenCalledOnce();
@@ -295,8 +303,9 @@ export const ExtraToggle = meta.story({
 export const ExtraRemove = meta.story({
   name: 'Remove an active tag',
   args: tagActive(),
-  play: async ({ args, canvas }) => {
-    const chip = canvas.getByRole('button', { name: 'Remove Orcs' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByRole('button', { name: t('remove', { label: t('orcs') }) });
     await expect(chip).not.toHaveAttribute('aria-pressed');
     await userEvent.click(chip);
     await expect(args.onRemove).toHaveBeenCalledOnce();
@@ -306,8 +315,9 @@ export const ExtraRemove = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: add(),
-  play: async ({ args, canvas }) => {
-    const chip = canvas.getByRole('button', { name: 'Add tag' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByRole('button', { name: t('addTag') });
     await userEvent.tab();
     await expect(chip).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -320,8 +330,9 @@ export const ExtraKeyboard = meta.story({
 export const ExtraToggleKeyboard = meta.story({
   name: 'Keyboard: Enter and Space toggle a tag',
   args: tag(),
-  play: async ({ args, canvas }) => {
-    const chip = canvas.getByRole('button', { name: 'Goblins' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByRole('button', { name: t('goblins') });
     await userEvent.tab();
     await expect(chip).toHaveFocus();
     await expect(chip).toHaveAttribute('aria-pressed', 'false');
@@ -342,8 +353,9 @@ export const ExtraPressedFills = meta.story({
       <ChipCell {...metaChip} data-pressed="" />
     </div>
   ),
-  play: async ({ canvas }) => {
-    const fills = ['hampered', 'Active', 'Named NPCs'].map(
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const fills = [t('hampered'), t('active'), t('namedNpcs')].map(
       (text) =>
         getComputedStyle(canvas.getByText(text).closest('[data-variant]') as Element)
           .backgroundColor,
@@ -355,8 +367,9 @@ export const ExtraPressedFills = meta.story({
 export const ExtraDisabled = meta.story({
   name: 'Disabled',
   args: { ...tag(), disabled: true },
-  play: async ({ args, canvas }) => {
-    const chip = canvas.getByRole('button', { name: 'Goblins' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
+    const chip = canvas.getByRole('button', { name: t('goblins') });
     await expect(chip).toBeDisabled();
     await userEvent.click(chip, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
@@ -374,12 +387,13 @@ export const ExtraDisplayOnly = meta.story({
       <ChipCell {...metaChip} />
     </div>
   ),
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Chip');
     await expect(canvas.queryAllByRole('button')).toHaveLength(0);
-    const setup = canvas.getByText('Setup').parentElement as HTMLElement;
+    const setup = canvas.getByText(t('setup')).parentElement as HTMLElement;
     await expect(getComputedStyle(setup).backgroundColor).toBe('rgb(243, 237, 226)');
     await expect(getComputedStyle(setup).color).toBe('rgb(95, 87, 77)');
-    const active = canvas.getByText('Active').parentElement as HTMLElement;
+    const active = canvas.getByText(t('active')).parentElement as HTMLElement;
     await expect(getComputedStyle(active).backgroundColor).toBe('rgb(255, 231, 163)');
   },
 });
@@ -393,12 +407,13 @@ export const ExtraConditions = meta.story({
       ))}
     </div>
   ),
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'Chip');
     for (const name of conditionNames) {
       const chip = canvasElement.querySelector<HTMLElement>(`[data-condition='${name}']`);
       await expect(chip).not.toBeNull();
       if (!chip) continue;
-      await expect(chip).toHaveTextContent(name);
+      await expect(chip).toHaveTextContent(t(name));
       await expect(getComputedStyle(chip).backgroundColor).toBe(rgb(conditions[name].fill));
       await expect(getComputedStyle(chip).color).toBe(rgb(conditions[name].text));
     }

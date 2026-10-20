@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { expect, fn, userEvent } from 'storybook/test';
 import { NoteField } from './NoteField.tsx';
 import type { NoteFieldProps } from './NoteField.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface NoteFieldCellProps extends NoteFieldProps {
   withCollapse?: boolean;
@@ -112,9 +113,10 @@ export const FieldTap = meta.story({
 export const FieldEditing = meta.story({
   name: 'Field, editing',
   args: { value: '' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
-    const input = canvas.getByRole('textbox', { name: 'Note' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: t('label') }));
+    const input = canvas.getByRole('textbox', { name: t('label') });
     await expect(input).toHaveFocus();
     await userEvent.type(input, 'Hex on Orc Berserker');
     await expect(input).toHaveValue('Hex on Orc Berserker');
@@ -124,8 +126,9 @@ export const FieldEditing = meta.story({
 
 export const Line = meta.story({
   args: { value: 'Concentrating on Hex', collapsed: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('img', { name: 'Note' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await expect(canvas.getByRole('img', { name: t('label') })).toBeVisible();
     await expect(canvas.getByText('Concentrating on Hex')).toBeVisible();
   },
 });
@@ -155,21 +158,25 @@ export const LineJa = meta.story({
 export const ExtraSaveOnBlur = meta.story({
   name: 'Saves on blur',
   args: { value: '' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Hex on Orc Berserker');
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: t('label') }));
+    await userEvent.type(canvas.getByRole('textbox', { name: t('label') }), 'Hex on Orc Berserker');
     await userEvent.tab();
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('Hex on Orc Berserker');
-    await expect(canvas.getByRole('button', { name: 'Note: Hex on Orc Berserker' })).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: `${t('label')}: Hex on Orc Berserker` }),
+    ).toBeVisible();
   },
 });
 
 export const ExtraFrameTapFocuses = meta.story({
   name: 'Tapping the note frame focuses the editor',
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
-    const editor = canvas.getByRole('textbox', { name: 'Note' });
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: t('label') }));
+    const editor = canvas.getByRole('textbox', { name: t('label') });
     const frame = canvasElement.querySelector<HTMLElement>('[data-editing]');
     if (!frame) throw new Error('note frame not rendered');
     const box = frame.getBoundingClientRect();
@@ -185,11 +192,12 @@ export const ExtraFrameTapFocuses = meta.story({
 export const ExtraSaveOnEnter = meta.story({
   name: 'Keyboard: Enter saves',
   args: { value: 'Concentrating on Hex' },
-  play: async ({ args, canvas }) => {
-    const field = canvas.getByRole('button', { name: 'Note: Concentrating on Hex' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    const field = canvas.getByRole('button', { name: `${t('label')}: Concentrating on Hex` });
     field.focus();
     await userEvent.keyboard('{Enter}');
-    const input = canvas.getByRole('textbox', { name: 'Note' });
+    const input = canvas.getByRole('textbox', { name: t('label') });
     await userEvent.clear(input);
     await userEvent.type(input, 'Hex on Orc Berserker{Enter}');
     await expect(args.onChange).toHaveBeenCalledOnce();
@@ -201,9 +209,10 @@ export const ExtraSaveOnEnter = meta.story({
 export const ExtraUnchangedDoesNotSave = meta.story({
   name: 'Unchanged note does not save',
   args: { value: note },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: `Note: ${note}` }));
-    await expect(canvas.getByRole('textbox', { name: 'Note' })).toHaveValue(note);
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: `${t('label')}: ${note}` }));
+    await expect(canvas.getByRole('textbox', { name: t('label') })).toHaveValue(note);
     await userEvent.tab();
     await expect(args.onChange).not.toHaveBeenCalled();
   },
@@ -217,9 +226,10 @@ export const ExtraLimit = meta.story({
     },
   },
   args: { value: '' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
-    const input = canvas.getByRole('textbox', { name: 'Note' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: t('label') }));
+    const input = canvas.getByRole('textbox', { name: t('label') });
     await expect(input).toHaveAttribute('maxlength', String(LIMITS.note));
     await userEvent.type(input, 'x'.repeat(LIMITS.note + 10));
     await expect(input).toHaveValue('x'.repeat(LIMITS.note));
@@ -242,8 +252,9 @@ export const ExtraReadOnly = meta.story({
 export const ExtraCollapsedEmpty = meta.story({
   name: 'Line, no note',
   args: { value: '', collapsed: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.queryByText('Add a note')).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await expect(canvas.queryByText(t('placeholder'))).toBeNull();
   },
 });
 
@@ -258,9 +269,10 @@ export const ExtraFlowCollapseSaves = meta.story({
     },
   },
   args: { value: '', withCollapse: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Hex on Orc Berserker');
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: t('label') }));
+    await userEvent.type(canvas.getByRole('textbox', { name: t('label') }), 'Hex on Orc Berserker');
     await userEvent.click(canvas.getByRole('button', { name: 'Collapse row' }));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('Hex on Orc Berserker');
@@ -280,9 +292,10 @@ export const ExtraSaveOnUnmount = meta.story({
     },
   },
   args: { value: '', withUnmount: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Hex on Orc Berserker');
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: t('label') }));
+    await userEvent.type(canvas.getByRole('textbox', { name: t('label') }), 'Hex on Orc Berserker');
     await expect(args.onChange).not.toHaveBeenCalled();
     await userEvent.click(canvas.getByRole('button', { name: 'Swap to the collapsed instance' }));
     await expect(args.onChange).toHaveBeenCalledOnce();
@@ -303,9 +316,10 @@ export const ExtraHostRemovalDoesNotSave = meta.story({
     },
   },
   args: { value: '', withRemove: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Hex on Orc Berserker');
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NoteField');
+    await userEvent.click(canvas.getByRole('button', { name: t('label') }));
+    await userEvent.type(canvas.getByRole('textbox', { name: t('label') }), 'Hex on Orc Berserker');
     await userEvent.click(canvas.getByRole('button', { name: 'Remove the row' }));
     await expect(canvas.queryByRole('textbox')).toBeNull();
     await expect(args.onChange).not.toHaveBeenCalled();

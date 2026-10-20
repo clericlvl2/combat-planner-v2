@@ -6,6 +6,7 @@ import { locales } from '../../provider.tsx';
 import { localeNames } from '../../storybook/withLocale.tsx';
 import { RadioList } from './RadioList.tsx';
 import type { RadioListOption, RadioListProps } from './RadioList.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface RadioListCellProps extends Omit<
   RadioListProps<string>,
@@ -133,28 +134,30 @@ export const SortCombatsRu = meta.story({
 
 export const ExtraTap = meta.story({
   name: 'Tap a row applies at once',
-  play: async ({ args, canvas, canvasElement }) => {
-    const lastPlayed = canvas.getByRole('radio', { name: 'Last played' });
-    await userEvent.click(canvas.getByText('Last played'));
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    const lastPlayed = canvas.getByRole('radio', { name: t('lastPlayed') });
+    await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).toHaveBeenCalledWith('lastPlayed');
     await expect(lastPlayed).toBeChecked();
     const tinted = canvasElement.querySelector<HTMLElement>('[data-selected]');
-    await expect(tinted).toHaveTextContent('Last played');
+    await expect(tinted).toHaveTextContent(t('lastPlayed'));
     await expect(tinted && getComputedStyle(tinted).backgroundColor).toBe('rgb(255, 244, 210)');
-    await userEvent.click(canvas.getByText('Last played'));
+    await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).toHaveBeenCalledOnce();
   },
 });
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: arrows, Space and Enter',
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('radiogroup', { name: 'Sort combats' })).toBeVisible();
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    await expect(canvas.getByRole('radiogroup', { name: t('sortCombats') })).toBeVisible();
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('lastPlayed');
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('alphabetical');
     await userEvent.keyboard('{ArrowUp}');
@@ -166,8 +169,9 @@ export const ExtraKeyboard = meta.story({
 
 export const ExtraEnter = meta.story({
   name: 'Keyboard: Enter selects the focused row',
-  play: async ({ args, canvas }) => {
-    const alphabetical = canvas.getByRole('radio', { name: 'A–Z' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    const alphabetical = canvas.getByRole('radio', { name: t('alphabetical') });
     alphabetical.focus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onChange).toHaveBeenCalledWith('alphabetical');
@@ -178,13 +182,14 @@ export const ExtraEnter = meta.story({
 export const ExtraDisabledOption = meta.story({
   name: 'Disabled option',
   args: { disabledValues: ['alphabetical'] },
-  play: async ({ args, canvas }) => {
-    const alphabetical = canvas.getByRole('radio', { name: 'A–Z' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    const alphabetical = canvas.getByRole('radio', { name: t('alphabetical') });
     await expect(alphabetical).toBeDisabled();
-    await userEvent.click(canvas.getByText('A–Z'), { pointerEventsCheck: 0 });
+    await userEvent.click(canvas.getByText(t('alphabetical')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(alphabetical).not.toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
   },
 });
 

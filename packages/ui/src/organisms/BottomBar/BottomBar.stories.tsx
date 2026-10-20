@@ -6,6 +6,7 @@ import type en from '../../i18n/en/BottomBar.json';
 import { layout } from '../../layout.ts';
 import { BottomBar } from './BottomBar.tsx';
 import type { BottomBarProps } from './BottomBar.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -61,11 +62,12 @@ export const NewCombatPressed = meta.story({
 export const NewCombatDisabled = meta.story({
   name: 'New combat disabled',
   args: { labelKey: 'newCombat', hintKey: 'combatLimitReached', disabled: true, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'New combat' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'BottomBar');
+    const button = canvas.getByRole('button', { name: t('newCombat') });
     await expect(button).toBeDisabled();
-    await expect(button).toHaveAccessibleDescription('Combat limit reached');
-    await expect(canvas.getByText('Combat limit reached')).toBeVisible();
+    await expect(button).toHaveAccessibleDescription(t('combatLimitReached'));
+    await expect(canvas.getByText(t('combatLimitReached'))).toBeVisible();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
   },
@@ -100,8 +102,9 @@ export const DisabledHintDe = meta.story({
 export const ExtraClick = meta.story({
   name: 'Click',
   args: { labelKey: 'newCombat', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'New combat' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'BottomBar');
+    await userEvent.click(canvas.getByRole('button', { name: t('newCombat') }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
@@ -109,8 +112,9 @@ export const ExtraClick = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { labelKey: 'newPreset', onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'New preset' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'BottomBar');
+    const button = canvas.getByRole('button', { name: t('newPreset') });
     await userEvent.tab();
     await expect(button).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -123,9 +127,10 @@ export const ExtraKeyboard = meta.story({
 export const ExtraBottomOfScreen = meta.story({
   name: 'Sits at the bottom of the screen',
   args: { labelKey: 'newCombat' },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'BottomBar');
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
-    const button = canvas.getByRole('button', { name: 'New combat' });
+    const button = canvas.getByRole('button', { name: t('newCombat') });
     const bar = button.parentElement;
     const frameRect = frame?.getBoundingClientRect();
     const barRect = bar?.getBoundingClientRect();

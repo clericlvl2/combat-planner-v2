@@ -1,9 +1,11 @@
 import { healthSegments, healthStatus } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
+import type { TFunction } from 'i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { base, health, healthTints, hpActions } from '../../theme.ts';
 import { HpBox } from './HpBox.tsx';
 import type { HpBoxProps } from './HpBox.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 function HpBoxCell(props: HpBoxProps) {
   return (
@@ -32,13 +34,6 @@ const boxOf = (canvasElement: HTMLElement) => {
   return box;
 };
 
-const statusLabels = {
-  full: 'Full',
-  wounded: 'Wounded',
-  staggered: 'Staggered',
-  dead: 'Dead',
-} as const;
-
 const minus = (value: number) => (value < 0 ? `−${Math.abs(value)}` : String(value));
 
 const dmBoxFacts = (box: HTMLElement) => ({
@@ -47,64 +42,72 @@ const dmBoxFacts = (box: HTMLElement) => ({
   status: box.querySelector('[data-part="status"]')?.textContent ?? null,
 });
 
-const dmBoxExpected = (hp: number, maxHp: number) => {
+const dmBoxExpected = (t: TFunction, hp: number, maxHp: number) => {
   const status = healthStatus(hp, maxHp);
   return {
     numbers: `${minus(hp)}/${maxHp}`,
     segments: healthSegments(status, hp, maxHp),
-    status: status === 'full' ? null : statusLabels[status],
+    status: status === 'full' ? null : t(status),
   };
 };
 
 export const Anatomy = meta.story({
   args: { viewer: 'dm', hp: 14, maxHp: 40, tempHp: 5 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(14, 40));
-    await expect(canvas.getByText('+5 temp')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 14, 40));
+    await expect(canvas.getByText(t('temp', { amount: 5 }))).toBeVisible();
     const box = boxOf(canvasElement);
     await expect(box.getBoundingClientRect().width).toBe(96);
     await expect(getComputedStyle(box).borderTopColor).toBe(rgb(base.border));
-    await expect(getComputedStyle(canvas.getByText('Staggered')).color).toBe(rgb(health.staggered));
+    await expect(getComputedStyle(canvas.getByText(t('staggered'))).color).toBe(
+      rgb(health.staggered),
+    );
   },
 });
 
 export const VariantsDMFull = meta.story({
   name: 'DM · Full',
   args: { viewer: 'dm', hp: 40, maxHp: 40 },
-  play: async ({ canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(40, 40));
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 40, 40));
   },
 });
 
 export const VariantsDMWounded = meta.story({
   name: 'DM · Wounded',
   args: { viewer: 'dm', hp: 24, maxHp: 40 },
-  play: async ({ canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(24, 40));
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 24, 40));
   },
 });
 
 export const Staggered = meta.story({
   name: 'Staggered',
   args: { viewer: 'dm', hp: 14, maxHp: 40 },
-  play: async ({ canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(14, 40));
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 14, 40));
   },
 });
 
 export const StaggeredLow = meta.story({
   name: 'Staggered, low',
   args: { viewer: 'dm', hp: 6, maxHp: 40 },
-  play: async ({ canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(6, 40));
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 6, 40));
   },
 });
 
 export const Dead = meta.story({
   name: 'Dead',
   args: { viewer: 'dm', hp: -3, maxHp: 18 },
-  play: async ({ canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(-3, 18));
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, -3, 18));
     await expect(getComputedStyle(boxOf(canvasElement)).backgroundColor).toBe('rgba(0, 0, 0, 0)');
   },
 });
@@ -112,17 +115,21 @@ export const Dead = meta.story({
 export const Temp = meta.story({
   name: 'Temp',
   args: { viewer: 'dm', hp: 30, maxHp: 30, tempHp: 5 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(30, 30));
-    await expect(getComputedStyle(canvas.getByText('+5 temp')).color).toBe(rgb(base.ink));
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 30, 30));
+    await expect(getComputedStyle(canvas.getByText(t('temp', { amount: 5 }))).color).toBe(
+      rgb(base.ink),
+    );
   },
 });
 
 export const Disabled = meta.story({
   name: 'Disabled',
   args: { viewer: 'dm', hp: 18, maxHp: 18, disabled: true },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(18, 18));
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 18, 18));
     await expect(getComputedStyle(boxOf(canvasElement)).borderTopColor).toBe('rgba(0, 0, 0, 0)');
     await expect(getComputedStyle(canvas.getByText('18')).color).toBe(rgb(base.secondary));
   },
@@ -137,8 +144,9 @@ export const Tap = meta.story({
 export const VariantsPlayerFull = meta.story({
   name: 'Player · Full',
   args: { viewer: 'player', hp: 52, maxHp: 52 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Full')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(canvas.getByText(t('full'))).toBeVisible();
     await expect(canvasElement.querySelectorAll('[data-segment]')).toHaveLength(0);
     await expect(getComputedStyle(boxOf(canvasElement)).backgroundColor).toBe(
       rgb(healthTints.full),
@@ -171,26 +179,31 @@ export const OwnStaggered = meta.story({
 export const OwnTemp = meta.story({
   name: 'Own, temp',
   args: { viewer: 'player', hp: 20, maxHp: 36, tempHp: 5, mine: true },
-  play: async ({ canvas }) => {
-    await expect(getComputedStyle(canvas.getByText('+5 temp')).color).toBe(rgb(hpActions.setTemp));
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(getComputedStyle(canvas.getByText(t('temp', { amount: 5 }))).color).toBe(
+      rgb(hpActions.setTemp),
+    );
   },
 });
 
 export const Enemy = meta.story({
   name: 'Enemy',
   args: { viewer: 'player', status: 'staggered', hp: undefined, maxHp: undefined },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Staggered')).toBeVisible();
-    await expect(boxOf(canvasElement)).toHaveTextContent(/^Staggered$/);
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(canvas.getByText(t('staggered'))).toBeVisible();
+    await expect(boxOf(canvasElement)).toHaveTextContent(new RegExp(`^${t('staggered')}$`));
   },
 });
 
 export const EnemyDead = meta.story({
   name: 'Enemy, dead',
   args: { viewer: 'player', status: 'dead', hp: undefined, maxHp: undefined },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
     const box = boxOf(canvasElement);
-    await expect(box).toHaveTextContent(/^Dead$/);
+    await expect(box).toHaveTextContent(new RegExp(`^${t('dead')}$`));
     await expect(getComputedStyle(box).backgroundColor).toBe(rgb(base.soft));
   },
 });
@@ -198,25 +211,28 @@ export const EnemyDead = meta.story({
 export const EdgeCasesThreeDigits287320 = meta.story({
   name: '287/320',
   args: { viewer: 'dm', hp: 287, maxHp: 320 },
-  play: async ({ canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(287, 320));
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 287, 320));
   },
 });
 
 export const EdgeCasesThreeDigits112320Temp = meta.story({
   name: '112/320 + temp',
   args: { viewer: 'dm', hp: 112, maxHp: 320, tempHp: 120 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(112, 320));
-    await expect(canvas.getByText('+120 temp')).toBeVisible();
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 112, 320));
+    await expect(canvas.getByText(t('temp', { amount: 120 }))).toBeVisible();
   },
 });
 
 export const EdgeCasesThreeDigits9999992 = meta.story({
   name: '−999/999',
   args: { viewer: 'dm', hp: -999, maxHp: 999 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(-999, 999));
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, -999, 999));
     await expect(canvas.getByText('−999')).toBeVisible();
   },
 });
@@ -224,16 +240,18 @@ export const EdgeCasesThreeDigits9999992 = meta.story({
 export const EdgeCasesThreeDigits999999 = meta.story({
   name: '999/999',
   args: { viewer: 'dm', hp: 999, maxHp: 999 },
-  play: async ({ canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(999, 999));
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, 999, 999));
   },
 });
 
 export const EdgeCasesThreeDigits105320 = meta.story({
   name: '−105/320',
   args: { viewer: 'dm', hp: -105, maxHp: 320 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(-105, 320));
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(dmBoxFacts(boxOf(canvasElement))).toEqual(dmBoxExpected(t, -105, 320));
     await expect(canvas.getByText('−105')).toBeVisible();
   },
 });
@@ -241,9 +259,10 @@ export const EdgeCasesThreeDigits105320 = meta.story({
 export const Player187240 = meta.story({
   name: 'Player 187/240',
   args: { viewer: 'player', hp: 187, maxHp: 240, tempHp: 120 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Wounded')).toBeVisible();
-    await expect(canvas.getByText('+120 temp')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await expect(canvas.getByText(t('wounded'))).toBeVisible();
+    await expect(canvas.getByText(t('temp', { amount: 120 }))).toBeVisible();
   },
 });
 
@@ -258,9 +277,10 @@ export const DeStaggered = meta.story({
   name: 'de · Staggered',
   globals: { locale: 'de' },
   args: staggeredWithTemp,
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'HpBox');
     await expect(canvas.getByText('Taumelnd')).toBeVisible();
-    await expect(canvas.getByText('+5 temp')).toBeVisible();
+    await expect(canvas.getByText(t('temp', { amount: 5 }))).toBeVisible();
   },
 });
 
@@ -348,11 +368,12 @@ export const ExtraKeyboard = meta.story({
 export const ExtraReadOnly = meta.story({
   name: 'Read-only enemy for a player',
   args: { viewer: 'player', status: 'wounded', hp: undefined, maxHp: undefined, onClick: fn() },
-  play: async ({ args, canvas, canvasElement }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
     await expect(canvas.queryByRole('button')).toBeNull();
     await userEvent.click(boxOf(canvasElement));
     await expect(args.onClick).not.toHaveBeenCalled();
-    await expect(canvas.getByText('Wounded')).toBeVisible();
+    await expect(canvas.getByText(t('wounded'))).toBeVisible();
   },
 });
 
@@ -377,11 +398,12 @@ export const ExtraDamageSteps = meta.story({
       ))}
     </div>
   ),
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
     for (const hp of [40, 24, 14, 6, -3]) {
       const step = canvasElement.querySelector<HTMLElement>(`[data-step="${hp}"]`);
       if (!step) throw new Error(`step ${hp} not rendered`);
-      await expect(dmBoxFacts(boxOf(step))).toEqual(dmBoxExpected(hp, 40));
+      await expect(dmBoxFacts(boxOf(step))).toEqual(dmBoxExpected(t, hp, 40));
     }
   },
 });

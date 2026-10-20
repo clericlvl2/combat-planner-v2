@@ -6,6 +6,7 @@ import QRCode from 'react-qr-code';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { expectNoHorizontalOverflow, expectNotTruncated } from '../../storybook/geometry.ts';
 import { ShareSheet } from './ShareSheet.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface ShareSheetCellProps {
   combatTitle?: string;
@@ -111,12 +112,13 @@ const restFocusOnSheet = async (sheet: HTMLElement) => {
 
 export const Anatomy = meta.story({
   parameters: { geometry: openSheetGeometry },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Share with players' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
     await expect(canvas.getByText('Ambush at the Ferry')).toBeVisible();
-    await expect(canvas.getByRole('img', { name: 'QR code of the player link' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Copy' })).toBeVisible();
-    const reissue = canvas.getByRole('button', { name: 'Revoke and reissue link' });
+    await expect(canvas.getByRole('img', { name: t('qr') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('copy') })).toBeVisible();
+    const reissue = canvas.getByRole('button', { name: t('reissue') });
     await expectNotTruncated(reissue);
     await expectNoHorizontalOverflow(reissue);
   },
@@ -140,11 +142,12 @@ export const Link = meta.story({
 export const LinkCopied = meta.story({
   parameters: { geometry: openSheetGeometry },
   name: 'Link copied',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
     await expect(args.onCopy).toHaveBeenCalledOnce();
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
-    const copied = canvas.getByRole('button', { name: 'Copied' });
+    const copied = canvas.getByRole('button', { name: t('copied') });
     await expect(copied).toHaveAttribute('data-copied');
     await expect(getComputedStyle(copied).backgroundColor).toBe('rgb(46, 122, 67)');
     await expect(args.onReissue).not.toHaveBeenCalled();
@@ -155,8 +158,9 @@ export const LinkCopied = meta.story({
 export const AfterReissueNewLink = meta.story({
   parameters: { geometry: openSheetGeometry },
   name: 'After reissue: new link',
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Revoke and reissue link' }));
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('reissue') }));
     await expect(args.onReissue).toHaveBeenCalledOnce();
     await expect(args.onReissue).toHaveBeenCalledWith();
     await expect(args.onCopy).not.toHaveBeenCalled();
@@ -170,15 +174,16 @@ export const AfterReissueNewLink = meta.story({
 export const ExtraFlow = meta.story({
   parameters: { geometry: openSheetGeometry },
   name: 'Flow: tap Copy, then tap Reissue',
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
     await expect(args.onCopy).toHaveBeenLastCalledWith(linkG3);
-    await expect(canvas.getByRole('button', { name: 'Copied' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Revoke and reissue link' }));
+    await expect(canvas.getByRole('button', { name: t('copied') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('reissue') }));
     await expect(args.onReissue).toHaveBeenCalledOnce();
     await expect(canvas.getByText(linkG4)).toBeVisible();
     await expectQrEncodes(canvasElement, linkG4);
-    const copy = canvas.getByRole('button', { name: 'Copy' });
+    const copy = canvas.getByRole('button', { name: t('copy') });
     await expect(copy).not.toHaveAttribute('data-copied');
     await userEvent.click(copy);
     await expect(args.onCopy).toHaveBeenCalledTimes(2);
@@ -191,12 +196,15 @@ export const ExtraCopyFails = meta.story({
   parameters: { geometry: openSheetGeometry },
   name: 'A failed copy does not show Copied',
   args: { copyResult: false },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
     await new Promise((resolve) => setTimeout(resolve, 50));
-    await expect(canvas.queryByRole('button', { name: 'Copied' })).toBeNull();
-    await expect(canvas.getByRole('button', { name: 'Copy' })).not.toHaveAttribute('data-copied');
+    await expect(canvas.queryByRole('button', { name: t('copied') })).toBeNull();
+    await expect(canvas.getByRole('button', { name: t('copy') })).not.toHaveAttribute(
+      'data-copied',
+    );
   },
 });
 
@@ -204,10 +212,11 @@ export const ExtraCopyResolves = meta.story({
   parameters: { geometry: openSheetGeometry },
   name: 'A successful async copy shows Copied',
   args: { copyResult: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
-    await expect(await canvas.findByRole('button', { name: 'Copied' })).toHaveAttribute(
+    await expect(await canvas.findByRole('button', { name: t('copied') })).toHaveAttribute(
       'data-copied',
     );
     await restFocusOnSheet(canvas.getByRole('dialog'));
@@ -230,16 +239,17 @@ export const ExtraQrEncodesUrl = meta.story({
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter copies, Space reissues, Escape closes',
-  play: async ({ args, canvas }) => {
-    const sheet = canvas.getByRole('dialog', { name: 'Share with players' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    const sheet = canvas.getByRole('dialog', { name: t('title') });
     await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
-    canvas.getByRole('button', { name: 'Copy' }).focus();
+    canvas.getByRole('button', { name: t('copy') }).focus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onCopy).toHaveBeenCalledOnce();
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
-    await expect(canvas.getByRole('button', { name: 'Copied' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('copied') })).toHaveFocus();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Revoke and reissue link' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('reissue') })).toHaveFocus();
     await userEvent.keyboard(' ');
     await expect(args.onReissue).toHaveBeenCalledOnce();
     await userEvent.keyboard('{Escape}');
@@ -252,24 +262,26 @@ export const ExtraKeyboard = meta.story({
 export const ExtraShiftTab = meta.story({
   parameters: { geometry: openSheetGeometry },
   name: 'Shift+Tab right after opening stays inside',
-  play: async ({ canvas }) => {
-    const sheet = canvas.getByRole('dialog', { name: 'Share with players' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    const sheet = canvas.getByRole('dialog', { name: t('title') });
     await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
     await userEvent.tab({ shift: true });
     await expect(sheet).toContainElement(document.activeElement as HTMLElement);
-    await expect(canvas.getByRole('button', { name: 'Revoke and reissue link' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('reissue') })).toHaveFocus();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Close' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('Sheet:close') })).toHaveFocus();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Copy' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('copy') })).toHaveFocus();
   },
 });
 
 export const ExtraShiftTabMotionOn = meta.story({
   name: 'Shift+Tab with motion on stays inside, Escape closes',
   parameters: { motion: 'on' },
-  play: async ({ args, canvas }) => {
-    const sheet = await canvas.findByRole('dialog', { name: 'Share with players' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    const sheet = await canvas.findByRole('dialog', { name: t('title') });
     await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
     await userEvent.tab({ shift: true });
     await expect(sheet).toContainElement(document.activeElement as HTMLElement);
@@ -285,8 +297,9 @@ export const ExtraShiftTabMotionOn = meta.story({
 
 export const ExtraClose = meta.story({
   name: 'Close button calls onClose only',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onCopy).not.toHaveBeenCalled();
     await expect(args.onReissue).not.toHaveBeenCalled();
@@ -306,13 +319,14 @@ export const ExtraReopenResetsCopied = meta.story({
     },
   },
   args: { withOpener: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
-    await expect(canvas.getByRole('button', { name: 'Copied' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
+    await expect(canvas.getByRole('button', { name: t('copied') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     await userEvent.click(canvas.getByRole('button', { name: 'Share' }));
-    await expect(await canvas.findByRole('button', { name: 'Copy' })).not.toHaveAttribute(
+    await expect(await canvas.findByRole('button', { name: t('copy') })).not.toHaveAttribute(
       'data-copied',
     );
     await expect(args.onCopy).toHaveBeenCalledOnce();

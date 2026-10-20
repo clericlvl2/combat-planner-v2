@@ -4,6 +4,7 @@ import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { combatSorts, presetSorts, SortSheet } from './SortSheet.tsx';
 import type { CombatSort, PresetSort, SortContext } from './SortSheet.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface SortSheetCellProps {
   context?: SortContext;
@@ -86,33 +87,36 @@ export const Anatomy = meta.story({
 export const VariantsCombatListNewestFirst = meta.story({
   name: 'Variants: Combat list · Newest first',
   args: { context: 'combats', selected: 0 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Sort combats' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await expect(canvas.getByRole('dialog', { name: t('sortCombats') })).toBeVisible();
     const radios = canvas.getAllByRole('radio');
     await expect(radios.map((radio) => radio.closest('label')?.textContent)).toEqual([
-      'Newest first',
-      'Last played',
-      'A–Z',
+      t('newestFirst'),
+      t('lastPlayed'),
+      t('alphabetical'),
     ]);
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
   },
 });
 
 export const LastPlayed = meta.story({
   name: 'Last played',
   args: { context: 'combats', selected: 1 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
   },
 });
 
 export const VariantsCombatListTapAZ = meta.story({
   name: 'Variants: Combat list · Tap A–Z',
   args: { context: 'combats', selected: 0 },
-  play: async ({ args, canvas, canvasElement }) => {
-    const row = await markTap(canvasElement, 'A–Z');
-    await expect(within(row).getByRole('radio', { name: 'A–Z' })).not.toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    const row = await markTap(canvasElement, t('alphabetical'));
+    await expect(within(row).getByRole('radio', { name: t('alphabetical') })).not.toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
     await expect(args.onChange).not.toHaveBeenCalled();
   },
 });
@@ -120,13 +124,14 @@ export const VariantsCombatListTapAZ = meta.story({
 export const VariantsLibraryNewestFirst = meta.story({
   name: 'Variants: Library · Newest first',
   args: { context: 'presets', selected: 0 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Sort presets' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await expect(canvas.getByRole('dialog', { name: t('sortPresets') })).toBeVisible();
     const radios = canvas.getAllByRole('radio');
     await expect(radios.map((radio) => radio.closest('label')?.textContent)).toEqual([
-      'Newest first',
-      'A–Z',
-      'By type',
+      t('newestFirst'),
+      t('alphabetical'),
+      t('byType'),
     ]);
   },
 });
@@ -134,17 +139,19 @@ export const VariantsLibraryNewestFirst = meta.story({
 export const ByType = meta.story({
   name: 'By type',
   args: { context: 'presets', selected: 2 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'By type' })).toBeChecked();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await expect(canvas.getByRole('radio', { name: t('byType') })).toBeChecked();
   },
 });
 
 export const VariantsLibraryTapAZ = meta.story({
   name: 'Variants: Library · Tap A–Z',
   args: { context: 'presets', selected: 0 },
-  play: async ({ args, canvasElement }) => {
-    const row = await markTap(canvasElement, 'A–Z');
-    await expect(within(row).getByRole('radio', { name: 'A–Z' })).not.toBeChecked();
+  play: async ({ args, canvasElement, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    const row = await markTap(canvasElement, t('alphabetical'));
+    await expect(within(row).getByRole('radio', { name: t('alphabetical') })).not.toBeChecked();
     await expect(args.onChange).not.toHaveBeenCalled();
   },
 });
@@ -176,8 +183,9 @@ export const De = meta.story({
 export const ExtraFlowTapAZ = meta.story({
   name: 'Flow: tap A–Z applies at once and closes',
   args: { context: 'combats', selected: 0 },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('A–Z'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await userEvent.click(canvas.getByText(t('alphabetical')));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('alphabetical');
     await expect(args.onClose).toHaveBeenCalledOnce();
@@ -188,8 +196,9 @@ export const ExtraFlowTapAZ = meta.story({
 export const ExtraFlowLibraryByType = meta.story({
   name: 'Flow: Library, tap By type applies and closes',
   args: { context: 'presets', selected: 0 },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('radio', { name: 'By type' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await userEvent.click(canvas.getByRole('radio', { name: t('byType') }));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('byType');
     await expect(args.onClose).toHaveBeenCalledOnce();
@@ -200,8 +209,9 @@ export const ExtraFlowLibraryByType = meta.story({
 export const ExtraCloseWithoutChange = meta.story({
   name: 'Close button closes without a change',
   args: { context: 'combats', selected: 1 },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onChange).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
@@ -211,8 +221,9 @@ export const ExtraCloseWithoutChange = meta.story({
 export const ExtraDoneWithoutChange = meta.story({
   name: 'Done closes without a change',
   args: { context: 'presets', selected: 2 },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Done' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('done') }));
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onChange).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
@@ -222,31 +233,33 @@ export const ExtraDoneWithoutChange = meta.story({
 export const ExtraCurrentOptionDoesNotFire = meta.story({
   name: 'Tap on the current option does not call onChange',
   args: { context: 'combats', selected: 1 },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Last played'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
-    await expect(canvas.getByRole('dialog', { name: 'Sort combats' })).toBeVisible();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
+    await expect(canvas.getByRole('dialog', { name: t('sortCombats') })).toBeVisible();
   },
 });
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: arrows apply and keep the sheet, Escape closes',
   args: { context: 'combats', selected: 0 },
-  play: async ({ args, canvas }) => {
-    const sheet = canvas.getByRole('dialog', { name: 'Sort combats' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
     await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
-    const newest = canvas.getByRole('radio', { name: 'Newest first' });
+    const newest = canvas.getByRole('radio', { name: t('newestFirst') });
     newest.focus();
     await expect(newest).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('lastPlayed');
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('alphabetical');
     await expect(args.onChange).toHaveBeenCalledTimes(2);
     await expect(args.onClose).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('radio', { name: 'A–Z' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('alphabetical') })).toBeChecked();
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
@@ -256,16 +269,17 @@ export const ExtraKeyboard = meta.story({
 export const ExtraShiftTab = meta.story({
   name: 'Shift+Tab right after opening stays inside',
   args: { context: 'combats', selected: 0 },
-  play: async ({ canvas }) => {
-    const sheet = canvas.getByRole('dialog', { name: 'Sort combats' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
     await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
     await userEvent.tab({ shift: true });
     await expect(sheet).toContainElement(document.activeElement as HTMLElement);
-    await expect(canvas.getByRole('button', { name: 'Done' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('done') })).toHaveFocus();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Close' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('Sheet:close') })).toHaveFocus();
     await userEvent.tab({ shift: true });
-    await expect(canvas.getByRole('button', { name: 'Done' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('done') })).toHaveFocus();
   },
 });
 
@@ -273,14 +287,15 @@ export const ExtraShiftTabMotionOn = meta.story({
   name: 'Shift+Tab with motion on stays inside, Enter on Done closes',
   parameters: { motion: 'on' },
   args: { context: 'combats', selected: 0 },
-  play: async ({ args, canvas }) => {
-    const sheet = await canvas.findByRole('dialog', { name: 'Sort combats' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'SortSheet');
+    const sheet = await canvas.findByRole('dialog', { name: t('sortCombats') });
     await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
     await userEvent.tab({ shift: true });
     await expect(sheet).toContainElement(document.activeElement as HTMLElement);
     await userEvent.tab();
     await expect(sheet).toContainElement(document.activeElement as HTMLElement);
-    const done = canvas.getByRole('button', { name: 'Done' });
+    const done = canvas.getByRole('button', { name: t('done') });
     done.focus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onClose).toHaveBeenCalledOnce();

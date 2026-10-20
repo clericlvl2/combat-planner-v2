@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/ToolButton.json';
 import { ToolButton } from './ToolButton.tsx';
 import type { ToolButtonProps } from './ToolButton.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -80,8 +81,9 @@ export const SortActivePressed = meta.story({
 export const SortActiveDisabled = meta.story({
   name: 'Sort · active · disabled',
   args: { ...sortActive, disabled: true, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Last played' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ToolButton');
+    const button = canvas.getByRole('button', { name: t('lastPlayed') });
     await expect(button).toBeDisabled();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
@@ -194,16 +196,18 @@ export const ActiveRu = meta.story({
 export const ActiveCount12 = meta.story({
   name: 'Active · count 12',
   args: { ...tagsActiveCount, count: 12 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Tags 12' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ToolButton');
+    await expect(canvas.getByRole('button', { name: `${t('tags')} 12` })).toBeVisible();
   },
 });
 
 export const ExtraClick = meta.story({
   name: 'Click',
   args: { ...sortDefault, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ToolButton');
+    await userEvent.click(canvas.getByRole('button', { name: t('sort') }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
@@ -211,8 +215,9 @@ export const ExtraClick = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { ...tagsActiveCount, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Tags 2' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ToolButton');
+    const button = canvas.getByRole('button', { name: `${t('tags')} 2` });
     await userEvent.tab();
     await expect(button).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -232,8 +237,9 @@ export const ExtraSizes = meta.story({
       <ToolButtonCell {...args} size="L" />
     </div>
   ),
-  play: async ({ canvas }) => {
-    const buttons = canvas.getAllByRole('button', { name: 'Sort' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ToolButton');
+    const buttons = canvas.getAllByRole('button', { name: t('sort') });
     const heights = buttons.map((button) => button.getBoundingClientRect().height);
     const icons = buttons.map((button) => button.querySelector('svg')?.getAttribute('width'));
     await expect(heights).toEqual([40, 48, 56]);

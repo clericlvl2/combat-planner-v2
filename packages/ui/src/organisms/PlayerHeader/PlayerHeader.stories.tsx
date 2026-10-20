@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { PlayerHeader } from './PlayerHeader.tsx';
 import type { PlayerHeaderProps } from './PlayerHeader.tsx';
+import { anyValue, storyT } from '../../storybook/storyT.ts';
 
 interface PlayerHeaderCellProps extends Omit<
   PlayerHeaderProps,
@@ -57,11 +58,14 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Round 3' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: t('round', { round: 3 }) }),
+    ).toBeVisible();
     await expect(canvas.getByText('Ambush at the Ferry')).toBeVisible();
-    await expect(canvas.getByText('Escalation 2')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Menu' })).toHaveAttribute(
+    await expect(canvas.getByText(t('EscalationDie:value', { value: 2 }))).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('menu') })).toHaveAttribute(
       'aria-expanded',
       'false',
     );
@@ -75,31 +79,36 @@ export const Combat = meta.story({
 export const Setup = meta.story({
   name: 'Setup',
   args: { round: null, escalation: 0 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Setup' })).toBeVisible();
-    await expect(canvas.queryByText(/Escalation/)).toBeNull();
-    await expect(canvas.queryByText('No escalation')).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('setup') })).toBeVisible();
+    await expect(
+      canvas.queryByText(anyValue((value) => t('EscalationDie:value', { value }))),
+    ).toBeNull();
+    await expect(canvas.queryByText(t('EscalationDie:none'))).toBeNull();
   },
 });
 
 export const MenuTapped = meta.story({
   name: 'Menu tapped',
   args: { menuOpened: true },
-  play: async ({ canvas }) => {
-    const menu = canvas.getByRole('button', { name: 'Menu' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
+    const menu = canvas.getByRole('button', { name: t('menu') });
     await expect(menu).toHaveAttribute('data-open');
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
     await expect(menu).toHaveAttribute('aria-haspopup', 'menu');
-    await expect(await canvas.findByRole('menu', { name: 'Player menu' })).toBeVisible();
+    await expect(await canvas.findByRole('menu', { name: t('menuLabel') })).toBeVisible();
   },
 });
 
 export const HeroPicker = meta.story({
   name: 'Hero picker',
   args: { round: null, escalation: 0, withMenu: false },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
     await expect(canvas.queryByRole('button')).toBeNull();
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Setup' })).toBeVisible();
+    await expect(canvas.getByRole('heading', { level: 1, name: t('setup') })).toBeVisible();
   },
 });
 
@@ -114,23 +123,27 @@ export const LongTitleRound12 = meta.story({
     },
   },
   args: { title: 'Капитан стражи переправы: засада у моста', round: 12, escalation: 6 },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
     const title = canvas.getByText('Капитан стражи переправы: засада у моста');
     await expect(title.scrollWidth).toBeGreaterThan(title.clientWidth);
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Round 12' })).toBeVisible();
-    await expect(canvas.getByText('Escalation 6')).toBeVisible();
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: t('round', { round: 12 }) }),
+    ).toBeVisible();
+    await expect(canvas.getByText(t('EscalationDie:value', { value: 6 }))).toBeVisible();
   },
 });
 
 export const ExtraMenuOpens = meta.story({
   name: 'Menu button opens the player menu',
-  play: async ({ args, canvas }) => {
-    const menu = canvas.getByRole('button', { name: 'Menu' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
+    const menu = canvas.getByRole('button', { name: t('menu') });
     await userEvent.click(menu);
     await expect(args.onMenu).toHaveBeenCalledOnce();
     await expect(menu).toHaveAttribute('data-open');
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
-    const heroes = await canvas.findByRole('menuitem', { name: 'Heroes' });
+    const heroes = await canvas.findByRole('menuitem', { name: t('heroes') });
     await waitFor(() => expect(heroes).toHaveFocus());
     await expect(heroes.querySelector('.tabler-icon-switch-horizontal')).not.toBeNull();
     await userEvent.click(heroes);
@@ -143,13 +156,14 @@ export const ExtraMenuOpens = meta.story({
 
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter opens, Escape closes',
-  play: async ({ args, canvas }) => {
-    const menu = canvas.getByRole('button', { name: 'Menu' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
+    const menu = canvas.getByRole('button', { name: t('menu') });
     await userEvent.tab();
     await expect(menu).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onMenu).toHaveBeenCalledOnce();
-    const heroes = await canvas.findByRole('menuitem', { name: 'Heroes' });
+    const heroes = await canvas.findByRole('menuitem', { name: t('heroes') });
     await waitFor(() => expect(heroes).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onMenuClose).toHaveBeenCalledOnce();
@@ -162,18 +176,22 @@ export const ExtraKeyboard = meta.story({
 export const ExtraLocaleFr = meta.story({
   name: 'Locale fr: the menu caption reads Menu',
   globals: { locale: 'fr' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Menu' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
+    await expect(canvas.getByRole('button', { name: t('menu') })).toBeVisible();
     await expect(canvas.queryByText('Plus')).toBeNull();
   },
 });
 
 export const ExtraDisplayOnly = meta.story({
   name: 'Round and die are not interactive',
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
     await expect(canvas.getAllByRole('button')).toHaveLength(1);
-    await userEvent.click(canvas.getByRole('heading', { level: 1, name: 'Round 3' }));
-    await userEvent.click(canvas.getByText('Escalation 2'));
+    await userEvent.click(
+      canvas.getByRole('heading', { level: 1, name: t('round', { round: 3 }) }),
+    );
+    await userEvent.click(canvas.getByText(t('EscalationDie:value', { value: 2 })));
     await expect(args.onMenu).not.toHaveBeenCalled();
     await expect(args.onHeroes).not.toHaveBeenCalled();
   },

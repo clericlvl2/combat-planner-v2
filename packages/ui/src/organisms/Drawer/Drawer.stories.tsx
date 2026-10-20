@@ -6,6 +6,7 @@ import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { Drawer } from './Drawer.tsx';
 import type { DrawerSection } from './Drawer.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface DrawerCellProps {
   current?: DrawerSection;
@@ -60,13 +61,14 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
     await expect(canvas.getByRole('dialog', { name: 'Combat Planner' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Combats' })).toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('combats') })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await expect(canvas.getByRole('button', { name: 'Library' })).not.toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('library') })).not.toHaveAttribute(
       'aria-current',
     );
     await expect(canvas.getByText('dm@ferry.games')).toBeVisible();
@@ -81,12 +83,13 @@ export const CombatsActive = meta.story({
 export const LibraryActive = meta.story({
   name: 'Library active',
   args: { current: 'library' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Library' })).toHaveAttribute(
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
+    await expect(canvas.getByRole('button', { name: t('library') })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await expect(canvas.getByRole('button', { name: 'Combats' })).not.toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('combats') })).not.toHaveAttribute(
       'aria-current',
     );
   },
@@ -109,8 +112,9 @@ export const LongEmail = meta.story({
 
 export const ExtraNavigate = meta.story({
   name: 'Tap on a section navigates and closes',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Library' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
+    await userEvent.click(canvas.getByRole('button', { name: t('library') }));
     await expect(args.onNavigate).toHaveBeenCalledOnce();
     await expect(args.onNavigate).toHaveBeenCalledWith('library');
     await expect(args.onClose).toHaveBeenCalledOnce();
@@ -143,10 +147,11 @@ export const ExtraScrimTap = meta.story({
 
 export const ExtraFocusTrap = meta.story({
   name: 'Focus stays inside while open',
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
     await waitFor(() => expect(canvas.getByRole('dialog')).toHaveFocus());
-    const combats = canvas.getByRole('button', { name: 'Combats' });
-    const about = canvas.getByRole('button', { name: 'About' });
+    const combats = canvas.getByRole('button', { name: t('combats') });
+    const about = canvas.getByRole('button', { name: t('about') });
     await userEvent.tab();
     await expect(combats).toHaveFocus();
     await userEvent.tab({ shift: true });
@@ -154,7 +159,7 @@ export const ExtraFocusTrap = meta.story({
     await userEvent.tab();
     await expect(combats).toHaveFocus();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Library' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('library') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onNavigate).toHaveBeenCalledWith('library');
   },
@@ -163,12 +168,13 @@ export const ExtraFocusTrap = meta.story({
 export const ExtraShiftTabFirst = meta.story({
   name: 'Shift+Tab right after opening stays inside',
   args: { withOpener: true },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
     const dialog = canvas.getByRole('dialog');
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
     await userEvent.tab({ shift: true });
     await expect(dialog.contains(document.activeElement)).toBe(true);
-    await expect(canvas.getByRole('button', { name: 'About' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('about') })).toHaveFocus();
   },
 });
 
@@ -223,7 +229,8 @@ export const ExtraFocusReturn = meta.story({
 export const ExtraInitialFocus = meta.story({
   name: 'Opening focuses the panel without visiting Combats',
   args: { opened: false, withOpener: true },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
     const visited: Element[] = [];
     const record = (event: FocusEvent) => {
       if (event.target instanceof Element) visited.push(event.target);
@@ -235,7 +242,7 @@ export const ExtraInitialFocus = meta.story({
       await waitFor(() => expect(dialog).toHaveFocus());
       await new Promise((resolve) => setTimeout(resolve, 50));
       await expect(dialog).toHaveFocus();
-      await expect(visited).not.toContain(canvas.getByRole('button', { name: 'Combats' }));
+      await expect(visited).not.toContain(canvas.getByRole('button', { name: t('combats') }));
     } finally {
       document.removeEventListener('focusin', record);
     }

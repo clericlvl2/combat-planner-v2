@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/IconButton.json';
 import { IconButton } from './IconButton.tsx';
 import type { IconButtonProps } from './IconButton.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -50,8 +51,9 @@ export const OutlineXPressed = meta.story({
 export const OutlineXDisabled = meta.story({
   name: 'Outline · x · disabled',
   args: { ...outlineX, disabled: true, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Close' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'IconButton');
+    const button = canvas.getByRole('button', { name: t('close') });
     await expect(button).toBeDisabled();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
@@ -122,8 +124,9 @@ export const FilledPlusPressed = meta.story({
 export const FilledPlusDisabled = meta.story({
   name: 'Filled · plus · disabled',
   args: { ...filledPlus, disabled: true, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Add' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'IconButton');
+    const button = canvas.getByRole('button', { name: t('add') });
     await expect(button).toBeDisabled();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
@@ -154,8 +157,9 @@ export const IconButtonOutlineL = meta.story({
 export const ExtraClick = meta.story({
   name: 'Click',
   args: { ...outlineX, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'IconButton');
+    await userEvent.click(canvas.getByRole('button', { name: t('close') }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
@@ -163,8 +167,9 @@ export const ExtraClick = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { ...plainMenu, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Open navigation' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'IconButton');
+    const button = canvas.getByRole('button', { name: t('openNavigation') });
     await userEvent.tab();
     await expect(button).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -178,8 +183,9 @@ export const ExtraOpen = meta.story({
   name: 'Open: menu source ring',
   args: { ...outlineX, size: 'M' },
   render: (args) => <IconButtonCell {...args} data-open="" />,
-  play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Close' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'IconButton');
+    const button = canvas.getByRole('button', { name: t('close') });
     await expect(button).toHaveAttribute('data-open');
     await expect(getComputedStyle(button).backgroundColor).toBe('rgb(255, 231, 163)');
     await expect(getComputedStyle(button).borderTopColor).toBe('rgb(35, 31, 28)');
@@ -196,8 +202,9 @@ export const ExtraOpenBorderless = meta.story({
       <IconButtonCell {...args} {...filledPlus} data-open="" />
     </div>
   ),
-  play: async ({ canvas }) => {
-    for (const name of ['Open navigation', 'Back', 'Add']) {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'IconButton');
+    for (const name of [t('openNavigation'), t('back'), t('add')]) {
       const button = canvas.getByRole('button', { name });
       await expect(getComputedStyle(button).boxShadow).toBe(
         'rgb(35, 31, 28) 0px 0px 0px 2px inset',
@@ -218,8 +225,9 @@ export const ExtraSizes = meta.story({
       <IconButtonCell {...args} size="L" />
     </div>
   ),
-  play: async ({ canvas }) => {
-    const buttons = canvas.getAllByRole('button', { name: 'Open navigation' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'IconButton');
+    const buttons = canvas.getAllByRole('button', { name: t('openNavigation') });
     const circles = buttons.map((button) => button.getBoundingClientRect().width);
     const icons = buttons.map((button) => button.querySelector('svg')?.getAttribute('width'));
     await expect(circles).toEqual([36, 44, 52]);

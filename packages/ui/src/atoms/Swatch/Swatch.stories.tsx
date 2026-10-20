@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Swatch.json';
 import { Swatch } from './Swatch.tsx';
 import type { SwatchProps } from './Swatch.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type ColorKey = keyof typeof en;
 
@@ -90,8 +91,9 @@ export const Colour7 = meta.story({
 export const Colour8 = meta.story({
   name: 'Colour 8',
   args: { color: 7 },
-  play: async ({ canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Grey' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('grey') });
     await expect(swatch.style.getPropertyValue('--swatch-fill')).toBe('#8C8578');
   },
 });
@@ -99,8 +101,9 @@ export const Colour8 = meta.story({
 export const Selected = meta.story({
   name: 'Selected',
   args: { color: 0, selected: true },
-  play: async ({ canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Red' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('red') });
     await expect(swatch).toHaveAttribute('aria-pressed', 'true');
     await expect(swatch).toHaveAttribute('data-selected');
     await expect(swatch.querySelector('[data-check]')).not.toBeNull();
@@ -117,8 +120,9 @@ export const Tap = meta.story({
 export const S = meta.story({
   name: 'S',
   args: { color: 5, selected: true, size: 'S' },
-  play: async ({ canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Blue' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('blue') });
     await expect(swatch.getBoundingClientRect().width).toBe(32);
     await expect(swatch.querySelector('svg')?.getAttribute('width')).toBe('16');
   },
@@ -127,8 +131,9 @@ export const S = meta.story({
 export const M = meta.story({
   name: 'M',
   args: { color: 5, selected: true, size: 'M' },
-  play: async ({ canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Blue' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('blue') });
     await expect(swatch.getBoundingClientRect().width).toBe(40);
     await expect(swatch.querySelector('svg')?.getAttribute('width')).toBe('20');
   },
@@ -137,8 +142,9 @@ export const M = meta.story({
 export const L = meta.story({
   name: 'L',
   args: { color: 5, selected: true, size: 'L' },
-  play: async ({ canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Blue' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('blue') });
     await expect(swatch.getBoundingClientRect().width).toBe(48);
     await expect(swatch.querySelector('svg')?.getAttribute('width')).toBe('24');
   },
@@ -147,8 +153,9 @@ export const L = meta.story({
 export const ExtraSelect = meta.story({
   name: 'Select',
   args: { color: 4, onSelect: fn() },
-  play: async ({ args, canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Teal' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('teal') });
     await expect(swatch).toHaveAttribute('aria-pressed', 'false');
     await expect(swatch.querySelector('[data-check]')).toBeNull();
     await expect(getComputedStyle(swatch).boxShadow).toBe('none');
@@ -165,8 +172,9 @@ export const ExtraSelect = meta.story({
 export const ExtraKeyboard = meta.story({
   name: 'Keyboard: Enter and Space',
   args: { color: 7, onSelect: fn() },
-  play: async ({ args, canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Grey' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('grey') });
     await userEvent.tab();
     await expect(swatch).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -180,8 +188,9 @@ export const ExtraKeyboard = meta.story({
 export const ExtraDisabled = meta.story({
   name: 'Disabled',
   args: { color: 2, disabled: true, onSelect: fn() },
-  play: async ({ args, canvas }) => {
-    const swatch = canvas.getByRole('button', { name: 'Ochre' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Swatch');
+    const swatch = canvas.getByRole('button', { name: t('ochre') });
     await expect(swatch).toBeDisabled();
     await userEvent.click(swatch, { pointerEventsCheck: 0 });
     await expect(args.onSelect).not.toHaveBeenCalled();

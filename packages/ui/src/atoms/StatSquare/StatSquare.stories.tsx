@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { expect } from 'storybook/test';
 import { StatSquare } from './StatSquare.tsx';
 import type { StatSquareProps } from './StatSquare.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type StatSquareCellProps = Omit<StatSquareProps, 'label'>;
 
@@ -27,9 +28,10 @@ const parts = (canvasElement: HTMLElement) => {
 
 export const Anatomy = meta.story({
   args: { stat: 'ac', value: 18 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { square, label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('AC');
+    await expect(label).toHaveTextContent(t('ac'));
     await expect(value).toHaveTextContent('18');
     await expect(square?.getBoundingClientRect().width).toBe(40);
     await expect(square?.getBoundingClientRect().height).toBe(40);
@@ -39,9 +41,10 @@ export const Anatomy = meta.story({
 export const AC = meta.story({
   name: 'AC',
   args: { stat: 'ac', value: 18 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('AC');
+    await expect(label).toHaveTextContent(t('ac'));
     await expect(value).toHaveTextContent('18');
   },
 });
@@ -49,9 +52,10 @@ export const AC = meta.story({
 export const PD = meta.story({
   name: 'PD',
   args: { stat: 'pd', value: 16 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('PD');
+    await expect(label).toHaveTextContent(t('pd'));
     await expect(value).toHaveTextContent('16');
   },
 });
@@ -59,9 +63,10 @@ export const PD = meta.story({
 export const MD = meta.story({
   name: 'MD',
   args: { stat: 'md', value: 12 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('MD');
+    await expect(label).toHaveTextContent(t('md'));
     await expect(value).toHaveTextContent('12');
   },
 });
@@ -69,9 +74,10 @@ export const MD = meta.story({
 export const EdgeCases30 = meta.story({
   name: '30',
   args: { stat: 'ac', value: 30 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('AC');
+    await expect(label).toHaveTextContent(t('ac'));
     await expect(value).toHaveTextContent('30');
   },
 });
@@ -79,9 +85,10 @@ export const EdgeCases30 = meta.story({
 export const SingleDigit = meta.story({
   name: 'Single digit',
   args: { stat: 'pd', value: 8 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('PD');
+    await expect(label).toHaveTextContent(t('pd'));
     await expect(value).toHaveTextContent('8');
   },
 });
@@ -89,9 +96,10 @@ export const SingleDigit = meta.story({
 export const Missing = meta.story({
   name: 'Missing',
   args: { stat: 'md', value: null },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('MD');
+    await expect(label).toHaveTextContent(t('md'));
     await expect(value).toHaveTextContent('—');
   },
 });
@@ -99,9 +107,10 @@ export const Missing = meta.story({
 export const ExtraMaximum = meta.story({
   name: 'Maximum 99',
   args: { stat: 'md', value: 99 },
-  play: async ({ canvasElement }) => {
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'StatSquare');
     const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('MD');
+    await expect(label).toHaveTextContent(t('md'));
     await expect(value).toHaveTextContent('99');
     await expect(value?.scrollWidth).toBeLessThanOrEqual(36);
   },

@@ -3,6 +3,7 @@ import { expect } from 'storybook/test';
 import { base } from '../../theme.ts';
 import { DefenseLine } from './DefenseLine.tsx';
 import type { DefenseLineProps } from './DefenseLine.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 function DefenseLineCell(props: DefenseLineProps) {
   return (
@@ -62,8 +63,11 @@ const squareValuesOf = (canvasElement: HTMLElement) =>
 
 export const Anatomy = meta.story({
   args: { variant: 'line', ac: 16, pd: 14, md: 19 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 16 · PD 14 · MD 19');
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(rootOf(canvasElement).textContent).toBe(
+      `${t('ac')} 16 · ${t('pd')} 14 · ${t('md')} 19`,
+    );
     await expect(valuesOf(canvasElement)).toEqual(['16', '14', '19']);
     await expect(getComputedStyle(rootOf(canvasElement)).color).toBe(rgb(base.secondary));
   },
@@ -72,8 +76,11 @@ export const Anatomy = meta.story({
 export const Line = meta.story({
   name: 'Line',
   args: { variant: 'line', ac: 16, pd: 14, md: 19 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 16 · PD 14 · MD 19');
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(rootOf(canvasElement).textContent).toBe(
+      `${t('ac')} 16 · ${t('pd')} 14 · ${t('md')} 19`,
+    );
     await expect(valuesOf(canvasElement)).toEqual(['16', '14', '19']);
   },
 });
@@ -81,8 +88,12 @@ export const Line = meta.story({
 export const Squares = meta.story({
   name: 'Squares',
   args: { variant: 'squares', ac: 18, pd: 16, md: 12 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('group')).toHaveAttribute('aria-label', 'AC 18 · PD 16 · MD 12');
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(canvas.getByRole('group')).toHaveAttribute(
+      'aria-label',
+      `${t('ac')} 18 · ${t('pd')} 16 · ${t('md')} 12`,
+    );
     await expect(squareValuesOf(canvasElement)).toEqual(['18', '16', '12']);
     await expect(canvasElement.querySelectorAll('[data-stat]')).toHaveLength(3);
   },
@@ -91,8 +102,11 @@ export const Squares = meta.story({
 export const LineTwoDigits = meta.story({
   name: 'Line, two digits',
   args: { variant: 'line', ac: 24, pd: 22, md: 20 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 24 · PD 22 · MD 20');
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(rootOf(canvasElement).textContent).toBe(
+      `${t('ac')} 24 · ${t('pd')} 22 · ${t('md')} 20`,
+    );
     await expect(valuesOf(canvasElement)).toEqual(['24', '22', '20']);
   },
 });
@@ -100,8 +114,11 @@ export const LineTwoDigits = meta.story({
 export const LineThreeDigits = meta.story({
   name: 'Line, three digits',
   args: { variant: 'line', ac: 105, pd: 99, md: 120 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 105 · PD 99 · MD 120');
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(rootOf(canvasElement).textContent).toBe(
+      `${t('ac')} 105 · ${t('pd')} 99 · ${t('md')} 120`,
+    );
     await expect(valuesOf(canvasElement)).toEqual(['105', '99', '120']);
   },
 });
@@ -109,8 +126,11 @@ export const LineThreeDigits = meta.story({
 export const LineMissingValue = meta.story({
   name: 'Line, missing value',
   args: { variant: 'line', ac: 16, pd: null, md: 19 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 16 · PD — · MD 19');
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(rootOf(canvasElement).textContent).toBe(
+      `${t('ac')} 16 · ${t('pd')} — · ${t('md')} 19`,
+    );
     await expect(valuesOf(canvasElement)).toEqual(['16', '—', '19']);
   },
 });
@@ -118,8 +138,12 @@ export const LineMissingValue = meta.story({
 export const SquaresTwoDigits = meta.story({
   name: 'Squares, two digits',
   args: { variant: 'squares', ac: 30, pd: 28, md: 26 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('group')).toHaveAttribute('aria-label', 'AC 30 · PD 28 · MD 26');
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(canvas.getByRole('group')).toHaveAttribute(
+      'aria-label',
+      `${t('ac')} 30 · ${t('pd')} 28 · ${t('md')} 26`,
+    );
     await expect(squareValuesOf(canvasElement)).toEqual(['30', '28', '26']);
   },
 });
@@ -127,8 +151,12 @@ export const SquaresTwoDigits = meta.story({
 export const SquaresMissingValue = meta.story({
   name: 'Squares, missing value',
   args: { variant: 'squares', ac: 18, pd: null, md: 12 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('group')).toHaveAttribute('aria-label', 'AC 18 · PD — · MD 12');
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(canvas.getByRole('group')).toHaveAttribute(
+      'aria-label',
+      `${t('ac')} 18 · ${t('pd')} — · ${t('md')} 12`,
+    );
     await expect(squareValuesOf(canvasElement)).toEqual(['18', '—', '12']);
     await expect(canvasElement.querySelector('[data-stat="pd"]')).toHaveAttribute('data-empty');
   },
@@ -151,7 +179,12 @@ export const ExtraWrapsBetweenPairs = meta.story({
       <DefenseLine {...args} />
     </div>
   ),
-  play: async ({ canvasElement }) => {
-    await expect(linesOf(rootOf(canvasElement))).toEqual(['AC 105 ·', 'PD 99 ·', 'MD 120']);
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(linesOf(rootOf(canvasElement))).toEqual([
+      `${t('ac')} 105 ·`,
+      `${t('pd')} 99 ·`,
+      `${t('md')} 120`,
+    ]);
   },
 });
