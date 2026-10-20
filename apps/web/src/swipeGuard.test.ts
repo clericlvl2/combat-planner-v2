@@ -38,6 +38,7 @@ const swipeOver = (root: SwipeRoot) => {
     target.dispatchEvent(
       Object.assign(new Event(type), {
         pointerId: 1,
+        pointerType: 'touch',
         clientX,
         clientY: 300,
         button: 0,

@@ -3,16 +3,30 @@ import { EDGE_WIDTH, OPEN_DISTANCE, watchEdgeSwipe } from './edgeSwipe.ts';
 
 type PointerType = 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel';
 
-const pointer = (type: PointerType, clientX: number, clientY: number, pointerId = 1, button = 0) =>
-  Object.assign(new Event(type), { pointerId, clientX, clientY, button });
+type Device = 'touch' | 'pen' | 'mouse';
 
-const setup = (canStart?: () => boolean) => {
+const pointer = (
+  type: PointerType,
+  clientX: number,
+  clientY: number,
+  pointerId = 1,
+  button = 0,
+  pointerType: Device = 'touch',
+) => Object.assign(new Event(type), { pointerId, pointerType, clientX, clientY, button });
+
+const setup = (canStart?: () => boolean, device: Device = 'touch') => {
   const target = new EventTarget();
   const onSwipe = vi.fn();
   const stop = watchEdgeSwipe(target, canStart ? { onSwipe, canStart } : { onSwipe });
   const send = (type: PointerType, x: number, y: number, pointerId?: number, button?: number) =>
-    target.dispatchEvent(pointer(type, x, y, pointerId, button));
+    target.dispatchEvent(pointer(type, x, y, pointerId, button, device));
   return { onSwipe, stop, send };
+};
+
+const dragFromEdge = (send: ReturnType<typeof setup>['send']) => {
+  send('pointerdown', 4, 300);
+  send('pointermove', 4 + OPEN_DISTANCE, 302);
+  send('pointerup', 4 + OPEN_DISTANCE * 2, 302);
 };
 
 describe('watchEdgeSwipe', () => {
@@ -32,6 +46,18 @@ describe('watchEdgeSwipe', () => {
     send('pointerdown', 4, 300);
     send('pointerup', 4 + OPEN_DISTANCE, 300);
     expect(onSwipe).toHaveBeenCalledOnce();
+  });
+
+  it.each<Device>(['touch', 'pen'])('opens on a %s drag from the left edge', (device) => {
+    const { onSwipe, send } = setup(undefined, device);
+    dragFromEdge(send);
+    expect(onSwipe).toHaveBeenCalledOnce();
+  });
+
+  it('ignores a mouse drag from the left edge', () => {
+    const { onSwipe, send } = setup(undefined, 'mouse');
+    dragFromEdge(send);
+    expect(onSwipe).not.toHaveBeenCalled();
   });
 
   it('ignores a swipe that starts past the edge', () => {

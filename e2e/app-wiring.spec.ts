@@ -3,10 +3,22 @@ import type { Page } from '@playwright/test';
 import { signUp } from './helpers.ts';
 
 async function swipeFromLeftEdge(page: Page): Promise<void> {
-  await page.mouse.move(4, 400);
-  await page.mouse.down();
-  await page.mouse.move(120, 404, { steps: 6 });
-  await page.mouse.up();
+  await page.evaluate(() => {
+    const send = (type: string, clientX: number, clientY: number) =>
+      document.dispatchEvent(
+        new PointerEvent(type, {
+          pointerId: 7,
+          pointerType: 'touch',
+          isPrimary: true,
+          clientX,
+          clientY,
+          bubbles: true,
+        }),
+      );
+    send('pointerdown', 4, 400);
+    for (const step of [1, 2, 3, 4, 5, 6]) send('pointermove', 4 + step * 19, 400 + step);
+    send('pointerup', 120, 406);
+  });
 }
 
 test('a swipe from the left edge opens the drawer, but not over an open sheet', async ({
