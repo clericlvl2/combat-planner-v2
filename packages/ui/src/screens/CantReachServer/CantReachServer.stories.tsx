@@ -11,6 +11,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CantReachServer');
     await expect(
@@ -25,6 +26,7 @@ export const Default = meta.story({
 });
 
 export const Deutsch = meta.story({
+  tags: ['visual'],
   globals: { locale: 'de' },
   play: async ({ canvas }) => {
     await expect(
@@ -35,6 +37,7 @@ export const Deutsch = meta.story({
 });
 
 export const Russian = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ru' },
   play: async ({ canvas }) => {
     await expect(

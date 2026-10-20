@@ -81,6 +81,7 @@ const markTap = async (canvasElement: HTMLElement, label: string) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { context: 'combats', selected: 0 },
 });
 
@@ -122,6 +123,7 @@ export const VariantsCombatListTapAZ = meta.story({
 });
 
 export const VariantsLibraryNewestFirst = meta.story({
+  tags: ['visual'],
   name: 'Variants: Library · Newest first',
   args: { context: 'presets', selected: 0 },
   play: async ({ canvas, globals }) => {

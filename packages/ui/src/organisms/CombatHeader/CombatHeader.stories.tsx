@@ -105,6 +105,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatHeader');
     await expect(canvas.getByRole('button', { name: t('back') })).toBeVisible();
@@ -154,6 +155,7 @@ export const MenuOpen = meta.story({
 });
 
 export const EscalationOpen = meta.story({
+  tags: ['visual'],
   name: 'Escalation open',
   args: { open: 'escalation' },
   play: async ({ canvas, globals }) => {
@@ -185,6 +187,7 @@ export const RoundOpen = meta.story({
 });
 
 export const Setup = meta.story({
+  tags: ['visual'],
   name: 'Setup',
   args: { round: null, escalation: 0 },
   play: async ({ args, canvas, globals }) => {
@@ -268,6 +271,7 @@ export const SetupMenuOpen = meta.story({
 });
 
 export const LongTitleRound99 = meta.story({
+  tags: ['visual'],
   name: 'Long title, round 99',
   parameters: {
     geometry: {

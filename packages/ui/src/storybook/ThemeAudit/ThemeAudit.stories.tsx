@@ -44,6 +44,7 @@ const expectedFills = [
 ];
 
 export const Tokens = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, canvasElement }) => {
     const headings = canvas.getAllByRole('heading').map((heading) => heading.textContent);
     await expect(headings).toEqual(groupOrder);

@@ -261,18 +261,20 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({});
+export const Anatomy = meta.story({ tags: ['visual'] });
 
 export const RadioSortCombats = meta.story({
   name: 'Radio: Sort combats',
 });
 
 export const ChecklistWithSearchTags = meta.story({
+  tags: ['visual'],
   name: 'Checklist with search: Tags',
   args: { sample: 'tags', titleKey: 'tags', primaryKey: 'doneTags' },
 });
 
 export const FormEditCombat = meta.story({
+  tags: ['visual'],
   name: 'Form: Edit combat',
   args: { sample: 'form', titleKey: 'editCombat', primaryKey: 'save' },
 });
@@ -302,6 +304,7 @@ export const TwoButtonsPrimaryDisabled = meta.story({
 });
 
 export const LongTitleBack = meta.story({
+  tags: ['visual'],
   name: 'Long title, back',
   render: (args) => (
     <SheetCell

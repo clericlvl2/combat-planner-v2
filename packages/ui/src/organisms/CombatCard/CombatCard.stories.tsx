@@ -105,6 +105,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatCard');
     const open = openButton(canvas, t, 'Ambush at the Ferry');
@@ -123,6 +124,7 @@ export const Active = meta.story({
 });
 
 export const Expanded = meta.story({
+  tags: ['visual'],
   name: 'Expanded',
   args: { expanded: true },
   play: async ({ canvas, globals }) => {
@@ -181,6 +183,7 @@ export const ExpandedOpen = meta.story({
 });
 
 export const SetupLongTitleRu = meta.story({
+  tags: ['visual'],
   name: 'Setup, long title, ru',
   args: {
     title: 'Капитан стражи переправы: засада у моста',

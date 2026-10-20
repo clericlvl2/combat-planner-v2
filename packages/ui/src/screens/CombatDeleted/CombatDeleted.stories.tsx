@@ -11,6 +11,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatDeleted');
     await expect(
@@ -22,6 +23,7 @@ export const Default = meta.story({
 });
 
 export const Deutsch = meta.story({
+  tags: ['visual'],
   globals: { locale: 'de' },
   args: { combatTitle: 'Hinterhalt der Goblins' },
   play: async ({ canvas }) => {
@@ -33,6 +35,7 @@ export const Deutsch = meta.story({
 });
 
 export const Russian = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ru' },
   args: { combatTitle: 'Засада гоблинов' },
   play: async ({ canvas }) => {
@@ -44,6 +47,7 @@ export const Russian = meta.story({
 });
 
 export const Japanese = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ja' },
   args: { combatTitle: 'ゴブリンの待ち伏せ' },
   play: async ({ canvas }) => {

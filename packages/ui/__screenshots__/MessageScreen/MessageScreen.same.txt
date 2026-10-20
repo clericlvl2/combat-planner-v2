@@ -1,2 +1,0 @@
-CombatDeleted ExtraLabelWithoutHandler
-Anatomy LinkRevoked

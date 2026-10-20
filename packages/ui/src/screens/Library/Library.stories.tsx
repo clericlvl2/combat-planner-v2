@@ -210,6 +210,7 @@ const meta = preview.meta({
 });
 
 export const LBF11 = meta.story({
+  tags: ['visual'],
   name: 'LB-F1.1 List',
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
@@ -226,6 +227,7 @@ export const LBF11 = meta.story({
 });
 
 export const LBF12 = meta.story({
+  tags: ['visual'],
   name: 'LB-F1.2 Card expanded',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
@@ -240,6 +242,7 @@ export const LBF12 = meta.story({
 });
 
 export const LBF13 = meta.story({
+  tags: ['visual'],
   name: 'LB-F1.3 Filter sheet',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
@@ -291,6 +294,7 @@ export const LBF15 = meta.story({
 });
 
 export const LBF16 = meta.story({
+  tags: ['visual'],
   name: 'LB-F1.6 Nothing found',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
@@ -303,6 +307,7 @@ export const LBF16 = meta.story({
 });
 
 export const LBF17 = meta.story({
+  tags: ['visual'],
   name: 'LB-F1.7 Library is empty',
   parameters: { scenario: emptyLibraryScenario },
   play: async ({ canvas, globals }) => {
@@ -856,6 +861,7 @@ export const ExtraDrawer = meta.story({
 });
 
 export const ExtraRussian = meta.story({
+  tags: ['visual'],
   name: 'Russian: list',
   globals: { locale: 'ru' },
   play: async ({ canvas }) => {

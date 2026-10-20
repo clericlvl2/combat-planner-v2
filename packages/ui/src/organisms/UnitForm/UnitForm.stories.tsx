@@ -197,6 +197,7 @@ const typeNumber = async (canvas: Canvas, label: string, text: string) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   name: 'Anatomy',
   args: { value: orcShaman },
 });
@@ -217,11 +218,13 @@ export const NewEmpty = meta.story({
 });
 
 export const NewFilled = meta.story({
+  tags: ['visual'],
   name: 'New, filled',
   args: { value: orcShaman },
 });
 
 export const FromLibrary = meta.story({
+  tags: ['visual'],
   name: 'From Library',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
@@ -333,6 +336,7 @@ export const MinimumValues = meta.story({
 });
 
 export const EdgeCases40CharacterNameRu = meta.story({
+  tags: ['visual'],
   name: '40-character name, ru',
   args: {
     mode: 'edit',

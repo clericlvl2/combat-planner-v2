@@ -236,6 +236,7 @@ export const APF17 = meta.story({
 });
 
 export const APF21 = meta.story({
+  tags: ['visual'],
   name: 'AP-F2.1 Drawer: Settings',
   parameters: dmPage('/settings'),
   render: () => <Settings />,
@@ -266,6 +267,7 @@ export const APF22 = meta.story({
 });
 
 export const APF23 = meta.story({
+  tags: ['visual'],
   name: 'AP-F2.3 Interface in Russian',
   parameters: dmPage('/settings'),
   render: () => <Settings />,

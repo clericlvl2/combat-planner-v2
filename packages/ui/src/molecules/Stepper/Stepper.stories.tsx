@@ -62,6 +62,7 @@ const meta = preview.meta({
 const renderFocus = (args: StepperCellProps) => <StepperCell {...args} data-focus="" />;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { labelKey: 'maxHp', value: 40 },
 });
 
@@ -113,6 +114,7 @@ export const WithLabelFocus = meta.story({
 });
 
 export const NoLabelDefault = meta.story({
+  tags: ['visual'],
   name: 'No label · default',
   args: { range: LIMITS.defense, value: 15 },
 });
@@ -168,6 +170,7 @@ export const ValuesAndLabels5 = meta.story({
 });
 
 export const ValuesAndLabelsDe = meta.story({
+  tags: ['visual'],
   name: 'Values and labels · de',
   args: { label: 'Initiativebonus', range: LIMITS.initiativeBonus, value: 3 },
   play: async ({ canvas }) => {

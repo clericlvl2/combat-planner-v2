@@ -63,6 +63,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'SignUp');
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
@@ -86,6 +87,7 @@ export const ShortPassword = meta.story({
 });
 
 export const SignUpErrors = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'SignUp');
     await fill(canvas, 'Ferry DM', 'dm@ferry.games', 'longer-password', t);
@@ -151,6 +153,7 @@ export const EmptyFields = meta.story({
 });
 
 export const LongName = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ru' },
   play: async ({ canvas }) => {
     const name = canvas.getByRole('textbox', { name: 'Отображаемое имя' });

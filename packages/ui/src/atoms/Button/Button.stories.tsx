@@ -32,6 +32,7 @@ const renderPressed = (args: ButtonCellProps) => <ButtonCell {...args} data-pres
 const renderFocus = (args: ButtonCellProps) => <ButtonCell {...args} data-focus="" />;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { variant: 'primary', size: 'M', icon: IconPlus, labelKey: 'newCombat' },
 });
 
@@ -175,6 +176,7 @@ export const GhostSFocus = meta.story({
 });
 
 export const ButtonPrimaryS = meta.story({
+  tags: ['visual'],
   name: 'Button · primary · S',
   args: { variant: 'primary', size: 'S', labelKey: 'save' },
 });
@@ -225,6 +227,7 @@ export const SecondarySIconJa = meta.story({
 });
 
 export const SecondarySIconFullWidth = meta.story({
+  tags: ['visual'],
   name: 'Secondary S + icon · full width',
   args: {
     variant: 'secondary',

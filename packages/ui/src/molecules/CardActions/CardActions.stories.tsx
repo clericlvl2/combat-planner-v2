@@ -39,6 +39,7 @@ const labelOverflow = (button: HTMLElement) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: {},
 });
 
@@ -67,6 +68,7 @@ export const Tap = meta.story({
 });
 
 export const OpenCardDuplicateDelete = meta.story({
+  tags: ['visual'],
   name: 'Open: card (Duplicate, Delete)',
   args: { open: true },
   play: async ({ canvas, globals }) => {
@@ -104,6 +106,7 @@ export const De320 = meta.story({
 });
 
 export const Ru320 = meta.story({
+  tags: ['visual'],
   name: 'ru · 320',
   args: { editLabel: 'Изменить', width: 272 },
   play: async ({ canvas }) => {

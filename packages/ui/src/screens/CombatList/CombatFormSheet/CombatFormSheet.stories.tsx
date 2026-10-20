@@ -37,6 +37,7 @@ const meta = preview.meta({
 });
 
 export const NewCombat = meta.story({
+  tags: ['visual'],
   name: 'New combat, empty',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatFormSheet');
@@ -93,6 +94,7 @@ export const Filled = meta.story({
 });
 
 export const EditCombat = meta.story({
+  tags: ['visual'],
   name: 'Edit combat',
   args: { mode: 'edit', value: ambush },
   play: async ({ args, canvas, globals }) => {
@@ -159,6 +161,7 @@ export const ExtraKeyboardSubmit = meta.story({
 });
 
 export const ExtraRussian = meta.story({
+  tags: ['visual'],
   name: 'Russian: edit',
   globals: { locale: 'ru' },
   args: {
@@ -176,6 +179,7 @@ export const ExtraRussian = meta.story({
 });
 
 export const ExtraJapaneseNew = meta.story({
+  tags: ['visual'],
   name: 'Japanese: new',
   globals: { locale: 'ja' },
   play: async ({ canvas }) => {

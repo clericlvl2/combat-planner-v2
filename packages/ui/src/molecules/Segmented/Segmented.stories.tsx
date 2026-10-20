@@ -77,7 +77,7 @@ const meta = preview.meta({
   args: { value: 'enemy', onChange: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const Anatomy = meta.story({ tags: ['visual'] });
 
 export const TypeRoleDefault = meta.story({
   name: 'Type · role · default',
@@ -118,6 +118,7 @@ export const UnitSourceInkDisabled = meta.story({
 });
 
 export const SegmentedS = meta.story({
+  tags: ['visual'],
   name: 'Segmented · S',
   args: { size: 'S' },
 });
@@ -133,6 +134,7 @@ export const SegmentedL = meta.story({
 });
 
 export const RoleDe = meta.story({
+  tags: ['visual'],
   name: 'Role · de',
   args: { labels: ['Held', 'Feind', 'Verbündeter'], value: 'ally' },
 });

@@ -111,6 +111,7 @@ const restFocusOnSheet = async (sheet: HTMLElement) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   parameters: { geometry: openSheetGeometry },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'ShareSheet');
@@ -140,6 +141,7 @@ export const Link = meta.story({
 });
 
 export const LinkCopied = meta.story({
+  tags: ['visual'],
   parameters: { geometry: openSheetGeometry },
   name: 'Link copied',
   play: async ({ args, canvas, globals }) => {

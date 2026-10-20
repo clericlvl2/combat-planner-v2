@@ -164,6 +164,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Menu');
     const menu = canvas.getByRole('menu', { name: t('menuLabel') });
@@ -219,6 +220,7 @@ export const Ru = meta.story({
 });
 
 export const De = meta.story({
+  tags: ['visual'],
   name: 'de',
   args: {
     items: [

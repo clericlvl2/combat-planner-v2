@@ -50,6 +50,7 @@ const meta = preview.meta({
 const renderFocus = (args: NumberFieldCellProps) => <NumberFieldCell {...args} data-focus="" />;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { value: 12 },
   render: renderFocus,
 });
@@ -198,6 +199,7 @@ export const ExtraDisabled = meta.story({
 });
 
 export const ExtraError = meta.story({
+  tags: ['visual'],
   name: 'Error',
   args: { value: null, labelKey: 'maxHp', min: 1, max: 999, errorKey: 'errorRange' },
   play: async ({ canvas, globals }) => {

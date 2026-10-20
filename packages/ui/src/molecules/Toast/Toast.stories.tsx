@@ -94,7 +94,7 @@ const meta = preview.meta({
   args: { kind: 'failed' as ToastKind, onHide: fn(), onAction: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const Anatomy = meta.story({ tags: ['visual'] });
 
 export const Preset = meta.story({
   name: 'preset',
@@ -107,6 +107,7 @@ export const Cap = meta.story({
 });
 
 export const Link = meta.story({
+  tags: ['visual'],
   name: 'link',
   args: { kind: 'link' },
 });
@@ -141,6 +142,7 @@ export const RuErrorAction = meta.story({
 });
 
 export const LongUnitName = meta.story({
+  tags: ['visual'],
   name: 'Long unit name',
   args: { kind: 'preset', message: 'Brother Tomas of the Silver Lantern Order added to Library' },
 });

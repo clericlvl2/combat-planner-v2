@@ -55,6 +55,7 @@ const meta = preview.meta({
 });
 
 export const FirstVisit = meta.story({
+  tags: ['visual'],
   name: 'First visit',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Heroes');
@@ -130,6 +131,7 @@ export const TakenWhileOpen = meta.story({
 });
 
 export const Returning = meta.story({
+  tags: ['visual'],
   name: 'Returning player changes heroes',
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup', ilse: true })) },
   play: async ({ canvas, globals, loaded }) => {

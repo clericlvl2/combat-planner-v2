@@ -61,6 +61,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Drawer');
     await expect(canvas.getByRole('dialog', { name: 'Combat Planner' })).toBeVisible();
@@ -96,6 +97,7 @@ export const LibraryActive = meta.story({
 });
 
 export const LongEmail = meta.story({
+  tags: ['visual'],
   name: 'Long email',
   parameters: {
     geometry: { wordBreaks: 'an email address wraps at any character by design' },

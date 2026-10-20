@@ -88,6 +88,7 @@ const renderTap = (args: RadioCellProps) => <RadioCell {...args} data-tap="" />;
 const renderGroup = (args: RadioCellProps) => <RadioGroupCell {...args} />;
 
 export const OnM = meta.story({
+  tags: ['visual'],
   name: 'On, M',
   args: { checked: true, size: 'M' },
 });
@@ -137,6 +138,7 @@ export const M = meta.story({
 });
 
 export const L = meta.story({
+  tags: ['visual'],
   name: 'L',
   args: { checked: true, size: 'L' },
 });

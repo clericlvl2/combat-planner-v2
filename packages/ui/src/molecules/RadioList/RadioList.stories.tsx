@@ -80,7 +80,7 @@ const meta = preview.meta({
   args: { value: 'newestFirst', onChange: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const Anatomy = meta.story({ tags: ['visual'] });
 
 export const SortCombatsDefault = meta.story({
   name: 'Sort combats · default',
@@ -112,6 +112,7 @@ export const RadioListM = meta.story({
 });
 
 export const RadioListL = meta.story({
+  tags: ['visual'],
   name: 'RadioList · L',
   args: { size: 'L' },
 });

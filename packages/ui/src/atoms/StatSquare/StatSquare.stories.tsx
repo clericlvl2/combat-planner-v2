@@ -27,6 +27,7 @@ const parts = (canvasElement: HTMLElement) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { stat: 'ac', value: 18 },
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'StatSquare');
@@ -72,6 +73,7 @@ export const MD = meta.story({
 });
 
 export const EdgeCases30 = meta.story({
+  tags: ['visual'],
   name: '30',
   args: { stat: 'ac', value: 30 },
   play: async ({ canvasElement, globals }) => {

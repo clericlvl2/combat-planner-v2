@@ -104,6 +104,7 @@ const assignArgs = {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { ...filterArgs, initial: ['orcs'], presetCount: 2 },
 });
 
@@ -136,6 +137,7 @@ export const CurrentTags = meta.story({
 });
 
 export const MoMatchesCreateAtTheEnd = meta.story({
+  tags: ['visual'],
   name: '“mo” matches, Create at the end',
   args: assignArgs,
   play: async ({ canvas, globals }) => {

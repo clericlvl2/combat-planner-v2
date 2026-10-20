@@ -122,6 +122,7 @@ const combats = {
 } as const;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: library,
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PageHeader');
@@ -152,6 +153,7 @@ export const LibrarySortTagsFiltered = meta.story({
 });
 
 export const NestedScreen = meta.story({
+  tags: ['visual'],
   name: 'Nested screen',
   args: { titleKey: 'settings', nav: 'back' },
   play: async ({ canvas, globals }) => {
@@ -163,6 +165,7 @@ export const NestedScreen = meta.story({
 });
 
 export const RuFiltered = meta.story({
+  tags: ['visual'],
   name: 'ru, filtered',
   args: {
     title: 'Библиотека',

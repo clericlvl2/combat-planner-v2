@@ -188,7 +188,7 @@ const meta = preview.meta({
   args: { preset: 'clear', onConfirm: fn(), onCancel: fn(), onSheetClose: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const Anatomy = meta.story({ tags: ['visual'] });
 
 export const Restart = meta.story({
   name: 'restart',
@@ -224,6 +224,7 @@ export const RestartRu = meta.story({
 });
 
 export const RestartDe = meta.story({
+  tags: ['visual'],
   name: 'restart, de',
   globals: { locale: 'de' },
   args: { preset: 'restart' },
@@ -265,6 +266,7 @@ export const DeleteAccount = meta.story({
 });
 
 export const LongUnitName = meta.story({
+  tags: ['visual'],
   name: 'Long unit name',
   args: { preset: 'remove', title: 'Remove Brother Tomas of the Silver Lantern Order?' },
   play: async ({ canvas, globals }) => {

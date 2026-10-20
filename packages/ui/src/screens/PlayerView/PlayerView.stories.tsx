@@ -108,6 +108,7 @@ const meta = preview.meta({
 });
 
 export const PVF11 = meta.story({
+  tags: ['visual'],
   name: 'PV-F1.1 Hero list',
   parameters: { scenario: joinScenario },
   play: async ({ canvas, parameters }) => {
@@ -135,6 +136,7 @@ export const PVF12 = meta.story({
 });
 
 export const PVF13 = meta.story({
+  tags: ['visual'],
   name: 'PV-F1.3 In the combat, waiting for the DM',
   parameters: {
     scenario: playerScenario(ferryCombat({ status: 'setup', joined: false })),
@@ -173,6 +175,7 @@ export const PVF14 = meta.story({
 });
 
 export const PVF21 = meta.story({
+  tags: ['visual'],
   name: 'PV-F2.1 Own row without initiative',
   parameters: { scenario: setupScenario },
   play: async ({ canvas, parameters }) => {
@@ -257,6 +260,7 @@ export const PVF31 = meta.story({
 });
 
 export const PVF32 = meta.story({
+  tags: ['visual'],
   name: 'PV-F3.2 Own turn',
   play: async ({ canvas }) => {
     const vashti = await rowOf(canvas, ME);
@@ -301,6 +305,7 @@ export const PVF34 = meta.story({
 });
 
 export const PVF35 = meta.story({
+  tags: ['visual'],
   name: 'PV-F3.5 Own row expanded',
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
@@ -312,6 +317,7 @@ export const PVF35 = meta.story({
 });
 
 export const PVF36 = meta.story({
+  tags: ['visual'],
   name: 'PV-F3.6 Condition sheet',
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);

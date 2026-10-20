@@ -1,5 +1,0 @@
-Anatomy RadioSortCombats
-ExtraCloseButton ExtraEscape ExtraScrimTap
-ExtraInitialFocus ExtraMotionOnFocus
-ExtraMotionOffNoTransition ExtraMotionOnNoCloseFocus
-ExtraDescriptionIsSubtitle FormEditCombat

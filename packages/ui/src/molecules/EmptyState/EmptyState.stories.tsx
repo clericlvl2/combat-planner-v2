@@ -66,7 +66,7 @@ const meta = preview.meta({
   args: { kind: 'emptyCombat' as EmptyStateKind, onAction: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const Anatomy = meta.story({ tags: ['visual'] });
 
 export const NoCombats = meta.story({
   name: 'No combats',
@@ -93,6 +93,7 @@ export const RuLongQuery = meta.story({
 });
 
 export const DeAction = meta.story({
+  tags: ['visual'],
   name: 'de, action',
   args: {
     kind: 'noCombats',

@@ -88,6 +88,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetCard');
     await expect(canvas.getByText('Orc Berserker')).toBeVisible();
@@ -128,6 +129,7 @@ export const NoTags = meta.story({
 });
 
 export const Expanded = meta.story({
+  tags: ['visual'],
   name: 'Expanded',
   args: { expanded: true },
   play: async ({ canvas, globals }) => {
@@ -158,6 +160,7 @@ export const ExpandedOpen = meta.story({
 });
 
 export const AllyLongName = meta.story({
+  tags: ['visual'],
   name: 'Ally, long name',
   args: {
     preset: {

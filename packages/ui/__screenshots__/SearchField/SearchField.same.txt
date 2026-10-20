@@ -1,3 +1,0 @@
-Anatomy CombatsFilled ExtraFrameClick ExtraTyping
-SearchFieldM ExtraLocaleRu
-CombatsFocus ExtraClear

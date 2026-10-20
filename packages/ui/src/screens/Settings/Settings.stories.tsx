@@ -46,6 +46,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Settings');
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
@@ -59,6 +60,7 @@ export const Default = meta.story({
 });
 
 export const SwitchToRussian = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, loaded }) => {
     await userEvent.click(canvas.getByRole('radio', { name: 'Русский' }));
     await expect(await canvas.findByRole('heading', { level: 1, name: 'Настройки' })).toBeVisible();
@@ -89,6 +91,7 @@ export const KeyboardArrow = meta.story({
 });
 
 export const Japanese = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ja' },
   parameters: { scenario: scenario({ session, settings: { language: 'ja' } }) },
   play: async ({ canvas }) => {

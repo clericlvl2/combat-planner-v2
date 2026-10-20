@@ -62,6 +62,7 @@ const squareValuesOf = (canvasElement: HTMLElement) =>
   );
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { variant: 'line', ac: 16, pd: 14, md: 19 },
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'DefenseLine');
@@ -86,6 +87,7 @@ export const Line = meta.story({
 });
 
 export const Squares = meta.story({
+  tags: ['visual'],
   name: 'Squares',
   args: { variant: 'squares', ac: 18, pd: 16, md: 12 },
   play: async ({ canvas, canvasElement, globals }) => {

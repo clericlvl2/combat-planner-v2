@@ -1,5 +1,0 @@
-Anatomy Failed
-Link ExtraPosition
-RuErrorAction ExtraLocaleRu
-ExtraAction ExtraKeyboard
-ExtraDismissMotionOn ExtraMotionOffStays ExtraActionOnceDuringExit

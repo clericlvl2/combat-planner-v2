@@ -63,6 +63,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Account');
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
@@ -151,6 +152,7 @@ export const EmptyName = meta.story({
 });
 
 export const Japanese = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ja' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'アカウント' })).toBeVisible();

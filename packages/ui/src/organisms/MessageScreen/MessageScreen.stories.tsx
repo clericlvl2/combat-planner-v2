@@ -54,6 +54,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'MessageScreen');
     await expect(
@@ -99,6 +100,7 @@ export const CombatDeleted = meta.story({
 });
 
 export const Ru = meta.story({
+  tags: ['visual'],
   name: 'ru',
   args: {
     kind: 'linkRevoked',

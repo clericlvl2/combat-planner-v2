@@ -129,6 +129,7 @@ const meta = preview.meta({
 });
 
 export const CLF11 = meta.story({
+  tags: ['visual'],
   name: 'CL-F1.1 List, Newest first',
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
@@ -143,6 +144,7 @@ export const CLF11 = meta.story({
 });
 
 export const CLF12 = meta.story({
+  tags: ['visual'],
   name: 'CL-F1.2 Card expanded',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
@@ -157,6 +159,7 @@ export const CLF12 = meta.story({
 });
 
 export const CLF13 = meta.story({
+  tags: ['visual'],
   name: 'CL-F1.3 Sort sheet',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
@@ -222,6 +225,7 @@ export const CLF15 = meta.story({
 });
 
 export const CLF16 = meta.story({
+  tags: ['visual'],
   name: 'CL-F1.6 Nothing found',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
@@ -238,6 +242,7 @@ export const CLF16 = meta.story({
 });
 
 export const CLF17 = meta.story({
+  tags: ['visual'],
   name: 'CL-F1.7 No combats yet',
   parameters: { scenario: noCombatsScenario },
   play: async ({ canvas, globals }) => {
@@ -580,6 +585,7 @@ export const ExtraDeleteCancelled = meta.story({
 });
 
 export const ExtraRussian = meta.story({
+  tags: ['visual'],
   name: 'Russian: list',
   globals: { locale: 'ru' },
   play: async ({ canvas }) => {

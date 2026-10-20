@@ -58,6 +58,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
     await expect(
@@ -77,6 +78,7 @@ export const Combat = meta.story({
 });
 
 export const Setup = meta.story({
+  tags: ['visual'],
   name: 'Setup',
   args: { round: null, escalation: 0 },
   play: async ({ canvas, globals }) => {
@@ -103,6 +105,7 @@ export const MenuTapped = meta.story({
 });
 
 export const HeroPicker = meta.story({
+  tags: ['visual'],
   name: 'Hero picker',
   args: { round: null, escalation: 0, withMenu: false },
   play: async ({ canvas, globals }) => {

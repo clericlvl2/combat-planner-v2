@@ -78,6 +78,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'SignIn');
     await providersLoaded(loaded);
@@ -108,6 +109,7 @@ export const Filled = meta.story({
 });
 
 export const WrongPassword = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'SignIn');
     await userEvent.type(canvas.getByRole('textbox', { name: t('email') }), 'dm@ferry.games');
@@ -202,6 +204,7 @@ export const AccountDeleted = meta.story({
 });
 
 export const German = meta.story({
+  tags: ['visual'],
   globals: { locale: 'de' },
   parameters: { scenario: withSocial },
   play: async ({ canvas }) => {

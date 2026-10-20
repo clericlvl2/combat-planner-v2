@@ -42,6 +42,7 @@ const meta = preview.meta({
 const renderTap = (args: SwatchRowCellProps) => <SwatchRowCell {...args} data-tap={5} />;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { value: 2 },
 });
 
@@ -70,6 +71,7 @@ export const CombatColorTap = meta.story({
 });
 
 export const Widths296Wide = meta.story({
+  tags: ['visual'],
   name: 'Widths · 296 wide',
   args: { value: 4, width: 296 },
   play: async ({ canvas, globals }) => {

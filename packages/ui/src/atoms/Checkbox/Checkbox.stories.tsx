@@ -56,6 +56,7 @@ const meta = preview.meta({
 const renderTap = (args: CheckboxCellProps) => <CheckboxCell {...args} data-tap="" />;
 
 export const AnatomySquareOn = meta.story({
+  tags: ['visual'],
   name: 'Anatomy · square · on',
   args: { shape: 'square', checked: true },
 });
@@ -110,6 +111,7 @@ export const RoundOnHampered = meta.story({
 });
 
 export const SSquare = meta.story({
+  tags: ['visual'],
   name: 'S · square',
   args: { size: 'S', shape: 'square', checked: true },
 });

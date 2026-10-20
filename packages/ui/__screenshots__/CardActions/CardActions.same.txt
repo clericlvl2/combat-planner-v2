@@ -1,3 +1,0 @@
-Anatomy Default
-ExtraKeyboard ExtraMore
-OpenCardDuplicateDelete OpenUnitUnitRow

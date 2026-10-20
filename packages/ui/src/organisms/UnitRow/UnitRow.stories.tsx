@@ -218,6 +218,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'UnitRow');
     const chevron = canvas.getByRole('button', { name: t('details') });
@@ -260,6 +261,7 @@ export const Staggered = meta.story({
 });
 
 export const Dead = meta.story({
+  tags: ['visual'],
   args: { active: false, unit: unitOf(goblinSeed) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitRow');
@@ -282,6 +284,7 @@ export const Disabled = meta.story({
 });
 
 export const AllyTempHPLongName = meta.story({
+  tags: ['visual'],
   name: 'Ally, temp HP, long name',
   args: {
     active: false,
@@ -358,6 +361,7 @@ export const LongPlayerName37Characters = meta.story({
 });
 
 export const Expanded = meta.story({
+  tags: ['visual'],
   args: { unit: vashtiExpanded, expanded: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitRow');
@@ -378,6 +382,7 @@ export const Expanded = meta.story({
 });
 
 export const ConditionsListOpen = meta.story({
+  tags: ['visual'],
   name: 'Conditions: list open',
   args: { unit: vashtiExpanded, expanded: true, conditionsOpen: true },
   play: async ({ canvas, globals }) => {
@@ -456,6 +461,7 @@ export const StaggeredTemp120 = meta.story({
 });
 
 export const Full999999 = meta.story({
+  tags: ['visual'],
   name: 'Full, 999/999',
   args: {
     active: false,
@@ -539,6 +545,7 @@ export const Ru = meta.story({
 });
 
 export const FourConditionsAllShown = meta.story({
+  tags: ['visual'],
   name: 'Four conditions, all shown',
   args: {
     active: false,

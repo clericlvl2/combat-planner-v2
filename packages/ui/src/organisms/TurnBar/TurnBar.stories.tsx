@@ -28,6 +28,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { mode: 'next', nextName: 'Brother Tomas' },
 });
 
@@ -36,6 +37,7 @@ export const Active = meta.story({
 });
 
 export const Setup = meta.story({
+  tags: ['visual'],
   args: { mode: 'start' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -64,6 +66,7 @@ export const BlockedAllUnitsDisabled = meta.story({
 });
 
 export const BlockedRound99 = meta.story({
+  tags: ['visual'],
   name: 'Blocked: round 99',
   args: { mode: 'next', disabled: true, reasonKey: 'lastRound' },
   play: async ({ canvas, globals }) => {
@@ -76,6 +79,7 @@ export const BlockedRound99 = meta.story({
 });
 
 export const LongNextNameEllipsis = meta.story({
+  tags: ['visual'],
   name: 'Long next name: ellipsis',
   args: { mode: 'next', nextName: 'Brother Tomas of the Silver Lantern Order' },
 });

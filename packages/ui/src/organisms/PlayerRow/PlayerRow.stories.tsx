@@ -246,6 +246,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
     const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
@@ -280,6 +281,7 @@ export const OwnActiveTurn = meta.story({
 });
 
 export const OwnExpanded = meta.story({
+  tags: ['visual'],
   name: 'Own, expanded',
   args: { expanded: true },
   play: async ({ canvas, globals }) => {
@@ -298,6 +300,7 @@ export const OwnExpanded = meta.story({
 });
 
 export const OwnConditionsOpen = meta.story({
+  tags: ['visual'],
   name: 'Own, Conditions open',
   args: { expanded: true, conditionsOpen: true, 'data-tap': 'conditions' },
   play: async ({ canvas, globals }) => {
@@ -377,6 +380,7 @@ export const EnemyStaggered = meta.story({
 });
 
 export const EnemyDead = meta.story({
+  tags: ['visual'],
   name: 'Enemy, Dead',
   args: { unit: goblin, mine: false },
   play: async ({ canvas, globals }) => {
@@ -416,6 +420,7 @@ export const AllyThreeDigitHP = meta.story({
 });
 
 export const RuFourConditions = meta.story({
+  tags: ['visual'],
   name: 'ru, four conditions',
   args: {
     unit: playerUnit({

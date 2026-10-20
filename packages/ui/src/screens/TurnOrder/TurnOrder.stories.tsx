@@ -68,6 +68,7 @@ const meta = preview.meta({
 });
 
 export const SetupWaiting = meta.story({
+  tags: ['visual'],
   name: 'Setup, waiting for the DM',
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup' })) },
   play: async ({ canvas, globals }) => {
@@ -79,6 +80,7 @@ export const SetupWaiting = meta.story({
 });
 
 export const HiddenFields = meta.story({
+  tags: ['visual'],
   name: 'Active, other rows hide private fields',
   parameters: { scenario: playerScenario(ferryCombat({ active: 'orc' })) },
   play: async ({ canvas, globals }) => {

@@ -26,6 +26,7 @@ const fillOf = (canvasElement: HTMLElement) => {
 const underlineOf = (element: HTMLElement) => getComputedStyle(element).borderBottomStyle;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: {
     unitRole: 'hero',
     top: { kind: 'initiative', value: 15 },
@@ -124,6 +125,7 @@ export const Tap = meta.story({
 });
 
 export const NoInitiativeDie = meta.story({
+  tags: ['visual'],
   name: 'No initiative: die',
   args: { unitRole: 'hero', top: null },
   play: async ({ canvas, canvasElement, globals }) => {
@@ -187,6 +189,7 @@ export const Preset320HP = meta.story({
 });
 
 export const Preset999HP = meta.story({
+  tags: ['visual'],
   name: 'Preset: 999 HP',
   args: { unitRole: 'enemy', top: { kind: 'hp', value: 999 } },
   play: async ({ canvas, canvasElement }) => {

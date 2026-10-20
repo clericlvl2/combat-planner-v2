@@ -65,6 +65,7 @@ const jaName = '影の射手ゴブリン';
 const name = { labelKey: 'name', maxLength: 40, width: 250 } as const;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { ...filledTitle, width: 280 },
 });
 
@@ -90,6 +91,7 @@ export const Title80Filled = meta.story({
 });
 
 export const Title80Error = meta.story({
+  tags: ['visual'],
   name: 'Title · 80 · error',
   args: { ...title, placeholderKey: 'titlePlaceholder', errorKey: 'enterTitle' },
   play: async ({ canvas, globals }) => {
@@ -114,6 +116,7 @@ export const Title80Disabled = meta.story({
 });
 
 export const TextFieldS = meta.story({
+  tags: ['visual'],
   name: 'TextField · S',
   args: { ...filledTitle, size: 'S', width: 280 },
 });

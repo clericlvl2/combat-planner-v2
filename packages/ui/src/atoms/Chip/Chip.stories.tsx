@@ -71,6 +71,7 @@ const rgb = (hex: string) => {
 const heightOf = (element: HTMLElement) => element.getBoundingClientRect().height;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { ...tagActive(), count: 2 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Chip');
@@ -150,6 +151,7 @@ export const TagM28 = meta.story({
 });
 
 export const TagL36 = meta.story({
+  tags: ['visual'],
   name: 'Tag L · 36',
   args: { ...tag(), size: 'L' },
   play: async ({ canvas, globals }) => {
@@ -256,6 +258,7 @@ export const TagLJa = meta.story({
 });
 
 export const TagLCount12 = meta.story({
+  tags: ['visual'],
   name: 'Tag, L count 12',
   args: { ...tagActive(), labelKey: 'ferry', count: 12 },
   play: async ({ canvas, globals }) => {

@@ -91,6 +91,7 @@ const meta = preview.meta({
 const renderTap = (args: NoteFieldCellProps) => <NoteFieldCell {...args} data-tap="" />;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { value: note },
 });
 
@@ -111,6 +112,7 @@ export const FieldTap = meta.story({
 });
 
 export const FieldEditing = meta.story({
+  tags: ['visual'],
   name: 'Field, editing',
   args: { value: '' },
   play: async ({ args, canvas, globals }) => {
@@ -142,6 +144,7 @@ export const FieldLong = meta.story({
 });
 
 export const LineWraps = meta.story({
+  tags: ['visual'],
   name: 'Line, wraps',
   args: { value: note, collapsed: true },
 });

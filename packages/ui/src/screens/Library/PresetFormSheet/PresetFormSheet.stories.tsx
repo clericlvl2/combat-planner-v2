@@ -55,6 +55,7 @@ const meta = preview.meta({
 });
 
 export const NewPreset = meta.story({
+  tags: ['visual'],
   name: 'New preset, empty',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -116,6 +117,7 @@ export const Filled = meta.story({
 });
 
 export const EditPreset = meta.story({
+  tags: ['visual'],
   name: 'Edit preset',
   args: { mode: 'edit', value: berserker },
   play: async ({ args, canvas, globals }) => {
@@ -251,6 +253,7 @@ export const ExtraKeyboardSubmit = meta.story({
 });
 
 export const ExtraRussian = meta.story({
+  tags: ['visual'],
   name: 'Russian: edit',
   globals: { locale: 'ru' },
   args: {
@@ -264,6 +267,7 @@ export const ExtraRussian = meta.story({
 });
 
 export const ExtraJapaneseNew = meta.story({
+  tags: ['visual'],
   name: 'Japanese: new',
   globals: { locale: 'ja' },
   play: async ({ canvas }) => {

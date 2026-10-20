@@ -53,6 +53,7 @@ const colorsOf = (canvasElement: HTMLElement) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: {
     entry: entry({ kind: 'damage', amount: 8, absorbed: 5, previous: 26, result: 23, round: 2 }),
     maxHp: 40,
@@ -184,6 +185,7 @@ export const BelowZero = meta.story({
 });
 
 export const RuColumn84 = meta.story({
+  tags: ['visual'],
   name: 'ru, column 84',
   globals: { locale: 'ru' },
   args: {

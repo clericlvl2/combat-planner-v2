@@ -21,6 +21,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'About');
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
@@ -38,6 +39,7 @@ export const Default = meta.story({
 });
 
 export const Russian = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ru' },
   args: { version: '2.1.0-beta.3' },
   play: async ({ canvas }) => {
@@ -50,6 +52,7 @@ export const Russian = meta.story({
 });
 
 export const German = meta.story({
+  tags: ['visual'],
   globals: { locale: 'de' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'About');

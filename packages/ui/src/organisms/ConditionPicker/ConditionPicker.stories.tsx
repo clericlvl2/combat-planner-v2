@@ -62,6 +62,7 @@ const markTap = async (canvasElement: HTMLElement, condition: Condition) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { initial: ['dazed', 'hampered'] },
 });
 
@@ -95,6 +96,7 @@ export const AllSelected = meta.story({
 });
 
 export const LongUnitName = meta.story({
+  tags: ['visual'],
   name: 'Long unit name',
   args: { initial: ['stuck'], unitName: 'Brother Tomas of the Silver Lantern Order' },
 });

@@ -34,6 +34,7 @@ const softBack = { variant: 'soft', icon: IconChevronLeft, labelKey: 'back' } as
 const filledPlus = { variant: 'filled', icon: IconPlus, labelKey: 'add' } as const;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { ...outlineX, size: 'M' },
 });
 
@@ -140,6 +141,7 @@ export const FilledPlusFocus = meta.story({
 });
 
 export const IconButtonOutlineS = meta.story({
+  tags: ['visual'],
   name: 'IconButton · outline · S',
   args: { ...outlineX, size: 'S' },
 });

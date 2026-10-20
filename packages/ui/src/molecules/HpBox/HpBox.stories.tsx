@@ -52,6 +52,7 @@ const dmBoxExpected = (t: TFunction, hp: number, maxHp: number) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { viewer: 'dm', hp: 14, maxHp: 40, tempHp: 5 },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
@@ -85,6 +86,7 @@ export const VariantsDMWounded = meta.story({
 });
 
 export const Staggered = meta.story({
+  tags: ['visual'],
   name: 'Staggered',
   args: { viewer: 'dm', hp: 14, maxHp: 40 },
   play: async ({ canvasElement, globals }) => {
@@ -142,6 +144,7 @@ export const Tap = meta.story({
 });
 
 export const VariantsPlayerFull = meta.story({
+  tags: ['visual'],
   name: 'Player · Full',
   args: { viewer: 'player', hp: 52, maxHp: 52 },
   play: async ({ canvas, canvasElement, globals }) => {
@@ -228,6 +231,7 @@ export const EdgeCasesThreeDigits112320Temp = meta.story({
 });
 
 export const EdgeCasesThreeDigits9999992 = meta.story({
+  tags: ['visual'],
   name: '−999/999',
   args: { viewer: 'dm', hp: -999, maxHp: 999 },
   play: async ({ canvas, canvasElement, globals }) => {

@@ -80,6 +80,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { tags, values: ['orcs', 'ferry'] },
 });
 
@@ -89,6 +90,7 @@ export const VariantsTags = meta.story({
 });
 
 export const VariantsQueryMatch = meta.story({
+  tags: ['visual'],
   name: 'Variants · query match',
   args: { tags: typedLibrary, values: [], query: 'mo', onCreate: fn() },
   play: async ({ args, canvas, globals }) => {
@@ -127,6 +129,7 @@ export const CheckListM = meta.story({
 });
 
 export const CheckListL = meta.story({
+  tags: ['visual'],
   name: 'CheckList · L',
   args: { tags: sizeTags, values: ['orcs'], size: 'L', width: 330 },
 });

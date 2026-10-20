@@ -49,6 +49,7 @@ const meta = preview.meta({
 const renderTap = (args: SwatchCellProps) => <SwatchCell {...args} data-tap="" />;
 
 export const SelectedM = meta.story({
+  tags: ['visual'],
   name: 'Selected, M',
   args: { color: 5, selected: true, size: 'M' },
 });
@@ -118,6 +119,7 @@ export const Tap = meta.story({
 });
 
 export const S = meta.story({
+  tags: ['visual'],
   name: 'S',
   args: { color: 5, selected: true, size: 'S' },
   play: async ({ canvas, globals }) => {

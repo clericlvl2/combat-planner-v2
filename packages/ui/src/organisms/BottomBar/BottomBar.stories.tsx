@@ -45,6 +45,7 @@ const meta = preview.meta({
 const renderPressed = (args: BottomBarCellProps) => <BottomBarCell {...args} data-pressed="" />;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { labelKey: 'newCombat' },
 });
 
@@ -95,6 +96,7 @@ export const DisabledHintRu = meta.story({
 });
 
 export const DisabledHintDe = meta.story({
+  tags: ['visual'],
   name: 'Disabled + hint de',
   args: { label: 'Neuer Kampf', hint: 'Kampflimit erreicht', disabled: true },
 });

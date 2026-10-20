@@ -260,6 +260,7 @@ const meta = preview.meta({
 });
 
 export const CSF11 = meta.story({
+  tags: ['visual'],
   name: 'CS-F1.1 Empty combat',
   parameters: { scenario: noUnitsScenario() },
   play: async ({ canvas, globals, loaded }) => {
@@ -357,6 +358,7 @@ export const CSF15 = meta.story({
 });
 
 export const CSF16 = meta.story({
+  tags: ['visual'],
   name: 'CS-F1.6 Combat started: round 1',
   parameters: { scenario: setupScenario() },
   args: { random: rolls(setupRolls) },
@@ -419,6 +421,7 @@ export const CSF22 = meta.story({
 });
 
 export const CSF23 = meta.story({
+  tags: ['visual'],
   name: 'CS-F2.3 Round 4, escalation 3',
   parameters: { scenario: runningScenario({ active: 'tomas' }) },
   play: async ({ canvas, canvasElement, globals }) => {
@@ -478,6 +481,7 @@ export const CSF31 = meta.story({
 });
 
 export const CSF32 = meta.story({
+  tags: ['visual'],
   name: 'CS-F3.2 Calculator open',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -572,6 +576,7 @@ export const CSF38 = meta.story({
 });
 
 export const CSF39 = meta.story({
+  tags: ['visual'],
   name: 'CS-F3.9 HP History open',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -585,6 +590,7 @@ export const CSF39 = meta.story({
 });
 
 export const CSF41 = meta.story({
+  tags: ['visual'],
   name: 'CS-F4.1 Vashti expanded',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -595,6 +601,7 @@ export const CSF41 = meta.story({
 });
 
 export const CSF42 = meta.story({
+  tags: ['visual'],
   name: 'CS-F4.2 Condition list',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -860,6 +867,7 @@ export const CSF67 = meta.story({
 });
 
 export const CSF71 = meta.story({
+  tags: ['visual'],
   name: 'CS-F7.1 Menu open',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -890,6 +898,7 @@ export const CSF72 = meta.story({
 });
 
 export const CSF73 = meta.story({
+  tags: ['visual'],
   name: 'CS-F7.3 Link and QR',
   parameters: {
     geometry: {
@@ -1012,6 +1021,7 @@ const longNameBreak = {
 };
 
 export const CSF81 = meta.story({
+  tags: ['visual'],
   name: 'CS-F8.1 Long list, scrolled, 6 languages',
   parameters: { geometry: longNameBreak, scenario: longScenario() },
   play: async ({ canvas, canvasElement, globals }) => {

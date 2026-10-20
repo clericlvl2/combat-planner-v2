@@ -102,6 +102,7 @@ const meta = preview.meta({
 });
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { value: 15, bonus: 3 },
 });
 
@@ -154,6 +155,7 @@ export const HighRoll = meta.story({
 });
 
 export const Ru = meta.story({
+  tags: ['visual'],
   name: 'ru',
   globals: { locale: 'ru' },
   args: { value: 15, bonus: 3 },

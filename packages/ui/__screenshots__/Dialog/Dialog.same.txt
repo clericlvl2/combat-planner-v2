@@ -1,3 +1,0 @@
-Anatomy Clear
-ExtraCancel ExtraConfirm ExtraEscape ExtraKeyboard ExtraScrimTap ExtraTapTextThenEscape
-ExtraFocusReturn ExtraScrollLock

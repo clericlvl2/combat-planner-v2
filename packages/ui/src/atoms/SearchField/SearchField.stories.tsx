@@ -47,6 +47,7 @@ const meta = preview.meta({
 const renderFocus = (args: SearchFieldCellProps) => <SearchFieldCell {...args} data-focus="" />;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { value: 'ferry' },
   render: renderFocus,
 });
@@ -82,6 +83,7 @@ export const CombatsDisabled = meta.story({
 });
 
 export const SearchFieldS = meta.story({
+  tags: ['visual'],
   name: 'SearchField · S',
   args: { size: 'S', value: 'ferry' },
 });
@@ -97,6 +99,7 @@ export const SearchFieldL = meta.story({
 });
 
 export const QueriesLong = meta.story({
+  tags: ['visual'],
   name: 'Queries · long',
   args: { value: 'brother tomas of the silver lantern' },
   render: renderFocus,

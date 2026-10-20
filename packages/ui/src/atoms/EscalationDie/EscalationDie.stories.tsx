@@ -26,6 +26,7 @@ const tileFill = (canvasElement: HTMLElement) => {
 const inkFill = 'rgb(35, 31, 28)';
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { value: 2 },
 });
 
@@ -101,6 +102,7 @@ export const VariantsStates5 = meta.story({
 });
 
 export const VariantsStates6 = meta.story({
+  tags: ['visual'],
   name: '6',
   args: { value: 6 },
   play: async ({ canvas, canvasElement, globals }) => {

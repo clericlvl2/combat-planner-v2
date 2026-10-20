@@ -42,6 +42,7 @@ const tagsDefault = { icon: IconTags, labelKey: 'tags' } as const;
 const tagsActiveCount = { icon: IconTags, labelKey: 'tags', count: 2, active: true } as const;
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { ...tagsActiveCount, size: 'M' },
 });
 
@@ -194,6 +195,7 @@ export const ActiveRu = meta.story({
 });
 
 export const ActiveCount12 = meta.story({
+  tags: ['visual'],
   name: 'Active · count 12',
   args: { ...tagsActiveCount, count: 12 },
   play: async ({ canvas, globals }) => {

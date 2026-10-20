@@ -159,6 +159,7 @@ const collapseShowsCount = async (
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: { expanded: true },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'HpHistory');
@@ -178,6 +179,7 @@ export const Anatomy = meta.story({
 });
 
 export const Collapsed = meta.story({
+  tags: ['visual'],
   name: 'Collapsed',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'HpHistory');
@@ -219,6 +221,7 @@ export const OpenEveryKind = meta.story({
 });
 
 export const OpenLongScrolls = meta.story({
+  tags: ['visual'],
   name: 'Open, long: scrolls',
   args: { expanded: true, entries: long },
   play: async ({ canvas, canvasElement, globals }) => {
@@ -392,6 +395,7 @@ export const EdgeCasesJaSheet = meta.story({
 });
 
 export const EdgeCasesRuInline = meta.story({
+  tags: ['visual'],
   name: 'Русский, inline',
   globals: { locale: 'ru' },
   args: { expanded: true },

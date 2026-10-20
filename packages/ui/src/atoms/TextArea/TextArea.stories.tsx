@@ -68,6 +68,7 @@ const note =
   'Concentrating on Hex. If she takes damage, roll a save; on a fail the hex ends and Orc Berserker is no longer vulnerable. Ally Tomas holds the bridge until the end of round 4, then falls back to the mill with the archers.';
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   args: filled,
 });
 
@@ -101,6 +102,7 @@ export const Description500Filled = meta.story({
 });
 
 export const Description500Error = meta.story({
+  tags: ['visual'],
   name: 'Description · 500 · error',
   args: { ...description, value: overLimit, errorKey: 'upTo' },
   play: async ({ canvas, globals }) => {

@@ -1,2 +1,0 @@
-OnM On M
-ExtraLabelClick ExtraGroupArrows

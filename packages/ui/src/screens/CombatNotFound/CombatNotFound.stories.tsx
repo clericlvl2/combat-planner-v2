@@ -11,6 +11,7 @@ const meta = preview.meta({
 });
 
 export const Default = meta.story({
+  tags: ['visual'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CombatNotFound');
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
@@ -23,6 +24,7 @@ export const Default = meta.story({
 });
 
 export const Deutsch = meta.story({
+  tags: ['visual'],
   globals: { locale: 'de' },
   play: async ({ canvas }) => {
     await expect(
@@ -33,6 +35,7 @@ export const Deutsch = meta.story({
 });
 
 export const Russian = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ru' },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1, name: 'Бой не найден' })).toBeVisible();
@@ -41,6 +44,7 @@ export const Russian = meta.story({
 });
 
 export const Japanese = meta.story({
+  tags: ['visual'],
   globals: { locale: 'ja' },
   play: async ({ canvas }) => {
     await expect(

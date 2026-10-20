@@ -249,6 +249,7 @@ const scrollSheetToTop = async (canvasElement: HTMLElement) => {
 };
 
 export const Anatomy = meta.story({
+  tags: ['visual'],
   name: 'Anatomy',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -303,6 +304,7 @@ export const OpenAFewChanges = meta.story({
 });
 
 export const OpenEveryKind = meta.story({
+  tags: ['visual'],
   name: 'Open, every kind',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -325,6 +327,7 @@ export const OpenLongScrollsInsideTheSheet = meta.story({
 });
 
 export const PlayerTyped7 = meta.story({
+  tags: ['visual'],
   name: 'Player, typed 7',
   args: { who: 'vashti', viewer: 'player' },
   play: async ({ canvas, canvasElement, globals }) => {
@@ -403,6 +406,7 @@ const openLocale = async (
 };
 
 export const Deutsch = meta.story({
+  tags: ['visual'],
   name: 'Deutsch',
   globals: { locale: 'de' },
   play: async (context) => {
