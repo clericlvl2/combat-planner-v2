@@ -27,13 +27,17 @@ function isLocale(value: unknown): value is Locale {
   return locales.some((locale) => locale === value);
 }
 
+export function storyLocale(globals: Record<string, unknown>): Locale {
+  return isLocale(globals.locale) ? globals.locale : 'en';
+}
+
 function isMotion(value: unknown): value is Motion {
   return value === 'on' || value === 'off';
 }
 
 export const withLocale: Decorator = (Story, { globals, parameters }) => (
   <UiProvider
-    locale={isLocale(globals.locale) ? globals.locale : 'en'}
+    locale={storyLocale(globals)}
     motion={isMotion(parameters.motion) ? parameters.motion : 'off'}
   >
     <Story />
