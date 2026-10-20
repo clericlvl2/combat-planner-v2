@@ -283,7 +283,7 @@ export const ExtraLocaleDe = meta.story({
   globals: { locale: 'de' },
   args: { unitRole: 'ally', top: { kind: 'initiative', value: 9 }, mine: true },
   play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Verbündeter')).toBeVisible();
+    await expect(canvas.getByText('Verbün\u00addeter')).toBeVisible();
     await expect(canvas.getByText('Du')).toBeVisible();
     const block = canvasElement.querySelector<HTMLElement>('[data-unit-role]');
     await expect(block?.getBoundingClientRect().width).toBe(62);
