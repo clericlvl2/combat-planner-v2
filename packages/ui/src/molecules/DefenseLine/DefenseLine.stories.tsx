@@ -1,5 +1,6 @@
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
+import { playKnownAtNarrow } from '../../storybook/geometry.ts';
 import { base } from '../../theme.ts';
 import { DefenseLine } from './DefenseLine.tsx';
 import type { DefenseLineProps } from './DefenseLine.tsx';
@@ -181,12 +182,12 @@ export const ExtraWrapsBetweenPairs = meta.story({
       <DefenseLine {...args} />
     </div>
   ),
-  play: async ({ canvasElement, globals }) => {
+  play: playKnownAtNarrow(async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'DefenseLine');
     await expect(linesOf(rootOf(canvasElement))).toEqual([
       `${t('ac')} 105 ·`,
       `${t('pd')} 99 ·`,
       `${t('md')} 120`,
     ]);
-  },
+  }),
 });

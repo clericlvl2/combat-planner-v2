@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/TextField.json';
+import { playKnownAtNarrow } from '../../storybook/geometry.ts';
 import { TextField } from './TextField.tsx';
 import type { TextFieldProps } from './TextField.tsx';
 import { storyT } from '../../storybook/storyT.ts';
@@ -233,7 +234,7 @@ export const ExtraSizes = meta.story({
       <TextFieldCell {...args} size="L" />
     </div>
   ),
-  play: async ({ canvas, globals }) => {
+  play: playKnownAtNarrow(async ({ canvas, globals }) => {
     const t = storyT(globals, 'TextField');
     const fields = canvas.getAllByRole('textbox', { name: t('title') });
     const heights = fields.map(
@@ -242,7 +243,7 @@ export const ExtraSizes = meta.story({
     const fonts = fields.map((field) => getComputedStyle(field).fontSize);
     await expect(heights).toEqual([40, 48, 56]);
     await expect(fonts).toEqual(['14px', '16px', '18px']);
-  },
+  }),
 });
 
 export const ExtraSignIn = meta.story({
