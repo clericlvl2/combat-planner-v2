@@ -165,6 +165,20 @@ export const ExtraSaveOnBlur = meta.story({
   },
 });
 
+export const ExtraFrameTapFocuses = meta.story({
+  name: 'Tapping the note frame focuses the editor',
+  play: async ({ args, canvas, canvasElement }) => {
+    await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
+    const editor = canvas.getByRole('textbox', { name: 'Note' });
+    const frame = canvasElement.querySelector<HTMLElement>('[data-editing]');
+    await expect(frame).not.toBeNull();
+    if (frame) await userEvent.click(frame);
+    await expect(editor).toHaveFocus();
+    await expect(editor).toBeVisible();
+    await expect(args.onChange).not.toHaveBeenCalled();
+  },
+});
+
 export const ExtraSaveOnEnter = meta.story({
   name: 'Keyboard: Enter saves',
   args: { value: 'Concentrating on Hex' },
