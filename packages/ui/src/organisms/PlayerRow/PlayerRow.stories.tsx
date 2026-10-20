@@ -35,6 +35,13 @@ const names: Record<string, string> = { [MIKA]: 'Mika', [JONAS]: 'Jonas' };
 
 const createdAt = '2026-10-16T18:00:00.000Z';
 
+async function expectNoDefenses(canvas: ReturnType<typeof within>, t: TFunction) {
+  for (const stat of ['ac', 'pd', 'md'] as const) {
+    const label = t(`DefenseLine:${stat}`);
+    await expect(canvas.queryAllByText((content: string) => content.includes(label))).toEqual([]);
+  }
+}
+
 function unitOf(seed: UnitSeed): Unit {
   const [ac, pd, md] = seed.defenses ?? [10, 10, 10];
   return {
@@ -361,7 +368,7 @@ export const EnemyStaggered = meta.story({
     await expect(canvas.getByRole('listitem')).toHaveTextContent(t('hampered'));
     await expect(canvasElement.querySelector('[data-part="numbers"]')).toBeNull();
     await expect(canvas.queryByText(/\d+\/\d+/)).toBeNull();
-    await expect(canvas.queryByText(/AC/)).toBeNull();
+    await expectNoDefenses(canvas, t);
     await expect(canvas.queryByRole('button')).toBeNull();
     await userEvent.click(canvas.getByText(t('HpBox:staggered')));
     await expect(args.onHp).not.toHaveBeenCalled();
@@ -694,7 +701,7 @@ export const ExtraEnemyWithFields = meta.story({
     await expect(canvas.queryByText('14')).toBeNull();
     await expect(canvas.queryByText('/40')).toBeNull();
     await expect(canvas.queryByText(t('HpBox:temp', { amount: 6 }))).toBeNull();
-    await expect(canvas.queryByText(/AC/)).toBeNull();
+    await expectNoDefenses(canvas, t);
     await expect(canvas.queryByText('Mika')).toBeNull();
     await expect(canvas.queryByRole('img', { name: t('claimedBy') })).toBeNull();
     await expect(canvas.queryByText('Hidden note')).toBeNull();
