@@ -574,6 +574,10 @@ async function expectNotOptedOut(story: GeometryStory, check: NarrowCheck) {
   }).toEqual({ [check]: 'not opted out' });
 }
 
+function isAssertionError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AssertionError';
+}
+
 export function playKnownAtNarrow<Context extends GeometryStory>(
   play: (context: Context) => Promise<void>,
 ): (context: Context) => Promise<void> {
@@ -584,7 +588,8 @@ export function playKnownAtNarrow<Context extends GeometryStory>(
     }
     try {
       await play(context);
-    } catch {
+    } catch (error) {
+      if (!isAssertionError(error)) throw error;
       knownPlayFailures.add(context.id);
     }
   };
