@@ -207,7 +207,7 @@ export const Ru = meta.story({
       { id: 'addUnit', icon: IconUserPlus, label: 'Добавить юнита' },
       { id: 'undo', icon: IconArrowBackUp, label: 'Отменить', hint: '12 урона' },
       { id: 'share', icon: IconShare, label: 'Поделиться' },
-      { id: 'restart', icon: IconRefresh, label: 'Сбросить бой', divider: true },
+      { id: 'restart', icon: IconRefresh, label: 'Начать бой заново', divider: true },
       { id: 'clear', icon: IconTrash, label: 'Очистить бой', tone: 'danger' },
     ],
   },

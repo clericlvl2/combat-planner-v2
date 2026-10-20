@@ -215,9 +215,9 @@ export const RestartRu = meta.story({
   globals: { locale: 'ru' },
   args: { preset: 'restart' },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole('alertdialog', { name: 'Сбросить бой?' })).toBeVisible();
+    await expect(canvas.getByRole('alertdialog', { name: 'Начать бой заново?' })).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'Отмена' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Сбросить' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Заново' })).toBeVisible();
   },
 });
 

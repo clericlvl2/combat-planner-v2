@@ -3,7 +3,7 @@
   "undoNextTurn": "Отменено: следующий ход",
   "undoEditRound": "Отменено: раунд изменён на {{round}}",
   "undoSetEscalation": "Отменено: кубик эскалации изменён на {{value}}",
-  "undoRestart": "Отменено: сброс боя",
+  "undoRestart": "Отменено: бой начат заново",
   "undoClear": "Отменено: очистка боя",
   "undoAddUnit": "Отменено: добавление {{name}}",
   "undoEditUnit": "Отменено: правка {{name}}",
