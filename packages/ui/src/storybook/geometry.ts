@@ -480,16 +480,18 @@ function sheetActionFindings(root: HTMLElement): Finding[] {
     const scrolled = [sheet, ...sheet.querySelectorAll('*')]
       .filter((element) => element.scrollTop !== 0)
       .map((element) => ({ element, top: element.scrollTop }));
-    for (const { element } of scrolled) element.scrollTo({ top: 0, behavior: 'instant' });
-    const findings = [...sheet.querySelectorAll('[data-sheet-action]')].flatMap((action) => {
-      if (!action.checkVisibility({ visibilityProperty: true })) return [];
-      const visible = visibleBoxOf(action, sheet, root);
-      if (inside(boxOf(action), visible)) return [];
-      const edge = [visible.left, visible.top, visible.right, visible.bottom].join(', ');
-      return [{ element: action, message: `${describe(action)} lies outside [${edge}]` }];
-    });
-    for (const { element, top } of scrolled) element.scrollTo({ top, behavior: 'instant' });
-    return findings;
+    try {
+      for (const { element } of scrolled) element.scrollTo({ top: 0, behavior: 'instant' });
+      return [...sheet.querySelectorAll('[data-sheet-action]')].flatMap((action) => {
+        if (!action.checkVisibility({ visibilityProperty: true })) return [];
+        const visible = visibleBoxOf(action, sheet, root);
+        if (inside(boxOf(action), visible)) return [];
+        const edge = [visible.left, visible.top, visible.right, visible.bottom].join(', ');
+        return [{ element: action, message: `${describe(action)} lies outside [${edge}]` }];
+      });
+    } finally {
+      for (const { element, top } of scrolled) element.scrollTo({ top, behavior: 'instant' });
+    }
   });
 }
 
@@ -580,8 +582,15 @@ async function expectNotOptedOut(story: GeometryStory, check: NarrowCheck) {
   }).toEqual({ [check]: 'not opted out' });
 }
 
+function isMatcherError(error: Error): boolean {
+  return (
+    error.name === 'Error' && Object.hasOwn(error, 'actual') && Object.hasOwn(error, 'expected')
+  );
+}
+
 function isAssertionError(error: unknown): boolean {
-  return error instanceof Error && error.name === 'AssertionError';
+  if (!(error instanceof Error)) return false;
+  return error.name === 'AssertionError' || isMatcherError(error);
 }
 
 export function playKnownAtNarrow<Context extends GeometryStory>(
