@@ -171,8 +171,11 @@ export const ExtraFrameTapFocuses = meta.story({
     await userEvent.click(canvas.getByRole('button', { name: 'Note' }));
     const editor = canvas.getByRole('textbox', { name: 'Note' });
     const frame = canvasElement.querySelector<HTMLElement>('[data-editing]');
-    await expect(frame).not.toBeNull();
-    if (frame) await userEvent.click(frame);
+    if (!frame) throw new Error('note frame not rendered');
+    const box = frame.getBoundingClientRect();
+    const padding = { clientX: box.left + 4, clientY: box.top + 4 };
+    await expect(document.elementFromPoint(padding.clientX, padding.clientY)).toBe(frame);
+    await userEvent.pointer({ keys: '[MouseLeft]', target: frame, coords: padding });
     await expect(editor).toHaveFocus();
     await expect(editor).toBeVisible();
     await expect(args.onChange).not.toHaveBeenCalled();
