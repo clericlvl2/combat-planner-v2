@@ -568,6 +568,12 @@ async function expectStillFails(story: GeometryStory, check: NarrowCheck, fails:
   }).toEqual({ [check]: listedVerdict });
 }
 
+async function expectNotOptedOut(story: GeometryStory, check: NarrowCheck) {
+  await expect({
+    [check]: `${story.id} opts out through parameters.geometry: remove { story: '${story.id}', check: '${check}' } from narrow-known`,
+  }).toEqual({ [check]: 'not opted out' });
+}
+
 export function playKnownAtNarrow<Context extends GeometryStory>(
   play: (context: Context) => Promise<void>,
 ): (context: Context) => Promise<void> {
@@ -590,7 +596,10 @@ export async function expectGeometry(root: HTMLElement, parameter: unknown, stor
   const optOuts = optOutsOf(parameter);
   for (const check of checkNames) {
     const optOut = optOuts[check];
-    if (typeof optOut === 'string') continue;
+    if (typeof optOut === 'string') {
+      if (story && isListed(story, check)) await expectNotOptedOut(story, check);
+      continue;
+    }
     const excused = excusedSelectorOf(optOut);
     if (excused !== null) {
       await expect({
