@@ -230,6 +230,11 @@ export const ExtraActionOnceDuringExit = meta.story({
   },
 });
 
+const enterDurationsOf = (element: HTMLElement) =>
+  element.getAnimations().map((animation) => animation.effect?.getTiming().duration);
+
+const delaysOf = (spy: { mock: { calls: unknown[][] } }) => spy.mock.calls.map((call) => call[1]);
+
 export const ExtraAutoHide = meta.story({
   name: 'Auto-hide after an injected duration',
   parameters: { motion: 'on' },
@@ -254,15 +259,11 @@ export const ExtraDefaultDuration = meta.story({
     try {
       await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
+      await expect(enterDurationsOf(status)).toEqual([150]);
+      await expect(delaysOf(setTimeoutSpy)).toContain(4000);
+      await expect(delaysOf(setTimeoutSpy)).not.toContain(8000);
       for (const animation of status.getAnimations()) animation.finish();
-      await expect(status.getAnimations()).toHaveLength(0);
       await expect(status).toBeVisible();
-      await expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), toastDuration.plain);
-      await expect(setTimeoutSpy).not.toHaveBeenCalledWith(
-        expect.any(Function),
-        toastDuration.withAction,
-      );
-      await expect(toastDuration.plain).toBe(4000);
       await expect(args.onHide).not.toHaveBeenCalled();
     } finally {
       setTimeoutSpy.mockRestore();
@@ -280,14 +281,11 @@ export const ExtraActionDuration = meta.story({
     try {
       await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
+      await expect(enterDurationsOf(status)).toEqual([150]);
+      await expect(delaysOf(setTimeoutSpy)).toContain(8000);
+      await expect(delaysOf(setTimeoutSpy)).not.toContain(4000);
       for (const animation of status.getAnimations()) animation.finish();
-      await expect(status.getAnimations()).toHaveLength(0);
       await expect(canvas.getByRole('button', { name: t('retry') })).toBeVisible();
-      await expect(setTimeoutSpy).toHaveBeenCalledWith(
-        expect.any(Function),
-        toastDuration.withAction,
-      );
-      await expect(toastDuration.withAction).toBe(8000);
       await expect(args.onHide).not.toHaveBeenCalled();
     } finally {
       setTimeoutSpy.mockRestore();

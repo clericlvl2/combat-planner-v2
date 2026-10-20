@@ -62,6 +62,8 @@ export const ExtraWordBreaksTightLines = meta.story({
     const box = canvas.getByTestId('tight');
     const style = getComputedStyle(box);
     await expect(style.fontFamily).toContain('Rubik');
+    await document.fonts.ready;
+    await expect(document.fonts.check('16px Rubik')).toBe(true);
     await expect(Number.parseFloat(style.lineHeight)).toBe(Number.parseFloat(style.fontSize));
     await expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(
       2 * Number.parseFloat(style.lineHeight),
