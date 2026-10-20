@@ -4,7 +4,7 @@
   flex: none;
   align-items: center;
   width: 100%;
-  height: 98px;
+  min-height: 98px;
   margin-top: auto;
   padding: 10px 28px 28px;
   border-top: 2px solid var(--cp-color-border);
@@ -20,8 +20,8 @@
   gap: 4px;
   width: 100%;
   min-width: 0;
-  height: 58px;
-  padding: 0 16px;
+  min-height: 58px;
+  padding: 6px 16px;
   border: none;
   border-radius: 29px;
   background: var(--cp-color-ink);
@@ -52,8 +52,13 @@
 .title,
 .secondary {
   max-width: 100%;
-  overflow: hidden;
   line-height: var(--mantine-line-height-snug);
+  text-align: center;
+  text-wrap: balance;
+}
+
+.secondary:not([data-hint]) {
+  overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
 }

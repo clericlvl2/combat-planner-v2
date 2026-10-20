@@ -81,6 +81,14 @@ export const BlockedRound99 = meta.story({
 export const LongNextNameEllipsis = meta.story({
   tags: ['visual'],
   name: 'Long next name: ellipsis',
+  parameters: {
+    geometry: {
+      truncation: {
+        reason: 'the long unit name ends with an ellipsis by design',
+        except: '[data-mode] > span + span',
+      },
+    },
+  },
   args: { mode: 'next', nextName: 'Brother Tomas of the Silver Lantern Order' },
 });
 
