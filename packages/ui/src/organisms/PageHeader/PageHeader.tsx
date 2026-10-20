@@ -84,7 +84,13 @@ export function PageHeader({
         ) : null}
         <h1 className={classes.title}>{title}</h1>
         {action ? (
-          <Button variant="primary" size="S" disabled={action.disabled} onClick={action.onClick}>
+          <Button
+            className={classes.action}
+            variant="primary"
+            size="S"
+            disabled={action.disabled}
+            onClick={action.onClick}
+          >
             {action.label}
           </Button>
         ) : null}

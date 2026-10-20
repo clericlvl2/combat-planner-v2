@@ -19,6 +19,7 @@
 .nav {
   box-sizing: border-box;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-height: 48px;
@@ -26,24 +27,29 @@
 }
 
 .title {
-  flex: 1;
-  min-width: 0;
+  flex: 1 1 0;
+  max-width: 100%;
   margin: 0;
   font-family: var(--cp-font-display);
   font-size: var(--mantine-font-size-title);
   font-weight: 700;
   line-height: var(--mantine-line-height-snug);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+}
+
+.action {
+  margin-left: auto;
 }
 
 .tools {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin: 10px 12px 0;
 }
 
 .search {
-  flex: 1;
+  flex: 1 1 120px;
   min-width: 0;
 }
 
