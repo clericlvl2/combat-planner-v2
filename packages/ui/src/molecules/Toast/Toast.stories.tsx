@@ -243,7 +243,8 @@ export const ExtraDefaultDuration = meta.story({
     try {
       await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
       const status = canvas.getByRole('status');
-      await waitFor(() => expect(status.getAnimations()).toHaveLength(0));
+      for (const animation of status.getAnimations()) animation.finish();
+      await expect(status.getAnimations()).toHaveLength(0);
       await expect(status).toBeVisible();
       await expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), toastDuration.plain);
       await expect(setTimeoutSpy).not.toHaveBeenCalledWith(
@@ -267,7 +268,8 @@ export const ExtraActionDuration = meta.story({
     try {
       await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
       const status = canvas.getByRole('status');
-      await waitFor(() => expect(status.getAnimations()).toHaveLength(0));
+      for (const animation of status.getAnimations()) animation.finish();
+      await expect(status.getAnimations()).toHaveLength(0);
       await expect(canvas.getByRole('button', { name: 'Retry' })).toBeVisible();
       await expect(setTimeoutSpy).toHaveBeenCalledWith(
         expect.any(Function),

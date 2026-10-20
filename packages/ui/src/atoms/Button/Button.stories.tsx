@@ -262,10 +262,9 @@ export const ExtraPhoneFrame = meta.story({
   args: { variant: 'primary', size: 'M', icon: IconPlus, labelKey: 'newCombat', fullWidth: true },
   play: async ({ canvas, canvasElement, globals }) => {
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
-    await expect(frame?.getBoundingClientRect().width).toBe(
-      layout.viewports[frameViewportOf(globals.frame)],
-    );
-    await expect(frame?.getBoundingClientRect().height).toBe(layout.phone.height);
+    const viewport = layout.viewports[frameViewportOf(globals.frame)];
+    await expect(frame?.getBoundingClientRect().width).toBe(viewport.width);
+    await expect(frame?.getBoundingClientRect().height).toBe(viewport.height);
     await expect(canvas.getByText('9:41')).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'New combat' })).toBeVisible();
     const button = canvas.getByRole('button', { name: 'New combat' });

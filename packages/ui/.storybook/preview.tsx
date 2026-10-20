@@ -21,10 +21,22 @@ export default definePreview({
   addons: [addonDocs()],
   tags: ['autodocs'],
   globalTypes: { ...localeGlobalType, ...frameGlobalType },
-  initialGlobals: { locale: 'en', frame: 'phone', viewport: { value: 'phone', isRotated: false } },
+  initialGlobals: {
+    locale: 'en',
+    frame: 'narrow',
+    viewport: { value: 'narrow', isRotated: false },
+  },
   parameters: {
     viewport: {
       options: {
+        narrow: {
+          name: `Narrow ${layout.viewports.narrow.width}`,
+          styles: {
+            width: `${layout.viewports.narrow.width}px`,
+            height: `${layout.viewports.narrow.height}px`,
+          },
+          type: 'mobile',
+        },
         phone: {
           name: `Phone ${layout.phone.width}`,
           styles: { width: `${layout.phone.width}px`, height: `${layout.phone.height}px` },
@@ -39,7 +51,7 @@ export default definePreview({
   },
   loaders: [apiLoader],
   decorators: [withDocsTheme, withPhoneFrame, withLocale, withApi],
-  afterEach: async ({ canvasElement, parameters }) => {
-    await expectGeometry(canvasElement, parameters.geometry);
+  afterEach: async ({ canvasElement, parameters, id, globals }) => {
+    await expectGeometry(canvasElement, parameters.geometry, { id, globals });
   },
 });

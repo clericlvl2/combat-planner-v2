@@ -31,7 +31,7 @@ export const frameGlobalType = {
       icon: 'mobile' as const,
       items: viewportList.map((value) => ({
         value,
-        title: `${viewportNames[value]} ${layout.viewports[value]}`,
+        title: `${viewportNames[value]} ${layout.viewports[value].width}×${layout.viewports[value].height}`,
       })),
       dynamicTitle: true,
     },
@@ -48,10 +48,10 @@ export function frameViewportOf(frame: unknown): Viewport {
 
 function phoneStyle(viewport: Viewport): CSSProperties {
   return {
-    width: layout.viewports[viewport],
-    height: layout.phone.height,
+    width: layout.viewports[viewport].width,
+    height: layout.viewports[viewport].height,
     '--cp-layout-status-bar': `${layout.statusBar}px`,
-    '--cp-layout-viewport-width': `${layout.viewports[viewport]}px`,
+    '--cp-layout-viewport-width': `${layout.viewports[viewport].width}px`,
   } as CSSProperties;
 }
 

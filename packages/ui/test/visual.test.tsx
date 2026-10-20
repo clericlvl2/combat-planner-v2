@@ -30,7 +30,14 @@ for (const [modulePath, storyModule] of Object.entries(storyModules)) {
         document.body.append(canvasElement);
         let resized = false;
         try {
-          await story.run({ canvasElement });
+          await story.run({
+            canvasElement,
+            globals: {
+              ...story.composed.globals,
+              frame: 'phone',
+              viewport: { value: 'phone', isRotated: false },
+            },
+          });
           await document.fonts.ready;
           resized = await fitViewportToContent();
           await expect

@@ -1,9 +1,13 @@
-const viewports = { narrow: 320, phone: 390, desktop: 1280 } as const;
+const viewports = {
+  narrow: { width: 320, height: 568 },
+  phone: { width: 390, height: 844 },
+  desktop: { width: 1280, height: 844 },
+} as const;
 
 export type Viewport = keyof typeof viewports;
 
 export const layout = {
-  phone: { width: viewports.phone, height: 844 },
+  phone: viewports.phone,
   viewports,
   statusBar: 44,
   combatHeader: 126,

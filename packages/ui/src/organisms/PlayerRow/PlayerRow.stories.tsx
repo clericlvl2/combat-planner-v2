@@ -7,7 +7,7 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
-import { expectNotTruncated } from '../../storybook/geometry.ts';
+import { expectNotTruncated, playKnownAtNarrow } from '../../storybook/geometry.ts';
 import { Menu } from '../Menu/Menu.tsx';
 import { PlayerRow } from './PlayerRow.tsx';
 import type { PlayerRowProps } from './PlayerRow.tsx';
@@ -665,24 +665,24 @@ export const ExtraLocaleFr = meta.story({
   name: 'Locale fr, trigger labels fit',
   globals: { locale: 'fr' },
   args: { expanded: true },
-  play: async ({ canvasElement }) => {
+  play: playKnownAtNarrow(async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expectNotTruncated(canvas.getByRole('button', { name: 'États' }));
     await expectNotTruncated(canvas.getByRole('button', { name: 'Historique PV' }));
     await expect(within(canvasElement).getByRole('button', { name: 'Modifier' })).toBeVisible();
-  },
+  }),
 });
 
 export const ExtraLocaleEs = meta.story({
   name: 'Locale es, trigger labels fit',
   globals: { locale: 'es' },
   args: { expanded: true },
-  play: async ({ canvasElement }) => {
+  play: playKnownAtNarrow(async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expectNotTruncated(canvas.getByRole('button', { name: 'Estados' }));
     await expectNotTruncated(canvas.getByRole('button', { name: 'Historial PG' }));
     await expect(within(canvasElement).getByRole('button', { name: 'Editar' })).toBeVisible();
-  },
+  }),
 });
 
 export const ExtraFlash = meta.story({

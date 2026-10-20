@@ -1,5 +1,7 @@
 import { expect } from 'storybook/test';
 import { layout } from '../layout.ts';
+import { narrowKnown } from './narrow-known.ts';
+import type { NarrowCheck } from './narrow-known.ts';
 
 export type GeometryCheck =
   | 'overflow'
@@ -529,7 +531,43 @@ function excusedSelectorOf(optOut: GeometryOptOut | undefined): string | null {
   return optOut === undefined || typeof optOut === 'string' ? null : optOut.except;
 }
 
-export async function expectGeometry(root: HTMLElement, parameter: unknown) {
+export interface GeometryStory {
+  id: string;
+  globals: Record<string, unknown>;
+}
+
+const knownPlayFailures = new Set<string>();
+
+function isListed(story: GeometryStory | undefined, check: NarrowCheck): boolean {
+  if (story?.globals.frame !== 'narrow') return false;
+  return narrowKnown.some((entry) => entry.story === story.id && entry.check === check);
+}
+
+const listedVerdict = 'still fails, listed in narrow-known';
+
+async function expectStillFails(story: GeometryStory, check: NarrowCheck, fails: boolean) {
+  await expect({
+    [check]: fails ? listedVerdict : `${story.id} passes: remove from narrow-known`,
+  }).toEqual({ [check]: listedVerdict });
+}
+
+export function playKnownAtNarrow<Context extends GeometryStory>(
+  play: (context: Context) => Promise<void>,
+): (context: Context) => Promise<void> {
+  return async (context) => {
+    if (!isListed(context, 'play')) {
+      await play(context);
+      return;
+    }
+    try {
+      await play(context);
+    } catch {
+      knownPlayFailures.add(context.id);
+    }
+  };
+}
+
+export async function expectGeometry(root: HTMLElement, parameter: unknown, story?: GeometryStory) {
   root.getBoundingClientRect();
   await document.fonts.ready;
   const optOuts = optOutsOf(parameter);
@@ -547,6 +585,13 @@ export async function expectGeometry(root: HTMLElement, parameter: unknown) {
     const findings = checks[check](root).filter(
       (finding) => excused === null || !finding.element.matches(excused),
     );
+    if (story && isListed(story, check)) {
+      await expectStillFails(story, check, findings.length > 0);
+      continue;
+    }
     await expect({ [check]: messagesOf(findings) }).toEqual({ [check]: [] });
+  }
+  if (story && isListed(story, 'play')) {
+    await expectStillFails(story, 'play', knownPlayFailures.delete(story.id));
   }
 }
