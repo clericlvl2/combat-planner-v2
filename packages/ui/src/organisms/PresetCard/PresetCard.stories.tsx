@@ -326,7 +326,7 @@ export const ExtraTagLineEllipsis = meta.story({
     geometry: {
       truncation: {
         reason: 'the tag line ellipsises after two lines by design',
-        except: 'span:first-child + span:last-child',
+        except: '[data-tag-line]',
       },
     },
   },
