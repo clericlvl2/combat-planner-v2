@@ -171,13 +171,11 @@ export const ExtraOrderAZ = meta.story({
     await expect(labels).toEqual(
       [...labels].sort((a, b) => a.localeCompare(b, storyLocale(globals))),
     );
-    const first = boxes[0]?.getBoundingClientRect();
-    const sixth = boxes[5]?.getBoundingClientRect();
-    const seventh = boxes[6]?.getBoundingClientRect();
-    await expect(sixth?.left).toBe(first?.left);
-    await expect(sixth?.top).toBeGreaterThan(first?.top ?? 0);
-    await expect(seventh?.top).toBe(first?.top);
-    await expect(seventh?.left).toBeGreaterThan(first?.left ?? 0);
+    const boxRects = boxes.map((box) => box.getBoundingClientRect());
+    const columnMajor = [...boxRects].sort((a, b) => a.left - b.left || a.top - b.top);
+    await expect(boxRects).toEqual(columnMajor);
+    await expect(boxRects[5]?.left).toBe(boxRects[0]?.left);
+    await expect(boxRects[5]?.top).toBeGreaterThan(boxRects[0]?.top ?? 0);
   },
 });
 

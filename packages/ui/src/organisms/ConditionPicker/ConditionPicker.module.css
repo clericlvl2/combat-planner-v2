@@ -1,9 +1,21 @@
+.picker {
+  container-type: inline-size;
+}
+
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: repeat(var(--condition-rows), auto);
   grid-auto-flow: column;
   gap: 0 4px;
+}
+
+@container (width < 300px) {
+  .grid {
+    grid-template-columns: 1fr;
+    grid-template-rows: none;
+    grid-auto-flow: row;
+  }
 }
 
 .row {
