@@ -21,6 +21,11 @@ from the repository root.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
 - `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story with its `play`, headless
   Chromium, in the `narrow` frame and viewport, 320×568).
+- `pnpm test:locales`: the storybook project once per locale `de es fr ja ru`, each run with
+  `CP_STORY_LOCALE=<locale>`; `pnpm test` runs en only. `--locales=ru,ja` limits the runs; other
+  arguments, such as a story file path, go to `vp test`.
+- `pnpm test:locales --record --locales=en,de,es,fr,ja,ru`: regenerates `narrow-known.ts` from real
+  failures (see Conventions).
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
 - `pnpm exec vp test --project visual`: compares every story tagged `visual` against
   `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844.
@@ -90,10 +95,19 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `{ reason, except: '<selector>' }`. The selector must match an element.
 - The storybook project renders every story at `layout.viewports.narrow` (320×568); the Storybook
   toolbar switches the frame to `phone` (390×844). `packages/ui/src/storybook/narrow-known.ts` is a
-  ratchet of `{ story, check }` entries, sorted by story id, that fail only at `narrow`; `check` is a
-  geometry check or `play`. An unlisted failure fails the story, and a listed entry that passes fails
-  it with "remove from narrow-known". A `play` that fails at 320 because of a layout defect is wrapped
-  in `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
+  ratchet of `{ story, locale?, check }` entries that fail only at `narrow`, held in one array per
+  locale (`en`, `de`, … `ru`, each sorted by story id, then check; a single array literal of
+  thousands of entries exceeds TypeScript's union limit, TS2590); `check` is a geometry check or
+  `play`. `locale` (`de es fr ja ru`) is the story's effective locale: `CP_STORY_LOCALE`, or the
+  story's own `globals.locale`, which wins; an entry without `locale` is en and covers no other
+  locale. An unlisted failure fails the story, and a listed entry that passes fails it with "remove
+  from narrow-known". A `play` that fails at 320 because of a layout defect is wrapped in
+  `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
+- Regenerating the list: `pnpm test:locales --record` sets `CP_NARROW_RECORD=1`, which turns the
+  ratchet off and makes each failing story throw one `narrow-known record
+  {"story","locale","checks"}` error; `scripts/narrow-known-record.mjs` reads the JSON reports,
+  replaces every entry of the recorded locales and rewrites the arrays. A failure without such a
+  record, a `play` error that is not an assertion, stops it and lists the story.
 - Tap areas smaller than their control use the `::after` pattern
   `inset: min(0px, (100% - var(--cp-tap-target)) / 2)` on a positioned control.
 - Only stories with `tags: ['visual']` have screenshot baselines: each component's main or anatomy
