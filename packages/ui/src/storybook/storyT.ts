@@ -8,11 +8,17 @@ export function storyT(globals: Record<string, unknown>, namespace: string): TFu
 }
 
 const slot = '\u0000';
+const missing = '\u0001';
+const pluralSuffixes = ['', '_zero', '_one', '_two', '_few', '_many', '_other'];
 
-function escapeRegExp(text: string): string {
+export function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-export function anyValue(template: (value: string) => string): RegExp {
-  return new RegExp(`^${template(slot).split(slot).map(escapeRegExp).join('.+')}$`);
+export function anyValue(t: TFunction, key: string, option: string): RegExp {
+  const forms = pluralSuffixes
+    .map((suffix) => String(t(`${key}${suffix}`, { [option]: slot, defaultValue: missing })))
+    .filter((form) => form !== missing)
+    .map((form) => form.split(slot).map(escapeRegExp).join('.+'));
+  return new RegExp(`^(?:${forms.join('|')})$`);
 }

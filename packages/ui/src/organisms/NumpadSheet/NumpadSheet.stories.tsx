@@ -8,7 +8,7 @@ import { layout } from '../../layout.ts';
 import { UnitRow } from '../UnitRow/UnitRow.tsx';
 import { NumpadSheet, hpAfter, useHpFlash } from './NumpadSheet.tsx';
 import type { NumpadViewer } from './NumpadSheet.tsx';
-import { storyT } from '../../storybook/storyT.ts';
+import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 const at = '2026-10-15T18:00:00.000Z';
 
@@ -237,7 +237,9 @@ const previewAction = async (canvas: Canvas, name: string) => {
 
 const expandHistory = async (canvas: Canvas, title: string) => {
   const dialog = await sheetOf(canvas);
-  await userEvent.click(within(dialog).getByRole('button', { name: new RegExp(`^${title}`) }));
+  await userEvent.click(
+    within(dialog).getByRole('button', { name: new RegExp(`^${escapeRegExp(title)}`) }),
+  );
   dialog.focus();
 };
 

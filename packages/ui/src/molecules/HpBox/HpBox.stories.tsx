@@ -5,7 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import { base, health, healthTints, hpActions } from '../../theme.ts';
 import { HpBox } from './HpBox.tsx';
 import type { HpBoxProps } from './HpBox.tsx';
-import { storyT } from '../../storybook/storyT.ts';
+import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 function HpBoxCell(props: HpBoxProps) {
   return (
@@ -196,7 +196,9 @@ export const Enemy = meta.story({
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
     await expect(canvas.getByText(t('staggered'))).toBeVisible();
-    await expect(boxOf(canvasElement)).toHaveTextContent(new RegExp(`^${t('staggered')}$`));
+    await expect(boxOf(canvasElement)).toHaveTextContent(
+      new RegExp(`^${escapeRegExp(t('staggered'))}$`),
+    );
   },
 });
 
@@ -206,7 +208,7 @@ export const EnemyDead = meta.story({
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
     const box = boxOf(canvasElement);
-    await expect(box).toHaveTextContent(new RegExp(`^${t('dead')}$`));
+    await expect(box).toHaveTextContent(new RegExp(`^${escapeRegExp(t('dead'))}$`));
     await expect(getComputedStyle(box).backgroundColor).toBe(rgb(base.soft));
   },
 });

@@ -24,7 +24,7 @@ import {
   unitIds,
 } from './CombatScreen.scenarios.ts';
 import { CombatScreen } from './CombatScreen.tsx';
-import { anyValue, storyT } from '../../storybook/storyT.ts';
+import { anyValue, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -338,7 +338,7 @@ export const CSF14 = meta.story({
     await expect(start).toHaveTextContent(t('TurnBar:rollsMissingInitiative'));
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((round) => t('CombatHeader:editRound', { round })),
+        name: anyValue(t, 'CombatHeader:editRound', 'round'),
       }),
     ).toBeNull();
   },
@@ -477,7 +477,7 @@ export const CSF31 = meta.story({
     const hp = await hpOf(canvasElement, names.orc, /^14 \/40/);
     hp.focus();
     await expect(hp).toHaveFocus();
-    await expect(hp).toHaveAccessibleName(new RegExp(t('HpBox:staggered')));
+    await expect(hp).toHaveAccessibleName(new RegExp(escapeRegExp(t('HpBox:staggered'))));
   },
 });
 
@@ -708,7 +708,7 @@ export const CSF52 = meta.story({
     );
     await userEvent.click(
       canvas.getByRole('button', {
-        name: anyValue((value) => t('CombatHeader:setEscalation', { value })),
+        name: anyValue(t, 'CombatHeader:setEscalation', 'value'),
       }),
     );
     await expect(

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { PresetCard } from './PresetCard.tsx';
 import type { PresetCardPreset, PresetCardProps } from './PresetCard.tsx';
-import { storyT } from '../../storybook/storyT.ts';
+import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 import type { TFunction } from 'i18next';
 
 interface PresetCardCellProps extends Omit<
@@ -71,7 +71,7 @@ function PresetCardCell({
 
 const defenses = (t: TFunction) =>
   new RegExp(
-    `^${t('DefenseLine:ac')}\\s18\\s· ${t('DefenseLine:pd')}\\s16\\s· ${t('DefenseLine:md')}\\s12$`,
+    `^${escapeRegExp(t('DefenseLine:ac'))}\\s18\\s· ${escapeRegExp(t('DefenseLine:pd'))}\\s16\\s· ${escapeRegExp(t('DefenseLine:md'))}\\s12$`,
   );
 
 const meta = preview.meta({

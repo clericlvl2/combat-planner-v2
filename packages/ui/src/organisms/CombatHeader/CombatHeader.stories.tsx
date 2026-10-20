@@ -5,7 +5,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { CombatHeader } from './CombatHeader.tsx';
 import type { CombatHeaderPopover, CombatHeaderProps } from './CombatHeader.tsx';
-import { anyValue, storyT } from '../../storybook/storyT.ts';
+import { anyValue, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 interface CombatHeaderCellProps extends Partial<
   Omit<CombatHeaderProps, 'round' | 'escalation' | 'open'>
@@ -116,7 +116,7 @@ export const Anatomy = meta.story({
       canvas.getByRole('button', { name: t('editRound', { round: 3 }) }),
     ).toHaveAttribute('aria-expanded', 'false');
     await expect(
-      canvas.getByRole('button', { name: anyValue((value) => t('setEscalation', { value })) }),
+      canvas.getByRole('button', { name: anyValue(t, 'setEscalation', 'value') }),
     ).toHaveTextContent(t('escalationFace', { value: 2 }));
     await expect(canvas.getByRole('button', { name: t('menu') })).toHaveAttribute(
       'aria-haspopup',
@@ -162,7 +162,7 @@ export const EscalationOpen = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatHeader');
     const die = canvas.getByRole('button', {
-      name: anyValue((value) => t('setEscalation', { value })),
+      name: anyValue(t, 'setEscalation', 'value'),
     });
     await expect(die).toHaveAttribute('data-open');
     await expect(die).toHaveAttribute('aria-expanded', 'true');
@@ -199,12 +199,10 @@ export const Setup = meta.story({
     ).toBeVisible();
     await expect(canvas.getByText(t('setup'))).toBeVisible();
     await expect(
-      canvas.queryByText(anyValue((value) => t('EscalationDie:value', { value }))),
+      canvas.queryByText(new RegExp(escapeRegExp(t('EscalationDie:value', { value: '' }).trim()))),
     ).toBeNull();
     await expect(
-      canvas.queryByRole('button', {
-        name: anyValue((round) => t('editRound', { round })),
-      }),
+      canvas.queryByRole('button', { name: new RegExp(escapeRegExp(t('round')), 'i') }),
     ).toBeNull();
     await userEvent.click(canvas.getByText(t('setup')));
     await expect(args.onRound).not.toHaveBeenCalled();
@@ -304,7 +302,7 @@ export const ExtraEachControlFiresItsOwnCallback = meta.story({
     await expect(args.onEscalation).not.toHaveBeenCalled();
     await expect(args.onMenu).not.toHaveBeenCalled();
     await userEvent.click(
-      canvas.getByRole('button', { name: anyValue((value) => t('setEscalation', { value })) }),
+      canvas.getByRole('button', { name: anyValue(t, 'setEscalation', 'value') }),
     );
     await expect(args.onEscalation).toHaveBeenCalledOnce();
     await expect(args.onRound).toHaveBeenCalledOnce();
@@ -316,7 +314,7 @@ export const ExtraEachControlFiresItsOwnCallback = meta.story({
     await expect(args.onBack).toHaveBeenCalledOnce();
     await expect(canvas.getByRole('button', { name: t('menu') })).toHaveAttribute('data-open');
     await expect(
-      canvas.getByRole('button', { name: anyValue((value) => t('setEscalation', { value })) }),
+      canvas.getByRole('button', { name: anyValue(t, 'setEscalation', 'value') }),
     ).not.toHaveAttribute('data-open');
   },
 });
@@ -338,7 +336,7 @@ export const ExtraFlowTapDie = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CombatHeader');
     const die = canvas.getByRole('button', {
-      name: anyValue((value) => t('setEscalation', { value })),
+      name: anyValue(t, 'setEscalation', 'value'),
     });
     await userEvent.click(die);
     await expect(args.onEscalation).toHaveBeenCalledOnce();
@@ -470,7 +468,7 @@ export const ExtraOutsideTap = meta.story({
 
 async function pickFaceWithKeyboard({ args, canvas, t }: PlayContext) {
   const die = canvas.getByRole('button', {
-    name: anyValue((value) => t('setEscalation', { value })),
+    name: anyValue(t, 'setEscalation', 'value'),
   });
   die.focus();
   await userEvent.keyboard('{Enter}');
@@ -496,7 +494,7 @@ export const ExtraFacePickerKeyboard = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CombatHeader');
     await expect(
-      canvas.getByRole('button', { name: anyValue((value) => t('setEscalation', { value })) }),
+      canvas.getByRole('button', { name: anyValue(t, 'setEscalation', 'value') }),
     ).toHaveTextContent(t('escalationFace', { value: 2 }));
     await pickFaceWithKeyboard({ args, canvas, t });
   },
@@ -525,7 +523,7 @@ export const ExtraFaceEscape = meta.story({
     await expect(args.onEscalationChange).not.toHaveBeenCalled();
     await waitFor(() =>
       expect(
-        canvas.getByRole('button', { name: anyValue((value) => t('setEscalation', { value })) }),
+        canvas.getByRole('button', { name: anyValue(t, 'setEscalation', 'value') }),
       ).toHaveFocus(),
     );
   },

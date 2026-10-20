@@ -5,7 +5,7 @@ import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { TagSheet } from './TagSheet.tsx';
 import type { TagSheetMode, TagSheetTag } from './TagSheet.tsx';
-import { anyValue, storyT } from '../../storybook/storyT.ts';
+import { anyValue, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 interface TagSheetCellProps {
   mode?: TagSheetMode;
@@ -146,7 +146,7 @@ export const MoMatchesCreateAtTheEnd = meta.story({
     await expect(canvas.getByRole('checkbox', { name: /^Mooks/ })).not.toBeChecked();
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((value) => t('CheckList:create', { query: value })),
+        name: anyValue(t, 'CheckList:create', 'query'),
       }),
     ).toBeNull();
   },
@@ -161,7 +161,7 @@ export const FilterNoMatch = meta.story({
     await expect(canvas.getByText(t('CheckList:noMatch'))).toBeVisible();
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((value) => t('CheckList:create', { query: value })),
+        name: anyValue(t, 'CheckList:create', 'query'),
       }),
     ).toBeNull();
   },
@@ -217,7 +217,7 @@ export const ExtraReusedTagNotNew = meta.story({
     );
     await expect(args.onCreate).toHaveBeenCalledWith('VETERANS');
     const veterans = canvas.getByRole('checkbox', { name: /^Veterans/ });
-    await expect(veterans).not.toHaveAccessibleName(/new/);
+    await expect(veterans).not.toHaveAccessibleName(new RegExp(escapeRegExp(t('new'))));
     await expect(veterans).toBeChecked();
     await expect(veterans.closest('label')).not.toHaveAttribute('data-new');
   },
@@ -232,7 +232,7 @@ export const ExtraFilterNeverCreates = meta.story({
     await userEvent.type(search, 'Elite');
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((value) => t('CheckList:create', { query: value })),
+        name: anyValue(t, 'CheckList:create', 'query'),
       }),
     ).toBeNull();
     await userEvent.keyboard('{Enter}');
@@ -249,7 +249,7 @@ export const ExtraCaseInsensitiveMatch = meta.story({
     await userEvent.type(search, 'ORCS');
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((value) => t('CheckList:create', { query: value })),
+        name: anyValue(t, 'CheckList:create', 'query'),
       }),
     ).toBeNull();
     await userEvent.clear(search);
@@ -257,7 +257,7 @@ export const ExtraCaseInsensitiveMatch = meta.story({
     await expect(canvas.getByRole('checkbox', { name: /^Orcs/ })).toBeChecked();
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((value) => t('CheckList:create', { query: value })),
+        name: anyValue(t, 'CheckList:create', 'query'),
       }),
     ).toBeNull();
     await userEvent.clear(search);
@@ -370,7 +370,7 @@ export const ExtraMaxLength = meta.story({
     await expect(search).toHaveValue('x'.repeat(LIMITS.tagName));
     await userEvent.click(
       canvas.getByRole('button', {
-        name: anyValue((value) => t('CheckList:create', { query: value })),
+        name: anyValue(t, 'CheckList:create', 'query'),
       }),
     );
     await expect(args.onCreate).toHaveBeenCalledWith('x'.repeat(LIMITS.tagName));

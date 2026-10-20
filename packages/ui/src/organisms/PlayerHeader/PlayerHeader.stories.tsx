@@ -84,9 +84,7 @@ export const Setup = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
     await expect(canvas.getByRole('heading', { level: 1, name: t('setup') })).toBeVisible();
-    await expect(
-      canvas.queryByText(anyValue((value) => t('EscalationDie:value', { value }))),
-    ).toBeNull();
+    await expect(canvas.queryByText(anyValue(t, 'EscalationDie:value', 'value'))).toBeNull();
     await expect(canvas.queryByText(t('EscalationDie:none'))).toBeNull();
   },
 });

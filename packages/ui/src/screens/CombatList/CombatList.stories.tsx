@@ -46,7 +46,7 @@ const detailsOf = (t: TFunction, title: string) => t('CombatCard:details', { tit
 const titlesOf = (canvas: Canvas, t: TFunction): string[] => {
   const [before = '', after = ''] = detailsOf(t, '\n').split('\n');
   return canvas
-    .getAllByRole('button', { name: anyValue((title) => detailsOf(t, title)) })
+    .getAllByRole('button', { name: anyValue(t, 'CombatCard:details', 'title') })
     .map((button: HTMLElement) => {
       const label = button.getAttribute('aria-label') ?? '';
       return label.slice(before.length, label.length - after.length);
@@ -236,7 +236,7 @@ export const CLF16 = meta.story({
       canvas.getByText(t('EmptyState:noResultsBody', { query: 'dragon' })),
     ).toBeVisible();
     await expect(
-      canvas.queryAllByRole('button', { name: anyValue((title) => detailsOf(t, title)) }),
+      canvas.queryAllByRole('button', { name: anyValue(t, 'CombatCard:details', 'title') }),
     ).toHaveLength(0);
   },
 });

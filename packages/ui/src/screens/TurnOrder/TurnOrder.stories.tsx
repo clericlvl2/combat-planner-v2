@@ -15,7 +15,7 @@ import {
   unitIds,
 } from '../PlayerView/PlayerView.scenarios.ts';
 import { TurnOrder } from './TurnOrder.tsx';
-import { storyT } from '../../storybook/storyT.ts';
+import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -89,7 +89,7 @@ export const HiddenFields = meta.story({
     await expect(orc).toHaveAttribute('data-active');
     await expect(orc.textContent).not.toMatch(/AC|PD|MD|14|40/);
     const tomas = await rowOf(canvas, 'Brother Tomas of the Silver Lantern Order');
-    await expect(tomas.textContent).toMatch(new RegExp(`${t('DefenseLine:ac')}.*17`));
+    await expect(tomas.textContent).toMatch(new RegExp(`${escapeRegExp(t('DefenseLine:ac'))}.*17`));
     await expect(within(tomas).queryByRole('button', { name: /^24/ })).toBeNull();
     await expect(within(tomas).queryByText('Hex on Orc Berserker')).toBeNull();
     await expect(canvas.queryByText('影の射手ゴブリン')).toBeNull();

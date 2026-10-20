@@ -21,7 +21,7 @@ import {
   savedFromCombat,
   tagIdOf,
 } from './Library.scenarios.ts';
-import { anyValue, storyT } from '../../storybook/storyT.ts';
+import { anyValue, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 import { storyLocale } from '../../storybook/withLocale.tsx';
 
 type Canvas = ReturnType<typeof within>;
@@ -66,7 +66,7 @@ const toggleOf = (t: TFunction, name: string) => t('PresetCard:toggle', { name }
 const namesOf = (canvas: Canvas, t: TFunction): string[] => {
   const [before = '', after = ''] = toggleOf(t, '\n').split('\n');
   return canvas
-    .queryAllByRole('button', { name: anyValue((name) => toggleOf(t, name)) })
+    .queryAllByRole('button', { name: anyValue(t, 'PresetCard:toggle', 'name') })
     .map((button: HTMLElement) => {
       const label = button.getAttribute('aria-label') ?? '';
       return label.slice(before.length, label.length - after.length);
@@ -74,9 +74,7 @@ const namesOf = (canvas: Canvas, t: TFunction): string[] => {
 };
 
 const showPresets = (t: TFunction) => (label: string) =>
-  ['one', 'few', 'many', 'other'].some((form) =>
-    anyValue((count) => t(`TagSheet:showPresets_${form}`, { count })).test(label),
-  );
+  anyValue(t, 'TagSheet:showPresets', 'count').test(label);
 
 const ready = async (canvas: Canvas, t: TFunction) => {
   await canvas.findByRole('button', { name: toggleOf(t, berserker.name) });
@@ -111,7 +109,9 @@ const openFilter = async (canvas: Canvas, t: TFunction) => {
 const applyFilter = async (canvas: Canvas, tags: readonly string[], t: TFunction) => {
   const sheet = await openFilter(canvas, t);
   for (const tag of tags) {
-    await userEvent.click(within(sheet).getByRole('checkbox', { name: new RegExp(`^${tag}`) }));
+    await userEvent.click(
+      within(sheet).getByRole('checkbox', { name: new RegExp(`^${escapeRegExp(tag)}`) }),
+    );
   }
   await userEvent.click(within(sheet).getByRole('button', { name: showPresets(t) }));
   await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
@@ -144,7 +144,7 @@ const fillCreate = async (canvas: Canvas, t: TFunction) => {
   const tags = await openSheet(
     canvas,
     canvas.getByRole('button', { name: t('Chip:addTag') }),
-    anyValue((name) => t('TagSheet:assignTitle', { name })),
+    anyValue(t, 'TagSheet:assignTitle', 'name'),
   );
   await userEvent.click(within(tags).getByRole('checkbox', { name: /^Orcs/ }));
   await userEvent.click(within(tags).getByRole('checkbox', { name: /^Bosses/ }));
@@ -154,7 +154,7 @@ const fillCreate = async (canvas: Canvas, t: TFunction) => {
   await waitFor(() =>
     expect(
       canvas.queryByRole('dialog', {
-        name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+        name: anyValue(t, 'TagSheet:assignTitle', 'name'),
       }),
     ).toBeNull(),
   );
@@ -316,7 +316,7 @@ export const LBF17 = meta.story({
     await expect(canvas.queryByRole('button', { name: t('sort') })).toBeNull();
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+        name: anyValue(t, 'TagSheet:assignTitle', 'name'),
       }),
     ).toBeNull();
     const create = canvas.getByRole('button', { name: t('BottomBar:newPreset') });
@@ -572,7 +572,7 @@ export const LBF46 = meta.story({
     await waitFor(() =>
       expect(
         canvas.queryByRole('dialog', {
-          name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+          name: anyValue(t, 'TagSheet:assignTitle', 'name'),
         }),
       ).toBeNull(),
     );
@@ -593,7 +593,7 @@ export const LBF47 = meta.story({
     await expect(within(sheet).getByRole('checkbox', { name: /^Mooks/ })).not.toBeChecked();
     await expect(
       within(sheet).queryByRole('button', {
-        name: anyValue((query) => t('CheckList:create', { query })),
+        name: anyValue(t, 'CheckList:create', 'query'),
       }),
     ).toBeNull();
   },
@@ -708,7 +708,7 @@ export const ExtraEditSaved = meta.story({
     await waitFor(() =>
       expect(
         canvas.queryByRole('dialog', {
-          name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+          name: anyValue(t, 'TagSheet:assignTitle', 'name'),
         }),
       ).toBeNull(),
     );
@@ -782,7 +782,7 @@ export const ExtraRemoveFilter = meta.story({
     await expect(namesOf(canvas, t)).toHaveLength(libraryPresets.length);
     await expect(
       canvas.queryByRole('button', {
-        name: anyValue((name) => t('PageHeader:removeFilter', { name })),
+        name: anyValue(t, 'PageHeader:removeFilter', 'name'),
       }),
     ).toBeNull();
   },
@@ -930,7 +930,7 @@ const createEliteTag = async (canvas: Canvas, t: TFunction) => {
   const tags = await openSheet(
     canvas,
     canvas.getByRole('button', { name: t('Chip:addTag') }),
-    anyValue((name) => t('TagSheet:assignTitle', { name })),
+    anyValue(t, 'TagSheet:assignTitle', 'name'),
   );
   await userEvent.type(within(tags).getByRole('searchbox'), 'Elite');
   await userEvent.click(
@@ -942,7 +942,7 @@ const createEliteTag = async (canvas: Canvas, t: TFunction) => {
   await waitFor(() =>
     expect(
       canvas.queryByRole('dialog', {
-        name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+        name: anyValue(t, 'TagSheet:assignTitle', 'name'),
       }),
     ).toBeNull(),
   );
@@ -1022,7 +1022,7 @@ export const ExtraFailedTagListedLater = meta.story({
     const tags = await openSheet(
       canvas,
       canvas.getByRole('button', { name: t('Chip:addTag') }),
-      anyValue((name) => t('TagSheet:assignTitle', { name })),
+      anyValue(t, 'TagSheet:assignTitle', 'name'),
     );
     await userEvent.type(within(tags).getByRole('searchbox'), 'Champion');
     await userEvent.click(
@@ -1036,7 +1036,7 @@ export const ExtraFailedTagListedLater = meta.story({
     await waitFor(() =>
       expect(
         canvas.queryByRole('dialog', {
-          name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+          name: anyValue(t, 'TagSheet:assignTitle', 'name'),
         }),
       ).toBeNull(),
     );

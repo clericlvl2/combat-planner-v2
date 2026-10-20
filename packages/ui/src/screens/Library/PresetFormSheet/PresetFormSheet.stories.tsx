@@ -5,7 +5,7 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { TagSheetTag } from '../../../organisms/TagSheet/TagSheet.tsx';
 import { PresetFormSheet, emptyPresetForm } from './PresetFormSheet.tsx';
 import type { PresetFormMode, PresetFormValue } from './PresetFormSheet.tsx';
-import { anyValue, storyT } from '../../../storybook/storyT.ts';
+import { anyValue, escapeRegExp, storyT } from '../../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -33,7 +33,7 @@ const createdTag = (name: string): TagSheetTag => ({ id: `tag-${name.toLowerCase
 const openTags = async (canvas: Canvas, t: TFunction) => {
   await userEvent.click(canvas.getByRole('button', { name: t('addTag') }));
   const sheet = await canvas.findByRole('dialog', {
-    name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+    name: anyValue(t, 'TagSheet:assignTitle', 'name'),
   });
   await waitFor(() => expect(getComputedStyle(sheet).opacity).toBe('1'));
   return sheet;
@@ -218,7 +218,7 @@ export const ExtraTagSheetClosed = meta.story({
     await waitFor(() =>
       expect(
         canvas.queryByRole('dialog', {
-          name: anyValue((name) => t('TagSheet:assignTitle', { name })),
+          name: anyValue(t, 'TagSheet:assignTitle', 'name'),
         }),
       ).toBeNull(),
     );
@@ -297,7 +297,7 @@ export const ExtraReusedTagNotNew = meta.story({
     await expect(args.onCreateTag).toHaveBeenCalledWith('VETERANS');
     const veterans = within(sheet).getByRole('checkbox', { name: /^Veterans/ });
     await expect(veterans).toBeChecked();
-    await expect(veterans).not.toHaveAccessibleName(new RegExp(t('TagSheet:new')));
+    await expect(veterans).not.toHaveAccessibleName(new RegExp(escapeRegExp(t('TagSheet:new'))));
   },
 });
 

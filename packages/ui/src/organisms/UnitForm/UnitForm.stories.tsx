@@ -321,7 +321,7 @@ export const MinimumValues = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     const decrease = canvas.getAllByRole('button', {
-      name: anyValue((value) => t('Stepper:decreaseField', { label: value })),
+      name: anyValue(t, 'Stepper:decreaseField', 'label'),
     });
     await expect(decrease[0]).toBeDisabled();
     await expect(decrease[1]).toBeDisabled();
@@ -398,7 +398,7 @@ export const ExtraSubmitTypedValues = meta.story({
     await typeNumber(canvas, t('pd'), '15');
     await typeNumber(canvas, t('md'), '16');
     const increase = canvas.getAllByRole('button', {
-      name: anyValue((value) => t('Stepper:increaseField', { label: value })),
+      name: anyValue(t, 'Stepper:increaseField', 'label'),
     });
     await userEvent.click(increase[increase.length - 1] ?? document.body);
     await userEvent.type(canvas.getByRole('textbox', { name: t('note') }), 'Calls the storm');

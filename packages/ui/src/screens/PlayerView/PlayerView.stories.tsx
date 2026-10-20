@@ -205,7 +205,7 @@ export const PVF22 = meta.story({
     const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
     await expect(
       within(popover).getByRole('button', {
-        name: anyValue((bonus) => t('InitiativePopover:roll', { bonus })),
+        name: anyValue(t, 'InitiativePopover:roll', 'bonus'),
       }),
     ).toBeVisible();
   },
@@ -226,7 +226,7 @@ export const PVF23 = meta.story({
     const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
     await userEvent.click(
       within(popover).getByRole('button', {
-        name: anyValue((bonus) => t('InitiativePopover:roll', { bonus })),
+        name: anyValue(t, 'InitiativePopover:roll', 'bonus'),
       }),
     );
     await waitFor(() =>
@@ -490,9 +490,7 @@ export const ExtraOwnRelease = meta.story({
     );
     await expect(await canvas.findByRole('heading', { name: t('Heroes:title') })).toBeVisible();
     await expect(canvas.getByRole('checkbox', { name: ME })).not.toBeChecked();
-    await expect(
-      canvas.queryByText(anyValue((hero) => t('Toast:dmReleased', { hero }))),
-    ).toBeNull();
+    await expect(canvas.queryByText(anyValue(t, 'Toast:dmReleased', 'hero'))).toBeNull();
   },
 });
 

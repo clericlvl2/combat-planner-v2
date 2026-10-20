@@ -22,7 +22,7 @@ const meta = preview.meta({
 
 export const Default = meta.story({
   tags: ['visual'],
-  play: async ({ canvas, globals }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'About');
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
     await expect(canvas.getByText('2.0.0')).toBeVisible();
@@ -31,10 +31,12 @@ export const Default = meta.story({
       'href',
       sourceUrl,
     );
-    await expect(canvas.queryByText('Donate')).not.toBeInTheDocument();
     await expect(
-      canvas.getByText(/Fire Opal Media Inc\., 13th Age Community Use Policy/),
-    ).toBeVisible();
+      [...canvasElement.querySelectorAll('a[href^="http"]')].map((link) =>
+        link.getAttribute('href'),
+      ),
+    ).toEqual([sourceUrl]);
+    await expect(canvas.getByText(t('legal'))).toBeVisible();
   },
 });
 
@@ -42,12 +44,11 @@ export const Russian = meta.story({
   tags: ['visual'],
   globals: { locale: 'ru' },
   args: { version: '2.1.0-beta.3' },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'About');
     await expect(canvas.getByRole('heading', { level: 1, name: 'О приложении' })).toBeVisible();
     await expect(canvas.getByText('2.1.0-beta.3')).toBeVisible();
-    await expect(
-      canvas.getByText(/13th Age is a trademark of Fire Opal Media Inc\./),
-    ).toBeVisible();
+    await expect(canvas.getByText(t('legal'))).toBeVisible();
   },
 });
 

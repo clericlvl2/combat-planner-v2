@@ -185,9 +185,7 @@ export const ExtraExactMatch = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
     await expect(canvas.getByText('Orcs')).toBeVisible();
-    await expect(
-      canvas.queryByRole('button', { name: anyValue((value) => t('create', { query: value })) }),
-    ).toBeNull();
+    await expect(canvas.queryByRole('button', { name: anyValue(t, 'create', 'query') })).toBeNull();
     await expect(canvas.queryByText(t('noMatch'))).toBeNull();
   },
 });
@@ -198,9 +196,7 @@ export const ExtraPartialMatch = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
     await expect(canvas.getByText('Mooks')).toBeVisible();
-    await expect(
-      canvas.queryByRole('button', { name: anyValue((value) => t('create', { query: value })) }),
-    ).toBeNull();
+    await expect(canvas.queryByRole('button', { name: anyValue(t, 'create', 'query') })).toBeNull();
     await expect(canvas.queryByText(t('noMatch'))).toBeNull();
   },
 });
