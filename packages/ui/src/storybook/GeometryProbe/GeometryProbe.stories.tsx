@@ -72,6 +72,21 @@ export const ExtraWordBreaksTightLines = meta.story({
   },
 });
 
+export const ExtraSoftHyphen = meta.story({
+  name: 'A word broken at a soft hyphen passes wordBreaks',
+  render: () => (
+    <p data-testid="soft" style={{ ...probeText, width: 58, fontSize: 11, lineHeight: 1 }}>
+      {'Verbün\u00addeter'}
+    </p>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const box = canvas.getByTestId('soft');
+    const lineHeight = Number.parseFloat(getComputedStyle(box).lineHeight);
+    await expect(Math.round(box.getBoundingClientRect().height / lineHeight)).toBe(2);
+    await expect(brokenWords(canvasElement)).toEqual([]);
+  },
+});
+
 export const ExtraActionsVisible = meta.story({
   name: 'A sheet action below the scroll edge fails actionsVisible',
   parameters: { geometry: { actionsVisible: 'the probe hides a sheet action on purpose' } },

@@ -380,7 +380,7 @@ export function overlaysOffFrame(root: HTMLElement): string[] {
 const wordPattern = /[\p{Script=Latin}\p{Script=Cyrillic}\p{M}\p{Nd}'’]+/gu;
 const letterPattern = /[\p{Script=Latin}\p{Script=Cyrillic}]/u;
 
-function lineCountOf(rects: DOMRectList, lineHeight: number): number {
+function lineCountOf(rects: Iterable<DOMRect>, lineHeight: number): number {
   const tolerance = Math.max(lineHeight / 2, 1);
   const centres: number[] = [];
   for (const rect of rects) {
@@ -389,6 +389,18 @@ function lineCountOf(rects: DOMRectList, lineHeight: number): number {
     if (!centres.some((line) => Math.abs(centre - line) < tolerance)) centres.push(centre);
   }
   return centres.length;
+}
+
+const softHyphen = '\u00ad';
+
+function rectsOf(range: Range, node: Text, start: number, length: number): DOMRect[] {
+  range.setStart(node, start);
+  range.setEnd(node, start + length);
+  return [...range.getClientRects()];
+}
+
+function sameRect(a: DOMRect, b: DOMRect): boolean {
+  return a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
 }
 
 function textNodesOf(root: HTMLElement): Text[] {
@@ -413,9 +425,12 @@ function wordBreakFindings(root: HTMLElement): Finding[] {
     for (const match of text.matchAll(wordPattern)) {
       const word = match[0];
       if (!letterPattern.test(word)) continue;
-      range.setStart(node, match.index);
-      range.setEnd(node, match.index + word.length);
-      const lines = lineCountOf(range.getClientRects(), lineHeight);
+      const hyphen =
+        text[match.index - 1] === softHyphen ? rectsOf(range, node, match.index - 1, 1) : [];
+      const rects = rectsOf(range, node, match.index, word.length).filter(
+        (rect) => !hyphen.some((glyph) => sameRect(rect, glyph)),
+      );
+      const lines = lineCountOf(rects, lineHeight);
       if (lines > 1) {
         findings.push({
           element: parent,
