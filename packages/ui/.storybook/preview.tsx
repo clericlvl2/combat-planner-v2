@@ -15,14 +15,14 @@ import { expectGeometry } from '../src/storybook/geometry.ts';
 import { frameGlobalType, withPhoneFrame } from '../src/storybook/PhoneFrame.tsx';
 import { apiLoader, withApi } from '../src/storybook/withApi.tsx';
 import { withDocsTheme } from '../src/storybook/withDocsTheme.tsx';
-import { localeGlobalType, withLocale } from '../src/storybook/withLocale.tsx';
+import { localeGlobalType, storyLocale, withLocale } from '../src/storybook/withLocale.tsx';
 
 export default definePreview({
   addons: [addonDocs()],
   tags: ['autodocs'],
   globalTypes: { ...localeGlobalType, ...frameGlobalType },
   initialGlobals: {
-    locale: 'en',
+    locale: storyLocale({ locale: import.meta.env.CP_STORY_LOCALE }),
     frame: 'narrow',
     viewport: { value: 'narrow', isRotated: false },
   },

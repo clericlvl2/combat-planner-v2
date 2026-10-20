@@ -2,6 +2,7 @@ import { expect } from 'storybook/test';
 import { layout } from '../layout.ts';
 import { narrowKnown } from './narrow-known.ts';
 import type { NarrowCheck } from './narrow-known.ts';
+import { storyLocale } from './withLocale.tsx';
 
 export type GeometryCheck =
   | 'overflow'
@@ -563,22 +564,38 @@ export interface GeometryStory {
 
 const knownPlayFailures = new Set<string>();
 
+const recording = import.meta.env.CP_NARROW_RECORD === '1';
+
+function isNarrow(story: GeometryStory | undefined): story is GeometryStory {
+  return story?.globals.frame === 'narrow';
+}
+
 function isListed(story: GeometryStory | undefined, check: NarrowCheck): boolean {
-  if (story?.globals.frame !== 'narrow') return false;
-  return narrowKnown.some((entry) => entry.story === story.id && entry.check === check);
+  if (recording || !isNarrow(story)) return false;
+  const locale = storyLocale(story.globals);
+  return narrowKnown.some(
+    (entry) =>
+      entry.story === story.id && entry.check === check && (entry.locale ?? 'en') === locale,
+  );
+}
+
+function entryOf(story: GeometryStory, check: NarrowCheck): string {
+  const locale = storyLocale(story.globals);
+  const localeField = locale === 'en' ? '' : `, locale: '${locale}'`;
+  return `{ story: '${story.id}'${localeField}, check: '${check}' }`;
 }
 
 const listedVerdict = 'still fails, listed in narrow-known';
 
 async function expectStillFails(story: GeometryStory, check: NarrowCheck, fails: boolean) {
   await expect({
-    [check]: fails ? listedVerdict : `${story.id} passes: remove from narrow-known`,
+    [check]: fails ? listedVerdict : `${entryOf(story, check)} passes: remove from narrow-known`,
   }).toEqual({ [check]: listedVerdict });
 }
 
 async function expectNotOptedOut(story: GeometryStory, check: NarrowCheck) {
   await expect({
-    [check]: `${story.id} opts out through parameters.geometry: remove { story: '${story.id}', check: '${check}' } from narrow-known`,
+    [check]: `${story.id} opts out through parameters.geometry: remove ${entryOf(story, check)} from narrow-known`,
   }).toEqual({ [check]: 'not opted out' });
 }
 
@@ -597,7 +614,7 @@ export function playKnownAtNarrow<Context extends GeometryStory>(
   play: (context: Context) => Promise<void>,
 ): (context: Context) => Promise<void> {
   return async (context) => {
-    if (!isListed(context, 'play')) {
+    if (!isListed(context, 'play') && !(recording && isNarrow(context))) {
       await play(context);
       return;
     }
@@ -610,10 +627,33 @@ export function playKnownAtNarrow<Context extends GeometryStory>(
   };
 }
 
+function failingChecks(root: HTMLElement, optOuts: GeometryParameter): NarrowCheck[] {
+  return checkNames.filter((check) => {
+    const optOut = optOuts[check];
+    if (typeof optOut === 'string') return false;
+    const excused = excusedSelectorOf(optOut);
+    return checks[check](root).some(
+      (finding) => excused === null || !finding.element.matches(excused),
+    );
+  });
+}
+
+function recordFailures(root: HTMLElement, optOuts: GeometryParameter, story: GeometryStory) {
+  const failing = failingChecks(root, optOuts);
+  if (knownPlayFailures.delete(story.id)) failing.push('play');
+  if (failing.length === 0) return;
+  const record = { story: story.id, locale: storyLocale(story.globals), checks: failing };
+  throw new Error(`narrow-known record ${JSON.stringify(record)}`);
+}
+
 export async function expectGeometry(root: HTMLElement, parameter: unknown, story?: GeometryStory) {
   root.getBoundingClientRect();
   await document.fonts.ready;
   const optOuts = optOutsOf(parameter);
+  if (recording && isNarrow(story)) {
+    recordFailures(root, optOuts, story);
+    return;
+  }
   for (const check of checkNames) {
     const optOut = optOuts[check];
     if (typeof optOut === 'string') {

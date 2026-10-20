@@ -53,6 +53,10 @@ export default defineConfig({
         root: uiDir,
         plugins: [storybookTest({ configDir: path.join(uiDir, '.storybook') })],
         optimizeDeps: browserOptimizeDeps,
+        define: {
+          'import.meta.env.CP_STORY_LOCALE': JSON.stringify(process.env.CP_STORY_LOCALE ?? 'en'),
+          'import.meta.env.CP_NARROW_RECORD': JSON.stringify(process.env.CP_NARROW_RECORD ?? ''),
+        },
         test: {
           name: 'storybook',
           browser: {
