@@ -1,6 +1,6 @@
 {
   "cancel": "Annuler",
-  "restartTitle": "Recommencer le combat ?",
+  "restartTitle": "Relancer le combat ?",
   "restartBody": "Les unités et les attributions restent. L’initiative, les PV, les PV temporaires, les états, la désactivation, l’historique des PV, le round et le dé d’escalade sont réinitialisés.",
   "restart": "Relancer",
   "clearTitle": "Vider le combat ?",

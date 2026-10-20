@@ -406,6 +406,8 @@ function excusedSelectorOf(optOut: GeometryOptOut | undefined): string | null {
 }
 
 export async function expectGeometry(root: HTMLElement, parameter: unknown) {
+  root.getBoundingClientRect();
+  await document.fonts.ready;
   const optOuts = optOutsOf(parameter);
   for (const check of checkNames) {
     const optOut = optOuts[check];

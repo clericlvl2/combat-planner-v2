@@ -192,6 +192,54 @@ export const Setup = meta.story({
   },
 });
 
+export const SetupDe = meta.story({
+  name: 'Setup, de',
+  globals: { locale: 'de' },
+  args: { round: null, escalation: 0 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Ambush at the Ferry' }),
+    ).toBeVisible();
+    await expect(canvas.getByText('Vorbereitung')).toBeVisible();
+  },
+});
+
+export const SetupEs = meta.story({
+  name: 'Setup, es',
+  globals: { locale: 'es' },
+  args: { round: null, escalation: 0 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Ambush at the Ferry' }),
+    ).toBeVisible();
+    await expect(canvas.getByText('Preparación')).toBeVisible();
+  },
+});
+
+export const SetupRu = meta.story({
+  name: 'Setup, ru',
+  globals: { locale: 'ru' },
+  args: { round: null, escalation: 0 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Ambush at the Ferry' }),
+    ).toBeVisible();
+    await expect(canvas.getByText('Подготовка')).toBeVisible();
+  },
+});
+
+export const SetupFr = meta.story({
+  name: 'Setup, fr',
+  globals: { locale: 'fr' },
+  args: { round: null, escalation: 0 },
+  play: async ({ canvas }) => {
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: 'Ambush at the Ferry' }),
+    ).toBeVisible();
+    await expect(canvas.getByText('Préparation')).toBeVisible();
+  },
+});
+
 export const SetupMenuOpen = meta.story({
   name: 'Setup, menu open',
   args: { round: null, escalation: 0, open: 'menu' },

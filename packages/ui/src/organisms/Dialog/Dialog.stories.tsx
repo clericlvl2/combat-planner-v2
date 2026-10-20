@@ -199,6 +199,39 @@ export const Restart = meta.story({
   },
 });
 
+export const RestartFr = meta.story({
+  name: 'restart, fr',
+  globals: { locale: 'fr' },
+  args: { preset: 'restart' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('alertdialog', { name: 'Relancer le combat ?' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Annuler' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Relancer' })).toBeVisible();
+  },
+});
+
+export const RestartRu = meta.story({
+  name: 'restart, ru',
+  globals: { locale: 'ru' },
+  args: { preset: 'restart' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('alertdialog', { name: 'Сбросить бой?' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Отмена' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Сбросить' })).toBeVisible();
+  },
+});
+
+export const RestartDe = meta.story({
+  name: 'restart, de',
+  globals: { locale: 'de' },
+  args: { preset: 'restart' },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('alertdialog', { name: 'Kampf neu starten?' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Abbrechen' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Neu starten' })).toBeVisible();
+  },
+});
+
 export const Clear = meta.story({
   name: 'clear',
   args: { preset: 'clear' },
