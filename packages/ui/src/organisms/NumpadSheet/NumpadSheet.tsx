@@ -259,6 +259,26 @@ export function NumpadSheet({
       opened={opened}
       title={name}
       onClose={onClose}
+      actions={
+        <div className={classes.actions}>
+          {kinds.map((kind) => (
+            <Button
+              key={kind}
+              className={classes.action}
+              data-kind={kind}
+              data-sheet-action=""
+              data-tap={tap === kind ? '' : undefined}
+              fullWidth
+              disabled={!enabled(kind)}
+              onPointerEnter={() => setPreviewKind(kind)}
+              onFocus={() => setPreviewKind(kind)}
+              onClick={() => applyKind(kind)}
+            >
+              {t(actionLabels[kind])}
+            </Button>
+          ))}
+        </div>
+      }
       header={
         <>
           <span className={classes.role} data-unit-role={role}>
@@ -330,24 +350,6 @@ export function NumpadSheet({
           >
             {'<'}
           </UnstyledButton>
-        </div>
-        <div className={classes.actions}>
-          {kinds.map((kind) => (
-            <Button
-              key={kind}
-              className={classes.action}
-              data-kind={kind}
-              data-sheet-action=""
-              data-tap={tap === kind ? '' : undefined}
-              fullWidth
-              disabled={!enabled(kind)}
-              onPointerEnter={() => setPreviewKind(kind)}
-              onFocus={() => setPreviewKind(kind)}
-              onClick={() => applyKind(kind)}
-            >
-              {t(actionLabels[kind])}
-            </Button>
-          ))}
         </div>
         <HpHistory
           className={classes.history}
