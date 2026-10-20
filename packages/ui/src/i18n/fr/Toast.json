@@ -13,7 +13,7 @@
   "reconnecting": "Reconnexion…",
   "presetDuplicated": "{{name}} créé",
   "accountDeleted": "Votre compte a été supprimé",
-  "dmRestarted": "Le MJ a recommencé le combat",
+  "dmRestarted": "Le MJ a relancé le combat",
   "dmCleared": "Le MJ a vidé le combat",
   "dmReleased": "Le MJ a libéré {{hero}}. Choisissez un héros.",
   "dmRemoved": "Le MJ a retiré {{hero}}. Choisissez un héros.",

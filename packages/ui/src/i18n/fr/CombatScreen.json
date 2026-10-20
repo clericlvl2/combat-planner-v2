@@ -3,7 +3,7 @@
   "undoNextTurn": "Annulé : tour suivant",
   "undoEditRound": "Annulé : round fixé à {{round}}",
   "undoSetEscalation": "Annulé : dé d’escalade fixé à {{value}}",
-  "undoRestart": "Annulé : combat recommencé",
+  "undoRestart": "Annulé : combat relancé",
   "undoClear": "Annulé : combat vidé",
   "undoAddUnit": "Annulé : ajout de {{name}}",
   "undoEditUnit": "Annulé : modification de {{name}}",

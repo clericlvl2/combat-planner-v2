@@ -13,7 +13,7 @@
   "reconnecting": "Переподключение…",
   "presetDuplicated": "Создано: {{name}}",
   "accountDeleted": "Ваш аккаунт удалён",
-  "dmRestarted": "Мастер перезапустил бой",
+  "dmRestarted": "Мастер сбросил бой",
   "dmCleared": "Мастер очистил бой",
   "dmReleased": "Мастер освободил героя {{hero}}. Выберите героя.",
   "dmRemoved": "Мастер убрал героя {{hero}}. Выберите героя.",
