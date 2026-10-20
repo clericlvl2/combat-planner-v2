@@ -26,7 +26,7 @@
 
 .input {
   position: absolute;
-  inset: min(-2px, (100% - 44px) / 2);
+  inset: min(-2px, (100% - var(--cp-tap-target)) / 2);
   width: auto;
   height: auto;
   margin: 0;

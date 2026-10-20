@@ -9,6 +9,7 @@ import '@fontsource/noto-sans-jp/500.css';
 import '@fontsource/noto-sans-jp/700.css';
 import { colorsTuple, createTheme } from '@mantine/core';
 import type { CSSVariablesResolver, MantineThemeOverride } from '@mantine/core';
+import { layout } from './layout.ts';
 import classes from './theme.module.css';
 
 export const base = {
@@ -190,7 +191,7 @@ export function paletteVariables(): Record<string, string> {
 }
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
-  variables: paletteVariables(),
+  variables: { ...paletteVariables(), '--cp-tap-target': `${layout.tapTarget}px` },
   light: {},
   dark: {},
 });

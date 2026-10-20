@@ -90,6 +90,6 @@
   &::after {
     content: '';
     position: absolute;
-    inset: min(0px, (100% - 44px) / 2);
+    inset: min(0px, (100% - var(--cp-tap-target)) / 2);
   }
 }
