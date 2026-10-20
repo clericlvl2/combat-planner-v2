@@ -137,7 +137,7 @@ export const ExtraBottomOfScreen = meta.story({
       bottomBar.borderTop + bottomBar.padding.top + bottomButton.height + bottomBar.padding.bottom,
     ).toBe(bottomBar.height);
     await expect(bar && getComputedStyle(bar).paddingTop).toBe(`${bottomBar.padding.top}px`);
-    await expect(barRect?.width).toBe(layout.phone.width);
+    await expect(barRect?.width).toBe(frameRect?.width);
     await expect(buttonRect.height).toBe(bottomButton.height);
     await expect(buttonRect.left - (frameRect?.left ?? 0)).toBe(bottomBar.padding.left);
     await expect((frameRect?.bottom ?? 0) - buttonRect.bottom).toBe(bottomBar.padding.bottom);

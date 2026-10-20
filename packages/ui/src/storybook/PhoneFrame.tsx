@@ -42,6 +42,10 @@ function isViewport(value: unknown): value is Viewport {
   return viewportList.some((viewport) => viewport === value);
 }
 
+export function frameViewportOf(frame: unknown): Viewport {
+  return isViewport(frame) ? frame : 'phone';
+}
+
 function phoneStyle(viewport: Viewport): CSSProperties {
   return {
     width: layout.viewports[viewport],
@@ -97,7 +101,7 @@ export const withPhoneFrame: Decorator = (Story, { globals, parameters, viewMode
     <PhoneFrame
       overlay={phoneFrame.overlay === true}
       docs={viewMode === 'docs'}
-      viewport={isViewport(globals.frame) ? globals.frame : 'phone'}
+      viewport={frameViewportOf(globals.frame)}
     >
       <Story />
     </PhoneFrame>

@@ -3,6 +3,8 @@ import { IconDice5, IconPlus, IconUserX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Button.json';
+import { layout } from '../../layout.ts';
+import { frameViewportOf } from '../../storybook/PhoneFrame.tsx';
 import { Button } from './Button.tsx';
 import type { ButtonProps } from './Button.tsx';
 
@@ -258,10 +260,12 @@ export const ExtraPhoneFrame = meta.story({
   name: 'In the phone frame',
   parameters: { phoneFrame: true },
   args: { variant: 'primary', size: 'M', icon: IconPlus, labelKey: 'newCombat', fullWidth: true },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
-    await expect(frame?.getBoundingClientRect().width).toBe(390);
-    await expect(frame?.getBoundingClientRect().height).toBe(844);
+    await expect(frame?.getBoundingClientRect().width).toBe(
+      layout.viewports[frameViewportOf(globals.frame)],
+    );
+    await expect(frame?.getBoundingClientRect().height).toBe(layout.phone.height);
     await expect(canvas.getByText('9:41')).toBeVisible();
     await expect(canvas.getByRole('button', { name: 'New combat' })).toBeVisible();
     const button = canvas.getByRole('button', { name: 'New combat' });
