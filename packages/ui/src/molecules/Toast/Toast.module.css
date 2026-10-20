@@ -110,7 +110,7 @@
 
 .close {
   position: absolute;
-  top: 8px;
+  top: calc(50% - 20px);
   right: 8px;
   display: flex;
   flex: none;
