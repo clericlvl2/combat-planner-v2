@@ -15,7 +15,7 @@
   -webkit-tap-highlight-color: transparent;
 
   &:has(.label) {
-    min-height: 44px;
+    min-height: var(--cp-tap-target);
   }
 
   &:has(.input:disabled) {
