@@ -47,6 +47,31 @@ export const ExtraWordBreaks = meta.story({
   },
 });
 
+export const ExtraWordBreaksTightLines = meta.story({
+  name: 'A word split across lines at line-height 1 fails wordBreaks',
+  parameters: { geometry: { wordBreaks: 'the probe splits a word on purpose' } },
+  render: () => (
+    <p
+      data-testid="tight"
+      style={{ ...probeText, width: 40, lineHeight: 1, fontFamily: "'Rubik', sans-serif" }}
+    >
+      Berserker
+    </p>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    const box = canvas.getByTestId('tight');
+    const style = getComputedStyle(box);
+    await expect(style.fontFamily).toContain('Rubik');
+    await expect(Number.parseFloat(style.lineHeight)).toBe(Number.parseFloat(style.fontSize));
+    await expect(box.getBoundingClientRect().height).toBeGreaterThanOrEqual(
+      2 * Number.parseFloat(style.lineHeight),
+    );
+    const findings = brokenWords(canvasElement);
+    await expect(findings).toHaveLength(1);
+    await expect(findings[0]).toMatch(/breaks "Berserker" across [2-9] lines$/);
+  },
+});
+
 export const ExtraActionsVisible = meta.story({
   name: 'A sheet action below the scroll edge fails actionsVisible',
   parameters: { geometry: { actionsVisible: 'the probe hides a sheet action on purpose' } },

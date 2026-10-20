@@ -380,14 +380,15 @@ export function overlaysOffFrame(root: HTMLElement): string[] {
 const wordPattern = /[\p{Script=Latin}\p{Script=Cyrillic}\p{M}\p{Nd}'’]+/gu;
 const letterPattern = /[\p{Script=Latin}\p{Script=Cyrillic}]/u;
 
-function lineCountOf(rects: DOMRectList): number {
-  const lines: DOMRect[] = [];
+function lineCountOf(rects: DOMRectList, lineHeight: number): number {
+  const tolerance = Math.max(lineHeight / 2, 1);
+  const centres: number[] = [];
   for (const rect of rects) {
     if (rect.width === 0 || rect.height === 0) continue;
-    const sameLine = lines.some((line) => rect.top < line.bottom - 1 && line.top < rect.bottom - 1);
-    if (!sameLine) lines.push(rect);
+    const centre = (rect.top + rect.bottom) / 2;
+    if (!centres.some((line) => Math.abs(centre - line) < tolerance)) centres.push(centre);
   }
-  return lines.length;
+  return centres.length;
 }
 
 function textNodesOf(root: HTMLElement): Text[] {
@@ -407,13 +408,14 @@ function wordBreakFindings(root: HTMLElement): Finding[] {
     const text = node.data;
     if (!parent || !letterPattern.test(text) || isTextControl(parent)) continue;
     range.selectNodeContents(node);
-    if (lineCountOf(range.getClientRects()) < 2 || !isShown(parent)) continue;
+    const lineHeight = lineHeightOf(getComputedStyle(parent));
+    if (lineCountOf(range.getClientRects(), lineHeight) < 2 || !isShown(parent)) continue;
     for (const match of text.matchAll(wordPattern)) {
       const word = match[0];
       if (!letterPattern.test(word)) continue;
       range.setStart(node, match.index);
       range.setEnd(node, match.index + word.length);
-      const lines = lineCountOf(range.getClientRects());
+      const lines = lineCountOf(range.getClientRects(), lineHeight);
       if (lines > 1) {
         findings.push({
           element: parent,
