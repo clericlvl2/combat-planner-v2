@@ -8,7 +8,7 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
-import { expectNotTruncated, playKnownAtNarrow } from '../../storybook/geometry.ts';
+import { expectNotTruncated } from '../../storybook/geometry.ts';
 import { Menu } from '../Menu/Menu.tsx';
 import { PlayerRow } from './PlayerRow.tsx';
 import type { PlayerRowProps } from './PlayerRow.tsx';
@@ -728,31 +728,31 @@ export const ExtraLocaleFr = meta.story({
   name: 'Locale fr, trigger labels fit',
   globals: { locale: 'fr' },
   args: { expanded: true },
-  play: playKnownAtNarrow(async ({ canvasElement }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expectNotTruncated(canvas.getByRole('button', { name: 'États' }));
     await expectNotTruncated(canvas.getByRole('button', { name: 'Historique PV' }));
     await expect(within(canvasElement).getByRole('button', { name: 'Modifier' })).toBeVisible();
-  }),
+  },
 });
 
 export const ExtraLocaleEs = meta.story({
   name: 'Locale es, trigger labels fit',
   globals: { locale: 'es' },
   args: { expanded: true },
-  play: playKnownAtNarrow(async ({ canvasElement }) => {
+  play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expectNotTruncated(canvas.getByRole('button', { name: 'Estados' }));
     await expectNotTruncated(canvas.getByRole('button', { name: 'Historial PG' }));
     await expect(within(canvasElement).getByRole('button', { name: 'Editar' })).toBeVisible();
-  }),
+  },
 });
 
 export const ExtraFlash = meta.story({
   name: 'The flash border marks a changed row, not dead or active ones',
   args: { flash: true },
   render: (args) => (
-    <div style={{ display: 'grid' }}>
+    <div style={{ display: 'grid', alignContent: 'start', minHeight: 0, overflowY: 'auto' }}>
       <PlayerRowCell {...args} data-testid="own" />
       <PlayerRowCell {...args} unit={goblin} mine={false} data-testid="dead" />
       <PlayerRowCell {...args} unit={orc} mine={false} active data-testid="active" />

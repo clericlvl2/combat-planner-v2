@@ -1,7 +1,8 @@
 .root {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr) 104px;
+  grid-template-columns: 62px minmax(0, 1fr) max-content;
+  container-type: inline-size;
   min-height: 72px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
@@ -31,17 +32,34 @@
   }
 }
 
+.root[data-note] > :is(.role, .hp) {
+  grid-row: 1 / span 2;
+}
+
 .root[data-expanded] > .role {
   border-bottom-left-radius: 0;
 }
 
 .main {
   display: flex;
+  grid-row: 1;
+  grid-column: 2;
   flex-direction: column;
   justify-content: center;
   gap: 4px;
   min-width: 0;
   padding: 12px 4px 12px 12px;
+
+  .root[data-note] > & {
+    padding-bottom: 0;
+  }
+}
+
+.note {
+  grid-row: 2;
+  grid-column: 2;
+  min-width: 0;
+  padding: 4px 4px 12px 12px;
 }
 
 .name {
@@ -112,9 +130,11 @@
 
 .hp {
   display: flex;
+  grid-row: 1;
+  grid-column: 3;
   align-items: center;
   justify-content: flex-end;
-  padding-right: 6px;
+  padding: 0 6px 0 2px;
 }
 
 .details {
@@ -142,8 +162,8 @@
   justify-content: space-between;
   gap: 8px;
   min-width: 0;
-  height: 48px;
-  padding: 0 12px;
+  min-height: 48px;
+  padding: 4px 12px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-surface);
@@ -182,7 +202,36 @@
 
 .triggerLabel {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: var(--mantine-line-height-snug);
+  text-align: left;
+  text-wrap: balance;
+}
+
+@container (width < 300px) {
+  .main {
+    padding-left: 8px;
+  }
+
+  .note {
+    grid-column: 2 / -1;
+    padding-left: 8px;
+  }
+
+  .hp {
+    padding-left: 0;
+    padding-right: 2px;
+  }
+
+  .root[data-note] > .hp {
+    grid-row: 1;
+  }
+
+  .details {
+    padding: 12px 8px;
+  }
+
+  .trigger {
+    gap: 4px;
+    padding: 4px 8px;
+  }
 }

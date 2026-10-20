@@ -81,6 +81,7 @@ export function PlayerRow({
       : null;
   const claimName = friendly && unit.claimedBy ? claimedByName : undefined;
   const note = mine ? (unit.note ?? '') : '';
+  const collapsedNote = mine && !expanded && note !== '';
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     onClick?.(event);
@@ -100,6 +101,7 @@ export function PlayerRow({
       data-active={shownActive || undefined}
       data-expanded={expanded || undefined}
       data-dead={dead || undefined}
+      data-note={collapsedNote || undefined}
       data-unit-role={unit.role}
       onClick={handleClick}
     >
@@ -152,10 +154,12 @@ export function PlayerRow({
             ))}
           </span>
         ) : null}
-        {mine && !expanded && note ? (
-          <NoteField value={note} onChange={onNoteChange} collapsed />
-        ) : null}
       </div>
+      {collapsedNote ? (
+        <div className={classes.note}>
+          <NoteField value={note} onChange={onNoteChange} collapsed />
+        </div>
+      ) : null}
       <div className={classes.hp}>
         {numbers ? (
           <HpBox
