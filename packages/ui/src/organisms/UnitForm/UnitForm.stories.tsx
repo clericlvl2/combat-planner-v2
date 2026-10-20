@@ -28,6 +28,8 @@ const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout'
 
 const at = '2026-10-15T12:00:00.000Z';
 
+const exact = (text: string) => text;
+
 interface PresetStats {
   maxHp: number;
   ac: number;
@@ -309,7 +311,9 @@ export const LibraryNothingFound = meta.story({
     await userEvent.type(canvas.getByRole('searchbox', { name: t('searchPresets') }), 'dragon');
     await expect(canvas.getByText(t('nothingFound'))).toBeVisible();
     await expect(
-      canvas.getByText(t('noMatchQueryTags', { query: 'dragon', tags: 'Orcs' })),
+      canvas.getByText(t('noMatchQueryTags', { query: 'dragon', tags: 'Orcs' }), {
+        normalizer: exact,
+      }),
     ).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('pickPreset') })).toBeDisabled();
   },
@@ -402,7 +406,7 @@ export const ExtraSubmitTypedValues = meta.story({
     });
     await userEvent.click(increase[increase.length - 1] ?? document.body);
     await userEvent.type(canvas.getByRole('textbox', { name: t('note') }), 'Calls the storm');
-    await userEvent.click(canvas.getByRole('button', { name: t('addTitle') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('addUnit') }));
     await expect(args.onSubmit).toHaveBeenCalledOnce();
     await expect(args.onSubmit).toHaveBeenCalledWith({
       name: 'Orc Shaman',
@@ -428,7 +432,7 @@ export const ExtraEmptyNameDefault = meta.story({
     await expect(name).toHaveAttribute('placeholder', t('defaultName', { role: t('enemy'), n: 2 }));
     await userEvent.click(canvas.getByRole('radio', { name: t('hero') }));
     await expect(name).toHaveAttribute('placeholder', t('defaultName', { role: t('hero'), n: 1 }));
-    await userEvent.click(canvas.getByRole('button', { name: t('addTitle') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('addUnit') }));
     await expect(args.onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({
         name: t('defaultName', { role: t('hero'), n: 1 }),
@@ -544,7 +548,7 @@ export const ExtraPickFillsForm = meta.story({
     await expect(canvas.getByRole('spinbutton', { name: t('maxHp') })).toHaveValue('30');
     await expect(canvas.getByRole('spinbutton', { name: t('ac') })).toHaveValue('19');
     await expect(canvas.getByRole('spinbutton', { name: t('initiativeBonus') })).toHaveValue('+1');
-    await userEvent.click(canvas.getByRole('button', { name: t('addTitle') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('addUnit') }));
     await expect(args.onSubmit).toHaveBeenCalledWith({
       name: 'Brother Tomas of the Silver Lantern Order',
       role: 'ally',
@@ -637,7 +641,9 @@ export const ExtraHintActive = meta.story({
   args: { library: false, hint: 'active', value: { initiativeBonus: 2 } },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
-    await expect(canvas.getByText(t('hintActive', { bonus: '+2' }))).toBeVisible();
+    await expect(
+      canvas.getByText(t('hintActive', { bonus: '+2' }), { normalizer: exact }),
+    ).toBeVisible();
   },
 });
 
