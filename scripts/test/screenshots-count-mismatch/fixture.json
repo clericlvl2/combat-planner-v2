@@ -3,7 +3,7 @@
   "expect": "baseline count",
   "ops": [
     {
-      "remove": "packages/ui/__screenshots__/Button/GhostSFocus.png"
+      "remove": "packages/ui/__screenshots__/Button/Anatomy.png"
     }
   ]
 }

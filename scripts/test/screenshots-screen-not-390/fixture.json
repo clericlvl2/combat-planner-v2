@@ -4,7 +4,7 @@
   "ops": [
     {
       "write": "packages/ui/src/screens/CombatScreen/CombatScreen.stories.tsx",
-      "content": "import preview from '#.storybook/preview';\n\nconst meta = preview.meta({});\n\nexport const CSF11 = meta.story({});\n"
+      "content": "import preview from '#.storybook/preview';\n\nconst meta = preview.meta({});\n\nexport const CSF11 = meta.story({ tags: ['visual'] });\n"
     },
     {
       "png": "packages/ui/__screenshots__/CombatScreen/CSF11.png",

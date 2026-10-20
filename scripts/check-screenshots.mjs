@@ -32,22 +32,46 @@ function parse(file) {
   return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, kind);
 }
 
-function storyNames(storyPath) {
+function tagsOf(call) {
+  const options = call.arguments[0];
+  if (!options || !ts.isObjectLiteralExpression(options)) return [];
+  const property = options.properties.find(
+    (p) => ts.isPropertyAssignment(p) && p.name.getText() === 'tags',
+  );
+  if (!property || !ts.isArrayLiteralExpression(property.initializer)) return [];
+  return property.initializer.elements.filter(ts.isStringLiteralLike).map((e) => e.text);
+}
+
+function combineTags(...tags) {
+  const result = new Set();
+  for (const tag of tags) {
+    if (tag.startsWith('!')) result.delete(tag.slice(1));
+    else result.add(tag);
+  }
+  return result;
+}
+
+function visualStoryNames(storyPath) {
   const source = parse(storyPath);
-  const names = [];
+  let metaTags = [];
+  const stories = [];
   for (const statement of source.statements) {
     if (!ts.isVariableStatement(statement)) continue;
-    if (!statement.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) continue;
+    const exported = statement.modifiers?.some((m) => m.kind === ts.SyntaxKind.ExportKeyword);
     for (const declaration of statement.declarationList.declarations) {
       const init = declaration.initializer;
       if (!ts.isIdentifier(declaration.name) || !init || !ts.isCallExpression(init)) continue;
       const callee = init.expression;
-      if (ts.isPropertyAccessExpression(callee) && callee.name.text === 'story') {
-        names.push(declaration.name.text);
+      if (!ts.isPropertyAccessExpression(callee)) continue;
+      if (callee.name.text === 'meta') metaTags = tagsOf(init);
+      if (exported && callee.name.text === 'story') {
+        stories.push({ name: declaration.name.text, tags: tagsOf(init) });
       }
     }
   }
-  return names;
+  return stories
+    .filter((story) => combineTags(...metaTags, ...story.tags).has('visual'))
+    .map((story) => story.name);
 }
 
 function pngWidth(file) {
@@ -82,7 +106,7 @@ for (const file of walk(uiSrcDir)) {
 
 for (const [name, storyPath] of [...components].sort(([a], [b]) => a.localeCompare(b))) {
   const folder = path.join(screenshotsDir, name);
-  const stories = storyNames(storyPath);
+  const stories = visualStoryNames(storyPath);
   const baselines = existsSync(folder)
     ? readdirSync(folder)
         .filter((file) => file.endsWith('.png'))
@@ -92,14 +116,15 @@ for (const [name, storyPath] of [...components].sort(([a], [b]) => a.localeCompa
     fail(
       folder,
       'baseline count',
-      `${baselines.length} baseline(s) for ${stories.length} stories in ${relative(storyPath)}`,
+      `${baselines.length} baseline(s) for ${stories.length} visual stories in ${relative(storyPath)}`,
     );
   }
   for (const story of stories) {
     if (!baselines.includes(story)) fail(folder, 'missing baseline', `${story}.png`);
   }
   for (const baseline of baselines) {
-    if (!stories.includes(baseline)) fail(folder, 'baseline without story', `${baseline}.png`);
+    if (!stories.includes(baseline))
+      fail(folder, 'baseline without visual story', `${baseline}.png`);
   }
   const hashes = new Map();
   for (const baseline of baselines) {

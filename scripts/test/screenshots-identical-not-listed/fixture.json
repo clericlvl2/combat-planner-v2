@@ -3,9 +3,14 @@
   "expect": "byte-identical baselines",
   "ops": [
     {
-      "replace": "packages/ui/__screenshots__/Button/Button.same.txt",
-      "search": "Anatomy PrimaryLIconDefault",
-      "with": "Anatomy"
+      "png": "packages/ui/__screenshots__/Button/Anatomy.png",
+      "width": 390,
+      "height": 2
+    },
+    {
+      "png": "packages/ui/__screenshots__/Button/ButtonPrimaryS.png",
+      "width": 390,
+      "height": 2
     }
   ]
 }

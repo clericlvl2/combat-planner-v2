@@ -1,0 +1,11 @@
+{
+  "script": "check-screenshots",
+  "expect": "baseline without visual story",
+  "ops": [
+    {
+      "png": "packages/ui/__screenshots__/Button/ExtraClick.png",
+      "width": 390,
+      "height": 2
+    }
+  ]
+}

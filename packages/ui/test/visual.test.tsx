@@ -21,8 +21,12 @@ function componentName(modulePath: string): string {
 
 for (const [modulePath, storyModule] of Object.entries(storyModules)) {
   const name = componentName(modulePath);
+  const visualStories = Object.entries(storyModule).filter(
+    ([, story]) => isStory(story) && story.composed.tags.includes('visual'),
+  );
+  if (visualStories.length === 0) continue;
   describe(name, () => {
-    for (const [exportName, story] of Object.entries(storyModule)) {
+    for (const [exportName, story] of visualStories) {
       if (!isStory(story)) continue;
       test(exportName, async () => {
         const canvasElement = document.createElement('div');
