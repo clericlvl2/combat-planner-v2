@@ -145,7 +145,7 @@ function intersection(a: Box, b: Box): Box {
   };
 }
 
-function hitAreaOf(element: Element): Box {
+function ownAreaOf(element: Element): Box {
   const style = getComputedStyle(element);
   let box = boxOf(element);
   if (style.position === 'static' || clips(style.overflowX) || clips(style.overflowY)) return box;
@@ -165,6 +165,24 @@ function hitAreaOf(element: Element): Box {
     );
   }
   return box;
+}
+
+function touches(a: Box, b: Box): boolean {
+  return a.left <= b.right && b.left <= a.right && a.top <= b.bottom && b.top <= a.bottom;
+}
+
+function labelsOf(element: Element): Element[] {
+  const labels = 'labels' in element ? [...((element.labels as NodeList | null) ?? [])] : [];
+  return labels.filter((node): node is Element => node instanceof Element && isShown(node));
+}
+
+function hitAreaOf(element: Element, owner: Element): Box {
+  let area = union(ownAreaOf(element), ownAreaOf(owner));
+  for (const label of labelsOf(element)) {
+    const labelArea = ownAreaOf(label);
+    if (touches(labelArea, area)) area = union(area, labelArea);
+  }
+  return area;
 }
 
 function clipped(element: Element, area: Box, root: Element): Box {
@@ -254,11 +272,7 @@ function tapTargetFindings(root: HTMLElement): Finding[] {
   for (const element of root.querySelectorAll(interactiveSelector)) {
     const owner = ownerOf(element);
     if (!isHittable(element) || !isShown(owner)) continue;
-    const labels = 'labels' in element ? [...((element.labels as NodeList | null) ?? [])] : [];
-    const area = [owner, ...labels]
-      .filter((node): node is Element => node instanceof Element && isShown(node))
-      .map(hitAreaOf)
-      .reduce(union, hitAreaOf(element));
+    const area = hitAreaOf(element, owner);
     const known = areas.get(owner);
     areas.set(owner, known ? union(known, area) : area);
   }
