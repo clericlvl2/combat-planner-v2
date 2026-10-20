@@ -230,8 +230,7 @@ export const ExtraActionOnceDuringExit = meta.story({
   },
 });
 
-const enterDurationsOf = (element: HTMLElement) =>
-  element.getAnimations().map((animation) => animation.effect?.getTiming().duration);
+const enterDurationOf = (element: HTMLElement) => getComputedStyle(element).animationDuration;
 
 const delaysOf = (spy: { mock: { calls: unknown[][] } }) => spy.mock.calls.map((call) => call[1]);
 
@@ -259,7 +258,7 @@ export const ExtraDefaultDuration = meta.story({
     try {
       await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
-      await expect(enterDurationsOf(status)).toEqual([150]);
+      await expect(enterDurationOf(status)).toBe('0.15s');
       await expect(delaysOf(setTimeoutSpy)).toContain(4000);
       await expect(delaysOf(setTimeoutSpy)).not.toContain(8000);
       for (const animation of status.getAnimations()) animation.finish();
@@ -281,7 +280,7 @@ export const ExtraActionDuration = meta.story({
     try {
       await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
-      await expect(enterDurationsOf(status)).toEqual([150]);
+      await expect(enterDurationOf(status)).toBe('0.15s');
       await expect(delaysOf(setTimeoutSpy)).toContain(8000);
       await expect(delaysOf(setTimeoutSpy)).not.toContain(4000);
       for (const animation of status.getAnimations()) animation.finish();
