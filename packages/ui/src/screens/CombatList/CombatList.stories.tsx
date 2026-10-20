@@ -17,7 +17,7 @@ import {
   noCombatsScenario,
   storyNow,
 } from './CombatList.scenarios.ts';
-import { anyValue, storyT } from '../../storybook/storyT.ts';
+import { anyValue, collapsedSpace, storyT } from '../../storybook/storyT.ts';
 import { storyLocale } from '../../storybook/withLocale.tsx';
 
 type Canvas = ReturnType<typeof within>;
@@ -233,7 +233,7 @@ export const CLF16 = meta.story({
     await userEvent.type(canvas.getByRole('searchbox'), 'dragon');
     await expect(canvas.getByRole('heading', { name: t('UnitForm:nothingFound') })).toBeVisible();
     await expect(
-      canvas.getByText(t('EmptyState:noResultsBody', { query: 'dragon' })),
+      canvas.getByText(collapsedSpace(t('EmptyState:noResultsBody', { query: 'dragon' }))),
     ).toBeVisible();
     await expect(
       canvas.queryAllByRole('button', { name: anyValue(t, 'CombatCard:details', 'title') }),

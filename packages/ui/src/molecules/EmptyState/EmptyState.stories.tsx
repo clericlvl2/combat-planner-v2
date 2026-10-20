@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { EmptyState } from './EmptyState.tsx';
 import type { EmptyStateAction } from './EmptyState.tsx';
-import { storyT } from '../../storybook/storyT.ts';
+import { collapsedSpace, storyT } from '../../storybook/storyT.ts';
 
 type EmptyStateKind = 'noCombats' | 'noResults' | 'emptyCombat';
 
@@ -133,7 +133,9 @@ export const ExtraWithoutAction = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'EmptyState');
     await expect(canvas.getByRole('heading', { name: t('noResultsTitle') })).toBeVisible();
-    await expect(canvas.getByText(t('noResultsBody', { query: 'dragon' }))).toBeVisible();
+    await expect(
+      canvas.getByText(collapsedSpace(t('noResultsBody', { query: 'dragon' }))),
+    ).toBeVisible();
     await expect(canvas.queryByRole('button')).toBeNull();
     await expect(args.onAction).not.toHaveBeenCalled();
   },

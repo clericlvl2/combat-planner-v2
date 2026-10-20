@@ -21,7 +21,7 @@ import {
   savedFromCombat,
   tagIdOf,
 } from './Library.scenarios.ts';
-import { anyValue, escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { anyValue, collapsedSpace, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 import { storyLocale } from '../../storybook/withLocale.tsx';
 
 type Canvas = ReturnType<typeof within>;
@@ -301,7 +301,9 @@ export const LBF16 = meta.story({
     await ready(canvas, t);
     await userEvent.type(canvas.getByRole('searchbox', { name: t('search') }), 'dragon');
     await expect(canvas.getByRole('heading', { name: t('UnitForm:nothingFound') })).toBeVisible();
-    await expect(canvas.getByText(t('noResultsBody', { query: 'dragon' }))).toBeVisible();
+    await expect(
+      canvas.getByText(collapsedSpace(t('noResultsBody', { query: 'dragon' }))),
+    ).toBeVisible();
     await expect(namesOf(canvas, t)).toHaveLength(0);
   },
 });

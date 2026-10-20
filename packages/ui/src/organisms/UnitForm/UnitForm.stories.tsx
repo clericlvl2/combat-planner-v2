@@ -298,7 +298,9 @@ export const LibrarySearchGob = meta.story({
     const list = presetList(canvas, t);
     await expect(list.getAllByRole('button')).toHaveLength(1);
     await expect(list.getByText('Goblin Archer')).toBeVisible();
-    await expect(canvas.queryByText(t('noMatchQuery', { query: 'gob' }))).toBeNull();
+    await expect(
+      canvas.queryByText(t('noMatchQuery', { query: 'gob' }), { normalizer: exact }),
+    ).toBeNull();
   },
 });
 

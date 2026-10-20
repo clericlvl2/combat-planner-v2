@@ -22,3 +22,7 @@ export function anyValue(t: TFunction, key: string, option: string): RegExp {
     .map((form) => form.split(slot).map(escapeRegExp).join('.+'));
   return new RegExp(`^(?:${forms.join('|')})$`);
 }
+
+export function collapsedSpace(text: string): string {
+  return text.replace(/\s+/g, ' ');
+}

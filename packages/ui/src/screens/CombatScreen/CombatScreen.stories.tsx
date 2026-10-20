@@ -24,7 +24,7 @@ import {
   unitIds,
 } from './CombatScreen.scenarios.ts';
 import { CombatScreen } from './CombatScreen.tsx';
-import { anyValue, escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { anyValue, collapsedSpace, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -532,7 +532,7 @@ export const CSF35 = meta.story({
     const t = storyT(globals, 'CombatScreen');
     const sheet = await openNumpad(canvas, canvasElement, names.vashti, /^20 \/36/);
     await typeAmount(sheet, '8');
-    const heal = within(sheet).getByRole('button', { name: t('HistoryRow:heal') });
+    const heal = within(sheet).getByRole('button', { name: t('NumpadSheet:heal') });
     heal.focus();
     await expect(heal).toHaveFocus();
     await expect(within(sheet).getByText('28')).toBeVisible();
@@ -597,7 +597,7 @@ export const CSF41 = meta.story({
     const t = storyT(globals, 'CombatScreen');
     await expand(canvasElement, names.vashti, t);
     await expect(canvas.getByRole('button', { name: t('PlayerRow:conditions') })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: t('PlayerRow:hpHistory') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('UnitRow:hpHistory') })).toBeVisible();
   },
 });
 
@@ -671,7 +671,7 @@ export const CSF45 = meta.story({
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await expand(canvasElement, names.vashti, t);
-    await userEvent.click(canvas.getByRole('button', { name: t('PlayerRow:hpHistory') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('UnitRow:hpHistory') }));
     const sheet = await canvas.findByRole('dialog', {
       name: (label: string) => label.includes(t('HpHistory:title')),
     });
@@ -890,7 +890,9 @@ export const CSF72 = meta.story({
     await hpOf(canvasElement, names.orc, /^2 \/40/);
     await pickMenu(canvas, t('Toast:undo'), t);
     await expect(
-      await canvas.findByText(t('CombatScreen:undoDamage', { amount: 12, name: 'Orc Berserker' })),
+      await canvas.findByText(
+        collapsedSpace(t('CombatScreen:undoDamage', { amount: 12, name: 'Orc Berserker' })),
+      ),
     ).toBeVisible();
     await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
     await expect(dispatched(fakeApiOf(loaded)).map((action) => action.type)).toEqual([
@@ -1005,7 +1007,7 @@ export const CSF79 = meta.story({
     const t = storyT(globals, 'CombatScreen');
     await pickMenu(canvas, t('Menu:clear'), t);
     const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:clearTitle') });
-    await userEvent.click(within(dialog).getByRole('button', { name: t('Button:clear') }));
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:clear') }));
     await expect(
       await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') }),
     ).toBeVisible();
@@ -1124,7 +1126,7 @@ export const ExtraHpRules = meta.story({
     ).toBeVisible();
     await apply(/^11 \/40/, '30', t('NumpadSheet:setMax'));
     await expect(await hpOf(canvasElement, names.orc, /^11 \/30/)).toBeVisible();
-    await apply(/^11 \/30/, '50', t('HistoryRow:heal'));
+    await apply(/^11 \/30/, '50', t('NumpadSheet:heal'));
     await expect(await hpOf(canvasElement, names.orc, /^30 \/30/)).toBeVisible();
     await apply(/^30 \/30/, '5', t('NumpadSheet:setTemp'));
     await expect(
@@ -1163,7 +1165,7 @@ export const ExtraAddUnits = meta.story({
     await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
     await userEvent.click(canvas.getByRole('button', { name: t('Menu:addUnit') }));
     const form = await canvas.findByRole('dialog', { name: t('Menu:addUnit') });
-    await userEvent.click(within(form).getByRole('button', { name: t('Menu:addUnit') }));
+    await userEvent.click(within(form).getByRole('button', { name: t('UnitForm:addUnit') }));
     await rowOf(canvasElement, t('UnitForm:defaultName', { role: t('UnitForm:enemy'), n: 1 }));
     await pickMenu(canvas, t('Menu:addUnit'), t);
     await userEvent.click(await canvas.findByRole('radio', { name: t('UnitForm:library') }));
@@ -1225,7 +1227,9 @@ export const ExtraRemoveUndone = meta.story({
     await userEvent.click(within(dialog).getByRole('button', { name: t('Menu:remove') }));
     await userEvent.click(await canvas.findByRole('button', { name: t('Toast:undo') }));
     await expect(
-      await canvas.findByText(t('CombatScreen:undoRemoveUnit', { name: 'Orc Berserker' })),
+      await canvas.findByText(
+        collapsedSpace(t('CombatScreen:undoRemoveUnit', { name: 'Orc Berserker' })),
+      ),
     ).toBeVisible();
     await rowOf(canvasElement, names.orc);
     await expect(dispatched(fakeApiOf(loaded)).map((action) => action.type)).toEqual([
@@ -1365,7 +1369,7 @@ export const ExtraUndoFromDocument = meta.story({
     await hpOf(canvasElement, names.orc, /^2 \/40/);
     await pickMenu(canvas, t('Toast:undo'), t);
     await expect(await canvas.findByRole('status')).toHaveTextContent(
-      t('CombatScreen:undoDamage', { amount: 12, name: 'Orc Berserker' }),
+      collapsedSpace(t('CombatScreen:undoDamage', { amount: 12, name: 'Orc Berserker' })),
     );
     await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
   },
@@ -1508,7 +1512,9 @@ export const ExtraUndoRemovalBeforeDocument = meta.story({
     await expect(await rowOf(canvasElement, names.orc)).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: t('Toast:undo') }));
     await expect(
-      await canvas.findByText(t('CombatScreen:undoRemoveUnit', { name: 'Orc Berserker' })),
+      await canvas.findByText(
+        collapsedSpace(t('CombatScreen:undoRemoveUnit', { name: 'Orc Berserker' })),
+      ),
     ).toBeVisible();
     const [removal, undo] = dispatched(fakeApiOf(loaded));
     await expect(removal).toMatchObject({ type: 'removeUnit', unitId: unitIds.orc });
