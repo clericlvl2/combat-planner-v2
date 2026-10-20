@@ -68,6 +68,7 @@ export const OutlineXFocus = meta.story({
 });
 
 export const PlainMenuDefault = meta.story({
+  tags: ['visual'],
   name: 'Plain · menu · default',
   args: plainMenu,
 });
@@ -90,6 +91,7 @@ export const PlainMenuFocus = meta.story({
 });
 
 export const SoftBackDefault = meta.story({
+  tags: ['visual'],
   name: 'Soft · back · default',
   args: softBack,
 });
@@ -112,6 +114,7 @@ export const SoftBackFocus = meta.story({
 });
 
 export const FilledPlusDefault = meta.story({
+  tags: ['visual'],
   name: 'Filled · plus · default',
   args: filledPlus,
 });

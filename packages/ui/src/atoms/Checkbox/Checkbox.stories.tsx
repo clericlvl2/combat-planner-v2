@@ -96,6 +96,7 @@ export const SquareOnDisabled = meta.story({
 });
 
 export const RoundOff = meta.story({
+  tags: ['visual'],
   name: 'Round · off',
   args: { shape: 'round', checked: false },
 });

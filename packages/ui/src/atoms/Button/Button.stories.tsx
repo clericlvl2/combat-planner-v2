@@ -132,6 +132,7 @@ export const SecondaryMFocus = meta.story({
 });
 
 export const DangerMDefault = meta.story({
+  tags: ['visual'],
   name: 'Danger M · default',
   args: { variant: 'danger', size: 'M', labelKey: 'delete' },
 });
@@ -154,6 +155,7 @@ export const DangerMFocus = meta.story({
 });
 
 export const GhostSDefault = meta.story({
+  tags: ['visual'],
   name: 'Ghost S · default',
   args: { variant: 'ghost', size: 'S', labelKey: 'clear' },
 });
@@ -187,6 +189,7 @@ export const ButtonPrimaryM = meta.story({
 });
 
 export const ButtonPrimaryL = meta.story({
+  tags: ['visual'],
   name: 'Button · primary · L',
   args: { variant: 'primary', size: 'L', labelKey: 'save' },
 });

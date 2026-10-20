@@ -277,6 +277,7 @@ export const CSF11 = meta.story({
 });
 
 export const CSF12 = meta.story({
+  tags: ['visual'],
   name: 'CS-F1.2 New unit: empty form',
   parameters: { scenario: noUnitsScenario() },
   play: async ({ canvas, globals, loaded }) => {
@@ -679,6 +680,7 @@ export const CSF45 = meta.story({
 });
 
 export const CSF51 = meta.story({
+  tags: ['visual'],
   name: 'CS-F5.1 Round: popover',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -790,6 +792,7 @@ export const CSF63 = meta.story({
 });
 
 export const CSF64 = meta.story({
+  tags: ['visual'],
   name: 'CS-F6.4 Confirm removal',
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1054,6 +1057,7 @@ export const CSF82 = meta.story({
 });
 
 export const CSF83 = meta.story({
+  tags: ['visual'],
   name: 'CS-F8.3 Request failed',
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');

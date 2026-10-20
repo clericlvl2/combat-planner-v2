@@ -141,6 +141,7 @@ export const ActiveRound3Escalation2 = meta.story({
 });
 
 export const MenuOpen = meta.story({
+  tags: ['visual'],
   name: 'Menu open',
   args: { open: 'menu' },
   play: async ({ canvas, globals }) => {
@@ -174,6 +175,7 @@ export const EscalationOpen = meta.story({
 });
 
 export const RoundOpen = meta.story({
+  tags: ['visual'],
   name: 'Round open',
   args: { open: 'round' },
   play: async ({ canvas, globals }) => {

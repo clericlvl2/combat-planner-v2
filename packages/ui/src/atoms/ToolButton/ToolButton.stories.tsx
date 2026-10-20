@@ -47,6 +47,7 @@ export const Anatomy = meta.story({
 });
 
 export const SortDefaultDefault = meta.story({
+  tags: ['visual'],
   name: 'Sort · default · default',
   args: sortDefault,
 });

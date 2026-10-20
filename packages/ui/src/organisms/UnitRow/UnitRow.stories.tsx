@@ -394,6 +394,7 @@ export const ConditionsListOpen = meta.story({
 });
 
 export const InitiativeTapTheRoleBlock = meta.story({
+  tags: ['visual'],
   name: 'Initiative: tap the role block',
   args: { unit: vashtiExpanded, initiativeOpen: true, 'data-tap': 'initiative' },
   play: async ({ canvas, globals }) => {
@@ -406,6 +407,7 @@ export const InitiativeTapTheRoleBlock = meta.story({
 });
 
 export const HPHistoryOpen = meta.story({
+  tags: ['visual'],
   name: 'HP History open',
   args: { unit: vashtiExpanded, expanded: true, historyOpen: true },
   play: async ({ canvas, globals }) => {

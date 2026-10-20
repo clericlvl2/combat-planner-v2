@@ -181,6 +181,7 @@ export const AddS20 = meta.story({
 });
 
 export const AddM28 = meta.story({
+  tags: ['visual'],
   name: 'Add M · 28',
   args: { ...add(), size: 'M' },
 });
@@ -203,6 +204,7 @@ export const ConditionS20 = meta.story({
 });
 
 export const ConditionM28 = meta.story({
+  tags: ['visual'],
   name: 'Condition M · 28',
   args: { ...hampered, size: 'M' },
 });
@@ -218,6 +220,7 @@ export const StatusS20 = meta.story({
 });
 
 export const StatusM28 = meta.story({
+  tags: ['visual'],
   name: 'Status M · 28',
   args: { ...statusActive, size: 'M' },
 });
@@ -233,6 +236,7 @@ export const MetaS20 = meta.story({
 });
 
 export const MetaM28 = meta.story({
+  tags: ['visual'],
   name: 'Meta M · 28',
   args: { ...metaChip, size: 'M' },
 });

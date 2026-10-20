@@ -74,6 +74,7 @@ export const SwitchToRussian = meta.story({
 });
 
 export const KeyboardArrow = meta.story({
+  tags: ['visual'],
   play: async ({ canvas, loaded }) => {
     const english = canvas.getByRole('radio', { name: 'English' });
     english.focus();

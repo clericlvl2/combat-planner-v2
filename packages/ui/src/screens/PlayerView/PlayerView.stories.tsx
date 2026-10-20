@@ -628,6 +628,7 @@ export const ExtraCantReachServerRetry = meta.story({
 });
 
 export const ExtraDmLanguage = meta.story({
+  tags: ['visual'],
   name: 'Extra: interface in the DM language',
   parameters: {
     scenario: playerScenario(ferryCombat({ status: 'setup' }), { settings: { language: 'de' } }),
