@@ -227,9 +227,7 @@ export const CantReachServer = meta.story({
     await userEvent.type(canvas.getByLabelText(t('password')), 'ferry-crossing');
     fakeApiOf(loaded).failNext('network');
     await userEvent.click(canvas.getByRole('button', { name: t('submit') }));
-    await expect(await canvas.findByRole('status')).toHaveTextContent(
-      t('Toast:serverUnreachable'),
-    );
+    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:serverUnreachable'));
     await expect(canvas.getByRole('button', { name: t('Toast:retry') })).toBeVisible();
     await expect(locationOf(canvasElement)).toBe('/auth/sign-in');
   },
