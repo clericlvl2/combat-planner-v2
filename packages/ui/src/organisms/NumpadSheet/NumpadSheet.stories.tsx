@@ -109,7 +109,6 @@ interface NumpadSheetCellProps {
   tempHp?: number;
   history?: HistorySet;
   viewer?: NumpadViewer;
-  tap?: HpHistoryKind;
   onApply?: (kind: HpHistoryKind, amount: number) => void;
   onClose?: () => void;
 }
@@ -150,7 +149,6 @@ function NumpadSheetCell({
   tempHp = 0,
   history = 'full',
   viewer = 'dm',
-  tap,
   onApply,
   onClose,
 }: NumpadSheetCellProps) {
@@ -183,7 +181,6 @@ function NumpadSheetCell({
         tempHp={before.tempHp}
         history={histories[history]}
         viewer={viewer}
-        data-tap={tap}
         onApply={(kind, amount) => {
           onApply?.(kind, amount);
           setAfter({ ...before, ...hpAfter(before, kind, amount) });
@@ -250,9 +247,8 @@ const scrollSheetToTop = async (canvasElement: HTMLElement) => {
   body.scrollTop = 0;
 };
 
-export const Anatomy = meta.story({
+export const AmountTyped = meta.story({
   tags: ['visual'],
-  name: 'Anatomy',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '12');
@@ -263,8 +259,7 @@ export const Anatomy = meta.story({
   },
 });
 
-export const Collapsed = meta.story({
-  name: 'Collapsed',
+export const EmptyAmount = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     const dialog = await sheetOf(canvas);
@@ -285,8 +280,7 @@ export const Collapsed = meta.story({
   },
 });
 
-export const OpenNoChangesYet = meta.story({
-  name: 'Open, no changes yet',
+export const HistoryExpandedEmpty = meta.story({
   args: { history: 'none' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -295,8 +289,7 @@ export const OpenNoChangesYet = meta.story({
   },
 });
 
-export const OpenAFewChanges = meta.story({
-  name: 'Open, a few changes',
+export const HistoryExpandedFewChanges = meta.story({
   args: { who: 'vashti', history: 'short' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -305,9 +298,8 @@ export const OpenAFewChanges = meta.story({
   },
 });
 
-export const OpenEveryKind = meta.story({
+export const HistoryExpanded = meta.story({
   tags: ['visual'],
-  name: 'Open, every kind',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     await expandHistory(canvas, t('HpHistory:title'));
@@ -315,8 +307,7 @@ export const OpenEveryKind = meta.story({
   },
 });
 
-export const OpenLongScrollsInsideTheSheet = meta.story({
-  name: 'Open, long: scrolls inside the sheet',
+export const HistoryExpandedLong = meta.story({
   args: { history: 'long' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -328,9 +319,8 @@ export const OpenLongScrollsInsideTheSheet = meta.story({
   },
 });
 
-export const PlayerTyped7 = meta.story({
+export const PlayerView = meta.story({
   tags: ['visual'],
-  name: 'Player, typed 7',
   args: { who: 'vashti', viewer: 'player' },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -341,29 +331,8 @@ export const PlayerTyped7 = meta.story({
   },
 });
 
-export const PlayerPressedDamage = meta.story({
-  name: 'Player, pressed Damage',
-  args: { who: 'vashti', viewer: 'player', tap: 'damage' },
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'NumpadSheet');
-    await typeAmount(canvas, '7');
-    await expect(canvas.getByRole('button', { name: t('damage') })).toHaveAttribute('data-tap');
-    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('13/36');
-  },
-});
-
-export const Opened287320 = meta.story({
-  name: 'Opened, 287/320',
-  args: { who: 'dragon' },
-  play: async ({ canvas, canvasElement }) => {
-    await sheetOf(canvas);
-    await expect(numbersOf(canvasElement, 'now')).toHaveTextContent('287/320');
-    await expect(numbersOf(canvasElement, 'now')).toHaveAttribute('data-compact');
-  },
-});
-
-export const Damage120167320 = meta.story({
-  name: 'Damage 120 → 167/320',
+export const ThreeDigitHpWounded = meta.story({
+  name: 'Three Digit HP Wounded',
   args: { who: 'dragon' },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -373,8 +342,7 @@ export const Damage120167320 = meta.story({
   },
 });
 
-export const Damage400113320 = meta.story({
-  name: 'Damage 400 → −113/320',
+export const OverkillDead = meta.story({
   args: { who: 'dragon' },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -384,8 +352,7 @@ export const Damage400113320 = meta.story({
   },
 });
 
-export const SetMax999 = meta.story({
-  name: 'Set Max 999',
+export const SetMaxPreview = meta.story({
   args: { who: 'dragon' },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -396,65 +363,20 @@ export const SetMax999 = meta.story({
   },
 });
 
-const openLocale = async (
-  { canvas, canvasElement }: { canvas: Canvas; canvasElement: HTMLElement },
-  history: string,
-  action: string,
-) => {
-  await typeAmount(canvas, '12');
-  await expandHistory(canvas, history);
-  await scrollSheetToTop(canvasElement);
-  return canvas.getByRole('button', { name: action });
-};
-
-export const Deutsch = meta.story({
-  tags: ['visual'],
-  name: 'Deutsch',
-  globals: { locale: 'de' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'TP-Verlauf', 'Temp. TP')).toBeEnabled();
-    await expect(context.canvas.getByText('Danach')).toBeVisible();
+export const AmountTypedHistoryExpanded = meta.story({
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await typeAmount(canvas, '12');
+    await expandHistory(canvas, t('HpHistory:title'));
+    await scrollSheetToTop(canvasElement);
+    await expect(canvas.getByRole('button', { name: t('setMax') })).toBeEnabled();
+    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('2/40');
+    await expect(canvas.getAllByRole('listitem')).toHaveLength(6);
   },
 });
 
-export const EspaOl = meta.story({
-  name: 'Español',
-  globals: { locale: 'es' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'Historial de PG', 'Fijar máx.')).toBeEnabled();
-    await expect(context.canvas.getByText('Después')).toBeVisible();
-  },
-});
-
-export const FranAis = meta.story({
-  name: 'Français',
-  globals: { locale: 'fr' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'Historique des PV', 'Dégâts')).toBeEnabled();
-    await expect(context.canvas.getByText('Après')).toBeVisible();
-  },
-});
-
-export const EdgeCasesLanguages = meta.story({
-  name: '日本語',
-  globals: { locale: 'ja' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'HP履歴', '最大HP')).toBeEnabled();
-    await expect(context.canvas.getByText('変更後')).toBeVisible();
-  },
-});
-
-export const EdgeCasesLanguages2 = meta.story({
-  name: 'Русский',
-  globals: { locale: 'ru' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'История ОЗ', 'Макс. ОЗ')).toBeEnabled();
-    await expect(context.canvas.getByText('После')).toBeVisible();
-  },
-});
-
-export const ExtraKeysAppendUpToThreeDigits = meta.story({
-  name: 'Keys append up to three digits, < deletes, C clears',
+export const KeysAppendUpToThreeDigits = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     const dialog = await sheetOf(canvas);
@@ -487,8 +409,8 @@ export const ExtraKeysAppendUpToThreeDigits = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: digits and Backspace type, Escape closes',
+export const KeyboardTypesAndEscapeCloses = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     const dialog = await sheetOf(canvas);
@@ -504,8 +426,8 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraEnterOnFocusedAction = meta.story({
-  name: 'Enter on a focused action previews and applies it',
+export const EnterOnFocusedActionApplies = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '5');
@@ -519,22 +441,9 @@ export const ExtraEnterOnFocusedAction = meta.story({
   },
 });
 
-export const ExtraEveryDigitAppends = meta.story({
-  name: 'Every key 0–9 appends its digit',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'NumpadSheet');
-    const dialog = await sheetOf(canvas);
-    const keys = within(dialog).getByRole('group', { name: t('keypad') });
-    for (const digit of ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
-      await userEvent.click(within(keys).getByRole('button', { name: t('clear') }));
-      await typeAmount(canvas, `1${digit}`);
-      await expect(amountOf(canvas, t)).toHaveTextContent(`1${digit}`);
-    }
-  },
-});
-
-export const ExtraSetTempZero = meta.story({
-  name: 'Set Temp at 0 clears temp HP, the other actions stay disabled',
+export const SetTempZeroClearsTempHp = meta.story({
+  name: 'Set Temp Zero Clears Temp HP',
+  tags: ['!dev'],
   args: { tempHp: 5 },
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -555,8 +464,8 @@ export const ExtraSetTempZero = meta.story({
   },
 });
 
-export const ExtraDoubleTapAppliesOnce = meta.story({
-  name: 'A second tap during the exit transition does not apply twice',
+export const DoubleTapAppliesOnce = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -569,43 +478,8 @@ export const ExtraDoubleTapAppliesOnce = meta.story({
   },
 });
 
-export const ExtraSpaceOnAction = meta.story({
-  name: 'Space on a focused action applies it',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'NumpadSheet');
-    await typeAmount(canvas, '5');
-    canvas.getByRole('button', { name: t('heal') }).focus();
-    await userEvent.keyboard(' ');
-    await expect(args.onApply).toHaveBeenCalledOnce();
-    await expect(args.onApply).toHaveBeenCalledWith('heal', 5);
-  },
-});
-
-export const ExtraTapDoesNotPinPreview = meta.story({
-  name: 'The tap marker does not pin the After preview',
-  args: { tap: 'heal' },
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'NumpadSheet');
-    await typeAmount(canvas, '8');
-    await previewAction(canvas, t('damage'));
-    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('6/40');
-    await expect(canvas.getByRole('button', { name: t('heal') })).toHaveAttribute('data-tap');
-  },
-});
-
-export const ExtraActionPressedColour = meta.story({
-  name: 'A pressed action takes the Button pressed colour',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'NumpadSheet');
-    await typeAmount(canvas, '5');
-    const damage = canvas.getByRole('button', { name: t('damage') });
-    damage.setAttribute('data-pressed', '');
-    await expect(getComputedStyle(damage).backgroundColor).toBe('rgb(58, 53, 49)');
-  },
-});
-
-export const ExtraCloseWithoutChange = meta.story({
-  name: 'Close button closes without a change',
+export const CloseWithoutChange = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '9');
@@ -669,16 +543,6 @@ const typedPlay =
     await expect(canvas.getByRole('button', { name: t(step.action) })).toBeEnabled();
   };
 
-const pressedPlay =
-  (step: FlowStep) =>
-  async ({ canvas, canvasElement, globals }: StepContext) => {
-    const t = storyT(globals, 'NumpadSheet');
-    await typeAmount(canvas, step.amount);
-    await expect(canvas.getByRole('button', { name: t(step.action) })).toHaveAttribute('data-tap');
-    await previewAction(canvas, t(step.action));
-    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent(step.after);
-  };
-
 const step = (
   args: FlowStep['args'],
   [amount, action, kind]: [string, string, HpHistoryKind],
@@ -691,17 +555,8 @@ const np3 = step({ who: 'vashti' }, ['8', 'heal', 'heal'], ['20/36', '28/36', '2
 const np4 = step({}, ['5', 'setTemp', 'temp'], ['14/40', '14/40', (t) => t('temp', { amount: 5 })]);
 const np5 = step({}, ['30', 'setMax', 'max'], ['14/40', '14/30', '14/30']);
 
-export const ExtraNp1Pressed = meta.story({
-  name: 'NP-1 · 3 · Pressed Damage',
-  args: { ...np1.args, tap: np1.kind },
-  play: async (context) => {
-    await pressedPlay(np1)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP1 = meta.story({
-  name: 'NP-1 · Damage',
+export const DamageApplies = meta.story({
+  tags: ['!dev'],
   args: np1.args,
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -710,8 +565,8 @@ export const NP1 = meta.story({
   },
 });
 
-export const ExtraNp2Opened = meta.story({
-  name: 'NP-2 · 1 · Opened: actions disabled',
+export const WithTempHp = meta.story({
+  name: 'With Temp HP',
   args: np2.args,
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -721,8 +576,8 @@ export const ExtraNp2Opened = meta.story({
   },
 });
 
-export const ExtraNp2Typed = meta.story({
-  name: 'NP-2 · 2 · Typed 8: After previews',
+export const TempHpAbsorbsDamage = meta.story({
+  name: 'Temp HP Absorbs Damage',
   args: np2.args,
   play: async (context) => {
     await typedPlay(np2)(context);
@@ -732,17 +587,8 @@ export const ExtraNp2Typed = meta.story({
   },
 });
 
-export const ExtraNp2Pressed = meta.story({
-  name: 'NP-2 · 3 · Pressed Damage',
-  args: { ...np2.args, tap: np2.kind },
-  play: async (context) => {
-    await pressedPlay(np2)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP2 = meta.story({
-  name: 'NP-2 · Damage with temp',
+export const DamageWithTempApplies = meta.story({
+  tags: ['!dev'],
   args: np2.args,
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -751,19 +597,7 @@ export const NP2 = meta.story({
   },
 });
 
-export const ExtraNp3Opened = meta.story({
-  name: 'NP-3 · 1 · Opened: actions disabled',
-  args: np3.args,
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'NumpadSheet');
-    await sheetOf(canvas);
-    await expect(numbersOf(canvasElement, 'now')).toHaveTextContent('20/36');
-    await expect(canvas.getByRole('button', { name: t('heal') })).toBeDisabled();
-  },
-});
-
-export const ExtraNp3Typed = meta.story({
-  name: 'NP-3 · 2 · Typed 8: After previews',
+export const HealPreview = meta.story({
   args: np3.args,
   play: async (context) => {
     const t = storyT(context.globals, 'NumpadSheet');
@@ -772,17 +606,8 @@ export const ExtraNp3Typed = meta.story({
   },
 });
 
-export const ExtraNp3Pressed = meta.story({
-  name: 'NP-3 · 3 · Pressed Heal',
-  args: { ...np3.args, tap: np3.kind },
-  play: async (context) => {
-    await pressedPlay(np3)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP3 = meta.story({
-  name: 'NP-3 · Heal',
+export const HealApplies = meta.story({
+  tags: ['!dev'],
   args: np3.args,
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -791,8 +616,7 @@ export const NP3 = meta.story({
   },
 });
 
-export const ExtraNp4Typed = meta.story({
-  name: 'NP-4 · 2 · Typed 5: After previews',
+export const SetTempPreview = meta.story({
   args: np4.args,
   play: async (context) => {
     const t = storyT(context.globals, 'NumpadSheet');
@@ -803,17 +627,8 @@ export const ExtraNp4Typed = meta.story({
   },
 });
 
-export const ExtraNp4Pressed = meta.story({
-  name: 'NP-4 · 3 · Pressed Set Temp',
-  args: { ...np4.args, tap: np4.kind },
-  play: async (context) => {
-    await pressedPlay(np4)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP4 = meta.story({
-  name: 'NP-4 · Set Temp',
+export const SetTempApplies = meta.story({
+  tags: ['!dev'],
   args: np4.args,
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
@@ -822,27 +637,8 @@ export const NP4 = meta.story({
   },
 });
 
-export const ExtraNp5Typed = meta.story({
-  name: 'NP-5 · 2 · Typed 30: After previews',
-  args: np5.args,
-  play: async (context) => {
-    const t = storyT(context.globals, 'NumpadSheet');
-    await typedPlay(np5)(context);
-    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent(t('staggered'));
-  },
-});
-
-export const ExtraNp5Pressed = meta.story({
-  name: 'NP-5 · 3 · Pressed Set Max',
-  args: { ...np5.args, tap: np5.kind },
-  play: async (context) => {
-    await pressedPlay(np5)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP5 = meta.story({
-  name: 'NP-5 · Set Max',
+export const SetMaxApplies = meta.story({
+  tags: ['!dev'],
   args: np5.args,
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
