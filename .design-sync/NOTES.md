@@ -28,7 +28,7 @@ Shape `storybook`. Reference Storybook: `.design-sync/sb-reference` (built from 
 
 - `cardMode: "single"`: overlays and sheets (Dialog, Drawer, Sheet, ShareSheet, SortSheet, TagSheet, UnitForm, NumpadSheet, Menu, HpHistory, ConditionPicker) and Library (its grid is 87 000 px tall). `cardMode: "column"`: stories wider than a grid cell (SignIn and the form molecules listed in config).
 
-- `overrides.CombatList.primaryStory: "CLF11"`: the first CombatList stories are CombatFormSheet stories, so the card would otherwise show the form instead of the list.
+- `overrides.CombatList.primaryStory: "Default"`: the CombatList card shows the list, not a story with an open sheet.
 
 ## Re-sync risks
 
