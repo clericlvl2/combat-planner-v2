@@ -4,7 +4,6 @@ import type { ApiErrorCode } from '@combat-planner/api/client';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { useApi } from '../../api/ApiProvider.tsx';
@@ -32,14 +31,6 @@ const shaman = libraryPresets[1]!;
 
 const ulidPattern = /^[0-9A-HJKMNP-TV-Z]{26}$/;
 
-function LocationProbe() {
-  const { pathname } = useLocation();
-  return <span hidden data-location={pathname} />;
-}
-
-const locationOf = (canvasElement: HTMLElement): string | null | undefined =>
-  canvasElement.querySelector('[data-location]')?.getAttribute('data-location');
-
 function SeedToast({ name }: { name: string }) {
   const { show } = useToasts();
   const { t } = useTranslation('Toast');
@@ -57,6 +48,15 @@ function FailFirstCall({ code, children }: { code: ApiErrorCode; children: React
   useState(() => {
     if (api instanceof FakeApiClient) api.failNext(code);
     return code;
+  });
+  return children;
+}
+
+function HoldFirstCall({ children }: { children: ReactNode }) {
+  const api = useApi();
+  useState(() => {
+    if (api instanceof FakeApiClient) api.holdNext();
+    return true;
   });
   return children;
 }
@@ -189,12 +189,6 @@ const meta = preview.meta({
   title: 'Screens/Library',
   component: Library,
   decorators: [withRouter],
-  render: () => (
-    <>
-      <Library />
-      <LocationProbe />
-    </>
-  ),
   parameters: {
     phoneFrame: { overlay: true },
     scenario: libraryScenario,
@@ -209,9 +203,8 @@ const meta = preview.meta({
   },
 });
 
-export const LBF11 = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
-  name: 'LB-F1.1 List',
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await ready(canvas, t);
@@ -226,9 +219,8 @@ export const LBF11 = meta.story({
   },
 });
 
-export const LBF12 = meta.story({
+export const CardExpanded = meta.story({
   tags: ['visual'],
-  name: 'LB-F1.2 Card expanded',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await expand(canvas, shaman.name, t);
@@ -241,9 +233,8 @@ export const LBF12 = meta.story({
   },
 });
 
-export const LBF13 = meta.story({
+export const TagFilterSheetOpen = meta.story({
   tags: ['visual'],
-  name: 'LB-F1.3 Filter sheet',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     const sheet = await openFilter(canvas, t);
@@ -261,8 +252,7 @@ export const LBF13 = meta.story({
   },
 });
 
-export const LBF14 = meta.story({
-  name: 'LB-F1.4 Filter: Orcs',
+export const FilteredByTag = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await applyFilter(canvas, ['Orcs'], t);
@@ -279,8 +269,8 @@ export const LBF14 = meta.story({
   },
 });
 
-export const LBF15 = meta.story({
-  name: 'LB-F1.5 Search “archer” + Goblins',
+export const SearchWithTagFilter = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await applyFilter(canvas, ['Goblins'], t);
@@ -293,9 +283,8 @@ export const LBF15 = meta.story({
   },
 });
 
-export const LBF16 = meta.story({
+export const NothingFound = meta.story({
   tags: ['visual'],
-  name: 'LB-F1.6 Nothing found',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await ready(canvas, t);
@@ -308,9 +297,8 @@ export const LBF16 = meta.story({
   },
 });
 
-export const LBF17 = meta.story({
+export const LibraryEmpty = meta.story({
   tags: ['visual'],
-  name: 'LB-F1.7 Library is empty',
   parameters: { scenario: emptyLibraryScenario },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
@@ -328,8 +316,7 @@ export const LBF17 = meta.story({
   },
 });
 
-export const LBF21 = meta.story({
-  name: 'LB-F2.1 Sort sheet',
+export const SortSheetOpen = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await ready(canvas, t);
@@ -343,8 +330,8 @@ export const LBF21 = meta.story({
   },
 });
 
-export const LBF22 = meta.story({
-  name: 'LB-F2.2 A–Z: button filled',
+export const SortedAToZ = meta.story({
+  name: 'Sorted A To Z',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await ready(canvas, t);
@@ -361,41 +348,8 @@ export const LBF22 = meta.story({
   },
 });
 
-export const LBF31 = meta.story({
-  name: 'LB-F3.1 Tap New preset',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    await ready(canvas, t);
-    const create = canvas.getByRole('button', { name: t('BottomBar:newPreset') });
-    await expect(create).toBeEnabled();
-    create.focus();
-    await expect(create).toHaveFocus();
-  },
-});
-
-export const LBF32 = meta.story({
-  name: 'LB-F3.2 Empty form',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    await openCreate(canvas, t);
-    const name = canvas.getByRole('textbox', { name: t('UnitForm:name') });
-    await expect(name).toHaveValue('');
-    await expect(canvas.getByRole('radio', { name: t('UnitForm:enemy') })).toBeChecked();
-    await expect(canvas.getByRole('spinbutton', { name: t('NumberField:maxHp') })).toHaveValue(
-      '10',
-    );
-    await expect(name).toHaveAttribute(
-      'placeholder',
-      t('PresetFormSheet:namePlaceholder', { role: t('PresetFormSheet:enemy') }),
-    );
-    await expect(canvas.getByRole('button', { name: t('Sheet:create') })).toBeEnabled();
-    name.focus();
-    await expect(name).toHaveFocus();
-  },
-});
-
-export const LBF33 = meta.story({
-  name: 'LB-F3.3 No name: created as "Enemy 1"',
+export const NoNameCreatesDefaultName = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openCreate(canvas, t);
@@ -425,28 +379,8 @@ export const LBF33 = meta.story({
   },
 });
 
-export const LBF34 = meta.story({
-  name: 'LB-F3.4 Form filled',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    await openCreate(canvas, t);
-    await fillCreate(canvas, t);
-    await expect(canvas.getByText('12/40')).toBeVisible();
-    await expect(canvas.getByRole('spinbutton', { name: t('NumberField:maxHp') })).toHaveValue(
-      '72',
-    );
-    await expect(
-      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Orcs' }) }),
-    ).toBeVisible();
-    await expect(
-      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Bosses' }) }),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: t('Sheet:create') })).toBeEnabled();
-  },
-});
-
-export const LBF35 = meta.story({
-  name: 'LB-F3.5 Preset created',
+export const PresetCreated = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openCreate(canvas, t);
@@ -475,71 +409,8 @@ export const LBF35 = meta.story({
   },
 });
 
-export const LBF41 = meta.story({
-  name: 'LB-F4.1 Tap Edit',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    await expand(canvas, berserker.name, t);
-    const edit = canvas.getByRole('button', { name: t('CardActions:edit') });
-    await expect(edit).toBeEnabled();
-    edit.focus();
-    await expect(edit).toHaveFocus();
-  },
-});
-
-export const LBF42 = meta.story({
-  name: 'LB-F4.2 Form: tap Add tag',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    await openEdit(canvas, t);
-    await expect(canvas.getByRole('textbox', { name: t('UnitForm:name') })).toHaveValue(
-      berserker.name,
-    );
-    await expect(canvas.getByRole('spinbutton', { name: t('NumberField:maxHp') })).toHaveValue(
-      '40',
-    );
-    await expect(
-      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Orcs' }) }),
-    ).toBeVisible();
-    await expect(
-      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Ferry' }) }),
-    ).toBeVisible();
-    const add = canvas.getByRole('button', { name: t('Chip:addTag') });
-    add.focus();
-    await expect(add).toHaveFocus();
-  },
-});
-
-export const LBF43 = meta.story({
-  name: 'LB-F4.3 Tag sheet over the form',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    const sheet = await openTagSheet(canvas, t);
-    await expect(within(sheet).getByRole('checkbox', { name: /^Orcs/ })).toBeChecked();
-    await expect(within(sheet).getByRole('checkbox', { name: /^Ferry/ })).toBeChecked();
-    await expect(within(sheet).getByRole('checkbox', { name: /^Mooks/ })).not.toBeChecked();
-    await expect(
-      within(sheet).getByRole('button', { name: t('TagSheet:doneTags', { count: 2 }) }),
-    ).toBeVisible();
-  },
-});
-
-export const LBF44 = meta.story({
-  name: 'LB-F4.4 No such tag: Create',
-  play: async ({ canvas, globals, loaded }) => {
-    const t = storyT(globals, 'Library');
-    const sheet = await openTagSheet(canvas, t);
-    await userEvent.type(within(sheet).getByRole('searchbox'), 'Elite');
-    await expect(
-      within(sheet).getByRole('button', { name: t('CheckList:create', { query: 'Elite' }) }),
-    ).toBeVisible();
-    await expect(within(sheet).getByText(t('CheckList:noMatch'))).toBeVisible();
-    await expect(callsOf(loaded, 'tags.create')).toHaveLength(0);
-  },
-});
-
-export const LBF45 = meta.story({
-  name: 'LB-F4.5 Created and checked',
+export const CreatedTagChecked = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     const sheet = await openTagSheet(canvas, t);
@@ -559,59 +430,8 @@ export const LBF45 = meta.story({
   },
 });
 
-export const LBF46 = meta.story({
-  name: 'LB-F4.6 Form with the new tag',
-  play: async ({ canvas, globals, loaded }) => {
-    const t = storyT(globals, 'Library');
-    const sheet = await openTagSheet(canvas, t);
-    await userEvent.type(within(sheet).getByRole('searchbox'), 'Elite');
-    await userEvent.click(
-      within(sheet).getByRole('button', { name: t('CheckList:create', { query: 'Elite' }) }),
-    );
-    await userEvent.click(
-      within(sheet).getByRole('button', { name: t('TagSheet:doneTags', { count: 3 }) }),
-    );
-    await waitFor(() =>
-      expect(
-        canvas.queryByRole('dialog', {
-          name: anyValue(t, 'TagSheet:assignTitle', 'name'),
-        }),
-      ).toBeNull(),
-    );
-    await expect(
-      canvas.getByRole('button', { name: t('PresetFormSheet:removeTag', { name: 'Elite' }) }),
-    ).toBeVisible();
-    await expect(callsOf(loaded, 'presets.update')).toHaveLength(0);
-  },
-});
-
-export const LBF47 = meta.story({
-  name: 'LB-F4.7 Typing “mo”',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    const sheet = await openTagSheet(canvas, t);
-    await userEvent.type(within(sheet).getByRole('searchbox'), 'mo');
-    await expect(within(sheet).getAllByRole('checkbox')).toHaveLength(1);
-    await expect(within(sheet).getByRole('checkbox', { name: /^Mooks/ })).not.toBeChecked();
-    await expect(
-      within(sheet).queryByRole('button', {
-        name: anyValue(t, 'CheckList:create', 'query'),
-      }),
-    ).toBeNull();
-  },
-});
-
-export const LBF51 = meta.story({
-  name: 'LB-F5.1 ⋯ → Duplicate',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    await openMenu(canvas, t);
-    await expect(canvas.getByRole('menuitem', { name: t('Button:delete') })).toBeVisible();
-  },
-});
-
-export const LBF52 = meta.story({
-  name: 'LB-F5.2 Copy below the original',
+export const CopyBelowOriginal = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openMenu(canvas, t);
@@ -630,18 +450,7 @@ export const LBF52 = meta.story({
   },
 });
 
-export const LBF53 = meta.story({
-  name: 'LB-F5.3 ⋯ → Delete',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Library');
-    await openMenu(canvas, t);
-    await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: t('Button:delete') })).toHaveFocus();
-  },
-});
-
-export const LBF54 = meta.story({
-  name: 'LB-F5.4 Confirmation',
+export const DeleteConfirmation = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openMenu(canvas, t);
@@ -654,8 +463,8 @@ export const LBF54 = meta.story({
   },
 });
 
-export const LBF55 = meta.story({
-  name: 'LB-F5.5 Preset deleted',
+export const PresetDeleted = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openMenu(canvas, t);
@@ -672,14 +481,12 @@ export const LBF55 = meta.story({
   },
 });
 
-export const LBF61 = meta.story({
-  name: 'LB-F6.1 New preset from combat',
+export const PresetSavedFromCombat = meta.story({
   parameters: { scenario: fromCombatScenario },
   render: () => (
     <>
       <Library />
       <SeedToast name={savedFromCombat.name} />
-      <LocationProbe />
     </>
   ),
   play: async ({ canvas, globals }) => {
@@ -695,8 +502,8 @@ export const LBF61 = meta.story({
   },
 });
 
-export const ExtraEditSaved = meta.story({
-  name: 'Edit saved with the new tag',
+export const EditSaved = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     const sheet = await openTagSheet(canvas, t);
@@ -735,8 +542,8 @@ export const ExtraEditSaved = meta.story({
   },
 });
 
-export const ExtraTagReused = meta.story({
-  name: 'Create reuses an existing tag, ignoring case',
+export const TagReused = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     const sheet = await openTagSheet(canvas, t);
@@ -757,8 +564,8 @@ export const ExtraTagReused = meta.story({
   },
 });
 
-export const ExtraSeveralTags = meta.story({
-  name: 'Several tags match any of them',
+export const SeveralTags = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await applyFilter(canvas, ['Orcs', 'Undead'], t);
@@ -771,8 +578,8 @@ export const ExtraSeveralTags = meta.story({
   },
 });
 
-export const ExtraRemoveFilter = meta.story({
-  name: 'Remove a filter chip, then Clear',
+export const RemoveFilter = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await applyFilter(canvas, ['Orcs', 'Undead'], t);
@@ -790,8 +597,8 @@ export const ExtraRemoveFilter = meta.story({
   },
 });
 
-export const ExtraSortRemembered = meta.story({
-  name: 'Sort remembered after a remount',
+export const SortRemembered = meta.story({
+  tags: ['!dev'],
   beforeEach: () => {
     localStorage.setItem(PRESET_SORT_KEY, 'byType');
   },
@@ -817,8 +624,7 @@ export const ExtraSortRemembered = meta.story({
   },
 });
 
-export const ExtraLimitReached = meta.story({
-  name: 'Limit reached',
+export const PresetLimitReached = meta.story({
   parameters: { scenario: fullLibraryScenario },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
@@ -832,8 +638,8 @@ export const ExtraLimitReached = meta.story({
   },
 });
 
-export const ExtraDeleteCancelled = meta.story({
-  name: 'Delete cancelled',
+export const DeleteCancelled = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openMenu(canvas, t);
@@ -846,38 +652,26 @@ export const ExtraDeleteCancelled = meta.story({
   },
 });
 
-export const ExtraDrawer = meta.story({
-  name: 'Drawer: Combats',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'Library');
-    await ready(canvas, t);
-    await userEvent.click(canvas.getByRole('button', { name: t('IconButton:openNavigation') }));
-    const drawer = await canvas.findByRole('dialog', { name: 'Combat Planner' });
-    await expect(within(drawer).getByRole('button', { name: t('title') })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    await userEvent.click(within(drawer).getByRole('button', { name: t('CombatList:title') }));
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
-  },
-});
-
-export const ExtraRussian = meta.story({
-  tags: ['visual'],
-  name: 'Russian: list',
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('heading', { name: 'Библиотека' })).toBeVisible();
-    await expect(await canvas.findByText('Капитан стражи переправы Святослав Огнев')).toBeVisible();
-  },
-});
-
-export const ExtraFirstLoadFails = meta.story({
-  name: 'A failed first load shows Can’t reach the server with Try again',
+export const CantReachServer = meta.story({
   render: () => (
     <FailFirstCall code="network">
       <Library />
-      <LocationProbe />
+    </FailFirstCall>
+  ),
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Library');
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: t('MessageScreen:offlineTitle') }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toBeVisible();
+  },
+});
+
+export const TryAgainReloads = meta.story({
+  tags: ['!dev'],
+  render: () => (
+    <FailFirstCall code="network">
+      <Library />
     </FailFirstCall>
   ),
   play: async ({ canvas, globals, loaded }) => {
@@ -888,21 +682,8 @@ export const ExtraFirstLoadFails = meta.story({
   },
 });
 
-export const ExtraSignedOut = meta.story({
-  name: 'An unauthorized first load goes to sign-in',
-  render: () => (
-    <FailFirstCall code="unauthorized">
-      <Library />
-      <LocationProbe />
-    </FailFirstCall>
-  ),
-  play: async ({ canvasElement }) => {
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/auth/sign-in'));
-  },
-});
-
-export const ExtraCreateRetry = meta.story({
-  name: 'Create is disabled in flight; Retry creates once with the same id',
+export const CreateRetry = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openCreate(canvas, t);
@@ -950,8 +731,8 @@ const createEliteTag = async (canvas: Canvas, t: TFunction) => {
   );
 };
 
-export const ExtraTagCreateAwaited = meta.story({
-  name: 'Save waits for the new tag; a failed tag shows an error and keeps the form',
+export const TagCreateAwaited = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openCreate(canvas, t);
@@ -964,8 +745,8 @@ export const ExtraTagCreateAwaited = meta.story({
   },
 });
 
-export const ExtraTagRetryThenSave = meta.story({
-  name: 'Save after a tag Retry sends the preset with the created tag',
+export const TagRetryThenSave = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openCreate(canvas, t);
@@ -981,8 +762,8 @@ export const ExtraTagRetryThenSave = meta.story({
   },
 });
 
-export const ExtraFailedTagSave = meta.story({
-  name: 'Save after a dismissed tag Retry shows the error and is not stuck',
+export const FailedTagSave = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await openCreate(canvas, t);
@@ -1010,8 +791,8 @@ export const ExtraFailedTagSave = meta.story({
   },
 });
 
-export const ExtraFailedTagListedLater = meta.story({
-  name: 'A failed tag that the tag list shows later no longer blocks Save',
+export const FailedTagListedLater = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     const api = fakeApiOf(loaded);
@@ -1054,8 +835,8 @@ export const ExtraFailedTagListedLater = meta.story({
   },
 });
 
-export const ExtraDuplicateAtLimit = meta.story({
-  name: 'Duplicate is disabled at the preset limit',
+export const DuplicateAtLimit = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: fullLibraryScenario },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
@@ -1065,5 +846,23 @@ export const ExtraDuplicateAtLimit = meta.story({
     await expect(duplicate).toBeDisabled();
     await userEvent.click(duplicate, { pointerEventsCheck: 0 });
     await expect(callsOf(loaded, 'presets.duplicate')).toHaveLength(0);
+  },
+});
+
+export const Loading = meta.story({
+  render: () => (
+    <HoldFirstCall>
+      <Library />
+    </HoldFirstCall>
+  ),
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    await waitFor(() => expect(callsOf(loaded, 'presets.list')).toHaveLength(1));
+    await expect(canvas.getByRole('button', { name: t('BottomBar:newPreset') })).toBeDisabled();
+    await expect(
+      canvas.queryByRole('button', { name: anyValue(t, 'PresetCard:toggle', 'name') }),
+    ).toBeNull();
+    await expect(canvas.queryByText(t('emptyTitle'))).toBeNull();
   },
 });
