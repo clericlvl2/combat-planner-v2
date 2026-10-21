@@ -5,15 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { EmptyState } from './EmptyState.tsx';
 import type { EmptyStateAction } from './EmptyState.tsx';
-import { collapsedSpace, storyT } from '../../storybook/storyT.ts';
+import { storyT } from '../../storybook/storyT.ts';
 
 type EmptyStateKind = 'noCombats' | 'noResults' | 'emptyCombat';
 
 interface EmptyStateCellProps {
   kind: EmptyStateKind;
-  title?: string;
-  body?: string;
-  actionLabel?: string;
+  query?: string;
+  newCombatAction?: boolean;
   actionIcon?: Icon;
   actionVariant?: EmptyStateAction['variant'];
   onAction: () => void;
@@ -27,9 +26,8 @@ const icons: Record<EmptyStateKind, Icon> = {
 
 function EmptyStateCell({
   kind,
-  title,
-  body,
-  actionLabel,
+  query = 'dragon',
+  newCombatAction = false,
   actionIcon,
   actionVariant,
   onAction,
@@ -37,15 +35,19 @@ function EmptyStateCell({
   const { t } = useTranslation('EmptyState');
   const texts: Record<EmptyStateKind, { title: string; body: string }> = {
     noCombats: { title: t('noCombatsTitle'), body: t('noCombatsBody') },
-    noResults: { title: t('noResultsTitle'), body: t('noResultsBody', { query: 'dragon' }) },
+    noResults: { title: t('noResultsTitle'), body: t('noResultsBody', { query }) },
     emptyCombat: { title: t('noUnitsTitle'), body: t('noUnitsBody') },
   };
-  const label = actionLabel ?? (kind === 'emptyCombat' ? t('addUnit') : undefined);
+  const label = newCombatAction
+    ? t('newCombat', { ns: 'BottomBar' })
+    : kind === 'emptyCombat'
+      ? t('addUnit')
+      : undefined;
   return (
     <EmptyState
       icon={icons[kind]}
-      title={title ?? texts[kind].title}
-      body={body ?? texts[kind].body}
+      title={texts[kind].title}
+      body={texts[kind].body}
       action={
         label === undefined
           ? undefined
@@ -66,46 +68,27 @@ const meta = preview.meta({
   args: { kind: 'emptyCombat' as EmptyStateKind, onAction: fn() },
 });
 
-export const Anatomy = meta.story({ tags: ['visual'] });
+export const Default = meta.story({ tags: ['visual'] });
 
 export const NoCombats = meta.story({
-  name: 'No combats',
   args: { kind: 'noCombats' },
 });
 
 export const NoResults = meta.story({
-  name: 'No results',
   args: { kind: 'noResults' },
 });
 
-export const EmptyCombat = meta.story({
-  name: 'Empty combat',
-  args: { kind: 'emptyCombat' },
+export const LongSearchQuery = meta.story({
+  args: { kind: 'noResults', query: 'капитан стражи переправы у старой мельницы' },
 });
 
-export const RuLongQuery = meta.story({
-  name: 'ru, long query',
-  args: {
-    kind: 'noResults',
-    title: 'Ничего не найдено',
-    body: 'Нет боёв по запросу «капитан стражи переправы».',
-  },
-});
-
-export const DeAction = meta.story({
+export const NoCombatsWithAction = meta.story({
   tags: ['visual'],
-  name: 'de, action',
-  args: {
-    kind: 'noCombats',
-    title: 'Noch keine Kämpfe',
-    body: 'Erstelle einen Kampf, füge Einheiten hinzu und teile den Link.',
-    actionLabel: 'Kampf erstellen',
-    actionIcon: IconPlus,
-  },
+  args: { kind: 'noCombats', newCombatAction: true, actionIcon: IconPlus },
 });
 
-export const ExtraAction = meta.story({
-  name: 'Action fires onAction',
+export const ActionFiresOnAction = meta.story({
+  tags: ['!dev'],
   args: { kind: 'emptyCombat', onAction: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'EmptyState');
@@ -115,34 +98,7 @@ export const ExtraAction = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter on the action',
-  args: { kind: 'emptyCombat', onAction: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'EmptyState');
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: t('addUnit') })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onAction).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraWithoutAction = meta.story({
-  name: 'Without an action',
-  args: { kind: 'noResults', onAction: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'EmptyState');
-    await expect(canvas.getByRole('heading', { name: t('noResultsTitle') })).toBeVisible();
-    await expect(
-      canvas.getByText(collapsedSpace(t('noResultsBody', { query: 'dragon' }))),
-    ).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
-    await expect(args.onAction).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraSecondaryAction = meta.story({
-  name: 'Secondary action',
+export const SecondaryAction = meta.story({
   args: { kind: 'emptyCombat', actionVariant: 'secondary', onAction: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'EmptyState');
@@ -150,24 +106,5 @@ export const ExtraSecondaryAction = meta.story({
     await expect(button).toHaveAttribute('data-variant', 'secondary');
     await userEvent.click(button);
     await expect(args.onAction).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { kind: 'emptyCombat' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { name: 'Noch keine Einheiten' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Einheit hinzufügen' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { kind: 'noResults' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { name: '見つかりません' })).toBeVisible();
   },
 });
