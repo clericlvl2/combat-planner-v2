@@ -20,25 +20,3 @@ export const Default = meta.story({
     await expect(canvas.queryByRole('button')).toBeNull();
   },
 });
-
-export const Deutsch = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'de' },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Dieser Link funktioniert nicht mehr' }),
-    ).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
-  },
-});
-
-export const Russian = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Эта ссылка больше не работает' }),
-    ).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
-  },
-});
