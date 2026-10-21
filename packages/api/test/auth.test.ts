@@ -420,6 +420,56 @@ describe('social sign-in', () => {
       withGithub.close();
     }
   });
+
+  it('gives a GitHub account the language of the callback Accept-Language header', async () => {
+    const withGithub = createTestApp({
+      env: { github: { clientId: 'github-id', clientSecret: 'github-secret' } },
+    });
+    try {
+      const browser = createBrowser(withGithub.app);
+      const started = await browse(browser, 'POST', '/auth/sign-in/social', {
+        provider: 'github',
+        callbackURL: '/combats',
+      });
+      const { url } = (await started.json()) as { url: string };
+      const state = new URL(url).searchParams.get('state');
+      githubFetch('Octo');
+      const callback = await browser.request(
+        `/auth/callback/github?code=github-code&state=${encodeURIComponent(state ?? '')}`,
+        { method: 'GET', headers: { 'accept-language': 'de-DE,de;q=0.9,en;q=0.8' } },
+      );
+      expect(callback.status).toBe(302);
+      expect(await sessionOf(browser)).toMatchObject({ email: GITHUB_EMAIL, language: 'de' });
+    } finally {
+      withGithub.close();
+    }
+  });
+});
+
+describe('sign-up language', () => {
+  const signUpWith = (email: string, acceptLanguage?: string) =>
+    createBrowser(opened.app).request('/auth/sign-up/email', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        ...(acceptLanguage === undefined ? {} : { 'accept-language': acceptLanguage }),
+      },
+      body: JSON.stringify({ name: 'Lang', email, password: PASSWORD }),
+    });
+
+  it.each([
+    ['ru-RU,ru;q=0.9,en;q=0.8', 'ru', 'russian'],
+    ['de-DE', 'de', 'german'],
+    ['pt-BR', 'en', 'portuguese'],
+    [undefined, 'en', 'none'],
+  ])(
+    'creates the account for Accept-Language %s with language %s',
+    async (header, language, who) => {
+      const response = await signUpWith(`lang-${who}@example.com`, header);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toMatchObject({ user: { language } });
+    },
+  );
 });
 
 describe('GET /auth-providers', () => {
