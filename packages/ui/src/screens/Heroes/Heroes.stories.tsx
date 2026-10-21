@@ -8,6 +8,7 @@ import { fakeApiOf } from '../../storybook/withApi.tsx';
 import {
   ALEX,
   COMBAT_ID,
+  JONAS,
   MIKA,
   TOKEN,
   actAsDm,
@@ -47,6 +48,8 @@ const sentBy = (api: FakeApiClient, playerId: string): Action[] =>
 
 const firstVisit = playerScenario(ferryCombat({ status: 'setup', joined: false, ilse: true }));
 
+const longHeroName = 'Ильза Отважная, дочь стражника переправы';
+
 const meta = preview.meta({
   title: 'Screens/Heroes',
   component: HeroesScreen,
@@ -56,7 +59,6 @@ const meta = preview.meta({
 
 export const FirstVisit = meta.story({
   tags: ['visual'],
-  name: 'First visit',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Heroes');
     const join = await canvas.findByRole('button', { name: t('join') });
@@ -69,8 +71,7 @@ export const FirstVisit = meta.story({
   },
 });
 
-export const NameRequired = meta.story({
-  name: 'Name left empty',
+export const NameLeftEmpty = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Heroes');
     const name = await canvas.findByRole('textbox', { name: t('nameLabel') });
@@ -83,7 +84,7 @@ export const NameRequired = meta.story({
 });
 
 export const PickAndJoin = meta.story({
-  name: 'Pick a hero and join',
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Heroes');
     const api = fakeApiOf(loaded);
@@ -106,8 +107,7 @@ export const PickAndJoin = meta.story({
   },
 });
 
-export const TakenWhileOpen = meta.story({
-  name: 'Chosen hero taken by another player',
+export const HeroTakenByAnotherPlayer = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Heroes');
     const api = fakeApiOf(loaded);
@@ -130,9 +130,8 @@ export const TakenWhileOpen = meta.story({
   },
 });
 
-export const Returning = meta.story({
+export const ReturningPlayer = meta.story({
   tags: ['visual'],
-  name: 'Returning player changes heroes',
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup', ilse: true })) },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Heroes');
@@ -156,8 +155,7 @@ export const Returning = meta.story({
   },
 });
 
-export const ExtraJoinFails = meta.story({
-  name: 'Join stays on Heroes when a claim fails',
+export const JoinFailed = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Heroes');
     const api = fakeApiOf(loaded);
@@ -175,8 +173,8 @@ export const ExtraJoinFails = meta.story({
   },
 });
 
-export const ExtraJoinClaimsOnReturnedVersion = meta.story({
-  name: 'Join claims each hero on the version the previous claim returned',
+export const JoinClaimsOnReturnedVersion = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Heroes');
     const api = fakeApiOf(loaded);
@@ -202,8 +200,8 @@ export const ExtraJoinClaimsOnReturnedVersion = meta.story({
   },
 });
 
-export const ExtraReturningRename = meta.story({
-  name: 'Returning player renames and taps Done',
+export const ReturningRename = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup', ilse: true })) },
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Heroes');
@@ -225,5 +223,48 @@ export const ExtraReturningRename = meta.story({
     const { combat } = await api.play.get(TOKEN, MIKA);
     await expect(combat.players[MIKA]).toBe('Мика');
     await expect(combat.units.find((unit) => unit.id === unitIds.vashti)?.claimedBy).toBe(MIKA);
+  },
+});
+
+export const HeroPickedReadyToJoin = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Heroes');
+    await userEvent.type(await canvas.findByRole('textbox', { name: t('nameLabel') }), 'Mika');
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Ilse the Bold' }));
+    await expect(canvas.getByRole('checkbox', { name: 'Ilse the Bold' })).toBeChecked();
+    await expect(canvas.getByRole('button', { name: t('join') })).toBeEnabled();
+    await expect(canvas.queryByText(t('hint'))).toBeNull();
+  },
+});
+
+export const EveryHeroTaken = meta.story({
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Heroes');
+    const api = fakeApiOf(loaded);
+    await canvas.findByRole('textbox', { name: t('nameLabel') });
+    await claimAs(api, ALEX, 'Alex', unitIds.vashti);
+    await claimAs(api, JONAS, 'Jonas', unitIds.ilse);
+    await waitFor(() =>
+      expect(canvas.getByRole('checkbox', { name: 'Ilse the Bold' })).toBeDisabled(),
+    );
+    for (const hero of ['Ser Aldric', 'Vashti the Hexer', 'Ilse the Bold']) {
+      await expect(canvas.getByRole('checkbox', { name: hero })).toBeDisabled();
+    }
+    await expect(canvas.queryByText(t('free'))).toBeNull();
+    await expect(canvas.getByRole('button', { name: t('join') })).toBeDisabled();
+  },
+});
+
+export const LongHeroName = meta.story({
+  parameters: {
+    scenario: playerScenario(
+      ferryCombat({ status: 'setup', joined: false, ilse: true, names: { ilse: longHeroName } }),
+    ),
+  },
+  play: async ({ canvas }) => {
+    await expect(longHeroName).toHaveLength(40);
+    const hero = await canvas.findByRole('checkbox', { name: longHeroName });
+    await expect(hero).toBeEnabled();
+    await expect(hero.scrollWidth).toBeLessThanOrEqual(hero.clientWidth);
   },
 });
