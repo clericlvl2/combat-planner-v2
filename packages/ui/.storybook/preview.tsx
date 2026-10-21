@@ -51,7 +51,7 @@ export default definePreview({
   },
   loaders: [apiLoader],
   decorators: [withDocsTheme, withPhoneFrame, withLocale, withApi],
-  afterEach: async ({ canvasElement, parameters, id, globals }) => {
-    await expectGeometry(canvasElement, parameters.geometry, { id, globals });
+  afterEach: async ({ canvasElement, parameters }) => {
+    await expectGeometry(canvasElement, parameters.geometry);
   },
 });
