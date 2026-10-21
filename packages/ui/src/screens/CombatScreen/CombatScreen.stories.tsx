@@ -1156,6 +1156,18 @@ export const NotFoundGoesToCombats = meta.story({
   },
 });
 
+export const ExpiredSessionActionGoesToSignIn = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
+    fakeApiOf(loaded).failNext('unauthorized');
+    await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:duplicate') }));
+    await waitFor(() => expect(locationOf(canvasElement)).toBe('/auth/sign-in'));
+    await expect(callsOf(fakeApiOf(loaded), 'combats.dispatch')).toHaveLength(1);
+  },
+});
+
 export const TryAgainAfterFailedLoad = meta.story({
   tags: ['!dev'],
   loaders: [offlineLoader],

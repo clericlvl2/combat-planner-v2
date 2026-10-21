@@ -22,6 +22,7 @@ import type {
   PlayerViewer,
   SourceEnd,
 } from './combat.ts';
+import { forgetSessionOn } from './mutations.ts';
 import { toastStoreOf } from './toasts.ts';
 import { useToasts } from './useToasts.ts';
 
@@ -83,6 +84,7 @@ export function useCombat(
         show,
         t,
         generation: toastStoreOf(queryClient).generation,
+        failed: (error) => forgetSessionOn(queryClient, error),
       }),
     [source, queryClient, key, show, t],
   );

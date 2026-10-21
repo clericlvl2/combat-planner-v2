@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useAccount } from '../../hooks/useAccount.ts';
@@ -18,6 +18,12 @@ export function PageScreen({ title, section, children }: PageScreenProps) {
   const navigate = useNavigate();
   const { session } = useAccount();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const signedOut = session === null;
+
+  useEffect(() => {
+    if (signedOut) void navigate('/auth/sign-in');
+  }, [signedOut, navigate]);
+
   return (
     <div className={classes.root}>
       <PageHeader title={title} onMenu={() => setDrawerOpen(true)} />

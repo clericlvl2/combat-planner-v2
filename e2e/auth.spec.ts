@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { createCombat, signIn, signUp } from './helpers.ts';
+import { createCombat, openCombatMenu, signIn, signUp } from './helpers.ts';
 import { t } from './t.ts';
 
 const signOut = async (page: Page, email: string) => {
@@ -79,6 +79,21 @@ test('a combat reloaded after the session is cleared goes to sign-in', async ({
   await createCombat(page, 'Lost session');
   await context.clearCookies();
   await page.reload();
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(page.getByRole('heading', { name: t('SignIn:title') })).toBeVisible();
+});
+
+test('an action on a combat after the session is cleared goes to sign-in', async ({
+  page,
+  context,
+}) => {
+  await signUp(page);
+  await createCombat(page, 'Lost session');
+  await context.clearCookies();
+  await openCombatMenu(page, t('CombatHeader:addUnit'));
+  const form = page.getByRole('dialog', { name: t('UnitForm:addTitle') });
+  await form.getByLabel(t('UnitForm:name')).fill('Orc');
+  await form.getByRole('button', { name: t('UnitForm:addUnit') }).click();
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
   await expect(page.getByRole('heading', { name: t('SignIn:title') })).toBeVisible();
 });

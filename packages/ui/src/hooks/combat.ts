@@ -150,6 +150,7 @@ export interface DispatcherOptions {
   show: (input: ToastInput) => string;
   t: Translate;
   generation: () => number;
+  failed?: (error: unknown) => void;
 }
 
 const NOT_APPLIED: DispatchResult = { applied: false };
@@ -162,6 +163,7 @@ export function createDispatcher({
   show,
   t,
   generation,
+  failed,
 }: DispatcherOptions): Dispatch {
   const dispatch: Dispatch = async (action, onRetryShown) => {
     const sentIn = generation();
@@ -169,6 +171,7 @@ export function createDispatcher({
       const { version } = await send(action);
       return { applied: true, version };
     } catch (error) {
+      failed?.(error);
       if (generation() !== sentIn) return NOT_APPLIED;
       if (error instanceof ApiError && error.code === 'version') await refetch().catch(() => {});
       return new Promise<DispatchResult>((resolve) => {
