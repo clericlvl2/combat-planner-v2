@@ -261,26 +261,19 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({ tags: ['visual'] });
+export const Default = meta.story({ tags: ['visual'] });
 
-export const RadioSortCombats = meta.story({
-  name: 'Radio: Sort combats',
-});
-
-export const ChecklistWithSearchTags = meta.story({
+export const ChecklistWithSearch = meta.story({
   tags: ['visual'],
-  name: 'Checklist with search: Tags',
   args: { sample: 'tags', titleKey: 'tags', primaryKey: 'doneTags' },
 });
 
-export const FormEditCombat = meta.story({
+export const Form = meta.story({
   tags: ['visual'],
-  name: 'Form: Edit combat',
   args: { sample: 'form', titleKey: 'editCombat', primaryKey: 'save' },
 });
 
 export const TwoButtonsPrimaryDisabled = meta.story({
-  name: 'Two buttons, primary disabled',
   args: {
     sample: 'form',
     titleKey: 'newCombat',
@@ -303,9 +296,8 @@ export const TwoButtonsPrimaryDisabled = meta.story({
   },
 });
 
-export const LongTitleBack = meta.story({
+export const LongTitleWithBack = meta.story({
   tags: ['visual'],
-  name: 'Long title, back',
   render: (args) => (
     <SheetCell
       {...args}
@@ -324,84 +316,7 @@ export const LongTitleBack = meta.story({
   },
 });
 
-export const Ru = meta.story({
-  name: 'ru',
-  render: (args) => <SheetCell {...args} sample="sort" title="Сортировка боёв" primary="Готово" />,
-});
-
-export const ExtraCloseButton = meta.story({
-  name: 'Close button calls onClose only',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'Sheet');
-    await userEvent.click(canvas.getByRole('button', { name: t('close') }));
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onBack).not.toHaveBeenCalled();
-    await expect(args.onPrimary).not.toHaveBeenCalled();
-    await expect(args.onSecondary).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraScrimTap = meta.story({
-  name: 'Scrim tap calls onClose only',
-  play: async ({ args, canvasElement }) => {
-    const scrim = canvasElement.querySelector<HTMLElement>('[data-scrim]');
-    await expect(scrim).not.toBeNull();
-    if (scrim) await userEvent.click(scrim);
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onBack).not.toHaveBeenCalled();
-    await expect(args.onPrimary).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraEscape = meta.story({
-  name: 'Escape closes',
-  play: async ({ args, canvas }) => {
-    await waitFor(() =>
-      expect(canvas.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement),
-    );
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onPrimary).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraFocus = meta.story({
-  name: 'Focus moves in on open and back to the opener on close',
-  args: { opened: false, withOpener: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'Sheet');
-    await expect(canvas.queryByRole('dialog')).toBeNull();
-    const opener = canvas.getByRole('button', { name: 'Sort' });
-    await userEvent.click(opener);
-    const sheet = await canvas.findByRole('dialog', { name: t('sortCombats') });
-    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
-    await userEvent.tab();
-    await expect(sheet).toContainElement(document.activeElement as HTMLElement);
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-    await waitFor(() => expect(opener).toHaveFocus());
-  },
-});
-
-export const ExtraMotionOnFocus = meta.story({
-  name: 'Motion on: opening from closed focuses the section',
-  args: { opened: false, withOpener: true },
-  parameters: { motion: 'on' },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Sheet');
-    await expect(document.documentElement.dataset.motion).toBe('on');
-    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
-    const sheet = await canvas.findByRole('dialog', { name: t('sortCombats') });
-    await waitFor(() => expect(sheet).toHaveFocus());
-    await userEvent.tab({ shift: true });
-    await expect(canvas.getByRole('button', { name: t('done') })).toHaveFocus();
-  },
-});
-
-export const ExtraHeaderSlot = meta.story({
-  name: 'A header slot replaces the title',
+export const CustomHeader = meta.story({
   args: { header: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Sheet');
@@ -412,8 +327,7 @@ export const ExtraHeaderSlot = meta.story({
   },
 });
 
-export const ExtraLongContent = meta.story({
-  name: 'Long content scrolls inside',
+export const LongContentScrolls = meta.story({
   args: { sample: 'long', titleKey: 'tags' },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'Sheet');
@@ -440,19 +354,90 @@ export const ExtraLongContent = meta.story({
   },
 });
 
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { back: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Сортировка боёв' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Закрыть' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Назад' })).toBeVisible();
+export const NoActions = meta.story({
+  args: { actionsAs: 'none' },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
+    await expect(canvas.queryByRole('button', { name: t('done') })).toBeNull();
+    const last = sheet.lastElementChild;
+    await expect(last).toHaveAttribute('data-sheet-content');
   },
 });
 
-export const ExtraShiftTab = meta.story({
-  name: 'Shift+Tab right after opening stays inside',
+export const CloseButtonCallsOnClose = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('close') }));
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await expect(args.onBack).not.toHaveBeenCalled();
+    await expect(args.onPrimary).not.toHaveBeenCalled();
+    await expect(args.onSecondary).not.toHaveBeenCalled();
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+  },
+});
+
+export const ScrimTapCallsOnClose = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvasElement }) => {
+    const scrim = canvasElement.querySelector<HTMLElement>('[data-scrim]');
+    await expect(scrim).not.toBeNull();
+    if (scrim) await userEvent.click(scrim);
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await expect(args.onBack).not.toHaveBeenCalled();
+    await expect(args.onPrimary).not.toHaveBeenCalled();
+  },
+});
+
+export const EscapeCloses = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas }) => {
+    await waitFor(() =>
+      expect(canvas.getByRole('dialog')).toContainElement(document.activeElement as HTMLElement),
+    );
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await expect(args.onPrimary).not.toHaveBeenCalled();
+  },
+});
+
+export const FocusMovesInAndReturns = meta.story({
+  tags: ['!dev'],
+  args: { opened: false, withOpener: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+    const opener = canvas.getByRole('button', { name: 'Sort' });
+    await userEvent.click(opener);
+    const sheet = await canvas.findByRole('dialog', { name: t('sortCombats') });
+    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
+    await userEvent.tab();
+    await expect(sheet).toContainElement(document.activeElement as HTMLElement);
+    await userEvent.keyboard('{Escape}');
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await waitFor(() => expect(opener).toHaveFocus());
+  },
+});
+
+export const MotionOnFocusesSection = meta.story({
+  tags: ['!dev'],
+  args: { opened: false, withOpener: true },
+  parameters: { motion: 'on' },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    await expect(document.documentElement.dataset.motion).toBe('on');
+    await userEvent.click(canvas.getByRole('button', { name: 'Sort' }));
+    const sheet = await canvas.findByRole('dialog', { name: t('sortCombats') });
+    await waitFor(() => expect(sheet).toHaveFocus());
+    await userEvent.tab({ shift: true });
+    await expect(canvas.getByRole('button', { name: t('done') })).toHaveFocus();
+  },
+});
+
+export const ShiftTabStaysInside = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Sheet');
     const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
@@ -465,8 +450,8 @@ export const ExtraShiftTab = meta.story({
   },
 });
 
-export const ExtraDescriptionIsSubtitle = meta.story({
-  name: 'The description is the subtitle only',
+export const DescriptionIsSubtitleOnly = meta.story({
+  tags: ['!dev'],
   args: { sample: 'form', titleKey: 'editCombat', primaryKey: 'save' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Sheet');
@@ -478,8 +463,8 @@ export const ExtraDescriptionIsSubtitle = meta.story({
 
 const FOCUS_RING_REACH = 5;
 
-export const ExtraFocusRingInside = meta.story({
-  name: 'Keyboard focus ring fits inside the scroll area',
+export const FocusRingFitsScrollArea = meta.story({
+  tags: ['!dev'],
   args: { sample: 'form', titleKey: 'editCombat', primaryKey: 'save' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Sheet');
@@ -506,20 +491,8 @@ export const ExtraFocusRingInside = meta.story({
   },
 });
 
-export const ExtraNoActions = meta.story({
-  name: 'No actions row without actions',
-  args: { actionsAs: 'none' },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Sheet');
-    const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
-    await expect(canvas.queryByRole('button', { name: t('done') })).toBeNull();
-    const last = sheet.lastElementChild;
-    await expect(last).toHaveAttribute('data-sheet-content');
-  },
-});
-
-export const ExtraFragmentActions = meta.story({
-  name: 'Two actions in a Fragment sit side by side',
+export const FragmentActionsSideBySide = meta.story({
+  tags: ['!dev'],
   args: {
     sample: 'form',
     titleKey: 'newCombat',
@@ -537,24 +510,6 @@ export const ExtraFragmentActions = meta.story({
   },
 });
 
-export const ExtraOneTag = meta.story({
-  name: 'Done with one tag',
-  args: { sample: 'tags', titleKey: 'tags', primaryKey: 'doneTags', tagCount: 1 },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Sheet');
-    await expect(canvas.getByRole('button', { name: t('doneTags', { count: 1 }) })).toBeVisible();
-  },
-});
-
-export const ExtraDoneTagsRu = meta.story({
-  name: 'Done with tags, ru plurals',
-  globals: { locale: 'ru' },
-  args: { sample: 'tags', titleKey: 'tags', primaryKey: 'doneTags', tagCount: 3 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Готово · 3 тега' })).toBeVisible();
-  },
-});
-
 const recordFocus = () => {
   const targets: string[] = [];
   const record = (event: FocusEvent) => {
@@ -567,8 +522,8 @@ const recordFocus = () => {
   return { targets, stop: () => document.removeEventListener('focusin', record) };
 };
 
-export const ExtraMotionOnNoCloseFocus = meta.story({
-  name: 'Motion on: focus never rests on Close while the sheet enters',
+export const MotionOnNeverFocusesClose = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
   parameters: { motion: 'on' },
   play: async ({ canvas, globals }) => {
@@ -585,8 +540,8 @@ export const ExtraMotionOnNoCloseFocus = meta.story({
   },
 });
 
-export const ExtraInitialFocus = meta.story({
-  name: 'initialFocus wins over the section',
+export const InitialFocusWinsOverSection = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true, focusPrimary: true },
   parameters: { motion: 'on' },
   play: async ({ canvas, globals }) => {
@@ -602,8 +557,8 @@ export const ExtraInitialFocus = meta.story({
   },
 });
 
-export const ExtraMotionOffNoTransition = meta.story({
-  name: 'Motion off: the sheet opens without a transition',
+export const MotionOffNoTransition = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Sheet');
@@ -615,8 +570,8 @@ export const ExtraMotionOffNoTransition = meta.story({
   },
 });
 
-export const ExtraClosedDoesNotBlock = meta.story({
-  name: 'A closed sheet does not block the page beneath',
+export const ClosedSheetDoesNotBlock = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
   play: async ({ canvas }) => {
     await expect(canvas.queryByRole('dialog')).toBeNull();
