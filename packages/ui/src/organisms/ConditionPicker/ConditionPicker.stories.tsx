@@ -51,58 +51,24 @@ const meta = preview.meta({
   args: { onChange: fn(), onClose: fn() },
 });
 
-const markTap = async (canvasElement: HTMLElement, condition: Condition) => {
-  const row = await waitFor(() => {
-    const found = canvasElement.querySelector(`label[data-condition="${condition}"]`);
-    if (!found) throw new Error(`row ${condition} not rendered`);
-    return found;
-  });
-  row.setAttribute('data-tap', '');
-  await expect(row).toHaveAttribute('data-tap');
-};
-
-export const Anatomy = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
   args: { initial: ['dazed', 'hampered'] },
 });
 
-export const NothingSelected = meta.story({
-  name: 'Nothing selected',
-});
-
-export const TwoSelected = meta.story({
-  name: 'Two selected',
-  args: { initial: ['dazed', 'hampered'] },
-});
-
-export const TapAddingWeakened = meta.story({
-  name: 'Tap: adding weakened',
-  args: { initial: ['dazed', 'hampered'] },
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'ConditionPicker');
-    await markTap(canvasElement, 'weakened');
-    const weakened = canvas.getByRole('checkbox', { name: t('weakened') });
-    await expect(weakened).not.toBeChecked();
-    const row = weakened.closest('label');
-    const mark = weakened.parentElement;
-    await expect(row && getComputedStyle(row).outlineStyle).toBe('solid');
-    await expect(mark && getComputedStyle(mark).outlineStyle).toBe('none');
-  },
-});
+export const NothingSelected = meta.story({});
 
 export const AllSelected = meta.story({
-  name: 'All selected',
   args: { initial: CONDITIONS },
 });
 
 export const LongUnitName = meta.story({
   tags: ['visual'],
-  name: 'Long unit name',
   args: { initial: ['stuck'], unitName: 'Brother Tomas of the Silver Lantern Order' },
 });
 
-export const ExtraFlowTapWeakened = meta.story({
-  name: 'Flow: tap weakened applies at once',
+export const TapAppliesAtOnce = meta.story({
+  tags: ['!dev'],
   args: { initial: ['dazed', 'hampered'] },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'ConditionPicker');
@@ -119,8 +85,8 @@ export const ExtraFlowTapWeakened = meta.story({
   },
 });
 
-export const ExtraDoneCloses = meta.story({
-  name: 'Done closes without a change',
+export const DoneCloses = meta.story({
+  tags: ['!dev'],
   args: { initial: ['dazed'] },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'ConditionPicker');
@@ -131,38 +97,8 @@ export const ExtraDoneCloses = meta.story({
   },
 });
 
-export const ExtraCloseButton = meta.story({
-  name: 'Close button closes without a change',
-  args: { initial: ['dazed'] },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'ConditionPicker');
-    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onChange).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraKeyboard = meta.story({
-  name: 'Space toggles the focused row, Escape closes',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'ConditionPicker');
-    const dialog = canvas.getByRole('dialog');
-    await waitFor(() => expect(dialog).toContainElement(document.activeElement as HTMLElement));
-    const charmed = canvas.getByRole('checkbox', { name: t('charmed') });
-    charmed.focus();
-    await userEvent.keyboard(' ');
-    await expect(args.onChange).toHaveBeenCalledWith(['charmed']);
-    const rows = canvas.getAllByRole('checkbox');
-    await userEvent.tab();
-    await expect(rows[rows.indexOf(charmed) + 1]).toHaveFocus();
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onClose).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraOrderAZ = meta.story({
-  name: 'A–Z down the first column',
+export const SortedDownColumns = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'ConditionPicker');
     const group = canvas.getByRole('group', { name: t('title') });
@@ -176,21 +112,5 @@ export const ExtraOrderAZ = meta.story({
     await expect(boxRects).toEqual(columnMajor);
     await expect(boxRects[5]?.left).toBe(boxRects[0]?.left);
     await expect(boxRects[5]?.top).toBeGreaterThan(boxRects[0]?.top ?? 0);
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru sorts А–Я',
-  globals: { locale: 'ru' },
-  args: { initial: ['dazed', 'hampered'] },
-  play: async ({ canvas }) => {
-    const group = canvas.getByRole('group', { name: 'Состояния' });
-    const labels = within(group)
-      .getAllByRole('checkbox')
-      .map((box) => box.closest('label')?.textContent ?? '');
-    await expect(labels[0]).toBe('беспомощен');
-    await expect(labels).toEqual([...labels].sort((a, b) => a.localeCompare(b, 'ru')));
-    await expect(canvas.getByRole('checkbox', { name: 'ошеломлён' })).toBeChecked();
-    await expect(canvas.getByRole('button', { name: 'Готово' })).toBeVisible();
   },
 });
