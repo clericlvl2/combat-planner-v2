@@ -6,7 +6,7 @@ import { Hono } from 'hono';
 import type { JSONParsed } from 'hono/utils/types';
 import { z } from 'zod';
 import type { ApiAppEnv } from '../app.ts';
-import { SOCIAL_PROVIDERS } from '../client.ts';
+import { SOCIAL_PROVIDERS, acceptLanguages, browserLocale } from '../client.ts';
 import type { SocialProvider } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import * as schema from '../db/schema.ts';
@@ -78,6 +78,11 @@ const boundedDisplayName = (
   return bounded;
 };
 
+const acceptLanguageOf = (
+  context: { headers?: Headers; request?: Request } | null | undefined,
+): string | null =>
+  (context?.headers ?? context?.request?.headers)?.get('accept-language') ?? null;
+
 export interface CreateAuthOptions {
   db: AppDatabase;
   env: ApiEnv;
@@ -110,7 +115,10 @@ export function createAuth({ db, env, originCheck }: CreateAuthOptions) {
       user: {
         create: {
           before: async (user, context) => ({
-            data: { name: boundedDisplayName(user.name, context?.path, user.email) },
+            data: {
+              name: boundedDisplayName(user.name, context?.path, user.email),
+              language: browserLocale(acceptLanguages(acceptLanguageOf(context))),
+            },
           }),
         },
         update: {
