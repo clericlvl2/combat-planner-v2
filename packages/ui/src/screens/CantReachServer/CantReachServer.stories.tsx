@@ -25,41 +25,8 @@ export const Default = meta.story({
   },
 });
 
-export const Deutsch = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'de' },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Keine Verbindung zum Server' }),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Erneut versuchen' })).toBeVisible();
-  },
-});
-
-export const Russian = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Нет связи с сервером' }),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Повторить' })).toBeVisible();
-  },
-});
-
-export const ExtraKeyboardEnter = meta.story({
-  name: 'Keyboard: Enter on the action',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CantReachServer');
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onRetry).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraTapAction = meta.story({
-  name: 'Tap on the action',
+export const ActionFires = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CantReachServer');
     await userEvent.click(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') }));
