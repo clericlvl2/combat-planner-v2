@@ -100,8 +100,9 @@ export const FormFilled = meta.story({
     await userEvent.click(name);
     await userEvent.type(name, 'Orc Warchief');
     await userEvent.click(canvas.getByRole('radio', { name: t('ally') }));
-    await userEvent.click(canvas.getByRole('spinbutton', { name: t('ac') }));
-    await userEvent.keyboard('{ArrowUp}');
+    const ac = canvas.getByRole('spinbutton', { name: t('ac') });
+    await userEvent.clear(ac);
+    await userEvent.type(ac, '11');
     await expect(canvas.getByText(`12/${LIMITS.unitName}`)).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: t('create') }));
     await expect(args.onSubmit).toHaveBeenCalledOnce();
