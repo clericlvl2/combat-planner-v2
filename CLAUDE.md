@@ -19,16 +19,15 @@ from the repository root.
 - `pnpm check`: `vp check` (Oxfmt format check, Oxlint, type check), `tsc -b`, then
   `scripts/check-{stories,i18n,screenshots,comments}.mjs`.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
-- `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story with its `play`, headless
-  Chromium, in the `narrow` frame and viewport, 320×568).
-- `pnpm test:locales`: the storybook project once per locale `de es fr ja ru`, each run with
-  `CP_STORY_LOCALE=<locale>`; `pnpm test` runs en only. `--locales=ru,ja` limits the runs; other
-  arguments, such as a story file path, go to `vp test`.
-- `pnpm test:locales --record --locales=en,de,es,fr,ja,ru`: regenerates `narrow-known.ts` from real
-  failures (see Conventions).
+- `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story once with its `play`,
+  headless Chromium, locale `ru`, the `phone` frame and viewport, 390×844).
+- `pnpm test:narrow`: the storybook project with `CP_STORY_FRAME=narrow`, at 320×568 in `ru`. It
+  reports layout failures at 320 and is outside `pnpm check`, `pnpm test` and the gate.
+- `pnpm test:record`: one storybook run with `CP_NARROW_RECORD=1` that rewrites `narrow-known.ts`
+  from the real failures (see Conventions). It takes no arguments.
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
 - `pnpm exec vp test --project visual`: compares every story tagged `visual` against
-  `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844.
+  `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844 in `ru`.
 - `pnpm screenshots:update`: regenerates those baselines with the local Chromium.
 - `pnpm e2e`: Playwright against the real server and a temporary database; port from `E2E_PORT`,
   default 3000.
@@ -82,6 +81,28 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `meta.story({...})`. A `play` asserts with `expect` from `storybook/test`. `check-stories` fails
   on `.only`, `.skip`, `tags: ['!test']`, `expect(true)`, a sole `toBeDefined()`, or a `play`
   without `expect(`.
+- A story is visible only when it differs to the eye from the component's other visible stories
+  (default, variant, size, disabled, empty, long content, error, loading, open). A `play` checks only
+  the component's own behaviour; a child's pressed, focus, keyboard or close behaviour is asserted in
+  the child's stories. A necessary `play` on a state already visible gets `tags: ['!dev']`: hidden
+  from the sidebar, still run by `pnpm test`. Near-duplicates are deleted. No story exists for a
+  locale: locale is the toolbar global.
+- Story names: export names are PascalCase words; the display name (Storybook's start case of the
+  export, or `name`, set only where start case garbles an abbreviation such as "HP") is at most 40
+  characters. No `Extra` prefix, no codes (`CSF83`), no locale words (`Ru`, `German`), no run of 4+
+  digits. A hidden story is named after the checked behaviour (`EscapeCloses`); the main story is
+  `Default` unless a state name says more. A visible story sets no `globals.locale`,
+  `globals.frame` or `globals.viewport`, which would lock the toolbar; a hidden story may set
+  `globals.locale` when its assertion depends on it. Enforced by `check-stories`; until every
+  story file is renamed, files with an `Extra`-prefixed export and the files in its `wave2Files`
+  are exempt from these rules.
+- Atoms and molecules whose stories multiply variant × state show one visible `AllStates` story
+  built with `packages/ui/src/storybook/StateGrid.tsx`: rows are variants and sizes, columns are
+  states, each cell is labelled `<Row> · <Column>` and cells wrap. States are set statically through
+  the attributes the CSS reads (`data-pressed`, `data-focus`, `data-tap`, `data-open`,
+  `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag.
+- `FakeApiClient.failNext(code)` rejects the next call; `holdNext()` leaves it pending, for loading
+  states.
 - Visual states come from real pseudo-classes and `data-*` attributes (`&:active, &[data-pressed]`),
   never from a `state` prop.
 - Screen stories seed state through `FakeApiClient` scenarios and play only their own interaction.
@@ -93,26 +114,24 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   (`actionsVisible`), a drawer scrim strip at least `layout.tapTarget` wide (`scrimTarget`). A story
   opts out per check through `parameters.geometry`, with a reason string or
   `{ reason, except: '<selector>' }`. The selector must match an element.
-- The storybook project renders every story at `layout.viewports.narrow` (320×568); the Storybook
-  toolbar switches the frame to `phone` (390×844). `packages/ui/src/storybook/narrow-known.ts` is a
-  ratchet of `{ story, locale?, check }` entries that fail only at `narrow`, held in one array per
-  locale (`en`, `de`, … `ru`, each sorted by story id, then check; a single array literal of
-  thousands of entries exceeds TypeScript's union limit, TS2590); `check` is a geometry check or
-  `play`. `locale` (`de es fr ja ru`) is the story's effective locale: `CP_STORY_LOCALE`, or the
-  story's own `globals.locale`, which wins; an entry without `locale` is en and covers no other
-  locale. An unlisted failure fails the story, and a listed entry that passes fails it with "remove
-  from narrow-known". A `play` that fails at 320 because of a layout defect is wrapped in
-  `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
-- Regenerating the list: `pnpm test:locales --record` sets `CP_NARROW_RECORD=1`, which turns the
-  ratchet off and makes each failing story throw one `narrow-known record
-  {"story","locale","checks"}` error; `scripts/narrow-known-record.mjs` reads the JSON reports,
-  replaces every entry of the recorded locales and rewrites the arrays. A failure without such a
-  record, a `play` error that is not an assertion, stops it and lists the story.
+- Storybook and the storybook project open in `ru` at the test frame `phone` (390×844); the
+  toolbar switches locale and frame. `CP_STORY_FRAME=narrow` (`pnpm test:narrow`) moves the test
+  frame to `narrow` (320×568).
+- `packages/ui/src/storybook/narrow-known.ts` is a temporary ratchet of `{ story, check }` entries
+  that fail at the test frame, one array `ru` sorted by story id, then check; `check` is a geometry
+  check or `play`. It applies to stories rendered in the `phone` frame and is off under
+  `CP_STORY_FRAME=narrow`. An unlisted failure fails the story, and a listed entry that passes
+  fails it with "remove from narrow-known". A `play` that fails because of a layout defect is
+  wrapped in `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
+- Regenerating the list: `pnpm test:record` sets `CP_NARROW_RECORD=1`, which turns the ratchet off
+  and makes each failing story throw one `narrow-known record {"story","checks"}` error;
+  `scripts/narrow-known-record.mjs` reads the JSON report and replaces the whole array. A failure
+  without such a record, a `play` error that is not an assertion, stops it and lists the story.
 - Tap areas smaller than their control use the `::after` pattern
   `inset: min(0px, (100% - var(--cp-tap-target)) / 2)` on a positioned control.
-- Only stories with `tags: ['visual']` have screenshot baselines: each component's main or anatomy
-  story and each state that differs in layout, each screen's main states in `en` plus one story in
-  `ru`, `de` and `ja`. A new story that changes layout gets the tag and a baseline; a story that
+- Only stories with `tags: ['visual']` have screenshot baselines, rendered in `ru` unless the story
+  sets its own `globals.locale`: each component's main or anatomy story, `AllStates` and each state
+  that differs in layout, and each screen's main states. A new story that changes layout gets the tag and a baseline; a story that
   only differs by interaction outcome stays untagged and is covered by its `play` and the geometry
   checks.
 - Screenshot baselines change only together with a change in the component they show. Run
@@ -131,10 +150,11 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `npm:@voidzero-dev/vite-plus-core@1.3.0` and `vitest` to 5.0.5 in `pnpm-workspace.yaml`. Test
   code imports from `vite-plus/test` and `vite-plus/test/browser`.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
-  `viewport` global, so the 320×568 test viewport is set in `preview.tsx` (`initialGlobals`
-  `frame: 'narrow'`, `viewport: 'narrow'`), not in `vite.config.ts`. The `visual` project stays at
-  390×844: `vite.config.ts` sets its viewport and `test/visual.test.tsx` runs each `visual` story with the
-  `phone` frame and viewport globals.
+  `viewport` global, so the test viewport is set in `preview.tsx` (`initialGlobals` `locale: 'ru'`,
+  `frame` and `viewport` from `import.meta.env.CP_STORY_FRAME`, which `vite.config.ts` defines as
+  `phone` unless the variable says `narrow`), not in `vite.config.ts`. The `visual` project stays at
+  390×844: `vite.config.ts` sets its viewport and `test/visual.test.tsx` runs each `visual` story
+  with `locale: 'ru'` and the `phone` frame and viewport globals.
 - Playwright 1.64.1 exact.
 - React Router 7 data mode.
 - Mantine 9; `postcss-preset-mantine` runs from `postcss.config.cjs`.
