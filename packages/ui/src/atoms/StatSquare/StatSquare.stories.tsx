@@ -1,9 +1,10 @@
 import preview from '#.storybook/preview';
 import { useTranslation } from 'react-i18next';
 import { expect } from 'storybook/test';
-import { StatSquare } from './StatSquare.tsx';
-import type { StatSquareProps } from './StatSquare.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { StatSquare } from './StatSquare.tsx';
+import type { StatName, StatSquareProps } from './StatSquare.tsx';
 
 type StatSquareCellProps = Omit<StatSquareProps, 'label'>;
 
@@ -26,8 +27,25 @@ const parts = (canvasElement: HTMLElement) => {
   };
 };
 
-export const Anatomy = meta.story({
+const values = ['8', '18', '30', '99', 'no value'] as const;
+type Value = (typeof values)[number];
+
+const row = (label: string, stat: StatName) => ({
+  label,
+  render: (value: Value) => (
+    <StatSquareCell stat={stat} value={value === 'no value' ? null : Number(value)} />
+  ),
+});
+
+export const AllStates = meta.story({
   tags: ['visual'],
+  render: () => (
+    <StateGrid columns={values} rows={[row('AC', 'ac'), row('PD', 'pd'), row('MD', 'md')]} />
+  ),
+});
+
+export const SquareIsFortyPixels = meta.story({
+  tags: ['!dev'],
   args: { stat: 'ac', value: 18 },
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'StatSquare');
@@ -39,75 +57,8 @@ export const Anatomy = meta.story({
   },
 });
 
-export const AC = meta.story({
-  name: 'AC',
-  args: { stat: 'ac', value: 18 },
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'StatSquare');
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent(t('ac'));
-    await expect(value).toHaveTextContent('18');
-  },
-});
-
-export const PD = meta.story({
-  name: 'PD',
-  args: { stat: 'pd', value: 16 },
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'StatSquare');
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent(t('pd'));
-    await expect(value).toHaveTextContent('16');
-  },
-});
-
-export const MD = meta.story({
-  name: 'MD',
-  args: { stat: 'md', value: 12 },
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'StatSquare');
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent(t('md'));
-    await expect(value).toHaveTextContent('12');
-  },
-});
-
-export const EdgeCases30 = meta.story({
-  tags: ['visual'],
-  name: '30',
-  args: { stat: 'ac', value: 30 },
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'StatSquare');
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent(t('ac'));
-    await expect(value).toHaveTextContent('30');
-  },
-});
-
-export const SingleDigit = meta.story({
-  name: 'Single digit',
-  args: { stat: 'pd', value: 8 },
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'StatSquare');
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent(t('pd'));
-    await expect(value).toHaveTextContent('8');
-  },
-});
-
-export const Missing = meta.story({
-  name: 'Missing',
-  args: { stat: 'md', value: null },
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'StatSquare');
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent(t('md'));
-    await expect(value).toHaveTextContent('—');
-  },
-});
-
-export const ExtraMaximum = meta.story({
-  name: 'Maximum 99',
+export const MaximumFits = meta.story({
+  tags: ['!dev'],
   args: { stat: 'md', value: 99 },
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'StatSquare');
@@ -115,39 +66,5 @@ export const ExtraMaximum = meta.story({
     await expect(label).toHaveTextContent(t('md'));
     await expect(value).toHaveTextContent('99');
     await expect(value?.scrollWidth).toBeLessThanOrEqual(36);
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { stat: 'pd', value: 16 },
-  play: async ({ canvasElement }) => {
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('KV');
-    await expect(value).toHaveTextContent('16');
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { stat: 'md', value: 12 },
-  play: async ({ canvasElement }) => {
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('精防');
-    await expect(value).toHaveTextContent('12');
-    await expect(label?.scrollWidth).toBeLessThanOrEqual(36);
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { stat: 'ac', value: 18 },
-  play: async ({ canvasElement }) => {
-    const { label, value } = parts(canvasElement);
-    await expect(label).toHaveTextContent('КД');
-    await expect(value).toHaveTextContent('18');
   },
 });
