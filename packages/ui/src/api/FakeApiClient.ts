@@ -154,6 +154,7 @@ export class FakeApiClient implements ApiClient {
   private readonly dmSubscribers = new Map<CombatId, Set<DmSubscriber>>();
   private readonly playerSubscribers = new Map<CombatId, Set<PlayerSubscriber>>();
   private pendingFailure: ApiError | null = null;
+  private pendingHold = false;
   private broadcastsDeferred = false;
 
   constructor({ scenario, delay = 0 }: FakeApiClientOptions) {
@@ -196,8 +197,16 @@ export class FakeApiClient implements ApiClient {
     this.pendingFailure = fail(code);
   }
 
+  holdNext(): void {
+    this.pendingHold = true;
+  }
+
   private run<T>(method: string, args: unknown[], operation: () => T): Promise<T> {
     this.calls.push({ method, args });
+    if (this.pendingHold) {
+      this.pendingHold = false;
+      return new Promise<T>(() => undefined);
+    }
     const failure = this.pendingFailure;
     this.pendingFailure = null;
     return new Promise<T>((resolve, reject) => {
