@@ -1,6 +1,9 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { signUp } from './helpers.ts';
+import { t } from './t.ts';
+
+const DE = { lng: 'de' } as const;
 
 async function swipeFromLeftEdge(page: Page): Promise<void> {
   await page.evaluate(() => {
@@ -25,10 +28,10 @@ test('a swipe from the left edge opens the drawer, but not over an open sheet', 
   page,
 }) => {
   await signUp(page);
-  const drawer = page.getByRole('dialog', { name: 'Combat Planner' });
+  const drawer = page.getByRole('dialog', { name: t('Drawer:title') });
 
-  await page.getByRole('button', { name: 'New combat' }).click();
-  const sheet = page.getByRole('dialog', { name: 'New combat' });
+  await page.getByRole('button', { name: t('BottomBar:newCombat') }).click();
+  const sheet = page.getByRole('dialog', { name: t('CombatFormSheet:newCombat') });
   await expect(sheet).toBeVisible();
   await swipeFromLeftEdge(page);
   await expect(drawer).toBeHidden();
@@ -45,16 +48,21 @@ test('sign-in returns to the browser language after a DM signs out in another', 
   await signUp(page);
   await page.goto('/settings');
   await page
-    .getByRole('radiogroup', { name: 'Language' })
+    .getByRole('radiogroup', { name: t('Settings:language') })
     .getByRole('radio', { name: 'Deutsch' })
     .click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Einstellungen' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { level: 1, name: t('Settings:title', DE) }),
+  ).toBeVisible();
 
   await swipeFromLeftEdge(page);
-  await page.getByRole('dialog', { name: 'Combat Planner' }).getByText('Konto').click();
-  await expect(page.getByRole('heading', { level: 1, name: 'Konto' })).toBeVisible();
-  await page.getByRole('button', { name: 'Abmelden' }).click();
+  await page
+    .getByRole('dialog', { name: t('Drawer:title', DE) })
+    .getByText(t('Drawer:account', DE))
+    .click();
+  await expect(page.getByRole('heading', { level: 1, name: t('Account:title', DE) })).toBeVisible();
+  await page.getByRole('button', { name: t('Account:signOut', DE) }).click();
 
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
-  await expect(page.getByRole('heading', { level: 1, name: 'Sign in' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1, name: t('SignIn:title') })).toBeVisible();
 });

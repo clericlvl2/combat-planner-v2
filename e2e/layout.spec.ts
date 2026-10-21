@@ -1,12 +1,13 @@
 import { expect, test } from '@playwright/test';
 import { signUp } from './helpers.ts';
+import { t } from './t.ts';
 
 const VIEWPORT = { width: 430, height: 932 };
 
 const screens = [
-  { path: '/combats', heading: 'Combats' },
-  { path: '/library', heading: 'Library' },
-  { path: '/settings', heading: 'Settings' },
+  { path: '/combats', heading: t('CombatList:title') },
+  { path: '/library', heading: t('Library:title') },
+  { path: '/settings', heading: t('Settings:title') },
 ] as const;
 
 test.use({ viewport: VIEWPORT });
