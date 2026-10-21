@@ -21,8 +21,6 @@ from the repository root.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
 - `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story once with its `play`,
   headless Chromium, locale `ru`, the `phone` frame and viewport, 390×844).
-- `pnpm test:record`: one storybook run with `CP_NARROW_RECORD=1` that rewrites `narrow-known.ts`
-  from the real failures (see Conventions). It takes no arguments.
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
 - `pnpm exec vp test --project visual`: compares every story tagged `visual` against
   `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844 in `ru`.
@@ -91,9 +89,7 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   digits. A hidden story is named after the checked behaviour (`EscapeCloses`); the main story is
   `Default` unless a state name says more. A visible story sets no `globals.locale`,
   `globals.frame` or `globals.viewport`, which would lock the toolbar; a hidden story may set
-  `globals.locale` when its assertion depends on it. Enforced by `check-stories`; until every
-  story file is renamed, files with an `Extra`-prefixed export and the files in its `wave2Files`
-  are exempt from these rules.
+  `globals.locale` when its assertion depends on it. Enforced by `check-stories`.
 - Atoms and molecules whose stories multiply variant × state show one visible `AllStates` story
   built with `packages/ui/src/storybook/StateGrid.tsx`: rows are variants and sizes, columns are
   states, each cell is labelled `<Row> · <Column>` and cells wrap. States are set statically through
@@ -114,15 +110,6 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `{ reason, except: '<selector>' }`. The selector must match an element.
 - Storybook and the storybook project open in `ru` at the test frame `phone` (390×844); the
   toolbar switches locale and frame, including `narrow` (320×568).
-- `packages/ui/src/storybook/narrow-known.ts` is a temporary ratchet of `{ story, check }` entries
-  that fail at the test frame, one array `ru` sorted by story id, then check; `check` is a geometry
-  check or `play`. It applies to stories rendered in the `phone` frame. An unlisted failure fails the story, and a listed entry that passes
-  fails it with "remove from narrow-known". A `play` that fails because of a layout defect is
-  wrapped in `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
-- Regenerating the list: `pnpm test:record` sets `CP_NARROW_RECORD=1`, which turns the ratchet off
-  and makes each failing story throw one `narrow-known record {"story","checks"}` error;
-  `scripts/narrow-known-record.mjs` reads the JSON report and replaces the whole array. A failure
-  without such a record, a `play` error that is not an assertion, stops it and lists the story.
 - Tap areas smaller than their control use the `::after` pattern
   `inset: min(0px, (100% - var(--cp-tap-target)) / 2)` on a positioned control.
 - Only stories with `tags: ['visual']` have screenshot baselines, rendered in `ru` unless the story
