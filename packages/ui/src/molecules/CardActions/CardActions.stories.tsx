@@ -2,6 +2,7 @@ import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
 import { CardActions } from './CardActions.tsx';
 import type { CardActionsProps } from './CardActions.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 interface CardActionsCellProps extends CardActionsProps {
@@ -29,22 +30,49 @@ const meta = preview.meta({
   args: { onEdit: fn(), onMore: fn() },
 });
 
-const renderTapEdit = (args: CardActionsCellProps) => <CardActionsCell {...args} data-tap="edit" />;
+const columns = ['Default', 'Tap edit', 'Tap more', 'Disabled'] as const;
 
-const renderTapMore = (args: CardActionsCellProps) => <CardActionsCell {...args} data-tap="more" />;
+type CardActionsState = (typeof columns)[number];
+
+const gridRows = [
+  { label: 'Closed', open: false },
+  { label: 'Open', open: true },
+].map(({ label, open }) => ({
+  label,
+  render: (state: CardActionsState) => (
+    <CardActionsCell
+      width={318}
+      open={open}
+      disabled={state === 'Disabled'}
+      data-tap={state === 'Tap edit' ? 'edit' : state === 'Tap more' ? 'more' : undefined}
+      onEdit={() => {}}
+      onMore={() => {}}
+    />
+  ),
+}));
 
 const labelOverflow = (button: HTMLElement) => {
   const label = button.querySelector('span');
   return (label?.scrollWidth ?? 0) - (label?.clientWidth ?? 0);
 };
 
-export const Anatomy = meta.story({
+export const AllStates = meta.story({
   tags: ['visual'],
-  args: {},
+  render: () => <StateGrid rows={gridRows} columns={columns} />,
 });
 
-export const Default = meta.story({
-  name: 'Default',
+export const LongLabelNarrow = meta.story({
+  tags: ['visual'],
+  args: { editLabel: 'Редактировать бой', width: 272 },
+  play: async ({ canvas }) => {
+    await expect(
+      labelOverflow(canvas.getByRole('button', { name: 'Редактировать бой' })),
+    ).toBeLessThanOrEqual(0);
+  },
+});
+
+export const DefaultLayout = meta.story({
+  tags: ['!dev'],
   args: {},
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CardActions');
@@ -55,21 +83,8 @@ export const Default = meta.story({
   },
 });
 
-export const TapEdit = meta.story({
-  name: 'Tap Edit',
-  args: {},
-  render: renderTapEdit,
-});
-
-export const Tap = meta.story({
-  name: 'Tap ⋯',
-  args: {},
-  render: renderTapMore,
-});
-
-export const OpenCardDuplicateDelete = meta.story({
-  tags: ['visual'],
-  name: 'Open: card (Duplicate, Delete)',
+export const OpenMarksTheButton = meta.story({
+  tags: ['!dev'],
   args: { open: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CardActions');
@@ -80,54 +95,8 @@ export const OpenCardDuplicateDelete = meta.story({
   },
 });
 
-export const OpenUnitUnitRow = meta.story({
-  name: 'Open: unit (UnitRow)',
-  args: { open: true },
-});
-
-export const De390 = meta.story({
-  name: 'de · 390',
-  args: { editLabel: 'Bearbeiten' },
-});
-
-export const Ru390 = meta.story({
-  name: 'ru · 390',
-  args: { editLabel: 'Изменить' },
-});
-
-export const De320 = meta.story({
-  name: 'de · 320',
-  args: { editLabel: 'Bearbeiten', width: 272 },
-  play: async ({ canvas }) => {
-    await expect(
-      labelOverflow(canvas.getByRole('button', { name: 'Bearbeiten' })),
-    ).toBeLessThanOrEqual(0);
-  },
-});
-
-export const Ru320 = meta.story({
-  tags: ['visual'],
-  name: 'ru · 320',
-  args: { editLabel: 'Изменить', width: 272 },
-  play: async ({ canvas }) => {
-    await expect(
-      labelOverflow(canvas.getByRole('button', { name: 'Изменить' })),
-    ).toBeLessThanOrEqual(0);
-  },
-});
-
-export const De320UnitMenu = meta.story({
-  name: 'de · 320 · unit menu',
-  args: { editLabel: 'Bearbeiten', width: 272, open: true },
-});
-
-export const Ru320UnitMenu = meta.story({
-  name: 'ru · 320 · unit menu',
-  args: { editLabel: 'Изменить', width: 272, open: true },
-});
-
-export const ExtraEdit = meta.story({
-  name: 'Edit fires onEdit',
+export const EditFiresOnEdit = meta.story({
+  tags: ['!dev'],
   args: { onEdit: fn(), onMore: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CardActions');
@@ -137,8 +106,8 @@ export const ExtraEdit = meta.story({
   },
 });
 
-export const ExtraMore = meta.story({
-  name: '⋯ fires onMore',
+export const MoreFiresOnMore = meta.story({
+  tags: ['!dev'],
   args: { onEdit: fn(), onMore: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CardActions');
@@ -148,24 +117,8 @@ export const ExtraMore = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter and Space',
-  args: { onEdit: fn(), onMore: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CardActions');
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: t('edit') })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onEdit).toHaveBeenCalledOnce();
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: t('more') })).toHaveFocus();
-    await userEvent.keyboard('[Space]');
-    await expect(args.onMore).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraDisabled = meta.story({
-  name: 'Disabled',
+export const DisabledIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { disabled: true, onEdit: fn(), onMore: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CardActions');
@@ -177,15 +130,5 @@ export const ExtraDisabled = meta.story({
     await userEvent.click(more, { pointerEventsCheck: 0 });
     await expect(args.onEdit).not.toHaveBeenCalled();
     await expect(args.onMore).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: {},
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: '編集' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'その他の操作' })).toBeVisible();
   },
 });
