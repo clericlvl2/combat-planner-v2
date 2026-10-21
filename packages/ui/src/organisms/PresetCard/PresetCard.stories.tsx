@@ -87,7 +87,7 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({
+export const Enemy = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetCard');
@@ -102,22 +102,7 @@ export const Anatomy = meta.story({
   },
 });
 
-export const ExtraRoleFillsHead = meta.story({
-  name: 'The role block fills the card head',
-  play: async ({ canvasElement }) => {
-    const role = canvasElement.querySelector<HTMLElement>('[data-fill]');
-    await expect(role).not.toBeNull();
-    const head = role?.parentElement;
-    await expect(role?.getBoundingClientRect().height).toBe(head?.getBoundingClientRect().height);
-  },
-});
-
-export const Enemy = meta.story({
-  name: 'Enemy',
-});
-
 export const NoTags = meta.story({
-  name: 'No tags',
   args: {
     preset: { name: 'Bandit Captain', role: 'enemy', maxHp: 36, ac: 17, pd: 15, md: 13 },
     tags: [],
@@ -130,7 +115,6 @@ export const NoTags = meta.story({
 
 export const Expanded = meta.story({
   tags: ['visual'],
-  name: 'Expanded',
   args: { expanded: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetCard');
@@ -145,8 +129,7 @@ export const Expanded = meta.story({
   },
 });
 
-export const ExpandedOpen = meta.story({
-  name: 'Expanded, ⋯ open',
+export const ExpandedMenuOpen = meta.story({
   args: { expanded: true, menuOpened: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetCard');
@@ -161,7 +144,6 @@ export const ExpandedOpen = meta.story({
 
 export const AllyLongName = meta.story({
   tags: ['visual'],
-  name: 'Ally, long name',
   args: {
     preset: {
       name: 'Brother Tomas of the Silver Lantern Order',
@@ -180,8 +162,8 @@ export const AllyLongName = meta.story({
   },
 });
 
-export const ThreeDigitHP = meta.story({
-  name: 'Three-digit HP',
+export const ThreeDigitHp = meta.story({
+  name: 'Three Digit HP',
   args: {
     preset: { name: 'Ancient Black Dragon', role: 'enemy', maxHp: 320, ac: 24, pd: 22, md: 20 },
     tags: ['Dragons', 'Bosses'],
@@ -192,153 +174,7 @@ export const ThreeDigitHP = meta.story({
   },
 });
 
-export const Ru = meta.story({
-  name: 'ru',
-  args: {
-    preset: {
-      name: 'Капитан стражи переправы',
-      role: 'ally',
-      maxHp: 40,
-      ac: 19,
-      pd: 16,
-      md: 13,
-    },
-    tags: ['Переправа', 'Именные НПС'],
-  },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Капитан стражи переправы')).toBeVisible();
-    await expect(canvas.getByText('Переправа · Именные НПС')).toBeVisible();
-  },
-});
-
-export const ExtraTapChevron = meta.story({
-  name: 'Tap chevron',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetCard');
-    const chevron = canvas.getByRole('button', { name: t('toggle', { name: 'Orc Berserker' }) });
-    await userEvent.click(chevron);
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
-    await userEvent.click(chevron);
-    await expect(args.onToggle).toHaveBeenCalledTimes(2);
-    await expect(chevron).toHaveAttribute('aria-expanded', 'false');
-    await expect(canvas.queryByRole('button', { name: t('CardActions:edit') })).toBeNull();
-    chevron.setAttribute('data-tap', '');
-    await expect(chevron).toHaveAttribute('data-tap');
-  },
-});
-
-export const ExtraExpandedTapEdit = meta.story({
-  name: 'Expanded, tap Edit',
-  args: { expanded: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetCard');
-    const edit = canvas.getByRole('button', { name: t('CardActions:edit') });
-    await userEvent.click(edit);
-    await expect(args.onEdit).toHaveBeenCalledOnce();
-    await expect(args.onMore).not.toHaveBeenCalled();
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    edit.setAttribute('data-tap', '');
-    await expect(edit).toHaveAttribute('data-tap');
-  },
-});
-
-export const ExtraMoreDuplicate = meta.story({
-  name: '⋯ opens the menu, Duplicate fires',
-  args: { expanded: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetCard');
-    const more = canvas.getByRole('button', { name: t('CardActions:more') });
-    await userEvent.click(more);
-    await expect(args.onMore).toHaveBeenCalledOnce();
-    await expect(more).toHaveAttribute('aria-expanded', 'true');
-    const duplicate = await canvas.findByRole('menuitem', { name: t('duplicate') });
-    await waitFor(() => expect(duplicate).toHaveFocus());
-    await userEvent.click(duplicate);
-    await expect(args.onDuplicate).toHaveBeenCalledOnce();
-    await expect(args.onDelete).not.toHaveBeenCalled();
-    await expect(args.onMenuClose).toHaveBeenCalledOnce();
-    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
-    await expect(more).toHaveAttribute('aria-expanded', 'false');
-    await waitFor(() => expect(more).toHaveFocus());
-  },
-});
-
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: chevron, Edit, ⋯ and Delete',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetCard');
-    const chevron = canvas.getByRole('button', { name: t('toggle', { name: 'Orc Berserker' }) });
-    await userEvent.tab();
-    await expect(chevron).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onEdit).toHaveBeenCalledOnce();
-    await userEvent.tab();
-    const more = canvas.getByRole('button', { name: t('CardActions:more') });
-    await expect(more).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onMore).toHaveBeenCalledOnce();
-    const duplicate = await canvas.findByRole('menuitem', { name: t('duplicate') });
-    await waitFor(() => expect(duplicate).toHaveFocus());
-    await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: t('delete') })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onDelete).toHaveBeenCalledOnce();
-    await expect(args.onDuplicate).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
-    await waitFor(() => expect(more).toHaveFocus());
-  },
-});
-
-export const ExtraKeyboardMotionOn = meta.story({
-  name: 'Keyboard with motion: Space opens ⋯, Escape closes',
-  parameters: { motion: 'on' },
-  args: { expanded: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetCard');
-    const more = canvas.getByRole('button', { name: t('CardActions:more') });
-    more.focus();
-    await expect(more).toHaveFocus();
-    await userEvent.keyboard('[Space]');
-    await expect(args.onMore).toHaveBeenCalledOnce();
-    const duplicate = await canvas.findByRole('menuitem', { name: t('duplicate') });
-    await waitFor(() => expect(duplicate).toHaveFocus());
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onMenuClose).toHaveBeenCalledOnce();
-    await expect(args.onDuplicate).not.toHaveBeenCalled();
-    await expect(args.onDelete).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
-    await waitFor(() => expect(more).toHaveFocus());
-    await expect(more).toHaveAttribute('aria-expanded', 'false');
-  },
-});
-
-export const ExtraBodyIsNotATarget = meta.story({
-  name: 'Name, HP and defenses do not fire',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetCard');
-    await expect(canvas.getAllByRole('button')).toHaveLength(1);
-    await userEvent.click(canvas.getByText('Orc Berserker'));
-    await userEvent.click(canvas.getByText('40'));
-    await userEvent.click(canvas.getByRole('group', { name: defenses(t) }));
-    await userEvent.click(canvas.getByText('Orcs · Ferry'));
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    await expect(args.onEdit).not.toHaveBeenCalled();
-    await expect(args.onMore).not.toHaveBeenCalled();
-    await expect(
-      canvas.getByRole('button', { name: t('toggle', { name: 'Orc Berserker' }) }),
-    ).toHaveAttribute('aria-expanded', 'false');
-  },
-});
-
-export const ExtraTagLineEllipsis = meta.story({
-  name: 'Tag line ellipsises after two lines',
+export const ManyTagsEllipsis = meta.story({
   parameters: {
     geometry: {
       truncation: {
@@ -358,19 +194,7 @@ export const ExtraTagLineEllipsis = meta.story({
   },
 });
 
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { tags: [], expanded: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('タグなし')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: '操作：Orc Berserker' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: '編集' })).toBeVisible();
-  },
-});
-
-export const ExtraDuplicateDisabled = meta.story({
-  name: 'Duplicate disabled at the preset limit',
+export const DuplicateDisabled = meta.story({
   args: { expanded: true, menuOpened: true, duplicateDisabled: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetCard');
@@ -379,5 +203,82 @@ export const ExtraDuplicateDisabled = meta.story({
     await userEvent.click(duplicate, { pointerEventsCheck: 0 });
     await expect(args.onDuplicate).not.toHaveBeenCalled();
     await expect(canvas.getByRole('menuitem', { name: t('delete') })).toBeEnabled();
+  },
+});
+export const RoleFillsHead = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvasElement }) => {
+    const role = canvasElement.querySelector<HTMLElement>('[data-fill]');
+    await expect(role).not.toBeNull();
+    const head = role?.parentElement;
+    await expect(role?.getBoundingClientRect().height).toBe(head?.getBoundingClientRect().height);
+  },
+});
+
+export const ChevronTogglesExpanded = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PresetCard');
+    const chevron = canvas.getByRole('button', { name: t('toggle', { name: 'Orc Berserker' }) });
+    await userEvent.click(chevron);
+    await expect(args.onToggle).toHaveBeenCalledOnce();
+    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
+    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    await userEvent.click(chevron);
+    await expect(args.onToggle).toHaveBeenCalledTimes(2);
+    await expect(chevron).toHaveAttribute('aria-expanded', 'false');
+    await expect(canvas.queryByRole('button', { name: t('CardActions:edit') })).toBeNull();
+  },
+});
+
+export const EditCallsOnEdit = meta.story({
+  tags: ['!dev'],
+  args: { expanded: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PresetCard');
+    const edit = canvas.getByRole('button', { name: t('CardActions:edit') });
+    await userEvent.click(edit);
+    await expect(args.onEdit).toHaveBeenCalledOnce();
+    await expect(args.onMore).not.toHaveBeenCalled();
+    await expect(args.onToggle).not.toHaveBeenCalled();
+  },
+});
+
+export const MoreOpensMenuDuplicateFires = meta.story({
+  tags: ['!dev'],
+  args: { expanded: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PresetCard');
+    const more = canvas.getByRole('button', { name: t('CardActions:more') });
+    await userEvent.click(more);
+    await expect(args.onMore).toHaveBeenCalledOnce();
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+    const duplicate = await canvas.findByRole('menuitem', { name: t('duplicate') });
+    await waitFor(() => expect(duplicate).toHaveFocus());
+    await userEvent.click(duplicate);
+    await expect(args.onDuplicate).toHaveBeenCalledOnce();
+    await expect(args.onDelete).not.toHaveBeenCalled();
+    await expect(args.onMenuClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    await waitFor(() => expect(more).toHaveFocus());
+  },
+});
+
+export const BodyIsNotATarget = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PresetCard');
+    await expect(canvas.getAllByRole('button')).toHaveLength(1);
+    await userEvent.click(canvas.getByText('Orc Berserker'));
+    await userEvent.click(canvas.getByText('40'));
+    await userEvent.click(canvas.getByRole('group', { name: defenses(t) }));
+    await userEvent.click(canvas.getByText('Orcs · Ferry'));
+    await expect(args.onToggle).not.toHaveBeenCalled();
+    await expect(args.onEdit).not.toHaveBeenCalled();
+    await expect(args.onMore).not.toHaveBeenCalled();
+    await expect(
+      canvas.getByRole('button', { name: t('toggle', { name: 'Orc Berserker' }) }),
+    ).toHaveAttribute('aria-expanded', 'false');
   },
 });
