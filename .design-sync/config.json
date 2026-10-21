@@ -139,7 +139,7 @@
     "CombatList": {
       "cardMode": "single",
       "viewport": "900x930",
-      "primaryStory": "CLF11"
+      "primaryStory": "Default"
     },
     "CombatNotFound": {
       "cardMode": "single",

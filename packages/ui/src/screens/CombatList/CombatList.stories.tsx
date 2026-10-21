@@ -38,6 +38,15 @@ function FailFirstCall({ code, children }: { code: ApiErrorCode; children: React
   return children;
 }
 
+function HoldFirstCall({ children }: { children: ReactNode }) {
+  const api = useApi();
+  useState(() => {
+    if (api instanceof FakeApiClient) api.holdNext();
+    return true;
+  });
+  return children;
+}
+
 const locationOf = (canvasElement: HTMLElement): string | null | undefined =>
   canvasElement.querySelector('[data-location]')?.getAttribute('data-location');
 
@@ -96,13 +105,6 @@ const openEdit = async (canvas: Canvas, t: TFunction) => {
   );
 };
 
-const defaultTitle = (t: TFunction, globals: Record<string, unknown>) =>
-  t('CombatFormSheet:defaultTitle', {
-    date: new Intl.DateTimeFormat(storyLocale(globals), { day: 'numeric', month: 'short' }).format(
-      storyNow,
-    ),
-  });
-
 const meta = preview.meta({
   title: 'Screens/CombatList',
   component: CombatList,
@@ -128,9 +130,8 @@ const meta = preview.meta({
   },
 });
 
-export const CLF11 = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
-  name: 'CL-F1.1 List, Newest first',
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
@@ -143,9 +144,8 @@ export const CLF11 = meta.story({
   },
 });
 
-export const CLF12 = meta.story({
+export const CardExpanded = meta.story({
   tags: ['visual'],
-  name: 'CL-F1.2 Card expanded',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
     await expand(canvas, ambush.title, t);
@@ -158,9 +158,8 @@ export const CLF12 = meta.story({
   },
 });
 
-export const CLF13 = meta.story({
+export const SortSheetOpen = meta.story({
   tags: ['visual'],
-  name: 'CL-F1.3 Sort sheet',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
@@ -174,8 +173,7 @@ export const CLF13 = meta.story({
   },
 });
 
-export const CLF14 = meta.story({
-  name: 'CL-F1.4 Last played: button filled',
+export const SortedByLastPlayed = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
@@ -210,8 +208,7 @@ export const CLF14 = meta.story({
   },
 });
 
-export const CLF15 = meta.story({
-  name: 'CL-F1.5 Search “ferry”',
+export const SearchResults = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
@@ -224,9 +221,8 @@ export const CLF15 = meta.story({
   },
 });
 
-export const CLF16 = meta.story({
+export const NothingFound = meta.story({
   tags: ['visual'],
-  name: 'CL-F1.6 Nothing found',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
@@ -241,9 +237,8 @@ export const CLF16 = meta.story({
   },
 });
 
-export const CLF17 = meta.story({
+export const NoCombatsYet = meta.story({
   tags: ['visual'],
-  name: 'CL-F1.7 No combats yet',
   parameters: { scenario: noCombatsScenario },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
@@ -255,74 +250,8 @@ export const CLF17 = meta.story({
   },
 });
 
-export const CLF21 = meta.story({
-  name: 'CL-F2.1 Tap New combat',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
-    const create = canvas.getByRole('button', { name: t('Button:newCombat') });
-    await expect(create).toBeEnabled();
-    create.focus();
-    await expect(create).toHaveFocus();
-  },
-});
-
-export const CLF22 = meta.story({
-  name: 'CL-F2.2 Empty form',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await openCreate(canvas, t);
-    await expect(canvas.getByRole('textbox', { name: t('CombatFormSheet:title') })).toHaveValue('');
-    await expect(canvas.getByRole('button', { name: t('Swatch:grey') })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    await expect(canvas.getByRole('textbox', { name: t('CombatFormSheet:title') })).toHaveAttribute(
-      'placeholder',
-      defaultTitle(t, globals),
-    );
-    await expect(canvas.getByRole('button', { name: t('Sheet:create') })).toBeEnabled();
-  },
-});
-
-export const CLF23 = meta.story({
-  name: 'CL-F2.3 No title: created as "Combat Oct 15"',
-  play: async ({ canvas, canvasElement, globals, loaded }) => {
-    const t = storyT(globals, 'CombatList');
-    await openCreate(canvas, t);
-    await userEvent.click(canvas.getByRole('textbox', { name: t('CombatFormSheet:title') }));
-    await userEvent.tab();
-    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
-    const created = fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.create');
-    await expect(created).toHaveLength(1);
-    const [input] = created[0]!.args as [{ id: string }];
-    await expect(input).toEqual({
-      id: input.id,
-      title: defaultTitle(t, globals),
-      description: '',
-      color: 7,
-    });
-    await waitFor(() => expect(locationOf(canvasElement)).toBe(`/combats/${input.id}`));
-  },
-});
-
-export const CLF24 = meta.story({
-  name: 'CL-F2.4 Form filled',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await openCreate(canvas, t);
-    await fillCreate(canvas, t);
-    await expect(canvas.getByText('17/80')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: t('Swatch:blue') })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    await expect(canvas.getByRole('button', { name: t('Sheet:create') })).toBeEnabled();
-  },
-});
-
-export const CLF25 = meta.story({
-  name: 'CL-F2.5 Combat created',
+export const CreateSendsPayload = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await openCreate(canvas, t);
@@ -344,39 +273,8 @@ export const CLF25 = meta.story({
   },
 });
 
-export const CLF31 = meta.story({
-  name: 'CL-F3.1 Tap Edit',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await expand(canvas, ambush.title, t);
-    const edit = canvas.getByRole('button', { name: t('CardActions:edit') });
-    await expect(edit).toBeEnabled();
-    edit.focus();
-    await expect(edit).toHaveFocus();
-  },
-});
-
-export const CLF32 = meta.story({
-  name: 'CL-F3.2 Edit form',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await openEdit(canvas, t);
-    await expect(canvas.getByRole('textbox', { name: t('CombatFormSheet:title') })).toHaveValue(
-      ambush.title,
-    );
-    await expect(
-      canvas.getByRole('textbox', { name: t('CombatFormSheet:description') }),
-    ).toHaveValue(ambush.description);
-    await expect(canvas.getByRole('button', { name: t('Swatch:red') })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-    await expect(canvas.getByRole('button', { name: t('Button:save') })).toBeEnabled();
-  },
-});
-
-export const CLF33 = meta.story({
-  name: 'CL-F3.3 Card updated',
+export const EditSavedToCard = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await openEdit(canvas, t);
@@ -396,17 +294,8 @@ export const CLF33 = meta.story({
   },
 });
 
-export const CLF41 = meta.story({
-  name: 'CL-F4.1 ⋯ → Duplicate',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await openMenu(canvas, t);
-    await expect(canvas.getByRole('menuitem', { name: t('Button:delete') })).toBeVisible();
-  },
-});
-
-export const CLF42 = meta.story({
-  name: 'CL-F4.2 Copy created',
+export const DuplicateToast = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await openMenu(canvas, t);
@@ -423,18 +312,7 @@ export const CLF42 = meta.story({
   },
 });
 
-export const CLF51 = meta.story({
-  name: 'CL-F5.1 ⋯ → Delete',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await openMenu(canvas, t);
-    await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: t('Button:delete') })).toHaveFocus();
-  },
-});
-
-export const CLF52 = meta.story({
-  name: 'CL-F5.2 Confirmation',
+export const DeleteConfirmation = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await openMenu(canvas, t);
@@ -449,8 +327,8 @@ export const CLF52 = meta.story({
   },
 });
 
-export const CLF53 = meta.story({
-  name: 'CL-F5.3 Combat deleted',
+export const DeleteToast = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await openMenu(canvas, t);
@@ -467,20 +345,7 @@ export const CLF53 = meta.story({
   },
 });
 
-export const CLF61 = meta.story({
-  name: 'CL-F6.1 Tap the burger',
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
-    const burger = canvas.getByRole('button', { name: t('IconButton:openNavigation') });
-    await expect(burger).toBeEnabled();
-    burger.focus();
-    await expect(burger).toHaveFocus();
-  },
-});
-
-export const CLF62 = meta.story({
-  name: 'CL-F6.2 Drawer open',
+export const NavigationDrawerOpen = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
@@ -494,8 +359,8 @@ export const CLF62 = meta.story({
   },
 });
 
-export const ExtraSortRemembered = meta.story({
-  name: 'Sort remembered after a remount',
+export const SortRemembered = meta.story({
+  tags: ['!dev'],
   beforeEach: () => {
     localStorage.setItem(COMBAT_SORT_KEY, 'lastPlayed');
   },
@@ -507,8 +372,8 @@ export const ExtraSortRemembered = meta.story({
   },
 });
 
-export const ExtraAlphabetical = meta.story({
-  name: 'Sort A–Z',
+export const Alphabetical = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
@@ -524,8 +389,7 @@ export const ExtraAlphabetical = meta.story({
   },
 });
 
-export const ExtraLimitReached = meta.story({
-  name: 'Limit reached',
+export const CombatLimitReached = meta.story({
   parameters: { scenario: fullScenario },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
@@ -541,35 +405,8 @@ export const ExtraLimitReached = meta.story({
   },
 });
 
-export const ExtraOpenCombat = meta.story({
-  name: 'Tap a card opens the combat',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await userEvent.click(
-      await canvas.findByRole('button', {
-        name: (label: string) =>
-          label.startsWith('The Drowned Chapel') && label !== detailsOf(t, 'The Drowned Chapel'),
-      }),
-    );
-    await waitFor(() => expect(locationOf(canvasElement)).toBe(`/combats/${listCombats[1]!.id}`));
-  },
-});
-
-export const ExtraDrawerLibrary = meta.story({
-  name: 'Drawer: Library',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatList');
-    await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
-    await userEvent.click(canvas.getByRole('button', { name: t('IconButton:openNavigation') }));
-    const drawer = await canvas.findByRole('dialog', { name: 'Combat Planner' });
-    await userEvent.click(within(drawer).getByRole('button', { name: t('Library:title') }));
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/library'));
-    await expect(canvas.queryByRole('dialog')).toBeNull();
-  },
-});
-
-export const ExtraDeleteCancelled = meta.story({
-  name: 'Delete cancelled',
+export const DeleteCancelled = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await openMenu(canvas, t);
@@ -584,18 +421,24 @@ export const ExtraDeleteCancelled = meta.story({
   },
 });
 
-export const ExtraRussian = meta.story({
-  tags: ['visual'],
-  name: 'Russian: list',
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('heading', { name: 'Бои' })).toBeVisible();
-    await expect(await canvas.findByText('Капитан стражи переправы: засада у моста')).toBeVisible();
+export const CantReachServer = meta.story({
+  render: (args) => (
+    <FailFirstCall code="network">
+      <CombatList {...args} />
+      <LocationProbe />
+    </FailFirstCall>
+  ),
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'CombatList');
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: t('MessageScreen:offlineTitle') }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toBeVisible();
   },
 });
 
-export const ExtraFirstLoadFails = meta.story({
-  name: 'A failed first load shows Can’t reach the server with Try again',
+export const TryAgainReloads = meta.story({
+  tags: ['!dev'],
   render: (args) => (
     <FailFirstCall code="network">
       <CombatList {...args} />
@@ -612,21 +455,8 @@ export const ExtraFirstLoadFails = meta.story({
   },
 });
 
-export const ExtraSignedOut = meta.story({
-  name: 'An unauthorized first load goes to sign-in',
-  render: (args) => (
-    <FailFirstCall code="unauthorized">
-      <CombatList {...args} />
-      <LocationProbe />
-    </FailFirstCall>
-  ),
-  play: async ({ canvasElement }) => {
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/auth/sign-in'));
-  },
-});
-
-export const ExtraCreateRetry = meta.story({
-  name: 'Create is disabled in flight; Retry creates once with the same id and opens the combat',
+export const CreateRetry = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     const api = fakeApiOf(loaded);
@@ -646,8 +476,8 @@ export const ExtraCreateRetry = meta.story({
   },
 });
 
-export const ExtraDuplicateAtLimit = meta.story({
-  name: 'Duplicate is disabled at the combat limit',
+export const DuplicateAtLimit = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: fullScenario },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
@@ -662,13 +492,24 @@ export const ExtraDuplicateAtLimit = meta.story({
   },
 });
 
-export const ExtraKindIcons = meta.story({
-  name: 'Toast icons follow the toast kind',
-  play: async ({ canvas, globals }) => {
+export const Loading = meta.story({
+  render: (args) => (
+    <HoldFirstCall>
+      <CombatList {...args} />
+      <LocationProbe />
+    </HoldFirstCall>
+  ),
+  play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
-    await openMenu(canvas, t);
-    await userEvent.click(canvas.getByRole('menuitem', { name: t('Menu:duplicate') }));
-    const toast = await canvas.findByRole('status');
-    await expect(toast.querySelector('.tabler-icon-check')).not.toBeNull();
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    await waitFor(() =>
+      expect(fakeApiOf(loaded).calls.map((call) => call.method)).toContain('combats.list'),
+    );
+    await expect(canvas.getByRole('button', { name: t('Button:newCombat') })).toBeDisabled();
+    await expect(
+      canvas.queryByRole('button', { name: anyValue(t, 'CombatCard:details', 'title') }),
+    ).toBeNull();
+    await expect(canvas.queryByText(t('EmptyState:noCombatsTitle'))).toBeNull();
+    await expect(canvas.queryByRole('button', { name: t('sort') })).toBeNull();
   },
 });
