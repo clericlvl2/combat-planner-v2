@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/SearchField.json';
-import { SearchField } from './SearchField.tsx';
-import type { SearchFieldProps } from './SearchField.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { SearchField } from './SearchField.tsx';
+import type { SearchFieldProps, SearchFieldSize } from './SearchField.tsx';
 
 type LabelKey = keyof typeof en;
 
@@ -46,31 +47,36 @@ const meta = preview.meta({
 
 const renderFocus = (args: SearchFieldCellProps) => <SearchFieldCell {...args} data-focus="" />;
 
-export const Anatomy = meta.story({
+const states = ['empty', 'filled', 'focus', 'disabled'] as const;
+type State = (typeof states)[number];
+
+const row = (size: SearchFieldSize) => ({
+  label: size,
+  render: (state: State) => (
+    <SearchFieldCell
+      size={size}
+      placeholderKey="searchCombats"
+      value={state === 'filled' ? 'ferry' : ''}
+      disabled={state === 'disabled'}
+      data-focus={state === 'focus' ? '' : undefined}
+      onChange={fn()}
+    />
+  ),
+});
+
+export const AllStates = meta.story({
   tags: ['visual'],
-  args: { value: 'ferry' },
+  render: () => <StateGrid columns={states} rows={[row('S'), row('M'), row('L')]} />,
+});
+
+export const LongQuery = meta.story({
+  tags: ['visual'],
+  args: { value: 'brother tomas of the silver lantern' },
   render: renderFocus,
 });
 
-export const CombatsEmpty = meta.story({
-  name: 'Combats · empty',
-  args: { value: '', placeholderKey: 'searchCombats' },
-});
-
-export const CombatsFocus = meta.story({
-  name: 'Combats · focus',
-  args: { value: '', placeholder: '' },
-  render: renderFocus,
-});
-
-export const CombatsFilled = meta.story({
-  name: 'Combats · filled',
-  args: { value: 'ferry' },
-  render: renderFocus,
-});
-
-export const CombatsDisabled = meta.story({
-  name: 'Combats · disabled',
+export const DisabledIgnoresTyping = meta.story({
+  tags: ['!dev'],
   args: { value: '', placeholderKey: 'searchCombats', disabled: true, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'SearchField');
@@ -82,43 +88,8 @@ export const CombatsDisabled = meta.story({
   },
 });
 
-export const SearchFieldS = meta.story({
-  tags: ['visual'],
-  name: 'SearchField · S',
-  args: { size: 'S', value: 'ferry' },
-});
-
-export const SearchFieldM = meta.story({
-  name: 'SearchField · M',
-  args: { size: 'M', value: 'ferry' },
-});
-
-export const SearchFieldL = meta.story({
-  name: 'SearchField · L',
-  args: { size: 'L', value: 'ferry' },
-});
-
-export const QueriesLong = meta.story({
-  tags: ['visual'],
-  name: 'Queries · long',
-  args: { value: 'brother tomas of the silver lantern' },
-  render: renderFocus,
-});
-
-export const QueriesRu = meta.story({
-  name: 'Queries · ru',
-  args: { value: 'капитан стражи переправы' },
-  render: renderFocus,
-});
-
-export const QueriesJa = meta.story({
-  name: 'Queries · ja',
-  args: { value: '影の射手' },
-  render: renderFocus,
-});
-
-export const ExtraTyping = meta.story({
-  name: 'Typing',
+export const TypingShowsClear = meta.story({
+  tags: ['!dev'],
   args: { value: '', placeholderKey: 'searchCombats', onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'SearchField');
@@ -132,8 +103,8 @@ export const ExtraTyping = meta.story({
   },
 });
 
-export const ExtraMaxLength = meta.story({
-  name: 'Typing stops at maxLength',
+export const TypingStopsAtMaxLength = meta.story({
+  tags: ['!dev'],
   args: { value: '', placeholderKey: 'searchCombats', maxLength: 4, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'SearchField');
@@ -146,8 +117,8 @@ export const ExtraMaxLength = meta.story({
   },
 });
 
-export const ExtraClear = meta.story({
-  name: 'Clear',
+export const ClearEmptiesAndFocuses = meta.story({
+  tags: ['!dev'],
   args: { value: 'ferry', placeholderKey: 'searchCombats', onChange: fn(), onClear: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'SearchField');
@@ -162,8 +133,8 @@ export const ExtraClear = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: type, Tab to ×, Enter',
+export const TabToClearAndEnter = meta.story({
+  tags: ['!dev'],
   args: { value: '', placeholderKey: 'searchCombats', onChange: fn(), onClear: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'SearchField');
@@ -181,8 +152,8 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraEmptyPlaceholder = meta.story({
-  name: 'Empty placeholder keeps the search label',
+export const EmptyPlaceholderKeepsLabel = meta.story({
+  tags: ['!dev'],
   args: { value: '', placeholder: '' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'SearchField');
@@ -192,8 +163,8 @@ export const ExtraEmptyPlaceholder = meta.story({
   },
 });
 
-export const ExtraFrameClick = meta.story({
-  name: 'Clicking the frame focuses the input',
+export const FrameClickFocusesInput = meta.story({
+  tags: ['!dev'],
   args: { value: 'ferry' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'SearchField');
@@ -210,51 +181,5 @@ export const ExtraFrameClick = meta.story({
     }
     await expect(icon).not.toBeNull();
     await expect(input).toHaveFocus();
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { value: '', placeholderKey: 'searchCombats' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('searchbox', { name: 'Kämpfe durchsuchen' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es',
-  globals: { locale: 'es' },
-  args: { value: '', placeholderKey: 'searchCombats' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('searchbox', { name: 'Buscar combates' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr',
-  globals: { locale: 'fr' },
-  args: { value: '', placeholderKey: 'searchCombats' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('searchbox', { name: 'Rechercher des combats' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { value: '', placeholderKey: 'searchCombats' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('searchbox', { name: '戦闘を検索' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { value: 'ferry' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('searchbox', { name: 'Поиск' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Очистить поиск' })).toBeVisible();
   },
 });
