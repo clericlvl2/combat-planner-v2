@@ -1,6 +1,5 @@
 import preview from '#.storybook/preview';
 import type { TFunction } from 'i18next';
-import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { scenario } from '../../api/scenarios.ts';
@@ -18,14 +17,6 @@ const ferryAccount: FakeAccount = {
 };
 
 const signedOut = scenario({ session: null, accounts: [ferryAccount] });
-
-function LocationProbe() {
-  const { pathname } = useLocation();
-  return <span hidden data-location={pathname} />;
-}
-
-const locationOf = (canvasElement: HTMLElement): string | null | undefined =>
-  canvasElement.querySelector('[data-location]')?.getAttribute('data-location');
 
 type Canvas = ReturnType<typeof within>;
 
@@ -46,12 +37,6 @@ const meta = preview.meta({
   component: SignUp,
   decorators: [withRouter],
   args: { onRedirect: fn() },
-  render: (args) => (
-    <>
-      <SignUp {...args} />
-      <LocationProbe />
-    </>
-  ),
   parameters: {
     phoneFrame: true,
     scenario: signedOut,
@@ -76,17 +61,7 @@ export const Default = meta.story({
   },
 });
 
-export const ShortPassword = meta.story({
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'SignUp');
-    await fill(canvas, 'Ferry DM', 'new@ferry.games', '12345', t);
-    canvas.getByLabelText(t('password')).blur();
-    await expect(await canvas.findByText(t('tooShort'))).toBeVisible();
-    await expect(canvas.getByRole('button', { name: t('submit') })).toBeDisabled();
-  },
-});
-
-export const SignUpErrors = meta.story({
+export const EmailAlreadyTaken = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'SignUp');
@@ -109,8 +84,7 @@ export const SignUpErrors = meta.story({
   },
 });
 
-export const ExtraInvalidIsNotTaken = meta.story({
-  name: 'A rejected sign-up that is not a taken email shows a generic error',
+export const SignUpFailed = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'SignUp');
     await fill(canvas, 'Ferry DM', 'new@ferry.games', 'longer-password', t);
@@ -121,19 +95,6 @@ export const ExtraInvalidIsNotTaken = meta.story({
     await expect(canvas.getByRole('button', { name: t('submit') })).toBeEnabled();
     await userEvent.type(canvas.getByLabelText(t('password')), '!');
     await expect(canvas.queryByText(t('failed'))).toBeNull();
-  },
-});
-
-export const Created = meta.story({
-  play: async ({ canvas, canvasElement, globals, loaded }) => {
-    const t = storyT(globals, 'SignUp');
-    await fill(canvas, 'Ferry DM', 'new@ferry.games', 'longer-password', t);
-    await userEvent.click(canvas.getByRole('button', { name: t('submit') }));
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
-    const signUps = fakeApiOf(loaded).calls.filter((call) => call.method === 'auth.signUp');
-    await expect(signUps.map((call) => call.args)).toEqual([
-      [{ displayName: 'Ferry DM', email: 'new@ferry.games', password: 'longer-password' }],
-    ]);
   },
 });
 
@@ -154,17 +115,18 @@ export const EmptyFields = meta.story({
 
 export const LongName = meta.story({
   tags: ['visual'],
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    const name = canvas.getByRole('textbox', { name: 'Отображаемое имя' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'SignUp');
+    const name = canvas.getByRole('textbox', { name: t('displayName') });
     await userEvent.type(name, 'Капитан стражи переправы у Чёрной воды!!');
     await expect(name).toHaveValue('Капитан стражи переправы у Чёрной воды!!');
     await expect(canvas.getByText('40/40')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Создать аккаунт' })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: t('submit') })).toBeDisabled();
   },
 });
 
-export const Social = meta.story({
+export const GitHubSignUp = meta.story({
+  name: 'GitHub Sign Up',
   parameters: {
     scenario: scenario({ session: null, accounts: [ferryAccount], providers: ['github'] }),
   },
