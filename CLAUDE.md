@@ -21,8 +21,6 @@ from the repository root.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
 - `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story once with its `play`,
   headless Chromium, locale `ru`, the `phone` frame and viewport, 390×844).
-- `pnpm test:narrow`: the storybook project with `CP_STORY_FRAME=narrow`, at 320×568 in `ru`. It
-  reports layout failures at 320 and is outside `pnpm check`, `pnpm test` and the gate.
 - `pnpm test:record`: one storybook run with `CP_NARROW_RECORD=1` that rewrites `narrow-known.ts`
   from the real failures (see Conventions). It takes no arguments.
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
@@ -115,12 +113,10 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   opts out per check through `parameters.geometry`, with a reason string or
   `{ reason, except: '<selector>' }`. The selector must match an element.
 - Storybook and the storybook project open in `ru` at the test frame `phone` (390×844); the
-  toolbar switches locale and frame. `CP_STORY_FRAME=narrow` (`pnpm test:narrow`) moves the test
-  frame to `narrow` (320×568).
+  toolbar switches locale and frame, including `narrow` (320×568).
 - `packages/ui/src/storybook/narrow-known.ts` is a temporary ratchet of `{ story, check }` entries
   that fail at the test frame, one array `ru` sorted by story id, then check; `check` is a geometry
-  check or `play`. It applies to stories rendered in the `phone` frame and is off under
-  `CP_STORY_FRAME=narrow`. An unlisted failure fails the story, and a listed entry that passes
+  check or `play`. It applies to stories rendered in the `phone` frame. An unlisted failure fails the story, and a listed entry that passes
   fails it with "remove from narrow-known". A `play` that fails because of a layout defect is
   wrapped in `playKnownAtNarrow` and listed with `check: 'play'`; a `play` that is wrong is fixed.
 - Regenerating the list: `pnpm test:record` sets `CP_NARROW_RECORD=1`, which turns the ratchet off
@@ -151,8 +147,7 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   code imports from `vite-plus/test` and `vite-plus/test/browser`.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
   `viewport` global, so the test viewport is set in `preview.tsx` (`initialGlobals` `locale: 'ru'`,
-  `frame` and `viewport` from `import.meta.env.CP_STORY_FRAME`, which `vite.config.ts` defines as
-  `phone` unless the variable says `narrow`), not in `vite.config.ts`. The `visual` project stays at
+  `frame: 'phone'`, `viewport: 'phone'`), not in `vite.config.ts`. The `visual` project stays at
   390×844: `vite.config.ts` sets its viewport and `test/visual.test.tsx` runs each `visual` story
   with `locale: 'ru'` and the `phone` frame and viewport globals.
 - Playwright 1.64.1 exact.

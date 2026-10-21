@@ -565,10 +565,8 @@ const knownPlayFailures = new Set<string>();
 
 const recording = import.meta.env.CP_NARROW_RECORD === '1';
 
-const ratchetOn = import.meta.env.CP_STORY_FRAME !== 'narrow';
-
 function isTestFrame(story: GeometryStory | undefined): story is GeometryStory {
-  return ratchetOn && story?.globals.frame === 'phone';
+  return story?.globals.frame === 'phone';
 }
 
 function isListed(story: GeometryStory | undefined, check: NarrowCheck): boolean {

@@ -32,7 +32,7 @@ const result = spawnSync(
   {
     cwd: rootDir,
     stdio: 'inherit',
-    env: { ...process.env, CP_STORY_FRAME: 'phone', CP_NARROW_RECORD: '1' },
+    env: { ...process.env, CP_NARROW_RECORD: '1' },
   },
 );
 const seconds = ((performance.now() - started) / 1000).toFixed(0);

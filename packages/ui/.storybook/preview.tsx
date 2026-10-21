@@ -17,16 +17,14 @@ import { apiLoader, withApi } from '../src/storybook/withApi.tsx';
 import { withDocsTheme } from '../src/storybook/withDocsTheme.tsx';
 import { localeGlobalType, withLocale } from '../src/storybook/withLocale.tsx';
 
-const testFrame = import.meta.env.CP_STORY_FRAME === 'narrow' ? 'narrow' : 'phone';
-
 export default definePreview({
   addons: [addonDocs()],
   tags: ['autodocs'],
   globalTypes: { ...localeGlobalType, ...frameGlobalType },
   initialGlobals: {
     locale: 'ru',
-    frame: testFrame,
-    viewport: { value: testFrame, isRotated: false },
+    frame: 'phone',
+    viewport: { value: 'phone', isRotated: false },
   },
   parameters: {
     viewport: {
