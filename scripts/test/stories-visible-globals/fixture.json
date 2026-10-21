@@ -1,0 +1,10 @@
+{
+  "script": "check-stories",
+  "expect": "visible story sets toolbar globals: Default sets globals.locale\n",
+  "ops": [
+    {
+      "write": "packages/ui/src/storybook/Fixture/Fixture.stories.tsx",
+      "content": "import preview from '#.storybook/preview';\n\nconst meta = preview.meta({\n  title: 'Fixture/Names',\n  render: () => <p>fixture</p>,\n});\n\nexport const Default = meta.story({\n  globals: { locale: 'de' },\n});\n\nexport const LocaleOrder = meta.story({\n  tags: ['!dev'],\n  globals: { locale: 'ru' },\n});\n"
+    }
+  ]
+}

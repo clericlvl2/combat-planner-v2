@@ -1,0 +1,15 @@
+{
+  "script": "check-stories",
+  "expect": "Extra prefix",
+  "ops": [
+    {
+      "replace": "scripts/check-stories.mjs",
+      "search": "  if (exemptUntilWave2(storyPath, stories)) continue;\n",
+      "with": ""
+    },
+    {
+      "write": "packages/ui/src/storybook/Fixture/Fixture.stories.tsx",
+      "content": "import preview from '#.storybook/preview';\n\nconst meta = preview.meta({\n  title: 'Fixture/Names',\n  render: () => <p>fixture</p>,\n});\n\nexport const ExtraClick = meta.story({});\n"
+    }
+  ]
+}
