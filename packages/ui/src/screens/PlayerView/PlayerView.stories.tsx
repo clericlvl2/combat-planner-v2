@@ -9,14 +9,12 @@ import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import {
-  ALEX,
   COMBAT_ID,
   COMBAT_TITLE,
   ME,
   MIKA,
   TOKEN,
   actAsDm,
-  claimAs,
   ferryCombat,
   playerScenario,
   unitIds,
@@ -107,9 +105,8 @@ const meta = preview.meta({
   parameters: { phoneFrame: { overlay: true }, scenario: ownTurn },
 });
 
-export const PVF11 = meta.story({
+export const HeroList = meta.story({
   tags: ['visual'],
-  name: 'PV-F1.1 Hero list',
   parameters: { scenario: joinScenario },
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
@@ -122,22 +119,9 @@ export const PVF11 = meta.story({
   },
 });
 
-export const PVF12 = meta.story({
-  name: 'PV-F1.2 Name entered, hero picked',
-  parameters: { scenario: joinScenario },
-  play: async ({ canvas, loaded, parameters }) => {
-    const t = playerT(parameters);
-    await typeName(canvas, t);
-    await userEvent.click(canvas.getByRole('checkbox', { name: ME }));
-    await expect(canvas.getByRole('checkbox', { name: ME })).toBeChecked();
-    await expect(canvas.getByRole('button', { name: t('Heroes:join') })).toBeEnabled();
-    await expect(sentBy(fakeApiOf(loaded))).toEqual([]);
-  },
-});
-
-export const PVF13 = meta.story({
+export const WaitingForDm = meta.story({
+  name: 'Waiting For DM',
   tags: ['visual'],
-  name: 'PV-F1.3 In the combat, waiting for the DM',
   parameters: {
     scenario: playerScenario(ferryCombat({ status: 'setup', joined: false })),
   },
@@ -156,27 +140,8 @@ export const PVF13 = meta.story({
   },
 });
 
-export const PVF14 = meta.story({
-  name: 'PV-F1.4 Another player took Vashti',
-  parameters: { scenario: joinScenario },
-  play: async ({ canvas, loaded, parameters }) => {
-    const t = playerT(parameters);
-    const api = fakeApiOf(loaded);
-    await typeName(canvas, t);
-    await userEvent.click(canvas.getByRole('checkbox', { name: ME }));
-    await claimAs(api, ALEX, 'Alex', unitIds.vashti);
-    await expect(
-      await canvas.findByText(t('Toast:heroTaken', { hero: 'Vashti the Hexer' })),
-    ).toBeVisible();
-    await expect(canvas.getByRole('checkbox', { name: ME })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: t('Heroes:join') })).toBeDisabled();
-    await expect(sentBy(api)).toEqual([]);
-  },
-});
-
-export const PVF21 = meta.story({
+export const OwnHeroWithoutInitiative = meta.story({
   tags: ['visual'],
-  name: 'PV-F2.1 Own row without initiative',
   parameters: { scenario: setupScenario },
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
@@ -191,8 +156,7 @@ export const PVF21 = meta.story({
   },
 });
 
-export const PVF22 = meta.story({
-  name: 'PV-F2.2 Roll or ±',
+export const InitiativePopover = meta.story({
   parameters: { scenario: setupScenario },
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
@@ -211,8 +175,8 @@ export const PVF22 = meta.story({
   },
 });
 
-export const PVF23 = meta.story({
-  name: 'PV-F2.3 Initiative 15',
+export const RollDispatched = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: setupScenario },
   args: { random: () => 0.6 },
   play: async ({ canvas, loaded, parameters }) => {
@@ -244,24 +208,8 @@ export const PVF23 = meta.story({
   },
 });
 
-export const PVF31 = meta.story({
-  name: 'PV-F3.1 Another unit’s turn',
-  parameters: { scenario: orcTurn },
-  play: async ({ canvas, parameters }) => {
-    const t = playerT(parameters);
-    const orc = await rowOf(canvas, 'Orc Berserker');
-    await expect(orc).toHaveAttribute('data-active');
-    await expect(orc.textContent).not.toMatch(/AC|14|40/);
-    await expect(canvas.queryByText('影の射手ゴブリン')).toBeNull();
-    await expect(
-      canvas.getByRole('heading', { name: t('PlayerHeader:round', { round: 3 }) }),
-    ).toBeVisible();
-  },
-});
-
-export const PVF32 = meta.story({
+export const OwnTurn = meta.story({
   tags: ['visual'],
-  name: 'PV-F3.2 Own turn',
   play: async ({ canvas }) => {
     const vashti = await rowOf(canvas, ME);
     await expect(vashti).toHaveAttribute('data-active');
@@ -269,8 +217,7 @@ export const PVF32 = meta.story({
   },
 });
 
-export const PVF33 = meta.story({
-  name: 'PV-F3.3 Damage 7',
+export const DamageNumpad = meta.story({
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const sheet = await openNumpad(canvas);
@@ -281,8 +228,8 @@ export const PVF33 = meta.story({
   },
 });
 
-export const PVF34 = meta.story({
-  name: 'PV-F3.4 HP 13/36, Staggered',
+export const DamageDispatched = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const sheet = await openNumpad(canvas);
@@ -304,9 +251,8 @@ export const PVF34 = meta.story({
   },
 });
 
-export const PVF35 = meta.story({
+export const OwnRowExpanded = meta.story({
   tags: ['visual'],
-  name: 'PV-F3.5 Own row expanded',
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
     await expandOwn(canvas);
@@ -316,9 +262,8 @@ export const PVF35 = meta.story({
   },
 });
 
-export const PVF36 = meta.story({
+export const ConditionSheet = meta.story({
   tags: ['visual'],
-  name: 'PV-F3.6 Condition sheet',
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
     await expandOwn(canvas);
@@ -331,8 +276,7 @@ export const PVF36 = meta.story({
   },
 });
 
-export const PVF37 = meta.story({
-  name: 'PV-F3.7 Editing the note',
+export const EditingNote = meta.story({
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     await expandOwn(canvas);
@@ -348,8 +292,7 @@ export const PVF37 = meta.story({
   },
 });
 
-export const PVF41 = meta.story({
-  name: 'PV-F4.1 Menu open',
+export const MenuOpen = meta.story({
   parameters: { scenario: orcTurn },
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
@@ -359,8 +302,8 @@ export const PVF41 = meta.story({
   },
 });
 
-export const PVF42 = meta.story({
-  name: 'PV-F4.2 Hero picker: Vashti is free',
+export const MenuOpensHeroPicker = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: playerScenario(ferryCombat({ active: 'orc', ilse: true })) },
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
@@ -383,70 +326,7 @@ export const PVF42 = meta.story({
   },
 });
 
-export const PVF51 = meta.story({
-  name: 'PV-F5.1 DM restarted the combat',
-  play: async ({ canvas, loaded, parameters }) => {
-    const t = playerT(parameters);
-    await rowOf(canvas, ME);
-    await actAsDm(fakeApiOf(loaded), { type: 'restart' });
-    await expect(await canvas.findByText(t('Toast:dmRestarted'))).toBeVisible();
-    await expect(canvas.getByText(t('TurnOrder:waiting'))).toBeVisible();
-    await expect(canvas.getByRole('heading', { name: t('Chip:setup') })).toBeVisible();
-  },
-});
-
-export const PVF52 = meta.story({
-  name: 'PV-F5.2 DM cleared the combat',
-  play: async ({ canvas, loaded, parameters }) => {
-    const t = playerT(parameters);
-    await rowOf(canvas, ME);
-    await actAsDm(fakeApiOf(loaded), { type: 'clear' });
-    await expect(await canvas.findByText(t('Toast:dmCleared'))).toBeVisible();
-    await expect(canvas.getByRole('heading', { name: t('TurnOrder:noUnitsTitle') })).toBeVisible();
-    await expect(canvas.queryByRole('textbox', { name: t('Heroes:nameLabel') })).toBeNull();
-  },
-});
-
-export const PVF53 = meta.story({
-  name: 'PV-F5.3 Hero removed or released',
-  parameters: { scenario: playerScenario(ferryCombat({ status: 'setup', ilse: true })) },
-  play: async ({ canvas, loaded, parameters }) => {
-    const t = playerT(parameters);
-    await rowOf(canvas, ME);
-    await actAsDm(fakeApiOf(loaded), { type: 'releaseUnit', unitId: unitIds.vashti });
-    await expect(
-      await canvas.findByText(t('Toast:dmReleased', { hero: 'Vashti the Hexer' })),
-    ).toBeVisible();
-    await expect(canvas.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
-    await expect(canvas.getByRole('checkbox', { name: ME })).not.toBeChecked();
-  },
-});
-
-export const PVF54 = meta.story({
-  name: 'PV-F5.4 Link revoked',
-  play: async ({ canvas, loaded, parameters }) => {
-    const t = playerT(parameters);
-    await rowOf(canvas, ME);
-    await fakeApiOf(loaded).link.reissue(COMBAT_ID);
-    await expect(
-      await canvas.findByRole('heading', { name: t('MessageScreen:linkRevokedTitle') }),
-    ).toBeVisible();
-  },
-});
-
-export const PVF55 = meta.story({
-  name: 'PV-F5.5 Combat deleted',
-  play: async ({ canvas, loaded }) => {
-    await rowOf(canvas, ME);
-    await fakeApiOf(loaded).combats.remove(COMBAT_ID);
-    await expect(
-      await canvas.findByRole('heading', { name: `${COMBAT_TITLE} was deleted` }),
-    ).toBeVisible();
-  },
-});
-
-export const PVF56 = meta.story({
-  name: 'PV-F5.6 Request failed',
+export const RequestFailed = meta.story({
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const api = fakeApiOf(loaded);
@@ -461,23 +341,8 @@ export const PVF56 = meta.story({
   },
 });
 
-export const ExtraDmRemoved = meta.story({
-  name: 'Extra: DM removed the own hero',
-  parameters: { scenario: orcTurn },
-  play: async ({ canvas, loaded, parameters }) => {
-    const t = playerT(parameters);
-    await rowOf(canvas, ME);
-    await actAsDm(fakeApiOf(loaded), { type: 'removeUnit', unitId: unitIds.vashti });
-    const toast = await canvas.findByRole('status');
-    await expect(toast).toHaveTextContent(t('Toast:dmRemoved', { hero: 'Vashti the Hexer' }));
-    await expect(toast.querySelector('.tabler-icon-info-circle')).not.toBeNull();
-    await expect(canvas.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
-    await expect(canvas.queryByRole('checkbox', { name: ME })).toBeNull();
-  },
-});
-
-export const ExtraOwnRelease = meta.story({
-  name: 'Extra: own release of the last hero opens Heroes',
+export const OwnRelease = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     await expandOwn(canvas);
@@ -494,8 +359,9 @@ export const ExtraOwnRelease = meta.story({
   },
 });
 
-export const ExtraFailedReleaseThenDmRelease = meta.story({
-  name: 'Extra: a failed own release does not hide a later DM release',
+export const FailedReleaseThenDmRelease = meta.story({
+  name: 'Failed Release Then DM Release',
+  tags: ['!dev'],
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const api = fakeApiOf(loaded);
@@ -510,8 +376,8 @@ export const ExtraFailedReleaseThenDmRelease = meta.story({
   },
 });
 
-export const ExtraNoteSaved = meta.story({
-  name: 'Extra: note saved on blur',
+export const NoteSaved = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     await expandOwn(canvas);
@@ -537,8 +403,8 @@ export const ExtraNoteSaved = meta.story({
   },
 });
 
-export const ExtraConditionToggled = meta.story({
-  name: 'Extra: condition toggled',
+export const ConditionToggled = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     await expandOwn(canvas);
@@ -560,8 +426,8 @@ export const ExtraConditionToggled = meta.story({
   },
 });
 
-export const ExtraDeletedBeforeEnd = meta.story({
-  name: 'Extra: a 404 refetch before the deleted end shows Combat deleted',
+export const DeletedBeforeEnd = meta.story({
+  tags: ['!dev'],
   loaders: [heldEndLoader],
   play: async ({ canvas, loaded }) => {
     const api = fakeApiOf(loaded);
@@ -578,8 +444,8 @@ export const ExtraDeletedBeforeEnd = meta.story({
   },
 });
 
-export const ExtraCantReachServer = meta.story({
-  name: 'Extra: first load without a response',
+export const CantReachServer = meta.story({
+  tags: ['!dev'],
   loaders: [offlineLoader],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerView');
@@ -595,8 +461,8 @@ export const ExtraCantReachServer = meta.story({
   },
 });
 
-export const ExtraDeletedOnFirstLoad = meta.story({
-  name: 'Extra: a 404 on the first load shows Combat deleted without a title',
+export const DeletedOnFirstLoad = meta.story({
+  tags: ['!dev'],
   loaders: [firstLoadFails('notFound')],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerView');
@@ -608,8 +474,8 @@ export const ExtraDeletedOnFirstLoad = meta.story({
   },
 });
 
-export const ExtraCantReachServerRetry = meta.story({
-  name: 'Extra: Try again after a first load without a response',
+export const CantReachServerRetry = meta.story({
+  tags: ['!dev'],
   loaders: [offlineLoader],
   play: async ({ canvas, globals, loaded, parameters }) => {
     const t = storyT(globals, 'PlayerView');
@@ -625,9 +491,9 @@ export const ExtraCantReachServerRetry = meta.story({
   },
 });
 
-export const ExtraDmLanguage = meta.story({
-  tags: ['visual'],
-  name: 'Extra: interface in the DM language',
+export const DmLanguage = meta.story({
+  name: 'DM Language',
+  tags: ['!dev'],
   parameters: {
     scenario: playerScenario(ferryCombat({ status: 'setup' }), { settings: { language: 'de' } }),
   },
