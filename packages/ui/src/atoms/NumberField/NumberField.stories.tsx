@@ -1,17 +1,18 @@
 import preview from '#.storybook/preview';
+import { LIMITS } from '@combat-planner/domain';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/NumberField.json';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 import { NumberField } from './NumberField.tsx';
 import type { NumberFieldProps } from './NumberField.tsx';
-import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
 interface NumberFieldCellProps extends Omit<NumberFieldProps, 'label' | 'error'> {
   labelKey?: LabelKey;
-  label?: string;
   errorKey?: LabelKey;
 }
 
@@ -19,7 +20,6 @@ function NumberFieldCell({
   value: initialValue,
   onChange,
   labelKey = 'amount',
-  label,
   errorKey,
   ...props
 }: NumberFieldCellProps) {
@@ -29,7 +29,7 @@ function NumberFieldCell({
     <div style={{ width: 320 }}>
       <NumberField
         {...props}
-        label={label ?? t(labelKey)}
+        label={t(labelKey)}
         error={errorKey ? t(errorKey, { min: props.min, max: props.max }) : undefined}
         value={value}
         onChange={(next) => {
@@ -47,51 +47,39 @@ const meta = preview.meta({
   args: { value: null, onChange: fn() },
 });
 
-const renderFocus = (args: NumberFieldCellProps) => <NumberFieldCell {...args} data-focus="" />;
+const states = ['empty', 'filled', 'focus', 'disabled', 'error'] as const;
+type State = (typeof states)[number];
 
-export const Anatomy = meta.story({
+const row = (label: string, props: Partial<NumberFieldCellProps>, filled = 12) => ({
+  label,
+  render: (state: State) => (
+    <NumberFieldCell
+      {...props}
+      onChange={fn()}
+      value={state === 'empty' || state === 'error' ? null : filled}
+      disabled={state === 'disabled'}
+      errorKey={state === 'error' ? 'errorRange' : undefined}
+      data-focus={state === 'focus' ? '' : undefined}
+    />
+  ),
+});
+
+export const AllStates = meta.story({
   tags: ['visual'],
-  args: { value: 12 },
-  render: renderFocus,
+  render: () => (
+    <StateGrid
+      columns={states}
+      rows={[
+        row('Amount', { min: LIMITS.amount.min, max: LIMITS.amount.max }),
+        row('Max HP', { labelKey: 'maxHp', min: 1, max: 999 }),
+        row('Signed', { min: -999, max: 999 }, -12),
+      ]}
+    />
+  ),
 });
 
-export const AmountEmpty = meta.story({
-  name: 'Amount · empty',
-  args: { value: null },
-});
-
-export const AmountTyping = meta.story({
-  name: 'Amount · typing',
-  args: { value: 1 },
-  render: renderFocus,
-});
-
-export const AmountFilled = meta.story({
-  name: 'Amount · filled',
-  args: { value: 12 },
-  render: renderFocus,
-});
-
-export const Amount999 = meta.story({
-  name: 'Amount · 999',
-  args: { value: 999 },
-  render: renderFocus,
-});
-
-export const AmountRu = meta.story({
-  name: 'Amount · ru',
-  args: { label: 'Значение', value: 120 },
-  render: renderFocus,
-});
-
-export const AmountEs = meta.story({
-  name: 'Amount · es',
-  args: { label: 'Cantidad', value: 45 },
-  render: renderFocus,
-});
-
-export const ExtraTyping = meta.story({
-  name: 'Typing and backspace',
+export const TypingAndBackspace = meta.story({
+  tags: ['!dev'],
   args: { value: null, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumberField');
@@ -107,8 +95,8 @@ export const ExtraTyping = meta.story({
   },
 });
 
-export const ExtraClampMax = meta.story({
-  name: 'Clamps to max',
+export const ClampsToMax = meta.story({
+  tags: ['!dev'],
   args: { value: null, max: 999, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumberField');
@@ -122,8 +110,8 @@ export const ExtraClampMax = meta.story({
   },
 });
 
-export const ExtraClampMin = meta.story({
-  name: 'Clamps to min on blur',
+export const ClampsToMinOnBlur = meta.story({
+  tags: ['!dev'],
   args: { value: null, labelKey: 'maxHp', min: 1, max: 999, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumberField');
@@ -139,8 +127,8 @@ export const ExtraClampMin = meta.story({
   },
 });
 
-export const ExtraRejectsNonNumeric = meta.story({
-  name: 'Rejects non-numeric input',
+export const RejectsNonNumericInput = meta.story({
+  tags: ['!dev'],
   args: { value: null, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumberField');
@@ -155,8 +143,8 @@ export const ExtraRejectsNonNumeric = meta.story({
   },
 });
 
-export const ExtraNegative = meta.story({
-  name: 'Sign when min is negative',
+export const SignWhenMinIsNegative = meta.story({
+  tags: ['!dev'],
   args: { value: null, min: -999, max: 999, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumberField');
@@ -170,8 +158,8 @@ export const ExtraNegative = meta.story({
   },
 });
 
-export const ExtraArrowKeys = meta.story({
-  name: 'Arrow keys step',
+export const ArrowKeysStep = meta.story({
+  tags: ['!dev'],
   args: { value: 10, step: 5, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'NumberField');
@@ -185,33 +173,8 @@ export const ExtraArrowKeys = meta.story({
   },
 });
 
-export const ExtraDisabled = meta.story({
-  name: 'Disabled',
-  args: { value: 12, disabled: true, onChange: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'NumberField');
-    const input = canvas.getByRole('textbox', { name: t('amount') });
-    await expect(input).toBeDisabled();
-    await userEvent.type(input, '3', { pointerEventsCheck: 0 });
-    await expect(args.onChange).not.toHaveBeenCalled();
-    await expect(input).toHaveValue('12');
-  },
-});
-
-export const ExtraError = meta.story({
-  tags: ['visual'],
-  name: 'Error',
-  args: { value: null, labelKey: 'maxHp', min: 1, max: 999, errorKey: 'errorRange' },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'NumberField');
-    const input = canvas.getByRole('textbox', { name: t('maxHp') });
-    await expect(input).toHaveAttribute('aria-invalid', 'true');
-    await expect(input).toHaveAccessibleDescription(t('errorRange', { min: 1, max: 999 }));
-  },
-});
-
-export const ExtraFrameClick = meta.story({
-  name: 'Clicking the frame focuses the input',
+export const FrameClickFocusesInput = meta.story({
+  tags: ['!dev'],
   args: { value: 12, onChange: fn() },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'NumberField');
@@ -224,8 +187,8 @@ export const ExtraFrameClick = meta.story({
   },
 });
 
-export const ExtraDefenseWidth = meta.story({
-  name: 'Width follows the digits of max',
+export const WidthFollowsMaxDigits = meta.story({
+  tags: ['!dev'],
   args: { value: 99, min: 0, max: 99, onChange: fn() },
   render: (args) => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -244,47 +207,26 @@ export const ExtraDefenseWidth = meta.story({
   },
 });
 
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { value: 12, labelKey: 'maxHp' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('textbox', { name: 'Max. TP' })).toHaveValue('12');
+export const DisabledIgnoresTyping = meta.story({
+  tags: ['!dev'],
+  args: { value: 12, disabled: true, onChange: fn() },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('amount') });
+    await expect(input).toBeDisabled();
+    await userEvent.type(input, '3', { pointerEventsCheck: 0 });
+    await expect(args.onChange).not.toHaveBeenCalled();
+    await expect(input).toHaveValue('12');
   },
 });
 
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es',
-  globals: { locale: 'es' },
-  args: { value: 12, labelKey: 'maxHp' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('textbox', { name: 'PG máx.' })).toHaveValue('12');
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr',
-  globals: { locale: 'fr' },
-  args: { value: 12, labelKey: 'maxHp' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('textbox', { name: 'PV max' })).toHaveValue('12');
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { value: 12, labelKey: 'amount' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('textbox', { name: '数値' })).toHaveValue('12');
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
+export const ErrorIsAnnounced = meta.story({
+  tags: ['!dev'],
   args: { value: null, labelKey: 'maxHp', min: 1, max: 999, errorKey: 'errorRange' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('От 1 до 999')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumberField');
+    const input = canvas.getByRole('textbox', { name: t('maxHp') });
+    await expect(input).toHaveAttribute('aria-invalid', 'true');
+    await expect(input).toHaveAccessibleDescription(t('errorRange', { min: 1, max: 999 }));
   },
 });
