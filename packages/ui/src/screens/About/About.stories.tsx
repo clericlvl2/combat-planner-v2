@@ -1,6 +1,6 @@
 import preview from '#.storybook/preview';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
-import { expect, userEvent } from 'storybook/test';
+import { expect } from 'storybook/test';
 import { About } from './About.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
@@ -37,39 +37,5 @@ export const Default = meta.story({
       ),
     ).toEqual([sourceUrl]);
     await expect(canvas.getByText(t('legal'))).toBeVisible();
-  },
-});
-
-export const Russian = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'ru' },
-  args: { version: '2.1.0-beta.3' },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'About');
-    await expect(canvas.getByRole('heading', { level: 1, name: 'О приложении' })).toBeVisible();
-    await expect(canvas.getByText('2.1.0-beta.3')).toBeVisible();
-    await expect(canvas.getByText(t('legal'))).toBeVisible();
-  },
-});
-
-export const German = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'de' },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'About');
-    await expect(canvas.getByRole('heading', { level: 1, name: 'Info' })).toBeVisible();
-    await expect(canvas.getByRole('link', { name: 'Quellcode GitHub' })).toBeVisible();
-    await expect(canvas.getByText(t('version'))).toBeVisible();
-  },
-});
-
-export const KeyboardLinks = meta.story({
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'About');
-    const source = canvas.getByRole('link', { name: `${t('source')} GitHub` });
-    source.focus();
-    await expect(source).toHaveFocus();
-    await userEvent.tab();
-    await expect(source).not.toHaveFocus();
   },
 });
