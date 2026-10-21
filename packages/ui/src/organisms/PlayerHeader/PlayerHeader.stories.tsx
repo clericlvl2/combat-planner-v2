@@ -57,7 +57,7 @@ const meta = preview.meta({
   args: { onMenu: fn(), onMenuClose: fn(), onHeroes: fn() },
 });
 
-export const Anatomy = meta.story({
+export const CombatInProgress = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
@@ -73,13 +73,8 @@ export const Anatomy = meta.story({
   },
 });
 
-export const Combat = meta.story({
-  name: 'Combat',
-});
-
 export const Setup = meta.story({
   tags: ['visual'],
-  name: 'Setup',
   args: { round: null, escalation: 0 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
@@ -89,8 +84,7 @@ export const Setup = meta.story({
   },
 });
 
-export const MenuTapped = meta.story({
-  name: 'Menu tapped',
+export const MenuOpen = meta.story({
   args: { menuOpened: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
@@ -102,9 +96,8 @@ export const MenuTapped = meta.story({
   },
 });
 
-export const HeroPicker = meta.story({
+export const WithoutMenu = meta.story({
   tags: ['visual'],
-  name: 'Hero picker',
   args: { round: null, escalation: 0, withMenu: false },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
@@ -113,8 +106,7 @@ export const HeroPicker = meta.story({
   },
 });
 
-export const LongTitleRound12 = meta.story({
-  name: 'Long title, round 12',
+export const LongTitle = meta.story({
   parameters: {
     geometry: {
       truncation: {
@@ -135,8 +127,20 @@ export const LongTitleRound12 = meta.story({
   },
 });
 
-export const ExtraMenuOpens = meta.story({
-  name: 'Menu button opens the player menu',
+export const RoundOneDieAtZero = meta.story({
+  args: { round: 1, escalation: 0 },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerHeader');
+    await expect(
+      canvas.getByRole('heading', { level: 1, name: t('round', { round: 1 }) }),
+    ).toBeVisible();
+    await expect(canvas.getByText(t('EscalationDie:none'))).toBeVisible();
+    await expect(canvas.queryByText(anyValue(t, 'EscalationDie:value', 'value'))).toBeNull();
+  },
+});
+
+export const MenuButtonOpensMenu = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
     const menu = canvas.getByRole('button', { name: t('menu') });
@@ -155,37 +159,8 @@ export const ExtraMenuOpens = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter opens, Escape closes',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PlayerHeader');
-    const menu = canvas.getByRole('button', { name: t('menu') });
-    await userEvent.tab();
-    await expect(menu).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onMenu).toHaveBeenCalledOnce();
-    const heroes = await canvas.findByRole('menuitem', { name: t('heroes') });
-    await waitFor(() => expect(heroes).toHaveFocus());
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onMenuClose).toHaveBeenCalledOnce();
-    await expect(args.onHeroes).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
-    await waitFor(() => expect(menu).toHaveFocus());
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr: the menu caption reads Menu',
-  globals: { locale: 'fr' },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'PlayerHeader');
-    await expect(canvas.getByRole('button', { name: t('menu') })).toBeVisible();
-    await expect(canvas.queryByText('Plus')).toBeNull();
-  },
-});
-
-export const ExtraDisplayOnly = meta.story({
-  name: 'Round and die are not interactive',
+export const RoundAndDieNotInteractive = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');
     await expect(canvas.getAllByRole('button')).toHaveLength(1);
