@@ -6,6 +6,8 @@ import {
   initiatives,
   joinAsPlayer,
   newPlayerContext,
+  openCombatMenu,
+  openUnitMenu,
   rowInitiatives,
   rowOrder,
   shareLink,
@@ -166,4 +168,91 @@ test('a player sees Combat deleted when the DM deletes the combat', async ({ pag
     player.getByRole('heading', { name: t('CombatDeleted:title', { title: 'Old keep' }) }),
   ).toBeVisible();
   await expect(player.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
+});
+
+async function closeShare(page: Page): Promise<void> {
+  const sheet = page.getByRole('dialog', { name: t('ShareSheet:title') });
+  await sheet.getByRole('button', { name: t('Sheet:close') }).click();
+  await expect(sheet).toBeHidden();
+}
+
+test('a DM restart shows the player a toast and the setup', async ({ page }) => {
+  const link = await prepareCombat(page, 'Second try');
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+  await closeShare(page);
+  await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
+  await expect(
+    player.getByRole('heading', { level: 1, name: t('PlayerHeader:round', { round: 1 }) }),
+  ).toBeVisible();
+
+  await openCombatMenu(page, t('CombatHeader:restart'));
+  const confirm = page.getByRole('alertdialog', { name: t('Dialog:restartTitle') });
+  await confirm.getByRole('button', { name: t('Dialog:restart') }).click();
+
+  await expect(player.getByText(t('Toast:dmRestarted'))).toBeVisible();
+  await expect(
+    player.getByRole('heading', { level: 1, name: t('PlayerHeader:setup') }),
+  ).toBeVisible();
+});
+
+test('a DM clear shows the player a toast and no units', async ({ page }) => {
+  const link = await prepareCombat(page, 'Clean slate');
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+  await closeShare(page);
+
+  await openCombatMenu(page, t('CombatHeader:clear'));
+  const confirm = page.getByRole('alertdialog', { name: t('Dialog:clearTitle') });
+  await confirm.getByRole('button', { name: t('Dialog:clear') }).click();
+
+  await expect(player.getByText(t('Toast:dmCleared'))).toBeVisible();
+  await expect(player.getByRole('heading', { name: t('TurnOrder:noUnitsTitle') })).toBeVisible();
+});
+
+test('a DM release sends the player back to Heroes with a toast', async ({ page }) => {
+  const link = await prepareCombat(page, 'Released');
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+  await closeShare(page);
+
+  await openUnitMenu(page, 'Aria', t('UnitRow:releaseClaim'));
+
+  await expect(player.getByText(t('Toast:dmReleased', { hero: 'Aria' }))).toBeVisible();
+  await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
+  await expect(player.getByRole('checkbox', { name: 'Aria' })).not.toBeChecked();
+});
+
+test('a DM removal of the hero sends the player back to Heroes with a toast', async ({ page }) => {
+  const link = await prepareCombat(page, 'Removed');
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+  await closeShare(page);
+
+  await openUnitMenu(page, 'Aria', t('UnitRow:remove'));
+  const confirm = page.getByRole('alertdialog', {
+    name: t('Dialog:removeTitle', { name: 'Aria' }),
+  });
+  await confirm.getByRole('button', { name: t('Dialog:remove') }).click();
+
+  await expect(player.getByText(t('Toast:dmRemoved', { hero: 'Aria' }))).toBeVisible();
+  await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
+  await expect(player.getByRole('checkbox', { name: 'Aria' })).toHaveCount(0);
+});
+
+test('when two players pick the same hero, the second sees it taken', async ({ page, browser }) => {
+  const link = await prepareCombat(page, 'Contested');
+  const secondContext = await newPlayerContext(browser);
+  const second = await secondContext.newPage();
+  try {
+    await second.goto(link);
+    await second.getByLabel(t('Heroes:nameLabel')).fill('Sam');
+    await second.getByRole('checkbox', { name: 'Aria' }).check();
+
+    await joinAsPlayer(player, link, 'Pat', 'Aria');
+
+    await expect(second.getByText(t('Toast:heroTaken', { hero: 'Aria' }))).toBeVisible();
+    await expect(second.getByRole('checkbox', { name: 'Aria' })).toBeDisabled();
+    await expect(second.getByRole('checkbox', { name: 'Aria' })).not.toBeChecked();
+    await expect(second.getByText(t('Heroes:playing', { name: 'Pat' }))).toBeVisible();
+    await expect(second.getByRole('button', { name: t('Heroes:join') })).toBeDisabled();
+  } finally {
+    await secondContext.close();
+  }
 });
