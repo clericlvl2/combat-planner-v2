@@ -1,11 +1,12 @@
 import preview from '#.storybook/preview';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { locales } from '../../provider.tsx';
 import { localeNames } from '../../storybook/withLocale.tsx';
 import { RadioList } from './RadioList.tsx';
 import type { RadioListOption, RadioListProps } from './RadioList.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 interface RadioListCellProps extends Omit<
@@ -16,7 +17,6 @@ interface RadioListCellProps extends Omit<
   labels?: readonly string[];
   sub?: boolean;
   disabledValues?: readonly string[];
-  tap?: number;
   onChange: (value: string) => void;
 }
 
@@ -35,20 +35,12 @@ function RadioListCell({
   labels,
   sub = false,
   disabledValues = [],
-  tap,
   value: initialValue,
   onChange,
   ...props
 }: RadioListCellProps) {
   const { t } = useTranslation('RadioList');
   const [value, setValue] = useState(initialValue);
-  const frame = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (tap === undefined) return;
-    frame.current
-      ?.querySelector('[role="radiogroup"]')
-      ?.children[tap]?.setAttribute('data-tap', '');
-  }, [tap]);
   const options: RadioListOption<string>[] =
     kind === 'language'
       ? locales.map((locale) => ({ value: locale, label: localeNames[locale] }))
@@ -59,7 +51,7 @@ function RadioListCell({
           disabled: disabledValues.includes(option) || undefined,
         }));
   return (
-    <div style={stage} ref={frame}>
+    <div style={stage}>
       <RadioList
         {...props}
         aria-label={kind === 'language' ? t('language') : t('sortCombats')}
@@ -80,61 +72,26 @@ const meta = preview.meta({
   args: { value: 'newestFirst', onChange: fn() },
 });
 
-export const Anatomy = meta.story({ tags: ['visual'] });
+export const Default = meta.story({ tags: ['visual'] });
 
-export const SortCombatsDefault = meta.story({
-  name: 'Sort combats · default',
-});
-
-export const SortCombatsTap = meta.story({
-  name: 'Sort combats · tap',
-  args: { tap: 1 },
-});
-
-export const LanguageDefault = meta.story({
-  name: 'Language · default',
+export const Language = meta.story({
   args: { kind: 'language', value: 'ru' },
 });
 
-export const LanguageTap = meta.story({
-  name: 'Language · tap',
-  args: { kind: 'language', value: 'ru', tap: 0 },
-});
+const sizeColumns = ['Default'] as const;
 
-export const RadioListS = meta.story({
-  name: 'RadioList · S',
-  args: { size: 'S' },
-});
+const sizeRows = (['S', 'M', 'L'] as const).map((size) => ({
+  label: size,
+  render: () => <RadioListCell size={size} value="newestFirst" onChange={() => {}} />,
+}));
 
-export const RadioListM = meta.story({
-  name: 'RadioList · M',
-  args: { size: 'M' },
-});
-
-export const RadioListL = meta.story({
+export const AllSizes = meta.story({
   tags: ['visual'],
-  name: 'RadioList · L',
-  args: { size: 'L' },
+  render: () => <StateGrid rows={sizeRows} columns={sizeColumns} />,
 });
 
-export const SortCombatsDe = meta.story({
-  name: 'Sort combats · de',
-  args: {
-    labels: ['Neueste zuerst', 'Zuletzt gespielt zuerst', 'Alphabetisch von A bis Z'],
-    value: 'lastPlayed',
-  },
-});
-
-export const SortCombatsRu = meta.story({
-  name: 'Sort combats · ru',
-  args: {
-    labels: ['Сначала новые', 'Сначала последние сыгранные', 'По алфавиту от А до Я'],
-    value: 'lastPlayed',
-  },
-});
-
-export const ExtraTap = meta.story({
-  name: 'Tap a row applies at once',
+export const TapAppliesAtOnce = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'RadioList');
     const lastPlayed = canvas.getByRole('radio', { name: t('lastPlayed') });
@@ -149,8 +106,8 @@ export const ExtraTap = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: arrows, Space and Enter',
+export const ArrowsMoveTheSelection = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'RadioList');
     await expect(canvas.getByRole('radiogroup', { name: t('sortCombats') })).toBeVisible();
@@ -168,8 +125,8 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraEnter = meta.story({
-  name: 'Keyboard: Enter selects the focused row',
+export const EnterSelectsFocusedRow = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'RadioList');
     const alphabetical = canvas.getByRole('radio', { name: t('alphabetical') });
@@ -180,8 +137,24 @@ export const ExtraEnter = meta.story({
   },
 });
 
-export const ExtraDisabledOption = meta.story({
-  name: 'Disabled option',
+export const DisabledOption = meta.story({
+  args: { disabledValues: ['alphabetical'] },
+});
+
+export const LongLabels = meta.story({
+  args: {
+    labels: [
+      'Сначала новые бои, созданные недавно',
+      'Сначала последние сыгранные бои за неделю',
+      'По алфавиту от А до Я по названию боя',
+    ],
+    sub: true,
+    value: 'lastPlayed',
+  },
+});
+
+export const DisabledOptionIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { disabledValues: ['alphabetical'] },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'RadioList');
@@ -194,16 +167,6 @@ export const ExtraDisabledOption = meta.story({
   },
 });
 
-export const ExtraSubLine = meta.story({
-  name: 'With sub lines',
+export const WithSubLines = meta.story({
   args: { sub: true },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radiogroup', { name: '戦闘の並べ替え' })).toBeVisible();
-    await expect(canvas.getByRole('radio', { name: '新しい順' })).toBeChecked();
-  },
 });
