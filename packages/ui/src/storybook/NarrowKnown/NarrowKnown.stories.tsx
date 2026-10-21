@@ -42,8 +42,8 @@ const meta = preview.meta({
   render: () => <p>narrow-known</p>,
 });
 
-export const ExtraEveryEntryNamesAStory = meta.story({
-  name: 'Every narrow-known entry names an existing story',
+export const EveryEntryNamesAStory = meta.story({
+  tags: ['!dev'],
   play: async () => {
     const ids = await storyIds();
     const stale = narrowKnown
