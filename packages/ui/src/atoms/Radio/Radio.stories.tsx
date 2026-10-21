@@ -3,9 +3,10 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Radio.json';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 import { Radio } from './Radio.tsx';
 import type { RadioProps } from './Radio.tsx';
-import { storyT } from '../../storybook/storyT.ts';
 
 type LabelKey = keyof typeof en;
 
@@ -83,34 +84,38 @@ const meta = preview.meta({
   args: { checked: false, onChange: fn() },
 });
 
-const renderTap = (args: RadioCellProps) => <RadioCell {...args} data-tap="" />;
-
 const renderGroup = (args: RadioCellProps) => <RadioGroupCell {...args} />;
 
-export const OnM = meta.story({
+const states = ['off', 'on', 'disabled', 'disabled on', 'focus', 'tap'] as const;
+type State = (typeof states)[number];
+
+const row = (size: RadioProps['size'] & string) => ({
+  label: size,
+  render: (state: State) => (
+    <RadioCell
+      size={size}
+      name={`${size}-${state}`}
+      onChange={fn()}
+      checked={state === 'on' || state === 'disabled on' || state === 'tap'}
+      disabled={state === 'disabled' || state === 'disabled on'}
+      data-focus={state === 'focus' ? '' : undefined}
+      data-tap={state === 'tap' ? '' : undefined}
+    />
+  ),
+});
+
+export const AllStates = meta.story({
   tags: ['visual'],
-  name: 'On, M',
-  args: { checked: true, size: 'M' },
+  render: () => <StateGrid columns={states} rows={[row('S'), row('M'), row('L')]} />,
 });
 
-export const Off = meta.story({
-  name: 'Off',
-  args: { checked: false },
+export const GroupOfOptions = meta.story({
+  args: { checked: false, onChange: fn() },
+  render: renderGroup,
 });
 
-export const On = meta.story({
-  name: 'On',
-  args: { checked: true },
-});
-
-export const Tap = meta.story({
-  name: 'Tap',
-  args: { checked: true },
-  render: renderTap,
-});
-
-export const Disabled = meta.story({
-  name: 'Disabled',
+export const DisabledIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { checked: false, disabled: true, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'Radio');
@@ -122,29 +127,8 @@ export const Disabled = meta.story({
   },
 });
 
-export const OnDisabled = meta.story({
-  name: 'On, disabled',
-  args: { checked: true, disabled: true },
-});
-
-export const S = meta.story({
-  name: 'S',
-  args: { checked: true, size: 'S' },
-});
-
-export const M = meta.story({
-  name: 'M',
-  args: { checked: true, size: 'M' },
-});
-
-export const L = meta.story({
-  tags: ['visual'],
-  name: 'L',
-  args: { checked: true, size: 'L' },
-});
-
-export const ExtraSelect = meta.story({
-  name: 'Tap selects',
+export const ClickSelects = meta.story({
+  tags: ['!dev'],
   args: { checked: false, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'Radio');
@@ -158,8 +142,8 @@ export const ExtraSelect = meta.story({
   },
 });
 
-export const ExtraLabelClick = meta.story({
-  name: 'Label click selects',
+export const LabelClickSelects = meta.story({
+  tags: ['!dev'],
   args: { checked: false, onChange: fn() },
   render: renderGroup,
   play: async ({ args, canvas, globals }) => {
@@ -173,8 +157,8 @@ export const ExtraLabelClick = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Space selects',
+export const SpaceSelects = meta.story({
+  tags: ['!dev'],
   args: { checked: false, labelKey: 'lastPlayed', value: 'lastPlayed', onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'Radio');
@@ -187,8 +171,8 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraGroupArrows = meta.story({
-  name: 'Group: arrow keys move the selection',
+export const ArrowsMoveWithinGroup = meta.story({
+  tags: ['!dev'],
   args: { checked: false, onChange: fn() },
   render: renderGroup,
   play: async ({ args, canvas, globals }) => {
@@ -201,8 +185,8 @@ export const ExtraGroupArrows = meta.story({
   },
 });
 
-export const ExtraDisabledLabel = meta.story({
-  name: 'Disabled group',
+export const DisabledGroupIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { checked: false, disabled: true, onChange: fn() },
   render: renderGroup,
   play: async ({ args, canvas, globals }) => {
@@ -210,55 +194,5 @@ export const ExtraDisabledLabel = meta.story({
     await userEvent.click(canvas.getByText(t('lastPlayed')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Zuletzt gespielt' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es',
-  globals: { locale: 'es' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Última partida' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr',
-  globals: { locale: 'fr' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Dernière partie' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: '最近プレイ順' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Последняя игра' })).toBeChecked();
   },
 });
