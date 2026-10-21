@@ -80,8 +80,7 @@ const boundedDisplayName = (
 
 const acceptLanguageOf = (
   context: { headers?: Headers; request?: Request } | null | undefined,
-): string | null =>
-  (context?.headers ?? context?.request?.headers)?.get('accept-language') ?? null;
+): string | null => (context?.headers ?? context?.request?.headers)?.get('accept-language') ?? null;
 
 export interface CreateAuthOptions {
   db: AppDatabase;
