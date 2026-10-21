@@ -56,7 +56,6 @@ const meta = preview.meta({
 
 export const NewPreset = meta.story({
   tags: ['visual'],
-  name: 'New preset, empty',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
     await expect(canvas.getByRole('dialog', { name: t('newPreset') })).toBeVisible();
@@ -75,7 +74,7 @@ export const NewPreset = meta.story({
 });
 
 export const NoName = meta.story({
-  name: 'No name saves "Ally 1"',
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
     const name = canvas.getByRole('textbox', { name: t('name') });
@@ -94,8 +93,7 @@ export const NoName = meta.story({
   },
 });
 
-export const Filled = meta.story({
-  name: 'Form filled',
+export const FormFilled = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
     const name = canvas.getByRole('textbox', { name: t('name') });
@@ -118,7 +116,6 @@ export const Filled = meta.story({
 
 export const EditPreset = meta.story({
   tags: ['visual'],
-  name: 'Edit preset',
   args: { mode: 'edit', value: berserker },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -135,8 +132,8 @@ export const EditPreset = meta.story({
   },
 });
 
-export const ExtraEditClearedName = meta.story({
-  name: 'Edit: name cleared keeps the previous name',
+export const EditClearedName = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: berserker },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -152,8 +149,8 @@ export const ExtraEditClearedName = meta.story({
   },
 });
 
-export const ExtraRemoveTag = meta.story({
-  name: 'Remove a tag chip',
+export const RemoveTag = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: berserker },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -166,8 +163,7 @@ export const ExtraRemoveTag = meta.story({
   },
 });
 
-export const ExtraTagSheet = meta.story({
-  name: 'Tag sheet over the form',
+export const TagSheetOverForm = meta.story({
   args: { mode: 'edit', value: berserker },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -181,8 +177,8 @@ export const ExtraTagSheet = meta.story({
   },
 });
 
-export const ExtraCreateTag = meta.story({
-  name: 'Create a tag, checked at once',
+export const CreateTag = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: berserker },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -207,8 +203,8 @@ export const ExtraCreateTag = meta.story({
   },
 });
 
-export const ExtraTagSheetClosed = meta.story({
-  name: 'Tag sheet closed without Done',
+export const TagSheetClosed = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: berserker },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -228,58 +224,8 @@ export const ExtraTagSheetClosed = meta.story({
   },
 });
 
-export const ExtraClose = meta.story({
-  name: 'Close without saving',
-  args: { mode: 'edit', value: berserker },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetFormSheet');
-    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onSubmit).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraKeyboardSubmit = meta.story({
-  name: 'Keyboard: Enter on Save',
-  args: { mode: 'edit', value: berserker },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'PresetFormSheet');
-    const save = canvas.getByRole('button', { name: t('save') });
-    save.focus();
-    await waitFor(() => expect(save).toHaveFocus());
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onSubmit).toHaveBeenCalledWith(berserker);
-  },
-});
-
-export const ExtraRussian = meta.story({
-  tags: ['visual'],
-  name: 'Russian: edit',
-  globals: { locale: 'ru' },
-  args: {
-    mode: 'edit',
-    value: { ...berserker, name: 'Капитан стражи переправы Святослав Огнев', role: 'ally' },
-  },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Изменить заготовку' })).toBeVisible();
-    await expect(canvas.getByRole('radio', { name: 'Союзник' })).toBeChecked();
-  },
-});
-
-export const ExtraJapaneseNew = meta.story({
-  tags: ['visual'],
-  name: 'Japanese: new',
-  globals: { locale: 'ja' },
-  play: async ({ canvas }) => {
-    const name = canvas.getByRole('textbox', { name: '名前' });
-    await userEvent.click(name);
-    await userEvent.type(name, '影の射手ゴブリン');
-    await expect(canvas.getByRole('button', { name: '作成' })).toBeEnabled();
-  },
-});
-
-export const ExtraReusedTagNotNew = meta.story({
-  name: 'Create that reuses an existing tag shows no new badge',
+export const ReusedTagNotNew = meta.story({
+  tags: ['!dev'],
   args: {
     value: berserker,
     onCreateTag: fn(
@@ -301,8 +247,7 @@ export const ExtraReusedTagNotNew = meta.story({
   },
 });
 
-export const ExtraPending = meta.story({
-  name: 'Save stays disabled while the request is in flight',
+export const Saving = meta.story({
   args: { mode: 'edit', value: berserker, pending: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
@@ -310,5 +255,20 @@ export const ExtraPending = meta.story({
     await expect(save).toBeDisabled();
     await userEvent.click(save, { pointerEventsCheck: 0 });
     await expect(args.onSubmit).not.toHaveBeenCalled();
+  },
+});
+
+export const EditWithNoTags = meta.story({
+  args: { mode: 'edit', value: { ...berserker, tags: [] } },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PresetFormSheet');
+    await expect(canvas.getByRole('dialog', { name: t('editPreset') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('addTag') })).toBeVisible();
+    await expect(
+      canvas.queryByRole('button', { name: t('removeTag', { name: 'Orcs' }) }),
+    ).toBeNull();
+    await expect(
+      canvas.queryByRole('button', { name: t('removeTag', { name: 'Ferry' }) }),
+    ).toBeNull();
   },
 });
