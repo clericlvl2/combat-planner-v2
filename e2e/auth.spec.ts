@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { signIn, signUp } from './helpers.ts';
+import { createCombat, signIn, signUp } from './helpers.ts';
 import { t } from './t.ts';
 
 const signOut = async (page: Page, email: string) => {
@@ -63,4 +63,22 @@ test('a signed-in user on /auth/sign-in is redirected to /combats', async ({ pag
   await page.goto('/auth/sign-in');
   await expect(page).toHaveURL(/\/combats$/);
   await expect(page.getByText(t('EmptyState:noCombatsTitle'))).toBeVisible();
+});
+
+test('a guest on /library is redirected to sign-in', async ({ page }) => {
+  await page.goto('/library');
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(page.getByRole('heading', { name: t('SignIn:title') })).toBeVisible();
+});
+
+test('a combat reloaded after the session is cleared goes to sign-in', async ({
+  page,
+  context,
+}) => {
+  await signUp(page);
+  await createCombat(page, 'Lost session');
+  await context.clearCookies();
+  await page.reload();
+  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(page.getByRole('heading', { name: t('SignIn:title') })).toBeVisible();
 });
