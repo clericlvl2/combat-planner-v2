@@ -1,6 +1,6 @@
 import type { Action, Combat, Preset, Tag } from '@combat-planner/domain';
 import { describe, expect, it } from 'vite-plus/test';
-import { ApiError, apiEventSchema } from './client.ts';
+import { ApiError, acceptLanguages, apiEventSchema, browserLocale } from './client.ts';
 import type {
   ApiClient,
   CombatCreateInput,
@@ -288,5 +288,37 @@ describe('apiEventSchema', () => {
       title: 'Goblin ambush',
     });
     expect(apiEventSchema.parse({ type: 'linkRevoked' })).toEqual({ type: 'linkRevoked' });
+  });
+});
+
+describe('browserLocale', () => {
+  it('takes the first supported language by its primary subtag', () => {
+    expect(browserLocale(['nl-NL', 'ru-RU', 'en-US'])).toBe('ru');
+  });
+
+  it('falls back to en', () => {
+    expect(browserLocale(['nl-NL'])).toBe('en');
+    expect(browserLocale([])).toBe('en');
+  });
+});
+
+describe('acceptLanguages', () => {
+  it('keeps the header order and drops the quality values', () => {
+    expect(acceptLanguages('ru-RU,ru;q=0.9,en;q=0.8')).toEqual(['ru-RU', 'ru', 'en']);
+  });
+
+  it('trims spaces around each language', () => {
+    expect(acceptLanguages('de-DE, en;q=0.5')).toEqual(['de-DE', 'en']);
+  });
+
+  it('returns no language for a missing or empty header', () => {
+    expect(acceptLanguages(null)).toEqual([]);
+    expect(acceptLanguages('')).toEqual([]);
+  });
+
+  it('resolves to a locale through browserLocale', () => {
+    expect(browserLocale(acceptLanguages('ru-RU,ru;q=0.9,en;q=0.8'))).toBe('ru');
+    expect(browserLocale(acceptLanguages('pt-BR'))).toBe('en');
+    expect(browserLocale(acceptLanguages(null))).toBe('en');
   });
 });
