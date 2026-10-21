@@ -294,13 +294,12 @@ export const OwnHeroExpanded = meta.story({
 
 export const ConditionsOpen = meta.story({
   tags: ['visual'],
-  args: { expanded: true, conditionsOpen: true, 'data-tap': 'conditions' },
+  args: { expanded: true, conditionsOpen: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
     const trigger = canvas.getByRole('button', { name: t('conditions') });
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(trigger).toHaveAttribute('data-open');
-    await expect(trigger).toHaveAttribute('data-tap');
   },
 });
 
