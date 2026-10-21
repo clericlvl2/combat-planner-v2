@@ -12,6 +12,15 @@ function patchResponse(page: Page, path: string) {
 
 const DE = { lng: 'de' } as const;
 
+test('a new account under ru-RU gets language ru and a Russian combat list', async ({ page }) => {
+  await signUp(page);
+  const session = await page.request.get('/api/auth/get-session');
+  expect(session.ok()).toBe(true);
+  expect(await session.json()).toMatchObject({ user: { language: 'ru' } });
+  await expect(page.getByRole('heading', { level: 1, name: t('CombatList:title') })).toBeVisible();
+  await expect(page.getByText(t('EmptyState:noCombatsTitle'))).toBeVisible();
+});
+
 test('the language switches at once and stays after a reload', async ({ page }) => {
   await signUp(page);
   await page.goto('/settings');
