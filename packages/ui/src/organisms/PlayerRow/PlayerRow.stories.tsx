@@ -322,7 +322,6 @@ export const SetupNoInitiative = meta.story({
   args: {
     unit: playerUnit({ ...vashtiSeed, initiative: null }),
     setup: true,
-    'data-tap': 'initiative',
   },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
