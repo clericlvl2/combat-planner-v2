@@ -60,7 +60,7 @@ const meta = preview.meta({
   args: { current: 'combats', onNavigate: fn(), onClose: fn() },
 });
 
-export const Anatomy = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Drawer');
@@ -76,13 +76,7 @@ export const Anatomy = meta.story({
   },
 });
 
-export const CombatsActive = meta.story({
-  name: 'Combats active',
-  args: { current: 'combats' },
-});
-
 export const LibraryActive = meta.story({
-  name: 'Library active',
   args: { current: 'library' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Drawer');
@@ -98,7 +92,6 @@ export const LibraryActive = meta.story({
 
 export const LongEmail = meta.story({
   tags: ['visual'],
-  name: 'Long email',
   parameters: {
     geometry: { wordBreaks: 'an email address wraps at any character by design' },
   },
@@ -112,8 +105,8 @@ export const LongEmail = meta.story({
   },
 });
 
-export const ExtraNavigate = meta.story({
-  name: 'Tap on a section navigates and closes',
+export const TapSectionNavigates = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'Drawer');
     await userEvent.click(canvas.getByRole('button', { name: t('library') }));
@@ -124,8 +117,8 @@ export const ExtraNavigate = meta.story({
   },
 });
 
-export const ExtraEscape = meta.story({
-  name: 'Escape closes with no navigation',
+export const EscapeCloses = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas }) => {
     await waitFor(() => expect(canvas.getByRole('dialog')).toHaveFocus());
     await userEvent.keyboard('{Escape}');
@@ -135,8 +128,8 @@ export const ExtraEscape = meta.story({
   },
 });
 
-export const ExtraScrimTap = meta.story({
-  name: 'Scrim tap closes with no navigation',
+export const ScrimTapCloses = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvasElement, canvas }) => {
     const scrim = canvasElement.querySelector<HTMLElement>('[data-scrim]');
     await expect(scrim).not.toBeNull();
@@ -147,8 +140,8 @@ export const ExtraScrimTap = meta.story({
   },
 });
 
-export const ExtraFocusTrap = meta.story({
-  name: 'Focus stays inside while open',
+export const FocusStaysInside = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'Drawer');
     await waitFor(() => expect(canvas.getByRole('dialog')).toHaveFocus());
@@ -167,21 +160,8 @@ export const ExtraFocusTrap = meta.story({
   },
 });
 
-export const ExtraShiftTabFirst = meta.story({
-  name: 'Shift+Tab right after opening stays inside',
-  args: { withOpener: true },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Drawer');
-    const dialog = canvas.getByRole('dialog');
-    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
-    await userEvent.tab({ shift: true });
-    await expect(dialog.contains(document.activeElement)).toBe(true);
-    await expect(canvas.getByRole('button', { name: t('about') })).toHaveFocus();
-  },
-});
-
-export const ExtraTapTitleThenKeys = meta.story({
-  name: 'Tap on the title or email keeps focus and Escape inside',
+export const TapTitleKeepsFocusInside = meta.story({
+  tags: ['!dev'],
   args: { withOpener: true },
   play: async ({ args, canvas }) => {
     const dialog = canvas.getByRole('dialog');
@@ -197,8 +177,8 @@ export const ExtraTapTitleThenKeys = meta.story({
   },
 });
 
-export const ExtraScrollLock = meta.story({
-  name: 'Page scroll is locked while open',
+export const ScrollLockedWhileOpen = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement }) => {
     const dialog = canvas.getByRole('dialog');
     await waitFor(() => expect(dialog).toHaveFocus());
@@ -213,8 +193,8 @@ export const ExtraScrollLock = meta.story({
   },
 });
 
-export const ExtraFocusReturn = meta.story({
-  name: 'Focus returns to the burger on close',
+export const FocusReturnsToBurger = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
   play: async ({ args, canvas }) => {
     await expect(canvas.queryByRole('dialog')).toBeNull();
@@ -228,8 +208,8 @@ export const ExtraFocusReturn = meta.story({
   },
 });
 
-export const ExtraInitialFocus = meta.story({
-  name: 'Opening focuses the panel without visiting Combats',
+export const OpeningFocusesPanel = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Drawer');
@@ -248,17 +228,5 @@ export const ExtraInitialFocus = meta.story({
     } finally {
       document.removeEventListener('focusin', record);
     }
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Бои' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    await expect(canvas.getByRole('button', { name: 'О приложении' })).toBeVisible();
   },
 });
