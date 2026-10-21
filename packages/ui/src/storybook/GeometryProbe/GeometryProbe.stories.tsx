@@ -12,8 +12,8 @@ const probeText: CSSProperties = { margin: 12, fontSize: 16, overflowWrap: 'anyw
 
 const actionButton: CSSProperties = { width: '100%', minHeight: 48, fontSize: 16 };
 
-export const ExtraWordBreaks = meta.story({
-  name: 'A Latin or Cyrillic word split across lines fails wordBreaks',
+export const WordBreaks = meta.story({
+  tags: ['!dev'],
   parameters: { geometry: { wordBreaks: 'the probe splits a word on purpose' } },
   render: () => (
     <div>
@@ -47,8 +47,8 @@ export const ExtraWordBreaks = meta.story({
   },
 });
 
-export const ExtraWordBreaksTightLines = meta.story({
-  name: 'A word split across lines at line-height 1 fails wordBreaks',
+export const WordBreaksTightLines = meta.story({
+  tags: ['!dev'],
   parameters: { geometry: { wordBreaks: 'the probe splits a word on purpose' } },
   render: () => (
     <p
@@ -74,8 +74,8 @@ export const ExtraWordBreaksTightLines = meta.story({
   },
 });
 
-export const ExtraSoftHyphen = meta.story({
-  name: 'A word broken at a soft hyphen passes wordBreaks',
+export const SoftHyphen = meta.story({
+  tags: ['!dev'],
   render: () => (
     <p data-testid="soft" style={{ ...probeText, width: 58, fontSize: 11, lineHeight: 1 }}>
       {'Verbün\u00addeter'}
@@ -89,8 +89,8 @@ export const ExtraSoftHyphen = meta.story({
   },
 });
 
-export const ExtraActionsVisible = meta.story({
-  name: 'A sheet action below the scroll edge fails actionsVisible',
+export const ActionsVisible = meta.story({
+  tags: ['!dev'],
   parameters: { geometry: { actionsVisible: 'the probe hides a sheet action on purpose' } },
   render: () => (
     <section style={{ margin: 12, height: 240, overflow: 'hidden' }}>
@@ -112,8 +112,8 @@ export const ExtraActionsVisible = meta.story({
   },
 });
 
-export const ExtraScrimTarget = meta.story({
-  name: 'A drawer scrim strip under 44 px fails scrimTarget',
+export const ScrimTarget = meta.story({
+  tags: ['!dev'],
   parameters: { geometry: { scrimTarget: 'the probe leaves a 20 px scrim on purpose' } },
   render: () => (
     <div style={{ position: 'fixed', inset: 0 }}>
