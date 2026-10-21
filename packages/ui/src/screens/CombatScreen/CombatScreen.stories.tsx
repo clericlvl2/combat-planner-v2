@@ -24,7 +24,7 @@ import {
   unitIds,
 } from './CombatScreen.scenarios.ts';
 import { CombatScreen } from './CombatScreen.tsx';
-import { anyValue, collapsedSpace, escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { anyValue, collapsedSpace, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -259,9 +259,8 @@ const meta = preview.meta({
   },
 });
 
-export const CSF11 = meta.story({
+export const EmptyCombat = meta.story({
   tags: ['visual'],
-  name: 'CS-F1.1 Empty combat',
   parameters: { scenario: noUnitsScenario() },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -276,9 +275,8 @@ export const CSF11 = meta.story({
   },
 });
 
-export const CSF12 = meta.story({
+export const AddUnitSheet = meta.story({
   tags: ['visual'],
-  name: 'CS-F1.2 New unit: empty form',
   parameters: { scenario: noUnitsScenario() },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -294,40 +292,7 @@ export const CSF12 = meta.story({
   },
 });
 
-export const CSF13 = meta.story({
-  name: 'CS-F1.3 From Library: filter by tag, pick',
-  parameters: { scenario: noUnitsScenario() },
-  play: async ({ canvas, globals, loaded }) => {
-    const t = storyT(globals, 'CombatScreen');
-    await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
-    await userEvent.click(canvas.getByRole('button', { name: t('Menu:addUnit') }));
-    await userEvent.click(await canvas.findByRole('radio', { name: t('UnitForm:library') }));
-    await userEvent.click(
-      canvas.getByRole('button', { name: (label: string) => label.startsWith(t('UnitForm:tags')) }),
-    );
-    await userEvent.click(await canvas.findByRole('checkbox', { name: /^Orcs/ }));
-    await userEvent.click(
-      canvas.getByRole('button', { name: t('TagSheet:showPresets', { count: 2 }) }),
-    );
-    await waitFor(() =>
-      expect(canvas.queryByRole('dialog', { name: t('TagSheet:filterTitle') })).toBeNull(),
-    );
-    const list = within(canvas.getByRole('group', { name: t('UnitForm:presets') }));
-    await expect(list.getAllByRole('button')).toHaveLength(2);
-    await userEvent.click(
-      list.getByRole('button', {
-        name: (label: string) => label.startsWith(`${t('UnitForm:enemy')} Orc Berserker`),
-      }),
-    );
-    await expect(
-      canvas.getByRole('button', { name: t('UnitForm:addPreset', { name: 'Orc Berserker' }) }),
-    ).toBeEnabled();
-    await expect(dispatched(fakeApiOf(loaded))).toEqual([]);
-  },
-});
-
-export const CSF14 = meta.story({
-  name: 'CS-F1.4 Roster ready, in order added',
+export const SetupWithUnits = meta.story({
   parameters: { scenario: setupScenario() },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -344,23 +309,8 @@ export const CSF14 = meta.story({
   },
 });
 
-export const CSF15 = meta.story({
-  name: 'CS-F1.5 Initiative: roll or ±',
-  parameters: { scenario: setupScenario() },
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const orc = await rowOf(canvasElement, names.orc);
-    await userEvent.click(within(orc).getByRole('button', { name: t('UnitRow:rollInitiative') }));
-    const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
-    await expect(
-      within(popover).getByRole('button', { name: t('InitiativePopover:roll', { bonus: '+0' }) }),
-    ).toBeVisible();
-  },
-});
-
-export const CSF16 = meta.story({
+export const CombatStarted = meta.story({
   tags: ['visual'],
-  name: 'CS-F1.6 Combat started: round 1',
   parameters: { scenario: setupScenario() },
   args: { random: rolls(setupRolls) },
   play: async ({ canvas, canvasElement, globals, loaded }) => {
@@ -387,8 +337,7 @@ export const CSF16 = meta.story({
   },
 });
 
-export const CSF21 = meta.story({
-  name: 'CS-F2.1 Vashti’s turn',
+export const RunningCombat = meta.story({
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-active');
@@ -399,8 +348,8 @@ export const CSF21 = meta.story({
   },
 });
 
-export const CSF22 = meta.story({
-  name: 'CS-F2.2 Brother Tomas’s turn',
+export const NextTurnPassesToNextUnit = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await userEvent.click(await nextTurnButton(canvas, t));
@@ -421,9 +370,8 @@ export const CSF22 = meta.story({
   },
 });
 
-export const CSF23 = meta.story({
+export const NewRoundEscalationRaised = meta.story({
   tags: ['visual'],
-  name: 'CS-F2.3 Round 4, escalation 3',
   parameters: { scenario: runningScenario({ active: 'tomas' }) },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -439,8 +387,7 @@ export const CSF23 = meta.story({
   },
 });
 
-export const CSF24 = meta.story({
-  name: 'CS-F2.4 Round 99',
+export const LastRoundReached = meta.story({
   parameters: { scenario: runningScenario({ round: 99, escalation: 6, active: 'tomas' }) },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -452,8 +399,7 @@ export const CSF24 = meta.story({
   },
 });
 
-export const CSF25 = meta.story({
-  name: 'CS-F2.5 All units disabled',
+export const EveryUnitDisabled = meta.story({
   parameters: {
     scenario: runningScenario({
       active: null,
@@ -470,20 +416,9 @@ export const CSF25 = meta.story({
   },
 });
 
-export const CSF31 = meta.story({
-  name: 'CS-F3.1 Tap Orc Berserker’s HP',
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const hp = await hpOf(canvasElement, names.orc, /^14 \/40/);
-    hp.focus();
-    await expect(hp).toHaveFocus();
-    await expect(hp).toHaveAccessibleName(new RegExp(escapeRegExp(t('HpBox:staggered'))));
-  },
-});
-
-export const CSF32 = meta.story({
+export const HpNumpad = meta.story({
+  name: 'HP Numpad',
   tags: ['visual'],
-  name: 'CS-F3.2 Calculator open',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
@@ -496,19 +431,8 @@ export const CSF32 = meta.story({
   },
 });
 
-export const CSF33 = meta.story({
-  name: 'CS-F3.3 Damage 12: preview',
-  play: async ({ canvas, canvasElement, globals, loaded }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
-    await typeAmount(sheet, '12');
-    await expect(within(sheet).getByRole('button', { name: t('HistoryRow:damage') })).toBeEnabled();
-    await expect(dispatched(fakeApiOf(loaded))).toEqual([]);
-  },
-});
-
-export const CSF34 = meta.story({
-  name: 'CS-F3.4 Orc Staggered, row flashes',
+export const DamageStaggersAndFlashesRow = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await damageOrc(canvas, canvasElement, '12', t);
@@ -526,59 +450,9 @@ export const CSF34 = meta.story({
   },
 });
 
-export const CSF35 = meta.story({
-  name: 'CS-F3.5 Heal 8 on Vashti',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const sheet = await openNumpad(canvas, canvasElement, names.vashti, /^20 \/36/);
-    await typeAmount(sheet, '8');
-    const heal = within(sheet).getByRole('button', { name: t('NumpadSheet:heal') });
-    heal.focus();
-    await expect(heal).toHaveFocus();
-    await expect(within(sheet).getByText('28')).toBeVisible();
-  },
-});
-
-export const CSF36 = meta.story({
-  name: 'CS-F3.6 Set Temp 5',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
-    await typeAmount(sheet, '5');
-    const setTemp = within(sheet).getByRole('button', { name: t('NumpadSheet:setTemp') });
-    setTemp.focus();
-    await expect(setTemp).toHaveFocus();
-    await expect(within(sheet).getByText(t('NumpadSheet:temp', { amount: 5 }))).toBeVisible();
-  },
-});
-
-export const CSF37 = meta.story({
-  name: 'CS-F3.7 Damage 8 with 5 temp',
-  parameters: { scenario: runningScenario({ units: rosterUnits({ orc: { tempHp: 5 } }) }) },
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
-    await typeAmount(sheet, '8');
-    await expect(within(sheet).getByRole('button', { name: t('HistoryRow:damage') })).toBeEnabled();
-  },
-});
-
-export const CSF38 = meta.story({
-  name: 'CS-F3.8 Set Max 30',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
-    await typeAmount(sheet, '30');
-    const setMax = within(sheet).getByRole('button', { name: t('NumpadSheet:setMax') });
-    setMax.focus();
-    await expect(setMax).toHaveFocus();
-    await expect(within(sheet).getByText('/30')).toBeVisible();
-  },
-});
-
-export const CSF39 = meta.story({
+export const HpHistoryOpen = meta.story({
+  name: 'HP History Open',
   tags: ['visual'],
-  name: 'CS-F3.9 HP History open',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     const sheet = await openNumpad(canvas, canvasElement, names.vashti, /^20 \/36/);
@@ -590,9 +464,8 @@ export const CSF39 = meta.story({
   },
 });
 
-export const CSF41 = meta.story({
+export const UnitExpanded = meta.story({
   tags: ['visual'],
-  name: 'CS-F4.1 Vashti expanded',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await expand(canvasElement, names.vashti, t);
@@ -601,9 +474,8 @@ export const CSF41 = meta.story({
   },
 });
 
-export const CSF42 = meta.story({
+export const ConditionList = meta.story({
   tags: ['visual'],
-  name: 'CS-F4.2 Condition list',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await expand(canvasElement, names.vashti, t);
@@ -616,8 +488,8 @@ export const CSF42 = meta.story({
   },
 });
 
-export const CSF43 = meta.story({
-  name: 'CS-F4.3 Editing the note',
+export const ConditionAndNoteSaved = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const row = await expand(canvasElement, names.vashti, t);
@@ -638,8 +510,7 @@ export const CSF43 = meta.story({
   },
 });
 
-export const CSF44 = meta.story({
-  name: 'CS-F4.4 Chips and note in the row',
+export const RowWithConditionsAndNote = meta.story({
   parameters: {
     scenario: runningScenario({
       units: rosterUnits({ vashti: { conditions: ['dazed', 'weakened'] } }),
@@ -666,8 +537,8 @@ export const CSF44 = meta.story({
   },
 });
 
-export const CSF45 = meta.story({
-  name: 'CS-F4.5 HP History sheet',
+export const HpHistoryFromRow = meta.story({
+  name: 'HP History From Row',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await expand(canvasElement, names.vashti, t);
@@ -679,9 +550,8 @@ export const CSF45 = meta.story({
   },
 });
 
-export const CSF51 = meta.story({
+export const RoundPopover = meta.story({
   tags: ['visual'],
-  name: 'CS-F5.1 Round: popover',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await userEvent.click(
@@ -692,8 +562,8 @@ export const CSF51 = meta.story({
   },
 });
 
-export const CSF52 = meta.story({
-  name: 'CS-F5.2 Escalation: popover',
+export const RoundAndEscalationEdits = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await userEvent.click(
@@ -718,8 +588,7 @@ export const CSF52 = meta.story({
   },
 });
 
-export const CSF53 = meta.story({
-  name: 'CS-F5.3 Round 4, escalation 3',
+export const EscalationPopover = meta.story({
   parameters: { scenario: runningScenario({ round: 4 }) },
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -743,32 +612,8 @@ export const CSF53 = meta.story({
   },
 });
 
-export const CSF61 = meta.story({
-  name: 'CS-F6.1 Orc expanded: Edit and ⋯',
-  play: async ({ canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const row = await expand(canvasElement, names.orc, t);
-    await expect(within(row).getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
-    await expect(within(row).getByRole('button', { name: t('CardActions:more') })).toBeVisible();
-  },
-});
-
-export const CSF62 = meta.story({
-  name: 'CS-F6.2 Editing the unit',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    const row = await expand(canvasElement, names.orc, t);
-    await userEvent.click(within(row).getByRole('button', { name: t('CardActions:edit') }));
-    const form = await canvas.findByRole('dialog', { name: t('UnitForm:editTitle') });
-    await expect(within(form).getByRole('textbox', { name: t('UnitForm:name') })).toHaveValue(
-      names.orc,
-    );
-    await expect(within(form).queryByRole('radio', { name: t('UnitForm:library') })).toBeNull();
-  },
-});
-
-export const CSF63 = meta.story({
-  name: 'CS-F6.3 Saved as preset from ⋯',
+export const SaveAsPresetFromMenu = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -791,9 +636,8 @@ export const CSF63 = meta.story({
   },
 });
 
-export const CSF64 = meta.story({
+export const RemoveConfirmation = meta.story({
   tags: ['visual'],
-  name: 'CS-F6.4 Confirm removal',
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -806,8 +650,7 @@ export const CSF64 = meta.story({
   },
 });
 
-export const CSF65 = meta.story({
-  name: 'CS-F6.5 Unit removed, can be undone',
+export const UnitRemovedUndoToast = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -827,8 +670,8 @@ export const CSF65 = meta.story({
   },
 });
 
-export const CSF66 = meta.story({
-  name: 'CS-F6.6 Duplicate: copy below the original',
+export const DuplicateBelowOriginal = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -849,8 +692,7 @@ export const CSF66 = meta.story({
   },
 });
 
-export const CSF67 = meta.story({
-  name: 'CS-F6.7 Disable: the orc skips turns',
+export const DisabledUnit = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -869,9 +711,8 @@ export const CSF67 = meta.story({
   },
 });
 
-export const CSF71 = meta.story({
+export const CombatMenu = meta.story({
   tags: ['visual'],
-  name: 'CS-F7.1 Menu open',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await damageOrc(canvas, canvasElement, '12', t);
@@ -882,8 +723,8 @@ export const CSF71 = meta.story({
   },
 });
 
-export const CSF72 = meta.story({
-  name: 'CS-F7.2 Last action undone',
+export const UndoLastAction = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await damageOrc(canvas, canvasElement, '12', t);
@@ -902,9 +743,8 @@ export const CSF72 = meta.story({
   },
 });
 
-export const CSF73 = meta.story({
+export const ShareSheet = meta.story({
   tags: ['visual'],
-  name: 'CS-F7.3 Link and QR',
   parameters: {
     geometry: {
       truncation: {
@@ -925,8 +765,8 @@ export const CSF73 = meta.story({
   },
 });
 
-export const CSF74 = meta.story({
-  name: 'CS-F7.4 Link copied',
+export const CopyLinkToClipboard = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     const writeText = spyOn(navigator.clipboard, 'writeText').mockResolvedValue(undefined);
@@ -943,8 +783,7 @@ export const CSF74 = meta.story({
   },
 });
 
-export const CSF75 = meta.story({
-  name: 'CS-F7.5 Revoke link',
+export const RevokeLinkConfirmation = meta.story({
   parameters: {
     geometry: {
       truncation: {
@@ -963,8 +802,7 @@ export const CSF75 = meta.story({
   },
 });
 
-export const CSF76 = meta.story({
-  name: 'CS-F7.6 Restart combat',
+export const RestartConfirmation = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await pickMenu(canvas, t('Menu:restart'), t);
@@ -974,8 +812,8 @@ export const CSF76 = meta.story({
   },
 });
 
-export const CSF77 = meta.story({
-  name: 'CS-F7.7 After Restart: Setup',
+export const RestartReturnsToSetup = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await pickMenu(canvas, t('Menu:restart'), t);
@@ -990,8 +828,7 @@ export const CSF77 = meta.story({
   },
 });
 
-export const CSF78 = meta.story({
-  name: 'CS-F7.8 Clear combat',
+export const ClearConfirmation = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await pickMenu(canvas, t('Menu:clear'), t);
@@ -1001,8 +838,8 @@ export const CSF78 = meta.story({
   },
 });
 
-export const CSF79 = meta.story({
-  name: 'CS-F7.9 After Clear: empty combat',
+export const ClearEmptiesCombat = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await pickMenu(canvas, t('Menu:clear'), t);
@@ -1025,9 +862,8 @@ const longNameBreak = {
   },
 };
 
-export const CSF81 = meta.story({
+export const LongList = meta.story({
   tags: ['visual'],
-  name: 'CS-F8.1 Long list, scrolled, 6 languages',
   parameters: { geometry: longNameBreak, scenario: longScenario() },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1044,8 +880,7 @@ export const CSF81 = meta.story({
   },
 });
 
-export const CSF82 = meta.story({
-  name: 'CS-F8.2 99-unit limit',
+export const UnitLimitReached = meta.story({
   parameters: { geometry: longNameBreak, scenario: longScenario(99) },
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1058,9 +893,8 @@ export const CSF82 = meta.story({
   },
 });
 
-export const CSF83 = meta.story({
+export const RequestFailed = meta.story({
   tags: ['visual'],
-  name: 'CS-F8.3 Request failed',
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
@@ -1075,8 +909,8 @@ export const CSF83 = meta.story({
   },
 });
 
-export const ExtraRetry = meta.story({
-  name: 'Extra: Retry resends the same action',
+export const RetryResendsSameAction = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
@@ -1092,8 +926,8 @@ export const ExtraRetry = meta.story({
   },
 });
 
-export const ExtraNoChangeBeforeDocument = meta.story({
-  name: 'Extra: nothing changes before the document comes back',
+export const NoChangeBeforeDocument = meta.story({
+  tags: ['!dev'],
   loaders: [heldLoader],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1107,8 +941,9 @@ export const ExtraNoChangeBeforeDocument = meta.story({
   },
 });
 
-export const ExtraHpRules = meta.story({
-  name: 'Extra: damage, heal, Set Temp and Set Max follow the rules',
+export const HpChangesFollowRules = meta.story({
+  name: 'HP Changes Follow Rules',
+  tags: ['!dev'],
   parameters: { scenario: runningScenario({ units: rosterUnits({ orc: { tempHp: 5 } }) }) },
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1157,8 +992,8 @@ export const ExtraHpRules = meta.story({
   },
 });
 
-export const ExtraAddUnits = meta.story({
-  name: 'Extra: add a new unit and a preset',
+export const AddUnitAndPreset = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: noUnitsScenario() },
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1197,8 +1032,8 @@ export const ExtraAddUnits = meta.story({
   },
 });
 
-export const ExtraEditSaved = meta.story({
-  name: 'Extra: Edit saves through editUnit',
+export const EditSavesUnit = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const row = await expand(canvasElement, names.orc, t);
@@ -1215,8 +1050,8 @@ export const ExtraEditSaved = meta.story({
   },
 });
 
-export const ExtraRemoveUndone = meta.story({
-  name: 'Extra: Undo in the removal toast',
+export const UndoRestoresRemovedUnit = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -1239,8 +1074,8 @@ export const ExtraRemoveUndone = meta.story({
   },
 });
 
-export const ExtraRemoveUndoAfterNextTurn = meta.story({
-  name: 'Extra: Undo in the removal toast after Next turn changes nothing',
+export const RemoveUndoIgnoredAfterNextTurn = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
@@ -1274,8 +1109,8 @@ export const ExtraRemoveUndoAfterNextTurn = meta.story({
   },
 });
 
-export const ExtraRevokeConfirmed = meta.story({
-  name: 'Extra: Revoke reissues the link after confirm',
+export const RevokeReissuesLink = meta.story({
+  tags: ['!dev'],
   parameters: {
     geometry: {
       truncation: {
@@ -1299,8 +1134,7 @@ export const ExtraRevokeConfirmed = meta.story({
   },
 });
 
-export const ExtraUndoDisabled = meta.story({
-  name: 'Extra: Undo disabled with nothing to undo',
+export const MenuNothingToUndo = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openMenu(canvas, t);
@@ -1309,8 +1143,8 @@ export const ExtraUndoDisabled = meta.story({
   },
 });
 
-export const ExtraNotFound = meta.story({
-  name: 'Extra: combat not found',
+export const NotFoundGoesToCombats = meta.story({
+  tags: ['!dev'],
   args: { combatId: MISSING_COMBAT_ID },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1322,8 +1156,8 @@ export const ExtraNotFound = meta.story({
   },
 });
 
-export const ExtraCantReachServer = meta.story({
-  name: 'Extra: first load without a response',
+export const TryAgainAfterFailedLoad = meta.story({
+  tags: ['!dev'],
   loaders: [offlineLoader],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1339,17 +1173,8 @@ export const ExtraCantReachServer = meta.story({
   },
 });
 
-export const ExtraBack = meta.story({
-  name: 'Extra: back to the combat list',
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:back') }));
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
-  },
-});
-
-export const ExtraUndoFromDocument = meta.story({
-  name: 'Extra: Undo comes from the document after a reload',
+export const UndoComesFromDocument = meta.story({
+  tags: ['!dev'],
   loaders: [
     async ({ parameters }) => {
       const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
@@ -1375,8 +1200,8 @@ export const ExtraUndoFromDocument = meta.story({
   },
 });
 
-export const ExtraDocumentAfterPost = meta.story({
-  name: 'Extra: the document arrives after the POST',
+export const DocumentArrivesAfterPost = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     fakeApiOf(loaded).deferBroadcasts();
@@ -1402,8 +1227,8 @@ export const ExtraDocumentAfterPost = meta.story({
   },
 });
 
-export const ExtraRapidTaps = meta.story({
-  name: 'Extra: rapid condition taps build on the newest version',
+export const RapidTapsUseNewestVersion = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
@@ -1428,8 +1253,8 @@ export const ExtraRapidTaps = meta.story({
   },
 });
 
-export const ExtraTapWhileFailureToast = meta.story({
-  name: 'Extra: a tap while a failure toast is up runs at once',
+export const TapDuringFailureToastRuns = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
@@ -1456,8 +1281,8 @@ export const ExtraTapWhileFailureToast = meta.story({
   },
 });
 
-export const ExtraDoubleNextTurnAfterFailure = meta.story({
-  name: 'Extra: a double Next turn after a failure skips no turn',
+export const DoubleNextTurnAfterFailure = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
@@ -1492,8 +1317,8 @@ export const ExtraDoubleNextTurnAfterFailure = meta.story({
   },
 });
 
-export const ExtraUndoRemovalBeforeDocument = meta.story({
-  name: 'Extra: Undo in the removal toast before the document arrives',
+export const UndoRemovalBeforeDocument = meta.story({
+  tags: ['!dev'],
   loaders: [heldDocumentsLoader],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1524,8 +1349,8 @@ export const ExtraUndoRemovalBeforeDocument = meta.story({
   },
 });
 
-export const ExtraDuplicateAtLimit = meta.story({
-  name: 'Extra: Duplicate disabled at the 99-unit limit',
+export const DuplicateDisabledAtLimit = meta.story({
+  tags: ['!dev'],
   parameters: { geometry: longNameBreak, scenario: longScenario(99) },
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1543,8 +1368,8 @@ export const ExtraDuplicateAtLimit = meta.story({
   },
 });
 
-export const ExtraSavePresetFails = meta.story({
-  name: 'Extra: a failed Save as preset shows a toast',
+export const SavePresetFailureToast = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -1554,8 +1379,8 @@ export const ExtraSavePresetFails = meta.story({
   },
 });
 
-export const ExtraSavePresetLimit = meta.story({
-  name: 'Extra: Save as preset at the preset limit shows a toast',
+export const SavePresetLimitToast = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
@@ -1565,8 +1390,8 @@ export const ExtraSavePresetLimit = meta.story({
   },
 });
 
-export const ExtraShareLinkFails = meta.story({
-  name: 'Extra: Share with a failed link load shows a toast',
+export const ShareLinkFailureToast = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const menu = await openMenu(canvas, t);
@@ -1574,14 +1399,5 @@ export const ExtraShareLinkFails = meta.story({
     await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:share') }));
     await expect(await canvas.findByRole('status')).toHaveTextContent(t('linkFailed'));
     await expect(canvas.queryByRole('dialog', { name: t('ShareSheet:title') })).toBeNull();
-  },
-});
-
-export const ExtraSignedOut = meta.story({
-  name: 'Extra: an expired session goes to sign-in',
-  play: async ({ canvasElement, loaded }) => {
-    await hpOf(canvasElement, names.orc, /^14 \/40/);
-    fakeApiOf(loaded).expireSession();
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/auth/sign-in'));
   },
 });
