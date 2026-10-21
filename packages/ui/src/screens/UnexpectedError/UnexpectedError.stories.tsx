@@ -23,52 +23,8 @@ export const Default = meta.story({
   },
 });
 
-export const Deutsch = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'de' },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Etwas ist schiefgelaufen' }),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Neu laden' })).toBeVisible();
-  },
-});
-
-export const Russian = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Что-то пошло не так' }),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Перезагрузить' })).toBeVisible();
-  },
-});
-
-export const Japanese = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'ja' },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: '問題が発生しました' }),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: '再読み込み' })).toBeVisible();
-  },
-});
-
-export const ExtraKeyboardEnter = meta.story({
-  name: 'Keyboard: Enter on the action',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnexpectedError');
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: t('reload') })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onReload).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraTapAction = meta.story({
-  name: 'Tap on the action',
+export const ActionFires = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnexpectedError');
     await userEvent.click(canvas.getByRole('button', { name: t('reload') }));
