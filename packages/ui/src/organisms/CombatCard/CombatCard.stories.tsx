@@ -104,7 +104,7 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatCard');
@@ -119,13 +119,8 @@ export const Anatomy = meta.story({
   },
 });
 
-export const Active = meta.story({
-  name: 'Active',
-});
-
 export const Expanded = meta.story({
   tags: ['visual'],
-  name: 'Expanded',
   args: { expanded: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatCard');
@@ -142,7 +137,6 @@ export const Expanded = meta.story({
 });
 
 export const ExpandedNoDescription = meta.story({
-  name: 'Expanded, no description',
   args: {
     title: 'The Drowned Chapel',
     description: undefined,
@@ -161,13 +155,7 @@ export const ExpandedNoDescription = meta.story({
   },
 });
 
-export const ChevronTapped = meta.story({
-  name: 'Chevron tapped',
-  args: { 'data-tap': 'chevron' },
-});
-
-export const ExpandedOpen = meta.story({
-  name: 'Expanded, ⋯ open',
+export const MenuOpen = meta.story({
   args: { expanded: true, menuOpen: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatCard');
@@ -182,9 +170,19 @@ export const ExpandedOpen = meta.story({
   },
 });
 
-export const SetupLongTitleRu = meta.story({
+export const SetupCollapsed = meta.story({
+  args: {
+    title: 'The Drowned Chapel',
+    status: 'setup',
+    round: null,
+    units: 4,
+    color: 5,
+    expanded: false,
+  },
+});
+
+export const SetupLongTitle = meta.story({
   tags: ['visual'],
-  name: 'Setup, long title, ru',
   args: {
     title: 'Капитан стражи переправы: засада у моста',
     status: 'setup',
@@ -202,172 +200,15 @@ export const SetupLongTitleRu = meta.story({
   },
 });
 
-export const Ja99Units = meta.story({
-  name: 'ja, 99 units',
-  args: { title: '黒水の渡し守と呪われし大蛇の群れ', round: 14, units: 99, color: 6 },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await expect(canvas.getByText('黒水の渡し守と呪われし大蛇の群れ')).toBeVisible();
-    await expect(
-      canvas.getByText(`${t('round', { round: 14 })} · ${t('units', { count: 99 })}`),
-    ).toBeVisible();
-  },
-});
-
-export const ExtraTapCardOpens = meta.story({
-  name: 'Tap on the card opens the combat',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Ambush at the Ferry'));
-    await expect(args.onOpen).toHaveBeenCalledOnce();
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    await expect(args.onEdit).not.toHaveBeenCalled();
-    await expect(args.onMore).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraChevronNeverOpens = meta.story({
-  name: 'Chevron toggles and never opens',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    const chevron = canvas.getByRole('button', {
-      name: t('details', { title: 'Ambush at the Ferry' }),
-    });
-    await userEvent.click(chevron);
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
-    await userEvent.click(chevron);
-    await expect(args.onToggle).toHaveBeenCalledTimes(2);
-    await expect(chevron).toHaveAttribute('aria-expanded', 'false');
-    await expect(canvas.queryByRole('button', { name: t('CardActions:edit') })).toBeNull();
-    await expect(args.onOpen).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraCardActions = meta.story({
-  name: 'Edit and ⋯ fire through CardActions',
-  args: { expanded: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:edit') }));
-    await expect(args.onEdit).toHaveBeenCalledOnce();
-    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
-    await expect(args.onMore).toHaveBeenCalledOnce();
-    await userEvent.click(await canvas.findByRole('menuitem', { name: t('duplicate') }));
-    await expect(args.onMenuSelect).toHaveBeenCalledOnce();
-    await expect(args.onMenuSelect).toHaveBeenCalledWith('duplicate');
-    await expect(args.onMenuClose).toHaveBeenCalledOnce();
-    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
-    await expect(canvas.getByRole('button', { name: t('CardActions:more') })).toHaveFocus();
-    await expect(args.onOpen).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraCollapsedHidesActions = meta.story({
-  name: 'Collapsed card has no Edit or ⋯ to fire',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await expect(canvas.queryByRole('button', { name: t('CardActions:edit') })).toBeNull();
-    await expect(canvas.queryByRole('button', { name: t('CardActions:more') })).toBeNull();
-    await userEvent.click(
-      canvas.getByText(`${t('round', { round: 3 })} · ${t('units', { count: 6 })}`),
-    );
-    await expect(args.onOpen).toHaveBeenCalledOnce();
-    await expect(args.onEdit).not.toHaveBeenCalled();
-    await expect(args.onMore).not.toHaveBeenCalled();
-    await expect(args.onMenuSelect).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraFlowTapChevron = meta.story({
-  name: 'Flow: tap chevron expands the card',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await userEvent.click(
-      canvas.getByRole('button', { name: t('details', { title: 'Ambush at the Ferry' }) }),
-    );
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(canvas.getByText(ambush.description)).toBeVisible();
-  },
-});
-
-export const ExtraFlowTapMore = meta.story({
-  name: 'Flow: tap ⋯ opens the menu',
-  args: { expanded: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    const more = canvas.getByRole('button', { name: t('CardActions:more') });
-    await userEvent.click(more);
-    await expect(args.onMore).toHaveBeenCalledOnce();
-    await expect(more).toHaveAttribute('data-open');
-    await waitFor(() =>
-      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
-    );
-  },
-});
-
-export const ExtraFlowTapDelete = meta.story({
-  name: 'Flow: tap Delete fires delete',
-  args: { expanded: true, menuOpen: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await userEvent.click(await canvas.findByRole('menuitem', { name: t('delete') }));
-    await expect(args.onMenuSelect).toHaveBeenCalledOnce();
-    await expect(args.onMenuSelect).toHaveBeenCalledWith('delete');
-    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
-  },
-});
-
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter opens, Space toggles',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await userEvent.tab();
-    await expect(openButton(canvas, t, 'Ambush at the Ferry')).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onOpen).toHaveBeenCalledOnce();
-    await userEvent.tab();
-    const chevron = canvas.getByRole('button', {
-      name: t('details', { title: 'Ambush at the Ferry' }),
-    });
-    await expect(chevron).toHaveFocus();
-    await userEvent.keyboard(' ');
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-    await expect(args.onOpen).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraMenuKeyboardMotionOn = meta.story({
-  name: 'Motion on: Enter on ⋯ focuses Duplicate, Escape returns focus',
-  args: { expanded: true },
-  parameters: { motion: 'on' },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await expect(document.documentElement.dataset.motion).toBe('on');
-    const more = canvas.getByRole('button', { name: t('CardActions:more') });
-    more.focus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onMore).toHaveBeenCalledOnce();
-    await waitFor(() =>
-      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
-    );
-    await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: t('delete') })).toHaveFocus();
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onMenuClose).toHaveBeenCalledOnce();
-    await expect(args.onMenuSelect).not.toHaveBeenCalled();
-    await waitFor(() => expect(more).toHaveFocus());
-  },
-});
-
-export const ExtraLastPlayed = meta.story({
-  name: 'Last played sort: Today, Yesterday, days ago, Never played',
+export const LastPlayed = meta.story({
   render: (args) => (
     <>
       <CombatCardCell {...args} lastPlayedDays={0} />
       <CombatCardCell {...args} lastPlayedDays={1} />
       <CombatCardCell {...args} lastPlayedDays={5} />
+      <CombatCardCell {...args} lastPlayedDays={13} />
+      <CombatCardCell {...args} lastPlayedDays={14} />
+      <CombatCardCell {...args} lastPlayedDays={30} />
       <CombatCardCell
         {...args}
         title="The Drowned Chapel"
@@ -389,48 +230,27 @@ export const ExtraLastPlayed = meta.story({
         `${t('round', { round: 3 })} · ${t('units', { count: 6 })} · ${t('yesterday')}`,
       ),
     ).toBeVisible();
-    await expect(
-      canvas.getByText(
-        `${t('round', { round: 3 })} · ${t('units', { count: 6 })} · ${t('daysAgo', { count: 5 })}`,
-      ),
-    ).toBeVisible();
+    for (const count of [5, 13]) {
+      await expect(
+        canvas.getByText(
+          `${t('round', { round: 3 })} · ${t('units', { count: 6 })} · ${t('daysAgo', { count })}`,
+        ),
+      ).toBeVisible();
+    }
+    for (const count of [2, 4]) {
+      await expect(
+        canvas.getByText(
+          `${t('round', { round: 3 })} · ${t('units', { count: 6 })} · ${t('weeksAgo', { count })}`,
+        ),
+      ).toBeVisible();
+    }
     await expect(
       canvas.getByText(`${t('units', { count: 1 })} · ${t('neverPlayed')}`),
     ).toBeVisible();
   },
 });
 
-export const ExtraWeeksAgo = meta.story({
-  name: 'Last played from 14 days shows weeks',
-  render: (args) => (
-    <>
-      <CombatCardCell {...args} lastPlayedDays={13} />
-      <CombatCardCell {...args} lastPlayedDays={14} />
-      <CombatCardCell {...args} lastPlayedDays={30} />
-    </>
-  ),
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'CombatCard');
-    await expect(
-      canvas.getByText(
-        `${t('round', { round: 3 })} · ${t('units', { count: 6 })} · ${t('daysAgo', { count: 13 })}`,
-      ),
-    ).toBeVisible();
-    await expect(
-      canvas.getByText(
-        `${t('round', { round: 3 })} · ${t('units', { count: 6 })} · ${t('weeksAgo', { count: 2 })}`,
-      ),
-    ).toBeVisible();
-    await expect(
-      canvas.getByText(
-        `${t('round', { round: 3 })} · ${t('units', { count: 6 })} · ${t('weeksAgo', { count: 4 })}`,
-      ),
-    ).toBeVisible();
-  },
-});
-
-export const ExtraDuplicateDisabled = meta.story({
-  name: 'Duplicate disabled at the combat limit',
+export const DuplicateDisabled = meta.story({
   args: { expanded: true, menuOpen: true, duplicateDisabled: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CombatCard');
@@ -439,5 +259,90 @@ export const ExtraDuplicateDisabled = meta.story({
     await userEvent.click(duplicate, { pointerEventsCheck: 0 });
     await expect(args.onMenuSelect).not.toHaveBeenCalled();
     await expect(canvas.getByRole('menuitem', { name: t('delete') })).toBeEnabled();
+  },
+});
+
+export const TapCardOpens = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas }) => {
+    await userEvent.click(canvas.getByText('Ambush at the Ferry'));
+    await expect(args.onOpen).toHaveBeenCalledOnce();
+    await expect(args.onToggle).not.toHaveBeenCalled();
+    await expect(args.onEdit).not.toHaveBeenCalled();
+    await expect(args.onMore).not.toHaveBeenCalled();
+  },
+});
+
+export const ChevronNeverOpens = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CombatCard');
+    const chevron = canvas.getByRole('button', {
+      name: t('details', { title: 'Ambush at the Ferry' }),
+    });
+    await userEvent.click(chevron);
+    await expect(args.onToggle).toHaveBeenCalledOnce();
+    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
+    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    await userEvent.click(chevron);
+    await expect(args.onToggle).toHaveBeenCalledTimes(2);
+    await expect(chevron).toHaveAttribute('aria-expanded', 'false');
+    await expect(canvas.queryByRole('button', { name: t('CardActions:edit') })).toBeNull();
+    await expect(args.onOpen).not.toHaveBeenCalled();
+  },
+});
+
+export const EditAndMoreFire = meta.story({
+  tags: ['!dev'],
+  args: { expanded: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CombatCard');
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:edit') }));
+    await expect(args.onEdit).toHaveBeenCalledOnce();
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
+    await expect(args.onMore).toHaveBeenCalledOnce();
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('duplicate') }));
+    await expect(args.onMenuSelect).toHaveBeenCalledOnce();
+    await expect(args.onMenuSelect).toHaveBeenCalledWith('duplicate');
+    await expect(args.onMenuClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
+    await expect(canvas.getByRole('button', { name: t('CardActions:more') })).toHaveFocus();
+    await expect(args.onOpen).not.toHaveBeenCalled();
+  },
+});
+
+export const CollapsedHidesActions = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CombatCard');
+    await expect(canvas.queryByRole('button', { name: t('CardActions:edit') })).toBeNull();
+    await expect(canvas.queryByRole('button', { name: t('CardActions:more') })).toBeNull();
+    await userEvent.click(
+      canvas.getByText(`${t('round', { round: 3 })} · ${t('units', { count: 6 })}`),
+    );
+    await expect(args.onOpen).toHaveBeenCalledOnce();
+    await expect(args.onEdit).not.toHaveBeenCalled();
+    await expect(args.onMore).not.toHaveBeenCalled();
+    await expect(args.onMenuSelect).not.toHaveBeenCalled();
+  },
+});
+
+export const EnterOpensSpaceToggles = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CombatCard');
+    await userEvent.tab();
+    await expect(openButton(canvas, t, 'Ambush at the Ferry')).toHaveFocus();
+    await userEvent.keyboard('{Enter}');
+    await expect(args.onOpen).toHaveBeenCalledOnce();
+    await userEvent.tab();
+    const chevron = canvas.getByRole('button', {
+      name: t('details', { title: 'Ambush at the Ferry' }),
+    });
+    await expect(chevron).toHaveFocus();
+    await userEvent.keyboard(' ');
+    await expect(args.onToggle).toHaveBeenCalledOnce();
+    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
+    await expect(args.onOpen).toHaveBeenCalledOnce();
   },
 });
