@@ -142,8 +142,7 @@ export const ReturningPlayer = meta.story({
     await expect(canvas.getByRole('button', { name: t('done') })).toBeEnabled();
     await userEvent.click(vashti);
     await waitFor(() => expect(vashti).not.toBeChecked());
-    canvas.getByRole('checkbox', { name: 'Ilse the Bold' }).focus();
-    await userEvent.keyboard(' ');
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Ilse the Bold' }));
     await waitFor(() =>
       expect(canvas.getByRole('checkbox', { name: 'Ilse the Bold' })).toBeChecked(),
     );
