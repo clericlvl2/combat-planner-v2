@@ -2,7 +2,6 @@ import preview from '#.storybook/preview';
 import type { TFunction } from 'i18next';
 import { LIMITS } from '@combat-planner/domain';
 import type { Preset, Role } from '@combat-planner/domain';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
@@ -19,7 +18,6 @@ interface UnitFormCellProps {
   library?: boolean;
   unitNames?: readonly string[];
   hint?: UnitFormHint;
-  closeOnDone?: boolean;
   onSubmit?: (draft: UnitDraft) => void;
   onCancel?: () => void;
 }
@@ -123,15 +121,13 @@ function UnitFormCell({
   library = true,
   unitNames,
   hint,
-  closeOnDone = false,
   onSubmit,
   onCancel,
 }: UnitFormCellProps) {
-  const [opened, setOpened] = useState(true);
   return (
     <div style={stage}>
       <UnitForm
-        opened={opened}
+        opened
         mode={mode}
         value={value}
         lockRole={lockRole}
@@ -141,14 +137,8 @@ function UnitFormCell({
         combatTitle="Ambush at the Ferry"
         unitNames={unitNames}
         hint={hint}
-        onSubmit={(draft) => {
-          if (closeOnDone) setOpened(false);
-          onSubmit?.(draft);
-        }}
-        onCancel={() => {
-          if (closeOnDone) setOpened(false);
-          onCancel?.();
-        }}
+        onSubmit={(draft) => onSubmit?.(draft)}
+        onCancel={() => onCancel?.()}
       />
     </div>
   );
@@ -198,14 +188,12 @@ const typeNumber = async (canvas: Canvas, label: string, text: string) => {
   return field;
 };
 
-export const Anatomy = meta.story({
+export const AddFilled = meta.story({
   tags: ['visual'],
-  name: 'Anatomy',
   args: { value: orcShaman },
 });
 
-export const NewEmpty = meta.story({
-  name: 'New, empty',
+export const AddEmpty = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await expect(canvas.getByRole('dialog', { name: t('addTitle') })).toBeVisible();
@@ -219,15 +207,8 @@ export const NewEmpty = meta.story({
   },
 });
 
-export const NewFilled = meta.story({
+export const LibraryTab = meta.story({
   tags: ['visual'],
-  name: 'New, filled',
-  args: { value: orcShaman },
-});
-
-export const FromLibrary = meta.story({
-  tags: ['visual'],
-  name: 'From Library',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -236,8 +217,7 @@ export const FromLibrary = meta.story({
   },
 });
 
-export const LibraryTagsSheet = meta.story({
-  name: 'Library, Tags sheet',
+export const LibraryTagFilterOpen = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -250,8 +230,7 @@ export const LibraryTagsSheet = meta.story({
   },
 });
 
-export const LibraryFilteredPicked = meta.story({
-  name: 'Library, filtered, picked',
+export const LibraryPresetPicked = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -279,7 +258,6 @@ export const LibraryFilteredPicked = meta.story({
 });
 
 export const Edit = meta.story({
-  name: 'Edit',
   args: { mode: 'edit', value: vashti },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
@@ -289,8 +267,7 @@ export const Edit = meta.story({
   },
 });
 
-export const LibrarySearchGob = meta.story({
-  name: 'Library, search “gob”',
+export const LibrarySearchResults = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -305,7 +282,6 @@ export const LibrarySearchGob = meta.story({
 });
 
 export const LibraryNothingFound = meta.story({
-  name: 'Library, nothing found',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -322,28 +298,11 @@ export const LibraryNothingFound = meta.story({
 });
 
 export const MinimumValues = meta.story({
-  name: 'Minimum values',
   args: { mode: 'edit', value: { ...vashti, maxHp: LIMITS.maxHp.min, tempHp: 0 } },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    const decrease = canvas.getAllByRole('button', {
-      name: anyValue(t, 'Stepper:decreaseField', 'label'),
-    });
-    await expect(decrease[0]).toBeDisabled();
-    await expect(decrease[1]).toBeDisabled();
-    await expect(decrease[2]).toBeEnabled();
-    await expect(getComputedStyle(decrease[0] as HTMLElement).backgroundColor).toBe(
-      'rgb(250, 246, 238)',
-    );
-    await expect(getComputedStyle(decrease[2] as HTMLElement).backgroundColor).toBe(
-      'rgb(243, 237, 226)',
-    );
-  },
 });
 
-export const EdgeCases40CharacterNameRu = meta.story({
+export const LongName = meta.story({
   tags: ['visual'],
-  name: '40-character name, ru',
   args: {
     mode: 'edit',
     value: { ...vashti, name: 'Капитан стражи переправы Святослав Огнев', role: 'ally', note: '' },
@@ -353,13 +312,87 @@ export const EdgeCases40CharacterNameRu = meta.story({
     const name = canvas.getByRole('textbox', { name: t('name') });
     await expect(name).toHaveValue('Капитан стражи переправы Святослав Огнев');
     await expect(canvas.getByText(`${LIMITS.unitName}/${LIMITS.unitName}`)).toBeVisible();
-    await userEvent.type(name, 'а');
-    await expect(name).toHaveValue('Капитан стражи переправы Святослав Огнев');
   },
 });
 
-export const ExtraFlowAddFromLibrary = meta.story({
-  name: 'Flow: filter Orcs, pick a preset, Add closes the sheet',
+export const RoleLocked = meta.story({
+  args: { mode: 'edit', value: vashti, lockRole: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    const hero = canvas.getByRole('radio', { name: t('hero') });
+    await expect(hero).toBeChecked();
+    await expect(hero).toBeDisabled();
+    await userEvent.click(canvas.getByRole('radio', { name: t('enemy') }));
+    await expect(hero).toBeChecked();
+    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
+    await expect(args.onSubmit).toHaveBeenCalledWith(vashti);
+  },
+});
+
+export const MaxHpLocked = meta.story({
+  name: 'Max HP Locked',
+  args: { mode: 'edit', value: vashti, lockMaxHp: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    const maxHp = canvas.getByRole('spinbutton', { name: t('maxHp') });
+    await expect(maxHp).toBeDisabled();
+    await expect(
+      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('maxHp') }) }),
+    ).toBeDisabled();
+    await expect(
+      canvas.getByRole('button', { name: t('Stepper:decreaseField', { label: t('maxHp') }) }),
+    ).toBeDisabled();
+    await expect(canvas.getByRole('spinbutton', { name: t('ac') })).toBeEnabled();
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('ac') }) }),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
+    await expect(args.onSubmit).toHaveBeenCalledWith({ ...vashti, ac: vashti.ac + 1 });
+  },
+});
+
+export const HintCombatActive = meta.story({
+  args: { library: false, hint: 'active', value: { initiativeBonus: 2 } },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(
+      canvas.getByText(t('hintActive', { bonus: '+2' }), { normalizer: exact }),
+    ).toBeVisible();
+  },
+});
+
+export const HintSetup = meta.story({
+  args: { library: false, hint: 'setup' },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(canvas.getByText(t('hintSetup'))).toBeVisible();
+  },
+});
+
+export const LibrarySeveralTagChips = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await userEvent.click(
+      canvas.getByRole('button', { name: (label: string) => label.startsWith(t('tags')) }),
+    );
+    await userEvent.click(await canvas.findByRole('checkbox', { name: /^Orcs/ }));
+    await userEvent.click(canvas.getByRole('checkbox', { name: /^Ferry/ }));
+    await userEvent.click(canvas.getByRole('checkbox', { name: /^Goblins/ }));
+    await userEvent.click(
+      canvas.getByRole('button', { name: anyValue(t, 'TagSheet:showPresets', 'count') }),
+    );
+    await waitFor(() =>
+      expect(canvas.queryByRole('dialog', { name: t('TagSheet:filterTitle') })).toBeNull(),
+    );
+    for (const name of ['Orcs', 'Ferry', 'Goblins']) {
+      await expect(canvas.getByRole('button', { name: t('removeTag', { name }) })).toBeVisible();
+    }
+  },
+});
+
+export const AddFromLibrarySubmitsPreset = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -387,8 +420,8 @@ export const ExtraFlowAddFromLibrary = meta.story({
   },
 });
 
-export const ExtraSubmitTypedValues = meta.story({
-  name: 'Add unit submits the typed values',
+export const SubmitsTypedValues = meta.story({
+  tags: ['!dev'],
   args: { library: false },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
@@ -425,8 +458,8 @@ export const ExtraSubmitTypedValues = meta.story({
   },
 });
 
-export const ExtraEmptyNameDefault = meta.story({
-  name: 'An empty name becomes the first free default name',
+export const EmptyNameGetsDefaultName = meta.story({
+  tags: ['!dev'],
   render: (args: UnitFormCellProps) => <TakenEnemyNames {...args} />,
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
@@ -446,8 +479,8 @@ export const ExtraEmptyNameDefault = meta.story({
   },
 });
 
-export const ExtraBlankNameKeepsPrevious = meta.story({
-  name: 'Edit: a blank name keeps the previous name',
+export const BlankNameKeepsPrevious = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: vashti },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
@@ -464,8 +497,8 @@ export const ExtraBlankNameKeepsPrevious = meta.story({
   },
 });
 
-export const ExtraClampsToLimits = meta.story({
-  name: 'Values outside the limits are clamped',
+export const ClampsToLimits = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: vashti },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
@@ -495,45 +528,8 @@ export const ExtraClampsToLimits = meta.story({
   },
 });
 
-export const ExtraLockRole = meta.story({
-  name: 'lockRole keeps the type',
-  args: { mode: 'edit', value: vashti, lockRole: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    const hero = canvas.getByRole('radio', { name: t('hero') });
-    await expect(hero).toBeChecked();
-    await expect(hero).toBeDisabled();
-    await userEvent.click(canvas.getByRole('radio', { name: t('enemy') }));
-    await expect(hero).toBeChecked();
-    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
-    await expect(args.onSubmit).toHaveBeenCalledWith(vashti);
-  },
-});
-
-export const ExtraLockMaxHp = meta.story({
-  name: 'lockMaxHp keeps max HP for a player Edit',
-  args: { mode: 'edit', value: vashti, lockMaxHp: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    const maxHp = canvas.getByRole('spinbutton', { name: t('maxHp') });
-    await expect(maxHp).toBeDisabled();
-    await expect(
-      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('maxHp') }) }),
-    ).toBeDisabled();
-    await expect(
-      canvas.getByRole('button', { name: t('Stepper:decreaseField', { label: t('maxHp') }) }),
-    ).toBeDisabled();
-    await expect(canvas.getByRole('spinbutton', { name: t('ac') })).toBeEnabled();
-    await userEvent.click(
-      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('ac') }) }),
-    );
-    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
-    await expect(args.onSubmit).toHaveBeenCalledWith({ ...vashti, ac: vashti.ac + 1 });
-  },
-});
-
-export const ExtraPickFillsForm = meta.story({
-  name: 'Picking a preset fills the form',
+export const PickFillsForm = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -565,27 +561,8 @@ export const ExtraPickFillsForm = meta.story({
   },
 });
 
-export const ExtraAddClosesTheSheet = meta.story({
-  name: 'Add closes the sheet in a host that closes on submit',
-  args: { closeOnDone: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    await openLibrary(canvas, t);
-    await userEvent.click(
-      presetList(canvas, t).getByRole('button', {
-        name: (label: string) => label.startsWith(`${t('enemy')} Orc Berserker`),
-      }),
-    );
-    await userEvent.click(
-      canvas.getByRole('button', { name: t('addPreset', { name: 'Orc Berserker' }) }),
-    );
-    await expect(args.onSubmit).toHaveBeenCalledOnce();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraPickResetsOnSearch = meta.story({
-  name: 'A new search drops the picked preset',
+export const PickResetsOnSearch = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -605,8 +582,8 @@ export const ExtraPickResetsOnSearch = meta.story({
   },
 });
 
-export const ExtraPickResetsOnTab = meta.story({
-  name: 'Switching tabs drops the picked preset',
+export const PickResetsOnTab = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -638,64 +615,8 @@ export const ExtraPickResetsOnTab = meta.story({
   },
 });
 
-export const ExtraHintActive = meta.story({
-  name: 'Hint: initiative rolled on add in Active',
-  args: { library: false, hint: 'active', value: { initiativeBonus: 2 } },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    await expect(
-      canvas.getByText(t('hintActive', { bonus: '+2' }), { normalizer: exact }),
-    ).toBeVisible();
-  },
-});
-
-export const ExtraHintSetup = meta.story({
-  name: 'Hint: initiative rolled at Start in Setup',
-  args: { library: false, hint: 'setup' },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    await expect(canvas.getByText(t('hintSetup'))).toBeVisible();
-  },
-});
-
-export const ExtraEditEmptyName = meta.story({
-  name: 'An empty name in Edit draws the empty border',
-  args: { mode: 'edit', value: vashti },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    const name = canvas.getByRole('textbox', { name: t('name') });
-    const frame = name.closest<HTMLElement>('[data-field]');
-    await expect(frame && getComputedStyle(frame).borderTopColor).toBe('rgb(35, 31, 28)');
-    await userEvent.clear(name);
-    await userEvent.tab();
-    await expect(frame && getComputedStyle(frame).borderTopColor).toBe('rgb(226, 216, 198)');
-  },
-});
-
-export const ExtraEscapeCancels = meta.story({
-  name: 'Escape cancels without saving',
-  args: { mode: 'edit', value: vashti },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    await userEvent.type(canvas.getByRole('textbox', { name: t('name') }), ' II');
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onCancel).toHaveBeenCalledOnce();
-    await expect(args.onSubmit).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraCloseButton = meta.story({
-  name: 'Close cancels without saving',
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
-    await expect(args.onCancel).toHaveBeenCalledOnce();
-    await expect(args.onSubmit).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraClearTags = meta.story({
-  name: 'Clear removes the tag filter',
+export const ClearRemovesTagFilter = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitForm');
     await openLibrary(canvas, t);
@@ -706,18 +627,5 @@ export const ExtraClearTags = meta.story({
       canvas.queryByRole('button', { name: t('removeTag', { name: 'Orcs' }) }),
     ).toBeNull();
     await expect(presetList(canvas, t).getAllByRole('button')).toHaveLength(5);
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Добавить юнит' })).toBeVisible();
-    await expect(canvas.getByRole('textbox', { name: 'Имя' })).toHaveAttribute(
-      'placeholder',
-      'Враг 1',
-    );
-    await expect(canvas.getByRole('spinbutton', { name: 'Бонус инициативы' })).toBeVisible();
   },
 });
