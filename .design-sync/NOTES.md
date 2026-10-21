@@ -26,7 +26,6 @@ Shape `storybook`. Reference Storybook: `.design-sync/sb-reference` (built from 
 
 ## Component-specific
 
-- `previews/Radio.tsx`, `previews/Swatch.tsx`: owned copies of the generated wrappers with the namespace import renamed to `Stories`, because both story files export a story named `S`, which shadows the wrapper's `S` namespace.
 - `cardMode: "single"`: overlays and sheets (Dialog, Drawer, Sheet, ShareSheet, SortSheet, TagSheet, UnitForm, NumpadSheet, Menu, HpHistory, ConditionPicker) and Library (its grid is 87 000 px tall). `cardMode: "column"`: stories wider than a grid cell (SignIn and the form molecules listed in config).
 
 - `overrides.CombatList.primaryStory: "CLF11"`: the first CombatList stories are CombatFormSheet stories, so the card would otherwise show the form instead of the list.
