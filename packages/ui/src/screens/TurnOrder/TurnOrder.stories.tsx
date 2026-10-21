@@ -67,9 +67,9 @@ const meta = preview.meta({
   },
 });
 
-export const SetupWaiting = meta.story({
+export const SetupWaitingForDm = meta.story({
+  name: 'Setup Waiting For DM',
   tags: ['visual'],
-  name: 'Setup, waiting for the DM',
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup' })) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnOrder');
@@ -79,9 +79,8 @@ export const SetupWaiting = meta.story({
   },
 });
 
-export const HiddenFields = meta.story({
+export const OtherUnitsHidePrivateFields = meta.story({
   tags: ['visual'],
-  name: 'Active, other rows hide private fields',
   parameters: { scenario: playerScenario(ferryCombat({ active: 'orc' })) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnOrder');
@@ -101,7 +100,6 @@ export const HiddenFields = meta.story({
 });
 
 export const NoUnits = meta.story({
-  name: 'No units after Clear',
   parameters: {
     scenario: playerScenario({ ...ferryCombat({ status: 'setup' }), units: [] }),
   },
@@ -113,7 +111,7 @@ export const NoUnits = meta.story({
 });
 
 export const DamageOwnHero = meta.story({
-  name: 'Damage the own hero',
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
@@ -139,7 +137,7 @@ export const DamageOwnHero = meta.story({
 });
 
 export const ReleaseClaim = meta.story({
-  name: 'Release claim from the own row',
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
@@ -157,8 +155,7 @@ export const ReleaseClaim = meta.story({
   },
 });
 
-export const EditOwnHero = meta.story({
-  name: 'Edit the own hero, type locked',
+export const EditOwnHeroTypeLocked = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
@@ -192,8 +189,8 @@ export const EditOwnHero = meta.story({
   },
 });
 
-export const ExtraFailedDamageNoFlash = meta.story({
-  name: 'A rejected Damage does not flash the row',
+export const FailedDamageNoFlash = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
@@ -211,8 +208,8 @@ export const ExtraFailedDamageNoFlash = meta.story({
   },
 });
 
-export const ExtraInitiativeBonus = meta.story({
-  name: 'The initiative popover shows the hero bonus',
+export const InitiativeBonus = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup' })) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnOrder');
@@ -228,5 +225,22 @@ export const ExtraInitiativeBonus = meta.story({
         name: (label: string) => label.startsWith(t('InitiativePopover:roll', { bonus: '+2' })),
       }),
     ).toBeVisible();
+  },
+});
+
+export const OwnTurn = meta.story({
+  play: async ({ canvas }) => {
+    const vashti = await rowOf(canvas, ME);
+    await expect(vashti).toHaveAttribute('data-active');
+    await expect(within(vashti).getByRole('button', { name: /^20 \/36/ })).toBeVisible();
+  },
+});
+
+export const OwnRowExpanded = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    await expandOwn(canvas);
+    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    await expect(canvas.getByText('Hex on Orc Berserker')).toBeVisible();
   },
 });
