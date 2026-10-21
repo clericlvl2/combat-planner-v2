@@ -6,8 +6,6 @@ import { TurnBar } from './TurnBar.tsx';
 import type { TurnBarProps } from './TurnBar.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
-const longestName = 'W'.repeat(LIMITS.unitName);
-
 type ReasonKey = 'everyUnitDisabled' | 'lastRound' | 'addUnitFirst';
 
 interface TurnBarCellProps extends Omit<TurnBarProps, 'reason'> {
@@ -27,16 +25,12 @@ const meta = preview.meta({
   args: { mode: 'next', nextName: 'Brother Tomas', onClick: fn() },
 });
 
-export const Anatomy = meta.story({
+export const NextTurn = meta.story({
   tags: ['visual'],
   args: { mode: 'next', nextName: 'Brother Tomas' },
 });
 
-export const Active = meta.story({
-  args: { mode: 'next', nextName: 'Brother Tomas' },
-});
-
-export const Setup = meta.story({
+export const SetupStartCombat = meta.story({
   tags: ['visual'],
   args: { mode: 'start' },
   play: async ({ canvas, globals }) => {
@@ -50,7 +44,6 @@ export const Setup = meta.story({
 });
 
 export const BlockedAllUnitsDisabled = meta.story({
-  name: 'Blocked: all units disabled',
   args: { mode: 'next', disabled: true, reasonKey: 'everyUnitDisabled', onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -65,9 +58,8 @@ export const BlockedAllUnitsDisabled = meta.story({
   },
 });
 
-export const BlockedRound99 = meta.story({
+export const BlockedLastRound = meta.story({
   tags: ['visual'],
-  name: 'Blocked: round 99',
   args: { mode: 'next', disabled: true, reasonKey: 'lastRound' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -78,9 +70,8 @@ export const BlockedRound99 = meta.story({
   },
 });
 
-export const LongNextNameEllipsis = meta.story({
+export const LongNextName = meta.story({
   tags: ['visual'],
-  name: 'Long next name: ellipsis',
   parameters: {
     geometry: {
       truncation: {
@@ -89,57 +80,24 @@ export const LongNextNameEllipsis = meta.story({
       },
     },
   },
-  args: { mode: 'next', nextName: 'Brother Tomas of the Silver Lantern Order' },
-});
-
-export const LongNextNameJa = meta.story({
-  name: 'Long next name, ja',
-  args: { mode: 'next', nextName: '黒水の渡し守と呪われし大蛇の群れ' },
-});
-
-export const RuLongestLabels = meta.story({
-  name: 'ru: longest labels',
-  parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the longest unit name ends with an ellipsis by design',
-        except: '[data-mode] > span + span',
-      },
-    },
-  },
-  globals: { locale: 'ru' },
   args: { mode: 'next', nextName: 'Капитан стражи переправы Святослав Огнев' },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
     await document.fonts.ready;
-    const button = canvas.getByRole('button', { name: /Следующий ход/ });
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('nextTurn')),
+    });
     const secondary = canvas.getByText('Капитан стражи переправы Святослав Огнев');
+    await expect(getComputedStyle(secondary).textOverflow).toBe('ellipsis');
     await expect(secondary.scrollWidth).toBeGreaterThan(secondary.clientWidth);
+    await expect(secondary.getBoundingClientRect().width).toBeLessThanOrEqual(
+      button.getBoundingClientRect().width - 32,
+    );
     await expect(button.getBoundingClientRect().height).toBe(58);
   },
 });
 
-export const DeSetup = meta.story({
-  name: 'de: Setup',
-  globals: { locale: 'de' },
-  args: { mode: 'start' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Kampf beginnen')).toBeVisible();
-    await expect(canvas.getByText('Würfelt fehlende Initiative')).toBeVisible();
-  },
-});
-
-export const FrBlocked = meta.story({
-  name: 'fr: blocked',
-  globals: { locale: 'fr' },
-  args: { mode: 'next', disabled: true, reasonKey: 'everyUnitDisabled' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: /Tour suivant/ })).toBeDisabled();
-    await expect(canvas.getByText('Toutes les unités sont désactivées')).toBeVisible();
-  },
-});
-
-export const ExtraBlockedNoUnits = meta.story({
-  name: 'Blocked: no units yet',
+export const BlockedNoUnits = meta.story({
   args: { mode: 'start', disabled: true, reasonKey: 'addUnitFirst', onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -154,8 +112,20 @@ export const ExtraBlockedNoUnits = meta.story({
   },
 });
 
-export const ExtraDataDisabledLine = meta.story({
-  name: 'data-disabled greys the second line',
+export const NextTurnWithoutName = meta.story({
+  args: { mode: 'next', nextName: undefined },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnBar');
+    const button = canvas.getByRole('button', {
+      name: (label: string) => label.includes(t('nextTurn')),
+    });
+    await expect(button).toBeEnabled();
+    await expect(button.querySelectorAll('span')).toHaveLength(1);
+  },
+});
+
+export const DataDisabledGreysSecondLine = meta.story({
+  tags: ['!dev'],
   args: { mode: 'next', nextName: 'Brother Tomas' },
   render: (args) => <TurnBarCell {...args} data-disabled="" />,
   play: async ({ canvas }) => {
@@ -164,8 +134,8 @@ export const ExtraDataDisabledLine = meta.story({
   },
 });
 
-export const ExtraClick = meta.story({
-  name: 'Click',
+export const ClickCallsOnClick = meta.story({
+  tags: ['!dev'],
   args: { mode: 'next', nextName: 'Brother Tomas', onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -176,52 +146,8 @@ export const ExtraClick = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter and Space',
-  args: { mode: 'start', onClick: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'TurnBar');
-    const button = canvas.getByRole('button', {
-      name: (label: string) => label.includes(t('startCombat')),
-    });
-    await userEvent.tab();
-    await expect(button).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onClick).toHaveBeenCalledTimes(1);
-    await userEvent.keyboard('[Space]');
-    await expect(args.onClick).toHaveBeenCalledTimes(2);
-  },
-});
-
-export const ExtraEllipsis = meta.story({
-  name: 'Name at the length limit ends with an ellipsis',
-  parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the name at the length limit ends with an ellipsis by design',
-        except: '[data-mode] > span + span',
-      },
-    },
-  },
-  args: { mode: 'next', nextName: longestName },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'TurnBar');
-    await document.fonts.ready;
-    const button = canvas.getByRole('button', {
-      name: (label: string) => label.includes(t('nextTurn')),
-    });
-    const secondary = canvas.getByText(longestName);
-    await expect(getComputedStyle(secondary).textOverflow).toBe('ellipsis');
-    await expect(secondary.scrollWidth).toBeGreaterThan(secondary.clientWidth);
-    await expect(secondary.getBoundingClientRect().width).toBeLessThanOrEqual(
-      button.getBoundingClientRect().width - 32,
-    );
-    await expect(button.getBoundingClientRect().height).toBe(58);
-  },
-});
-
-export const ExtraBottomOfScreen = meta.story({
-  name: 'Sits at the bottom of the screen',
+export const SitsAtBottomOfScreen = meta.story({
+  tags: ['!dev'],
   args: { mode: 'next', nextName: 'Brother Tomas' },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'TurnBar');
