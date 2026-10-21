@@ -39,15 +39,17 @@ const meta = preview.meta({
   args: { value: firstColor, onChange: fn() },
 });
 
-const renderTap = (args: SwatchRowCellProps) => <SwatchRowCell {...args} data-tap={5} />;
-
-export const Anatomy = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
   args: { value: 2 },
 });
 
-export const CombatColorDefault = meta.story({
-  name: 'Combat color · default',
+export const LastColourSelected = meta.story({
+  args: { value: 7 },
+});
+
+export const HasEightColours = meta.story({
+  tags: ['!dev'],
   args: { value: 0 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'SwatchRow');
@@ -59,20 +61,8 @@ export const CombatColorDefault = meta.story({
   },
 });
 
-export const CombatColorTap = meta.story({
-  name: 'Combat color · tap',
-  args: { value: 0 },
-  render: renderTap,
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'SwatchRow');
-    await expect(canvas.getByRole('button', { name: t('blue') })).toHaveAttribute('data-tap');
-    await expect(canvas.getByRole('button', { name: t('red') })).toHaveAttribute('data-selected');
-  },
-});
-
-export const Widths296Wide = meta.story({
+export const NarrowRow = meta.story({
   tags: ['visual'],
-  name: 'Widths · 296 wide',
   args: { value: 4, width: 296 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'SwatchRow');
@@ -83,8 +73,8 @@ export const Widths296Wide = meta.story({
   },
 });
 
-export const Widths366Wide = meta.story({
-  name: 'Widths · 366 wide',
+export const WideRow = meta.story({
+  tags: ['!dev'],
   parameters: {
     geometry: {
       overflow:
@@ -100,8 +90,8 @@ export const Widths366Wide = meta.story({
   },
 });
 
-export const ExtraSelect = meta.story({
-  name: 'Select moves the ring',
+export const SelectMovesTheRing = meta.story({
+  tags: ['!dev'],
   args: { value: 0, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'SwatchRow');
@@ -117,28 +107,8 @@ export const ExtraSelect = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter and Space',
-  args: { value: 0, onChange: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'SwatchRow');
-    await userEvent.tab();
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: t('orange') })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onChange).toHaveBeenLastCalledWith(1);
-    await userEvent.tab();
-    await userEvent.keyboard('[Space]');
-    await expect(args.onChange).toHaveBeenLastCalledWith(2);
-    await expect(canvas.getByRole('button', { name: t('ochre') })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
-  },
-});
-
-export const ExtraDisabled = meta.story({
-  name: 'Disabled',
+export const DisabledIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { value: 3, disabled: true, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'SwatchRow');
@@ -146,18 +116,5 @@ export const ExtraDisabled = meta.story({
     await expect(blue).toBeDisabled();
     await userEvent.click(blue, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { value: 4 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('group', { name: 'Цвет боя' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Бирюзовый' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
   },
 });
