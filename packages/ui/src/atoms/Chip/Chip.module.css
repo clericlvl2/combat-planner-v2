@@ -77,7 +77,7 @@
     color: var(--cp-color-secondary);
     font-weight: 700;
 
-    &[data-selected] {
+    &[data-selected]:not(:disabled, [data-disabled]) {
       background: var(--cp-color-accent);
       color: var(--cp-color-ink);
     }
