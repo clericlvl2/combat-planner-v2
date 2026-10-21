@@ -167,14 +167,6 @@ function checkLockedGlobals(storyPath, stories, meta) {
   }
 }
 
-const wave2Files = new Set([
-  'packages/ui/src/screens/About/About.stories.tsx',
-  'packages/ui/src/screens/AppPages/AppPages.stories.tsx',
-  'packages/ui/src/screens/LinkExpired/LinkExpired.stories.tsx',
-]);
-const exemptUntilWave2 = (storyPath, stories) =>
-  stories.some((story) => extraPrefix.test(story.name)) || wave2Files.has(relative(storyPath));
-
 const storyFiles = [...walk(uiSrcDir)]
   .filter((file) => file.endsWith('.stories.tsx'))
   .sort((a, b) => a.localeCompare(b));
@@ -182,7 +174,6 @@ const storyFiles = [...walk(uiSrcDir)]
 for (const storyPath of storyFiles) {
   const { text, stories, meta } = readStories(storyPath);
   checkCommonRules(storyPath, text, stories);
-  if (exemptUntilWave2(storyPath, stories)) continue;
   checkNameRules(storyPath, stories);
   checkLockedGlobals(storyPath, stories, meta);
 }
