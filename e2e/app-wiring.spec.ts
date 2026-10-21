@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { signUp } from './helpers.ts';
-import { t } from './t.ts';
+import { createCombat, signUp } from './helpers.ts';
+import { escapeRegExp, t } from './t.ts';
 
 const DE = { lng: 'de' } as const;
 
@@ -65,4 +65,44 @@ test('sign-in returns to the browser language after a DM signs out in another', 
 
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
   await expect(page.getByRole('heading', { level: 1, name: t('SignIn:title') })).toBeVisible();
+});
+
+test('a combat card opens the combat, and the drawer moves between Library and Combats', async ({
+  page,
+}) => {
+  await signUp(page);
+  const path = await createCombat(page, 'Ferry crossing');
+  await page.goto('/combats');
+  await page
+    .getByRole('button', { name: new RegExp(`^${escapeRegExp('Ferry crossing')}`) })
+    .click();
+  await expect(page).toHaveURL(new RegExp(`${escapeRegExp(path)}$`));
+
+  await page.goto('/combats');
+  const drawer = page.getByRole('dialog', { name: t('Drawer:title') });
+  await page.getByRole('button', { name: t('IconButton:openNavigation') }).click();
+  await drawer.getByRole('button', { name: t('Drawer:library') }).click();
+  await expect(page).toHaveURL(/\/library$/);
+  await expect(drawer).toBeHidden();
+
+  await page.getByRole('button', { name: t('IconButton:openNavigation') }).click();
+  await drawer.getByRole('button', { name: t('Drawer:combats') }).click();
+  await expect(page).toHaveURL(/\/combats$/);
+  await expect(drawer).toBeHidden();
+});
+
+test('Not found and Combat not found lead back to the combat list', async ({ page }) => {
+  await signUp(page);
+
+  await page.goto('/nowhere');
+  await expect(page.getByRole('heading', { level: 1, name: t('NotFound:title') })).toBeVisible();
+  await page.getByRole('button', { name: t('NotFound:goToCombats') }).click();
+  await expect(page).toHaveURL(/\/combats$/);
+
+  await page.goto('/combats/01JCOMBATNOTFOUND000000000');
+  await expect(
+    page.getByRole('heading', { level: 1, name: t('CombatNotFound:title') }),
+  ).toBeVisible();
+  await page.getByRole('button', { name: t('CombatNotFound:goToCombats') }).click();
+  await expect(page).toHaveURL(/\/combats$/);
 });
