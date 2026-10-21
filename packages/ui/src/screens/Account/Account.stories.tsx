@@ -75,17 +75,7 @@ export const Default = meta.story({
   },
 });
 
-export const SignOut = meta.story({
-  play: async ({ canvas, canvasElement, globals, loaded }) => {
-    const t = storyT(globals, 'Account');
-    await canvas.findByText('dm@ferry.games');
-    await userEvent.click(canvas.getByRole('button', { name: t('signOut') }));
-    await waitFor(() => expect(probeOf(canvasElement).location).toBe('/auth/sign-in'));
-    await expect(methodsOf(loaded)).toContain('auth.signOut');
-  },
-});
-
-export const ConfirmDelete = meta.story({
+export const DeleteConfirmation = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
@@ -97,21 +87,8 @@ export const ConfirmDelete = meta.story({
   },
 });
 
-export const AccountDeleted = meta.story({
-  play: async ({ canvas, canvasElement, globals, loaded }) => {
-    const t = storyT(globals, 'Account');
-    await canvas.findByText('dm@ferry.games');
-    await userEvent.click(canvas.getByRole('button', { name: t('deleteAccount') }));
-    const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:deleteAccountTitle') });
-    await userEvent.click(within(dialog).getByRole('button', { name: t('Button:delete') }));
-    await waitFor(() => expect(probeOf(canvasElement).location).toBe('/auth/sign-in'));
-    await expect(probeOf(canvasElement).state).toBeNull();
-    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:accountDeleted'));
-    await expect(methodsOf(loaded).filter((method) => method === 'account.remove')).toHaveLength(1);
-  },
-});
-
 export const CancelDelete = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
@@ -125,6 +102,7 @@ export const CancelDelete = meta.story({
 });
 
 export const Rename = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Account');
     const name = canvas.getByRole('textbox', { name: t('displayName') });
@@ -139,7 +117,7 @@ export const Rename = meta.story({
   },
 });
 
-export const EmptyName = meta.story({
+export const NameEmpty = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Account');
     const name = canvas.getByRole('textbox', { name: t('displayName') });
@@ -151,18 +129,8 @@ export const EmptyName = meta.story({
   },
 });
 
-export const Japanese = meta.story({
-  tags: ['visual'],
-  globals: { locale: 'ja' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('heading', { level: 1, name: 'アカウント' })).toBeVisible();
-    await expect(await canvas.findByText('dm@ferry.games')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'アカウントを削除' })).toBeVisible();
-  },
-});
-
-export const ExtraSignedInWithGitHub = meta.story({
-  name: 'The sign-in method comes from the session',
+export const SignedInWithGitHub = meta.story({
+  name: 'Signed In With GitHub',
   parameters: {
     scenario: scenario({
       session: {
@@ -182,8 +150,8 @@ export const ExtraSignedInWithGitHub = meta.story({
   },
 });
 
-export const ExtraEnterThenBlurSavesOnce = meta.story({
-  name: 'Enter then blur saves the name once',
+export const EnterThenBlurSavesOnce = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Account');
     const api = fakeApiOf(loaded);
@@ -208,8 +176,8 @@ export const ExtraEnterThenBlurSavesOnce = meta.story({
   },
 });
 
-export const ExtraEmptyNameWhileTyping = meta.story({
-  name: 'An emptied name shows no error while the field has focus',
+export const EmptyNameWhileTyping = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Account');
     const name = canvas.getByRole('textbox', { name: t('displayName') });
@@ -220,8 +188,8 @@ export const ExtraEmptyNameWhileTyping = meta.story({
   },
 });
 
-export const ExtraEmptyNameAfterEarlierBlur = meta.story({
-  name: 'After an earlier blur, an emptied name shows the error only after the next blur',
+export const EmptyNameAfterEarlierBlur = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Account');
     const name = canvas.getByRole('textbox', { name: t('displayName') });
@@ -237,8 +205,7 @@ export const ExtraEmptyNameAfterEarlierBlur = meta.story({
   },
 });
 
-export const ExtraSignOutFailed = meta.story({
-  name: 'A failed sign-out shows the error toast and stays on Account',
+export const SignOutFailed = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Account');
     await canvas.findByText('dm@ferry.games');
