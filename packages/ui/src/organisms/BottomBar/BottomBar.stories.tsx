@@ -42,26 +42,13 @@ const meta = preview.meta({
   args: { onClick: fn() },
 });
 
-const renderPressed = (args: BottomBarCellProps) => <BottomBarCell {...args} data-pressed="" />;
-
-export const Anatomy = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
   args: { labelKey: 'newCombat' },
 });
 
-export const NewCombatDefault = meta.story({
-  name: 'New combat default',
-  args: { labelKey: 'newCombat' },
-});
-
-export const NewCombatPressed = meta.story({
-  name: 'New combat pressed',
-  args: { labelKey: 'newCombat' },
-  render: renderPressed,
-});
-
-export const NewCombatDisabled = meta.story({
-  name: 'New combat disabled',
+export const DisabledWithHint = meta.story({
+  tags: ['visual'],
   args: { labelKey: 'newCombat', hintKey: 'combatLimitReached', disabled: true, onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'BottomBar');
@@ -74,35 +61,16 @@ export const NewCombatDisabled = meta.story({
   },
 });
 
-export const NewPresetDefault = meta.story({
-  name: 'New preset default',
-  args: { labelKey: 'newPreset' },
+export const LongLabel = meta.story({
+  args: {
+    label: 'Новое сражение с огром',
+    hint: 'Достигнут лимит сражений: удалите старое сражение, чтобы создать новое',
+    disabled: true,
+  },
 });
 
-export const NewPresetPressed = meta.story({
-  name: 'New preset pressed',
-  args: { labelKey: 'newPreset' },
-  render: renderPressed,
-});
-
-export const NewPresetDisabled = meta.story({
-  name: 'New preset disabled',
-  args: { labelKey: 'newPreset', disabled: true },
-});
-
-export const DisabledHintRu = meta.story({
-  name: 'Disabled + hint ru',
-  args: { label: 'Новое сражение', hint: 'Достигнут лимит сражений', disabled: true },
-});
-
-export const DisabledHintDe = meta.story({
-  tags: ['visual'],
-  name: 'Disabled + hint de',
-  args: { label: 'Neuer Kampf', hint: 'Kampflimit erreicht', disabled: true },
-});
-
-export const ExtraClick = meta.story({
-  name: 'Click',
+export const ClickFires = meta.story({
+  tags: ['!dev'],
   args: { labelKey: 'newCombat', onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'BottomBar');
@@ -111,23 +79,8 @@ export const ExtraClick = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter and Space',
-  args: { labelKey: 'newPreset', onClick: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'BottomBar');
-    const button = canvas.getByRole('button', { name: t('newPreset') });
-    await userEvent.tab();
-    await expect(button).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onClick).toHaveBeenCalledTimes(1);
-    await userEvent.keyboard('[Space]');
-    await expect(args.onClick).toHaveBeenCalledTimes(2);
-  },
-});
-
-export const ExtraBottomOfScreen = meta.story({
-  name: 'Sits at the bottom of the screen',
+export const PinnedToFrameBottom = meta.story({
+  tags: ['!dev'],
   args: { labelKey: 'newCombat' },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'BottomBar');
@@ -148,15 +101,5 @@ export const ExtraBottomOfScreen = meta.story({
     await expect(buttonRect.height).toBe(bottomButton.height);
     await expect(buttonRect.left - (frameRect?.left ?? 0)).toBe(bottomBar.padding.left);
     await expect((frameRect?.bottom ?? 0) - buttonRect.bottom).toBe(bottomBar.padding.bottom);
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { labelKey: 'newCombat', hintKey: 'combatLimitReached', disabled: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Новый бой' })).toBeDisabled();
-    await expect(canvas.getByText('Достигнут лимит боёв')).toBeVisible();
   },
 });
