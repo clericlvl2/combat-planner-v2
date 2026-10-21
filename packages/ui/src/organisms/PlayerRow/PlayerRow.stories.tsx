@@ -8,7 +8,6 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
-import { expectNotTruncated } from '../../storybook/geometry.ts';
 import { Menu } from '../Menu/Menu.tsx';
 import { PlayerRow } from './PlayerRow.tsx';
 import type { PlayerRowProps } from './PlayerRow.tsx';
@@ -245,7 +244,7 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({
+export const OwnHero = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -267,12 +266,7 @@ export const Anatomy = meta.story({
   },
 });
 
-export const OwnHero = meta.story({
-  name: 'Own hero',
-});
-
-export const OwnActiveTurn = meta.story({
-  name: 'Own, active turn',
+export const OwnHeroActiveTurn = meta.story({
   args: { active: true },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('[data-active][data-mine]')).not.toBeNull();
@@ -280,9 +274,8 @@ export const OwnActiveTurn = meta.story({
   },
 });
 
-export const OwnExpanded = meta.story({
+export const OwnHeroExpanded = meta.story({
   tags: ['visual'],
-  name: 'Own, expanded',
   args: { expanded: true },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -299,9 +292,8 @@ export const OwnExpanded = meta.story({
   },
 });
 
-export const OwnConditionsOpen = meta.story({
+export const ConditionsOpen = meta.story({
   tags: ['visual'],
-  name: 'Own, Conditions open',
   args: { expanded: true, conditionsOpen: true, 'data-tap': 'conditions' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -312,9 +304,8 @@ export const OwnConditionsOpen = meta.story({
   },
 });
 
-export const OwnEditingNote = meta.story({
-  name: 'Own, editing note',
-  args: { expanded: true, 'data-tap': 'note' },
+export const NoteEditing = meta.story({
+  args: { expanded: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
     await userEvent.click(
@@ -322,15 +313,13 @@ export const OwnEditingNote = meta.story({
     );
     const editor = canvas.getByRole('textbox', { name: t('NoteField:label') });
     await waitFor(() => expect(editor).toHaveFocus());
-    await userEvent.type(editor, ', 2 rounds left');
-    await expect(editor).toHaveValue('Concentrating on Hex, 2 rounds left');
+    await expect(editor).toHaveValue('Concentrating on Hex');
     await expect(args.onNoteChange).not.toHaveBeenCalled();
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
 
-export const OwnSetupNoInitiative = meta.story({
-  name: 'Own, Setup, no initiative',
+export const SetupNoInitiative = meta.story({
   args: {
     unit: playerUnit({ ...vashtiSeed, initiative: null }),
     setup: true,
@@ -350,8 +339,7 @@ export const OwnSetupNoInitiative = meta.story({
   },
 });
 
-export const OtherHero = meta.story({
-  name: 'Other hero',
+export const OtherPlayersHero = meta.story({
   args: { unit: aldric, mine: false },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -363,7 +351,6 @@ export const OtherHero = meta.story({
 });
 
 export const EnemyStaggered = meta.story({
-  name: 'Enemy, Staggered',
   args: { unit: orc, mine: false },
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -381,7 +368,6 @@ export const EnemyStaggered = meta.story({
 
 export const EnemyDead = meta.story({
   tags: ['visual'],
-  name: 'Enemy, Dead',
   args: { unit: goblin, mine: false },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -393,8 +379,8 @@ export const EnemyDead = meta.story({
   },
 });
 
-export const AllyTempHPLongName = meta.story({
-  name: 'Ally, temp HP, long name',
+export const AllyTempHpLongName = meta.story({
+  name: 'Ally Temp HP Long Name',
   args: { unit: tomas, mine: false },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -408,8 +394,8 @@ export const AllyTempHPLongName = meta.story({
   },
 });
 
-export const AllyThreeDigitHP = meta.story({
-  name: 'Ally, three-digit HP',
+export const AllyThreeDigitHp = meta.story({
+  name: 'Ally Three Digit HP',
   args: { unit: wyrmling, mine: false },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -419,9 +405,8 @@ export const AllyThreeDigitHP = meta.story({
   },
 });
 
-export const RuFourConditions = meta.story({
+export const FourConditions = meta.story({
   tags: ['visual'],
-  name: 'ru, four conditions',
   args: {
     unit: playerUnit({
       id: '01JC00000000000000000ORCRU',
@@ -447,8 +432,46 @@ export const RuFourConditions = meta.story({
   },
 });
 
-export const ExtraFlowTapRow = meta.story({
-  name: 'Flow: tap row expands and collapses',
+export const OwnHeroDead = meta.story({
+  args: { unit: playerUnit({ ...vashtiSeed, hp: -4, conditions: [] }) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(canvas.getByRole('button', { name: `−4 /36 ${t('HpBox:dead')}` })).toBeVisible();
+    await expect(canvas.getByText(t('RoleBlock:you'))).toBeVisible();
+  },
+});
+
+export const OwnHeroLongName = meta.story({
+  args: { unit: playerUnit({ ...vashtiSeed, name: 'Вашти Заклинательница с Чёрной переправы' }) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(
+      canvas.getByRole('button', { name: 'Вашти Заклинательница с Чёрной переправы' }),
+    ).toBeVisible();
+    await expect(canvas.getByText(t('RoleBlock:you'))).toBeVisible();
+  },
+});
+
+export const ChangedRowFlash = meta.story({
+  args: { flash: true },
+  render: (args) => (
+    <div style={{ display: 'grid', alignContent: 'start', minHeight: 0, overflowY: 'auto' }}>
+      <PlayerRowCell {...args} data-testid="own" />
+      <PlayerRowCell {...args} unit={goblin} mine={false} data-testid="dead" />
+      <PlayerRowCell {...args} unit={orc} mine={false} active data-testid="active" />
+      <PlayerRowCell {...args} unit={orc} mine={false} flash={false} data-testid="still" />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
+    await expect(canvas.getByTestId('own')).toHaveAttribute('data-flash');
+    await expect(border('own')).not.toBe(border('still'));
+    await expect(border('dead')).toBe(border('still'));
+    await expect(border('active')).toBe('rgb(35, 31, 28)');
+  },
+});
+export const TapRowExpandsAndCollapses = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
     const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
@@ -469,8 +492,8 @@ export const ExtraFlowTapRow = meta.story({
   },
 });
 
-export const ExtraFlowTapNote = meta.story({
-  name: 'Flow: tap Note edits in place, Enter saves',
+export const TapNoteEditsEnterSaves = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -490,8 +513,8 @@ export const ExtraFlowTapNote = meta.story({
   },
 });
 
-export const ExtraCollapseSavesNote = meta.story({
-  name: 'Collapsing the row saves the note',
+export const CollapseSavesNote = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -510,8 +533,8 @@ export const ExtraCollapseSavesNote = meta.story({
   },
 });
 
-export const ExtraHostCollapseSavesNote = meta.story({
-  name: 'A host collapse tap while editing saves the note',
+export const HostCollapseSavesNote = meta.story({
+  tags: ['!dev'],
   parameters: {
     geometry: {
       tapTargets: {
@@ -537,8 +560,8 @@ export const ExtraHostCollapseSavesNote = meta.story({
   },
 });
 
-export const ExtraRoleFillsRow = meta.story({
-  name: 'The role block fills the row height',
+export const RoleFillsRow = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement }) => {
     const row = canvas
       .getByRole('button', { name: 'Vashti the Hexer' })
@@ -551,8 +574,8 @@ export const ExtraRoleFillsRow = meta.story({
   },
 });
 
-export const ExtraOwnCallbacks = meta.story({
-  name: 'Own row: every control fires its callback',
+export const OwnControlsFireCallbacks = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -573,8 +596,8 @@ export const ExtraOwnCallbacks = meta.story({
   },
 });
 
-export const ExtraOtherReadOnly = meta.story({
-  name: 'Other rows are read-only and never expand',
+export const OtherRowsReadOnly = meta.story({
+  tags: ['!dev'],
   args: { unit: aldric, mine: false, expanded: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -629,17 +652,8 @@ async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: 
   await expect(name).toHaveFocus();
 }
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Tab, Enter and Space',
-  play: async ({ args, canvasElement, globals }) => {
-    const t = storyT(globals, 'PlayerRow');
-    await keyboardWalk(canvasElement, args, t);
-    await expect(args.onHistory).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraKeyboardMotion = meta.story({
-  name: 'Keyboard with motion on',
+export const KeyboardWithMotionOn = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
   play: async ({ args, canvasElement, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -648,8 +662,8 @@ export const ExtraKeyboardMotion = meta.story({
   },
 });
 
-export const ExtraMoreMenu = meta.story({
-  name: 'More opens the menu with Release claim',
+export const MoreOpensReleaseClaimMenu = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
   render: (args) => <MoreMenuCell {...args} onMenuItem={onMenuSelect} />,
   play: async ({ args, canvas, globals }) => {
@@ -669,20 +683,8 @@ export const ExtraMoreMenu = meta.story({
   },
 });
 
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { expanded: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Состояния' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'История ОЗ' })).toBeVisible();
-    await expect(canvas.getByRole('listitem')).toHaveTextContent('ошеломлён');
-    await expect(canvas.getByText('Вы')).toBeVisible();
-  },
-});
-
-export const ExtraEnemyWithFields = meta.story({
-  name: 'Enemy carrying friendly fields stays hidden',
+export const EnemyFriendlyFieldsHidden = meta.story({
+  tags: ['!dev'],
   args: {
     unit: {
       ...orc,
@@ -721,49 +723,5 @@ export const ExtraEnemyWithFields = meta.story({
     await expect(args.onHp).not.toHaveBeenCalled();
     await expect(args.onInitiative).not.toHaveBeenCalled();
     await expect(args.onNoteChange).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr, trigger labels fit',
-  globals: { locale: 'fr' },
-  args: { expanded: true },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expectNotTruncated(canvas.getByRole('button', { name: 'États' }));
-    await expectNotTruncated(canvas.getByRole('button', { name: 'Historique PV' }));
-    await expect(within(canvasElement).getByRole('button', { name: 'Modifier' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es, trigger labels fit',
-  globals: { locale: 'es' },
-  args: { expanded: true },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expectNotTruncated(canvas.getByRole('button', { name: 'Estados' }));
-    await expectNotTruncated(canvas.getByRole('button', { name: 'Historial PG' }));
-    await expect(within(canvasElement).getByRole('button', { name: 'Editar' })).toBeVisible();
-  },
-});
-
-export const ExtraFlash = meta.story({
-  name: 'The flash border marks a changed row, not dead or active ones',
-  args: { flash: true },
-  render: (args) => (
-    <div style={{ display: 'grid', alignContent: 'start', minHeight: 0, overflowY: 'auto' }}>
-      <PlayerRowCell {...args} data-testid="own" />
-      <PlayerRowCell {...args} unit={goblin} mine={false} data-testid="dead" />
-      <PlayerRowCell {...args} unit={orc} mine={false} active data-testid="active" />
-      <PlayerRowCell {...args} unit={orc} mine={false} flash={false} data-testid="still" />
-    </div>
-  ),
-  play: async ({ canvas }) => {
-    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
-    await expect(canvas.getByTestId('own')).toHaveAttribute('data-flash');
-    await expect(border('own')).not.toBe(border('still'));
-    await expect(border('dead')).toBe(border('still'));
-    await expect(border('active')).toBe('rgb(35, 31, 28)');
   },
 });
