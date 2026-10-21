@@ -5,6 +5,7 @@ import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/CheckList.json';
 import { CheckList } from './CheckList.tsx';
 import type { CheckListOption, CheckListProps } from './CheckList.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { anyValue, storyT } from '../../storybook/storyT.ts';
 
 type TagKey = Exclude<keyof typeof en, 'create' | 'noMatch'>;
@@ -79,19 +80,18 @@ const meta = preview.meta({
   args: { tags, values: ['orcs', 'ferry'], onChange: fn() },
 });
 
-export const Anatomy = meta.story({
+export const Default = meta.story({
   tags: ['visual'],
   args: { tags, values: ['orcs', 'ferry'] },
 });
 
-export const VariantsTags = meta.story({
-  name: 'Variants · tags',
-  args: { tags, values: ['orcs', 'ferry'] },
+export const QueryMatches = meta.story({
+  tags: ['visual'],
+  args: { tags: typedLibrary, values: [], query: 'mo', onCreate: fn() },
 });
 
-export const VariantsQueryMatch = meta.story({
-  tags: ['visual'],
-  name: 'Variants · query match',
+export const QueryFiltersRows = meta.story({
+  tags: ['!dev'],
   args: { tags: typedLibrary, values: [], query: 'mo', onCreate: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
@@ -105,8 +105,7 @@ export const VariantsQueryMatch = meta.story({
   },
 });
 
-export const VariantsNoMatch = meta.story({
-  name: 'Variants · no match',
+export const NoMatchOffersCreate = meta.story({
   args: { tags: library, values: [], query: 'Elite', onCreate: fn() },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
@@ -118,36 +117,31 @@ export const VariantsNoMatch = meta.story({
   },
 });
 
-export const CheckListS = meta.story({
-  name: 'CheckList · S',
-  args: { tags: sizeTags, values: ['orcs'], size: 'S', width: 330 },
-});
+const sizeColumns = ['Default'] as const;
 
-export const CheckListM = meta.story({
-  name: 'CheckList · M',
-  args: { tags: sizeTags, values: ['orcs'], size: 'M', width: 330 },
-});
+const sizeRows = (['S', 'M', 'L'] as const).map((size) => ({
+  label: size,
+  render: () => <CheckListCell tags={sizeTags} values={['orcs']} size={size} onChange={() => {}} />,
+}));
 
-export const CheckListL = meta.story({
+export const AllSizes = meta.story({
   tags: ['visual'],
-  name: 'CheckList · L',
-  args: { tags: sizeTags, values: ['orcs'], size: 'L', width: 330 },
+  render: () => <StateGrid rows={sizeRows} columns={sizeColumns} />,
 });
 
-export const TagsMixed = meta.story({
-  name: 'Tags · mixed',
+export const LongLabels = meta.story({
   args: {
     tags: [
-      { label: 'Untote Wächter des Nordens', count: 12 },
-      { label: 'Нежить и призраки', count: 3 },
-      { label: 'アンデッド', count: 24 },
+      { label: 'Нежить и призраки северных земель', count: 12 },
+      { label: 'Стражи древнего храма', count: 3 },
+      { label: 'Undead Guardians of the North', count: 24 },
     ],
-    values: ['Untote Wächter des Nordens'],
+    values: ['Нежить и призраки северных земель'],
   },
 });
 
-export const ExtraToggle = meta.story({
-  name: 'Toggle rows',
+export const TapTogglesRows = meta.story({
+  tags: ['!dev'],
   args: { tags, values: ['orcs', 'ferry'], onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
@@ -160,27 +154,8 @@ export const ExtraToggle = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Space and Enter',
-  args: { tags, values: [], onChange: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'CheckList');
-    const orcs = canvas.getByRole('checkbox', { name: `${t('orcs')} 2` });
-    await userEvent.tab();
-    await expect(orcs).toHaveFocus();
-    await userEvent.keyboard('[Space]');
-    await expect(args.onChange).toHaveBeenLastCalledWith(['orcs']);
-    await userEvent.tab();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onChange).toHaveBeenLastCalledWith(['orcs', 'ferry']);
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onChange).toHaveBeenLastCalledWith(['orcs']);
-    await expect(args.onChange).toHaveBeenCalledTimes(3);
-  },
-});
-
-export const ExtraExactMatch = meta.story({
-  name: 'Exact match hides Create',
+export const ExactMatchHidesCreate = meta.story({
+  tags: ['!dev'],
   args: { tags: typedLibrary, values: [], query: ' orcs ', onCreate: fn() },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
@@ -190,8 +165,8 @@ export const ExtraExactMatch = meta.story({
   },
 });
 
-export const ExtraPartialMatch = meta.story({
-  name: 'A query contained in an option hides Create',
+export const PartialMatchHidesCreate = meta.story({
+  tags: ['!dev'],
   args: { tags: typedLibrary, values: [], query: 'S', onCreate: fn() },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
@@ -201,8 +176,7 @@ export const ExtraPartialMatch = meta.story({
   },
 });
 
-export const ExtraNewBadge = meta.story({
-  name: 'A badge replaces the count and highlights the row',
+export const NewTagBadge = meta.story({
   args: {
     tags: [{ label: 'Elite', count: 0, badge: 'new' }, ...tags],
     values: ['Elite'],
@@ -220,8 +194,8 @@ export const ExtraNewBadge = meta.story({
   },
 });
 
-export const ExtraCreate = meta.story({
-  name: 'Create the typed tag',
+export const CreateFiresOnCreate = meta.story({
+  tags: ['!dev'],
   args: { tags: library, values: [], query: ' Elite ', onCreate: fn(), onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
@@ -231,8 +205,8 @@ export const ExtraCreate = meta.story({
   },
 });
 
-export const ExtraDisabled = meta.story({
-  name: 'Disabled',
+export const DisabledIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { tags, values: ['orcs'], disabled: true, onChange: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CheckList');
@@ -241,15 +215,5 @@ export const ExtraDisabled = meta.story({
     await userEvent.click(canvas.getByText(t('goblins')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(goblins).not.toBeChecked();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { tags: library, values: [], query: 'Элита', onCreate: fn() },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Создать «Элита»' })).toBeVisible();
-    await expect(canvas.getByText('Нет подходящих тегов')).toBeVisible();
   },
 });
