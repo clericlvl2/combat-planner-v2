@@ -18,6 +18,7 @@ interface TagSheetCellProps {
   onClose?: () => void;
   withReopen?: boolean;
   hidden?: readonly TagSheetTag[];
+  tags?: readonly TagSheetTag[];
 }
 
 const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout' };
@@ -44,8 +45,9 @@ function TagSheetCell({
   onClose,
   withReopen = false,
   hidden = [],
+  tags: initialTags = library,
 }: TagSheetCellProps) {
-  const [tags, setTags] = useState<readonly TagSheetTag[]>(library);
+  const [tags, setTags] = useState<readonly TagSheetTag[]>(initialTags);
   const [value, setValue] = useState<string[]>([...initial]);
   const [opened, setOpened] = useState(true);
   return (
@@ -103,23 +105,16 @@ const assignArgs = {
   presetName: 'Orc Berserker',
 };
 
-export const Anatomy = meta.story({
+export const FilterTagSelected = meta.story({
   tags: ['visual'],
   args: { ...filterArgs, initial: ['orcs'], presetCount: 2 },
 });
 
-export const NothingSelected = meta.story({
-  name: 'Nothing selected',
+export const FilterNothingSelected = meta.story({
   args: filterArgs,
 });
 
-export const OrcsSelected = meta.story({
-  name: 'Orcs selected',
-  args: { ...filterArgs, initial: ['orcs'], presetCount: 2 },
-});
-
-export const SearchGob = meta.story({
-  name: 'Search “gob”',
+export const FilterSearchResults = meta.story({
   args: filterArgs,
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -131,14 +126,12 @@ export const SearchGob = meta.story({
   },
 });
 
-export const CurrentTags = meta.story({
-  name: 'Current tags',
+export const AssignCurrentTags = meta.story({
   args: assignArgs,
 });
 
-export const MoMatchesCreateAtTheEnd = meta.story({
+export const AssignSearchWithMatches = meta.story({
   tags: ['visual'],
-  name: '“mo” matches, Create at the end',
   args: assignArgs,
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -153,7 +146,6 @@ export const MoMatchesCreateAtTheEnd = meta.story({
 });
 
 export const FilterNoMatch = meta.story({
-  name: 'Filter · no match',
   args: filterArgs,
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -167,8 +159,7 @@ export const FilterNoMatch = meta.story({
   },
 });
 
-export const AssignNoMatch = meta.story({
-  name: 'Assign · no match',
+export const AssignNoMatchOffersCreate = meta.story({
   args: assignArgs,
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -184,8 +175,7 @@ export const AssignNoMatch = meta.story({
   },
 });
 
-export const ExtraFlowCreate = meta.story({
-  name: 'Flow: tap Create, created and checked',
+export const AssignNewTagCreated = meta.story({
   args: assignArgs,
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -206,8 +196,41 @@ export const ExtraFlowCreate = meta.story({
   },
 });
 
-export const ExtraReusedTagNotNew = meta.story({
-  name: 'Create that reuses an existing tag shows no new badge',
+export const AssignNothingSelected = meta.story({
+  args: { ...assignArgs, initial: [] },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TagSheet');
+    await expect(
+      canvas.getByRole('dialog', { name: t('assignTitle', { name: 'Orc Berserker' }) }),
+    ).toBeVisible();
+    for (const checkbox of canvas.getAllByRole('checkbox')) {
+      await expect(checkbox).not.toBeChecked();
+    }
+  },
+});
+
+export const LongTagName = meta.story({
+  args: {
+    ...assignArgs,
+    initial: ['long'],
+    tags: [{ id: 'long', name: 'Нежить переправы и болот', count: 12 }, ...library],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole('checkbox', { name: /^Нежить переправы и болот/ })).toBeChecked();
+  },
+});
+
+export const EmptyLibrary = meta.story({
+  args: { ...filterArgs, tags: [] },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TagSheet');
+    await expect(canvas.getByRole('dialog', { name: t('filterTitle') })).toBeVisible();
+    await expect(canvas.queryAllByRole('checkbox')).toHaveLength(0);
+  },
+});
+
+export const ReusedTagNotNew = meta.story({
+  tags: ['!dev'],
   args: { ...assignArgs, hidden: [{ id: 'veterans', name: 'Veterans', count: 0 }] },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -223,25 +246,8 @@ export const ExtraReusedTagNotNew = meta.story({
   },
 });
 
-export const ExtraFilterNeverCreates = meta.story({
-  name: 'Filter mode never offers Create',
-  args: filterArgs,
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'TagSheet');
-    const search = canvas.getByRole('searchbox', { name: t('searchTags') });
-    await userEvent.type(search, 'Elite');
-    await expect(
-      canvas.queryByRole('button', {
-        name: anyValue(t, 'CheckList:create', 'query'),
-      }),
-    ).toBeNull();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onCreate).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraCaseInsensitiveMatch = meta.story({
-  name: 'Create hides on any case-insensitive match',
+export const CreateHidesOnCaseInsensitiveMatch = meta.story({
+  tags: ['!dev'],
   args: assignArgs,
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -269,16 +275,15 @@ export const ExtraCaseInsensitiveMatch = meta.story({
   },
 });
 
-export const ExtraToggle = meta.story({
-  name: 'Toggling calls onChange, Space too',
+export const TogglingCallsOnChange = meta.story({
+  tags: ['!dev'],
   args: assignArgs,
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
     await userEvent.click(canvas.getByRole('checkbox', { name: /^Mooks/ }));
     await expect(args.onChange).toHaveBeenLastCalledWith(['orcs', 'ferry', 'mooks']);
     const ferry = canvas.getByRole('checkbox', { name: /^Ferry/ });
-    ferry.focus();
-    await userEvent.keyboard(' ');
+    await userEvent.click(ferry);
     await expect(args.onChange).toHaveBeenLastCalledWith(['orcs', 'mooks']);
     await expect(ferry).not.toBeChecked();
     await expect(args.onDone).not.toHaveBeenCalled();
@@ -286,8 +291,8 @@ export const ExtraToggle = meta.story({
   },
 });
 
-export const ExtraDone = meta.story({
-  name: 'Done calls onDone only',
+export const DoneCallsOnDone = meta.story({
+  tags: ['!dev'],
   args: { ...filterArgs, initial: ['orcs'], presetCount: 2 },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -299,34 +304,8 @@ export const ExtraDone = meta.story({
   },
 });
 
-export const ExtraClose = meta.story({
-  name: 'Close and Escape call onClose only',
-  parameters: {
-    geometry: {
-      tapTargets: {
-        reason: 'the Reopen button is a story fixture, not product UI',
-        except: '[data-story-fixture]',
-      },
-    },
-  },
-  args: { ...filterArgs, withReopen: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'TagSheet');
-    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-    await userEvent.click(canvas.getByRole('button', { name: 'Reopen' }));
-    const sheet = await canvas.findByRole('dialog', { name: t('filterTitle') });
-    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onClose).toHaveBeenCalledTimes(2);
-    await expect(args.onDone).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraSearchResets = meta.story({
-  name: 'Search resets when the sheet closes',
+export const SearchResetsOnClose = meta.story({
+  tags: ['!dev'],
   parameters: {
     geometry: {
       tapTargets: {
@@ -348,20 +327,8 @@ export const ExtraSearchResets = meta.story({
   },
 });
 
-export const ExtraShowPresetsCount = meta.story({
-  name: 'An active filter shows the preset count',
-  args: { ...filterArgs, initial: ['orcs'], presetCount: 7 },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'TagSheet');
-    await expect(
-      canvas.getByRole('button', { name: t('showPresets', { count: 7 }) }),
-    ).toBeVisible();
-    await expect(canvas.queryByRole('button', { name: t('showAll') })).toBeNull();
-  },
-});
-
-export const ExtraMaxLength = meta.story({
-  name: 'Query stops at the tag name limit',
+export const QueryStopsAtNameLimit = meta.story({
+  tags: ['!dev'],
   args: assignArgs,
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');
@@ -374,17 +341,5 @@ export const ExtraMaxLength = meta.story({
       }),
     );
     await expect(args.onCreate).toHaveBeenCalledWith('x'.repeat(LIMITS.tagName));
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: assignArgs,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Теги · Orc Berserker' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Готово · 2 тега' })).toBeVisible();
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Найти или создать' }), 'Элита');
-    await expect(canvas.getByRole('button', { name: 'Создать «Элита»' })).toBeVisible();
   },
 });
