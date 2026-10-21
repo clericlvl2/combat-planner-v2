@@ -37,6 +37,7 @@ for (const [modulePath, storyModule] of Object.entries(storyModules)) {
           await story.run({
             canvasElement,
             globals: {
+              locale: 'ru',
               ...story.composed.globals,
               frame: 'phone',
               viewport: { value: 'phone', isRotated: false },
