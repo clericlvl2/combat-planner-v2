@@ -61,30 +61,23 @@ function HoldFirstCall({ children }: { children: ReactNode }) {
   return children;
 }
 
-const toggleOf = (t: TFunction, name: string) => t('PresetCard:toggle', { name });
-
-const namesOf = (canvas: Canvas, t: TFunction): string[] => {
-  const [before = '', after = ''] = toggleOf(t, '\n').split('\n');
-  return canvas
-    .queryAllByRole('button', { name: anyValue(t, 'PresetCard:toggle', 'name') })
-    .map((button: HTMLElement) => {
-      const label = button.getAttribute('aria-label') ?? '';
-      return label.slice(before.length, label.length - after.length);
-    });
-};
+const namesOf = (canvas: Canvas): string[] =>
+  canvas
+    .queryAllByRole('article')
+    .map((card: HTMLElement) => card.querySelector('button[aria-expanded]')?.textContent ?? '');
 
 const showPresets = (t: TFunction) => (label: string) =>
   anyValue(t, 'TagSheet:showPresets', 'count').test(label);
 
-const ready = async (canvas: Canvas, t: TFunction) => {
-  await canvas.findByRole('button', { name: toggleOf(t, berserker.name) });
+const ready = async (canvas: Canvas) => {
+  await canvas.findByRole('button', { name: berserker.name });
 };
 
 const callsOf = (loaded: Record<string, unknown>, method: string) =>
   fakeApiOf(loaded).calls.filter((call) => call.method === method);
 
-const expand = async (canvas: Canvas, name: string, t: TFunction) => {
-  await userEvent.click(await canvas.findByRole('button', { name: toggleOf(t, name) }));
+const expand = async (canvas: Canvas, name: string) => {
+  await userEvent.click(await canvas.findByRole('button', { name }));
 };
 
 const openSheet = async (canvas: Canvas, opener: HTMLElement, name: string | RegExp) => {
@@ -96,7 +89,7 @@ const openSheet = async (canvas: Canvas, opener: HTMLElement, name: string | Reg
 };
 
 const openFilter = async (canvas: Canvas, t: TFunction) => {
-  await ready(canvas, t);
+  await ready(canvas);
   return openSheet(
     canvas,
     canvas.getByRole('button', {
@@ -118,7 +111,7 @@ const applyFilter = async (canvas: Canvas, tags: readonly string[], t: TFunction
 };
 
 const openCreate = async (canvas: Canvas, t: TFunction) => {
-  await ready(canvas, t);
+  await ready(canvas);
   return openSheet(
     canvas,
     canvas.getByRole('button', { name: t('BottomBar:newPreset') }),
@@ -162,7 +155,7 @@ const fillCreate = async (canvas: Canvas, t: TFunction) => {
 };
 
 const openEdit = async (canvas: Canvas, t: TFunction) => {
-  await expand(canvas, berserker.name, t);
+  await expand(canvas, berserker.name);
   return openSheet(
     canvas,
     canvas.getByRole('button', { name: t('CardActions:edit') }),
@@ -180,7 +173,7 @@ const openTagSheet = async (canvas: Canvas, t: TFunction) => {
 };
 
 const openMenu = async (canvas: Canvas, t: TFunction) => {
-  await expand(canvas, berserker.name, t);
+  await expand(canvas, berserker.name);
   await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
   await expect(canvas.getByRole('menuitem', { name: t('Menu:duplicate') })).toBeVisible();
 };
@@ -207,15 +200,15 @@ export const Default = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
-    await ready(canvas, t);
-    await expect(namesOf(canvas, t)).toEqual(libraryPresets.map((preset) => preset.name));
+    await ready(canvas);
+    await expect(namesOf(canvas)).toEqual(libraryPresets.map((preset) => preset.name));
     await expect(canvas.getByRole('button', { name: t('sort') })).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('tags') })).toBeVisible();
     await expect(canvas.getByText('Orcs · Ferry')).toBeVisible();
     await expect(callsOf(loaded, 'presets.list')).not.toHaveLength(0);
-    const chevron = canvas.getByRole('button', { name: toggleOf(t, shaman.name) });
-    chevron.focus();
-    await expect(chevron).toHaveFocus();
+    const name = canvas.getByRole('button', { name: shaman.name });
+    name.focus();
+    await expect(name).toHaveFocus();
   },
 });
 
@@ -223,8 +216,8 @@ export const CardExpanded = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
-    await expand(canvas, shaman.name, t);
-    await expect(canvas.getByRole('button', { name: toggleOf(t, shaman.name) })).toHaveAttribute(
+    await expand(canvas, shaman.name);
+    await expect(canvas.getByRole('button', { name: shaman.name })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
@@ -256,7 +249,7 @@ export const FilteredByTag = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await applyFilter(canvas, ['Orcs'], t);
-    await expect(namesOf(canvas, t)).toEqual([berserker.name, shaman.name]);
+    await expect(namesOf(canvas)).toEqual([berserker.name, shaman.name]);
     await expect(
       canvas.getByRole('button', {
         name: (label: string) => label.startsWith(t('PageHeader:tags')),
@@ -274,9 +267,9 @@ export const SearchWithTagFilter = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await applyFilter(canvas, ['Goblins'], t);
-    await expect(namesOf(canvas, t)).toEqual(['Goblin Archer', '影の射手ゴブリン']);
+    await expect(namesOf(canvas)).toEqual(['Goblin Archer', '影の射手ゴブリン']);
     await userEvent.type(canvas.getByRole('searchbox', { name: t('search') }), 'archer');
-    await expect(namesOf(canvas, t)).toEqual(['Goblin Archer']);
+    await expect(namesOf(canvas)).toEqual(['Goblin Archer']);
     await expect(
       canvas.getByRole('button', { name: t('PageHeader:removeFilter', { name: 'Goblins' }) }),
     ).toBeVisible();
@@ -287,13 +280,13 @@ export const NothingFound = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
-    await ready(canvas, t);
+    await ready(canvas);
     await userEvent.type(canvas.getByRole('searchbox', { name: t('search') }), 'dragon');
     await expect(canvas.getByRole('heading', { name: t('UnitForm:nothingFound') })).toBeVisible();
     await expect(
       canvas.getByText(collapsedSpace(t('noResultsBody', { query: 'dragon' }))),
     ).toBeVisible();
-    await expect(namesOf(canvas, t)).toHaveLength(0);
+    await expect(namesOf(canvas)).toHaveLength(0);
   },
 });
 
@@ -319,7 +312,7 @@ export const LibraryEmpty = meta.story({
 export const SortSheetOpen = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
-    await ready(canvas, t);
+    await ready(canvas);
     await openSheet(
       canvas,
       canvas.getByRole('button', { name: t('sort') }),
@@ -334,13 +327,13 @@ export const SortedAToZ = meta.story({
   name: 'Sorted A To Z',
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
-    await ready(canvas, t);
+    await ready(canvas);
     await userEvent.click(canvas.getByRole('button', { name: t('sort') }));
     await userEvent.click(await canvas.findByRole('radio', { name: t('RadioList:alphabetical') }));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     await expect(canvas.getByRole('button', { name: t('RadioList:alphabetical') })).toBeVisible();
     await expect(localStorage.getItem(PRESET_SORT_KEY)).toBe('alphabetical');
-    await expect(namesOf(canvas, t)).toEqual(
+    await expect(namesOf(canvas)).toEqual(
       libraryPresets
         .map((preset) => preset.name)
         .toSorted((a, b) => a.localeCompare(b, storyLocale(globals))),
@@ -404,7 +397,7 @@ export const PresetCreated = meta.story({
     await expect(await canvas.findByRole('status')).toHaveTextContent(
       t('Toast:presetAdded', { name: 'Orc Warchief' }),
     );
-    await waitFor(() => expect(namesOf(canvas, t)[0]).toBe('Orc Warchief'));
+    await waitFor(() => expect(namesOf(canvas)[0]).toBe('Orc Warchief'));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
@@ -444,7 +437,7 @@ export const CopyBelowOriginal = meta.story({
     await expect(await canvas.findByRole('status')).toHaveTextContent(
       t('Toast:presetDuplicated', { name: 'Orc Berserker 2' }),
     );
-    await waitFor(() => expect(namesOf(canvas, t)[0]).toBe('Orc Berserker 2'));
+    await waitFor(() => expect(namesOf(canvas)[0]).toBe('Orc Berserker 2'));
     const copy = canvas.getAllByRole('article')[0]!;
     await expect(within(copy).getByText('Orcs · Ferry')).toBeVisible();
   },
@@ -477,7 +470,7 @@ export const PresetDeleted = meta.story({
     await expect(await canvas.findByRole('status')).toHaveTextContent(
       t('Toast:deleted', { title: 'Orc Berserker' }),
     );
-    await waitFor(() => expect(namesOf(canvas, t)).not.toContain(berserker.name));
+    await waitFor(() => expect(namesOf(canvas)).not.toContain(berserker.name));
   },
 });
 
@@ -491,8 +484,8 @@ export const PresetSavedFromCombat = meta.story({
   ),
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
-    await expand(canvas, savedFromCombat.name, t);
-    await expect(namesOf(canvas, t)[0]).toBe(savedFromCombat.name);
+    await expand(canvas, savedFromCombat.name);
+    await expect(namesOf(canvas)[0]).toBe(savedFromCombat.name);
     const card = canvas.getAllByRole('article')[0]!;
     await expect(within(card).getByText(t('PresetCard:noTags'))).toBeVisible();
     await expect(within(card).getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
@@ -569,7 +562,7 @@ export const SeveralTags = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
     await applyFilter(canvas, ['Orcs', 'Undead'], t);
-    await expect(namesOf(canvas, t)).toEqual([berserker.name, shaman.name, 'Skeletal Ferryman']);
+    await expect(namesOf(canvas)).toEqual([berserker.name, shaman.name, 'Skeletal Ferryman']);
     await expect(
       canvas.getByRole('button', {
         name: (label: string) => label.startsWith(t('PageHeader:tags')),
@@ -586,9 +579,9 @@ export const RemoveFilter = meta.story({
     await userEvent.click(
       canvas.getByRole('button', { name: t('PageHeader:removeFilter', { name: 'Undead' }) }),
     );
-    await expect(namesOf(canvas, t)).toEqual([berserker.name, shaman.name]);
+    await expect(namesOf(canvas)).toEqual([berserker.name, shaman.name]);
     await userEvent.click(canvas.getByRole('button', { name: t('PageHeader:clear') }));
-    await expect(namesOf(canvas, t)).toHaveLength(libraryPresets.length);
+    await expect(namesOf(canvas)).toHaveLength(libraryPresets.length);
     await expect(
       canvas.queryByRole('button', {
         name: anyValue(t, 'PageHeader:removeFilter', 'name'),
@@ -604,11 +597,11 @@ export const SortRemembered = meta.story({
   },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Library');
-    await ready(canvas, t);
+    await ready(canvas);
     await expect(canvas.getByRole('button', { name: t('SortSheet:byType') })).toBeVisible();
     const collate = (names: string[]) =>
       names.toSorted((a, b) => a.localeCompare(b, storyLocale(globals)));
-    await expect(namesOf(canvas, t)).toEqual([
+    await expect(namesOf(canvas)).toEqual([
       ...collate([
         'Goblin Archer',
         'Orc Berserker',
@@ -628,7 +621,7 @@ export const PresetLimitReached = meta.story({
   parameters: { scenario: fullLibraryScenario },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
-    await canvas.findByRole('button', { name: toggleOf(t, 'Goblin 1') });
+    await canvas.findByRole('button', { name: 'Goblin 1' });
     const create = canvas.getByRole('button', { name: t('BottomBar:newPreset') });
     await expect(create).toBeDisabled();
     await expect(create).toHaveAccessibleDescription(t('limitReached'));
@@ -648,7 +641,7 @@ export const DeleteCancelled = meta.story({
     await userEvent.click(within(dialog).getByRole('button', { name: t('Button:cancel') }));
     await expect(canvas.queryByRole('alertdialog')).toBeNull();
     await expect(callsOf(loaded, 'presets.remove')).toHaveLength(0);
-    await expect(namesOf(canvas, t)).toContain(berserker.name);
+    await expect(namesOf(canvas)).toContain(berserker.name);
   },
 });
 
@@ -677,7 +670,7 @@ export const TryAgainReloads = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await userEvent.click(await canvas.findByRole('button', { name: t('MessageScreen:tryAgain') }));
-    await ready(canvas, t);
+    await ready(canvas);
     await expect(callsOf(loaded, 'presets.list')).toHaveLength(2);
   },
 });
@@ -840,7 +833,7 @@ export const DuplicateAtLimit = meta.story({
   parameters: { scenario: fullLibraryScenario },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'Library');
-    await expand(canvas, 'Goblin 1', t);
+    await expand(canvas, 'Goblin 1');
     await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
     const duplicate = await canvas.findByRole('menuitem', { name: t('Menu:duplicate') });
     await expect(duplicate).toBeDisabled();
@@ -860,9 +853,7 @@ export const Loading = meta.story({
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
     await waitFor(() => expect(callsOf(loaded, 'presets.list')).toHaveLength(1));
     await expect(canvas.getByRole('button', { name: t('BottomBar:newPreset') })).toBeDisabled();
-    await expect(
-      canvas.queryByRole('button', { name: anyValue(t, 'PresetCard:toggle', 'name') }),
-    ).toBeNull();
+    await expect(canvas.queryByRole('article')).toBeNull();
     await expect(canvas.queryByText(t('emptyTitle'))).toBeNull();
   },
 });

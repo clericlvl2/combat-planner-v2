@@ -91,7 +91,7 @@ test('the preset sort changes the order and survives a reload', async ({ page })
 test('a preset is duplicated with its tags and deleted with confirm', async ({ page }) => {
   await fillLibrary(page);
 
-  await page.getByRole('button', { name: t('PresetCard:toggle', { name: 'Wolf' }) }).click();
+  await page.getByRole('button', { name: 'Wolf', exact: true }).click();
   await page
     .locator('article')
     .filter({ hasText: 'Wolf' })
@@ -102,13 +102,13 @@ test('a preset is duplicated with its tags and deleted with confirm', async ({ p
     page.getByRole('status').getByText(t('Toast:presetDuplicated', { name: 'Wolf 2' })),
   ).toBeVisible();
   const copy = page.locator('article').filter({
-    has: page.getByRole('button', { name: t('PresetCard:toggle', { name: 'Wolf 2' }) }),
+    has: page.getByRole('button', { name: 'Wolf 2', exact: true }),
   });
   await expect(copy).toBeVisible();
   await expect(copy).toContainText('beasts');
   await expect(page.locator('article')).toHaveCount(5);
 
-  await page.getByRole('button', { name: t('PresetCard:toggle', { name: 'Wolf 2' }) }).click();
+  await page.getByRole('button', { name: 'Wolf 2', exact: true }).click();
   await copy.getByRole('button', { name: t('CardActions:more') }).click();
   await page.getByRole('menuitem', { name: t('PresetCard:delete') }).click();
   const confirm = page.getByRole('alertdialog', {
@@ -126,9 +126,7 @@ test('a preset is duplicated with its tags and deleted with confirm', async ({ p
     page.getByRole('status').getByText(t('Toast:deleted', { title: 'Wolf 2' })),
   ).toBeVisible();
   await expect(page.locator('article')).toHaveCount(4);
-  await expect(
-    page.getByRole('button', { name: t('PresetCard:toggle', { name: 'Wolf 2' }) }),
-  ).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Wolf 2', exact: true })).toHaveCount(0);
 
   await page.reload();
   await expect(page.locator('article')).toHaveCount(4);

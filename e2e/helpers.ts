@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import type { Browser, BrowserContext, Page } from '@playwright/test';
-import { escapeRegExp, startsWithT, t } from './t.ts';
+import { startsWithT, t } from './t.ts';
 
 export const PASSWORD = 'correct-horse-battery';
 
@@ -175,14 +175,10 @@ export async function createPreset(
   await expect(form).toBeHidden();
 }
 
-const NAME_SLOT = '\u0000';
-
 export async function presetNames(page: Page): Promise<string[]> {
-  const [prefix = '', suffix = ''] = t('PresetCard:toggle', { name: NAME_SLOT }).split(NAME_SLOT);
-  const label = new RegExp(`^${escapeRegExp(prefix)}(.+)${escapeRegExp(suffix)}$`);
-  const labels = await page
+  return page
     .locator('article')
-    .getByRole('button', { name: label })
-    .evaluateAll((buttons) => buttons.map((button) => button.getAttribute('aria-label') ?? ''));
-  return labels.map((text) => label.exec(text)?.[1] ?? '');
+    .evaluateAll((cards) =>
+      cards.map((card) => card.querySelector('button[aria-expanded]')?.textContent ?? ''),
+    );
 }

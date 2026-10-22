@@ -1,8 +1,8 @@
 import type { Preset } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
-import { IconChevronDown, IconChevronUp, IconCopy, IconTrash } from '@tabler/icons-react';
+import { IconCopy, IconTrash } from '@tabler/icons-react';
 import { useId } from 'react';
-import type { ComponentPropsWithoutRef } from 'react';
+import type { ComponentPropsWithoutRef, MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
@@ -34,6 +34,9 @@ const MENU_WIDTH = 240;
 
 const TAG_SEPARATOR = ' · ';
 
+const INTERACTIVE =
+  'button, a, input, textarea, select, [role="button"], [role="dialog"], [role="menu"], [data-part="actions"]';
+
 export function PresetCard({
   preset,
   tags,
@@ -47,6 +50,7 @@ export function PresetCard({
   onDuplicate,
   onDelete,
   className,
+  onClick,
   ...rest
 }: PresetCardProps) {
   const { t } = useTranslation('PresetCard');
@@ -56,39 +60,43 @@ export function PresetCard({
     { id: 'duplicate', icon: IconCopy, label: t('duplicate'), disabled: duplicateDisabled },
     { id: 'delete', icon: IconTrash, label: t('delete'), tone: 'danger', divider: true },
   ];
-  const Chevron = expanded ? IconChevronUp : IconChevronDown;
+
+  const handleClick = (event: MouseEvent<HTMLElement>) => {
+    onClick?.(event);
+    if (event.defaultPrevented) return;
+    if (event.target instanceof Element && event.target.closest(INTERACTIVE)) return;
+    onToggle();
+  };
+
   return (
     <article
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-expanded={expanded || undefined}
+      onClick={handleClick}
     >
-      <div className={classes.head}>
-        <RoleBlock fill unitRole={preset.role} top={{ kind: 'none' }} />
-        <div className={classes.text}>
-          <span className={classes.name}>{preset.name}</span>
-          <span className={classes.tags} data-tag-line data-empty={tags.length === 0 || undefined}>
-            {tags.length > 0 ? tags.join(TAG_SEPARATOR) : t('noTags')}
-          </span>
-        </div>
-        <span className={classes.defenses}>
-          <DefenseLine ac={preset.ac} pd={preset.pd} md={preset.md} />
-          <HpBox viewer="dm" preset maxHp={preset.maxHp} />
-        </span>
+      <RoleBlock className={classes.role} fill unitRole={preset.role} top={{ kind: 'none' }} />
+      <div className={classes.main}>
         <UnstyledButton
           component="button"
           type="button"
-          className={classes.chevron}
-          aria-label={t('toggle', { name: preset.name })}
+          className={classes.name}
           aria-expanded={expanded}
           aria-controls={expanded ? actionsId : undefined}
           onClick={() => onToggle()}
         >
-          <Chevron size={24} stroke={2} aria-hidden="true" />
+          {preset.name}
         </UnstyledButton>
+        <DefenseLine ac={preset.ac} pd={preset.pd} md={preset.md} />
+        <span className={classes.tags} data-tag-line data-empty={tags.length === 0 || undefined}>
+          {tags.length > 0 ? tags.join(TAG_SEPARATOR) : t('noTags')}
+        </span>
+      </div>
+      <div className={classes.hp}>
+        <HpBox viewer="dm" preset maxHp={preset.maxHp} />
       </div>
       {expanded ? (
-        <div id={actionsId} className={classes.actions}>
+        <div id={actionsId} className={classes.actions} data-part="actions">
           <Menu
             opened={menuOpen}
             width={MENU_WIDTH}
