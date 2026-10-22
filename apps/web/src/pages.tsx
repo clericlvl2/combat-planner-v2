@@ -54,6 +54,7 @@ function SwipeDrawer() {
       watchEdgeSwipe(document, {
         onSwipe: () => setOpened(true),
         canStart: () => swipeAllowed(document),
+        edgeLeft: () => document.getElementById('root')?.getBoundingClientRect().left ?? 0,
       }),
     [],
   );

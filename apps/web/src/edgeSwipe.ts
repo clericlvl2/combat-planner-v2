@@ -12,6 +12,7 @@ const SWIPE_POINTERS: ReadonlySet<string> = new Set(['touch', 'pen']);
 export interface EdgeSwipeOptions {
   onSwipe: () => void;
   canStart?: (event: SwipeEvent) => boolean;
+  edgeLeft?: () => number;
 }
 
 const isPointer = (event: Event): event is Event & SwipeEvent =>
@@ -29,20 +30,16 @@ interface Start {
 
 export function watchEdgeSwipe(
   target: EventTarget,
-  { onSwipe, canStart = () => true }: EdgeSwipeOptions,
+  { onSwipe, canStart = () => true, edgeLeft = () => 0 }: EdgeSwipeOptions,
 ): () => void {
   let start: Start | null = null;
 
   const down = (pointer: Event) => {
     start = null;
-    if (
-      !isPointer(pointer) ||
-      !SWIPE_POINTERS.has(pointer.pointerType) ||
-      pointer.button > 0 ||
-      pointer.clientX > EDGE_WIDTH ||
-      !canStart(pointer)
-    )
+    if (!isPointer(pointer) || !SWIPE_POINTERS.has(pointer.pointerType) || pointer.button > 0)
       return;
+    const offset = pointer.clientX - edgeLeft();
+    if (offset < 0 || offset > EDGE_WIDTH || !canStart(pointer)) return;
     start = { pointerId: pointer.pointerId, x: pointer.clientX, y: pointer.clientY };
   };
 

@@ -14,10 +14,14 @@ const pointer = (
   pointerType: Device = 'touch',
 ) => Object.assign(new Event(type), { pointerId, pointerType, clientX, clientY, button });
 
-const setup = (canStart?: () => boolean, device: Device = 'touch') => {
+const setup = (canStart?: () => boolean, device: Device = 'touch', edgeLeft?: () => number) => {
   const target = new EventTarget();
   const onSwipe = vi.fn();
-  const stop = watchEdgeSwipe(target, canStart ? { onSwipe, canStart } : { onSwipe });
+  const stop = watchEdgeSwipe(target, {
+    onSwipe,
+    ...(canStart ? { canStart } : {}),
+    ...(edgeLeft ? { edgeLeft } : {}),
+  });
   const send = (type: PointerType, x: number, y: number, pointerId?: number, button?: number) =>
     target.dispatchEvent(pointer(type, x, y, pointerId, button, device));
   return { onSwipe, stop, send };
@@ -65,6 +69,21 @@ describe('watchEdgeSwipe', () => {
     send('pointerdown', EDGE_WIDTH + 1, 300);
     send('pointermove', EDGE_WIDTH + 1 + OPEN_DISTANCE * 3, 300);
     expect(onSwipe).not.toHaveBeenCalled();
+  });
+
+  it('measures the edge from the left of an offset column', () => {
+    const left = 420;
+    const { onSwipe, send } = setup(undefined, 'touch', () => left);
+    send('pointerdown', 4, 300);
+    send('pointerup', 4 + OPEN_DISTANCE * 2, 300);
+    send('pointerdown', left - 1, 300);
+    send('pointerup', left - 1 + OPEN_DISTANCE * 2, 300);
+    send('pointerdown', left + EDGE_WIDTH + 1, 300);
+    send('pointerup', left + EDGE_WIDTH + 1 + OPEN_DISTANCE * 2, 300);
+    expect(onSwipe).not.toHaveBeenCalled();
+    send('pointerdown', left + EDGE_WIDTH, 300);
+    send('pointerup', left + EDGE_WIDTH + OPEN_DISTANCE, 300);
+    expect(onSwipe).toHaveBeenCalledOnce();
   });
 
   it('ignores a short swipe and a vertical scroll from the edge', () => {
