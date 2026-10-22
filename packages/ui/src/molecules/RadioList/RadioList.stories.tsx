@@ -21,8 +21,9 @@ interface RadioListCellProps extends Omit<
 }
 
 const stage = {
-  boxSizing: 'content-box',
-  width: 330,
+  boxSizing: 'border-box',
+  width: 362,
+  maxWidth: '100%',
   padding: 16,
   borderRadius: 12,
   background: 'var(--cp-color-surface)',

@@ -193,7 +193,7 @@ export const DisabledIgnoresClick = meta.story({
 export const StaticVariantsAreNotButtons = meta.story({
   tags: ['!dev'],
   render: () => (
-    <div style={{ display: 'flex', gap: 8 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
       <ChipCell {...hampered} />
       <ChipCell variant="status" labelKey="setup" />
       <ChipCell {...statusActive} />

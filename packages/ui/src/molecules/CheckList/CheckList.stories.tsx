@@ -38,7 +38,15 @@ function CheckListCell({
     badge: tag.badge,
   }));
   return (
-    <div style={{ width: width + 24, padding: 12, background: 'var(--cp-color-surface)' }}>
+    <div
+      style={{
+        boxSizing: 'border-box',
+        width: width + 24,
+        maxWidth: '100%',
+        padding: 12,
+        background: 'var(--cp-color-surface)',
+      }}
+    >
       <CheckList
         {...props}
         options={options}

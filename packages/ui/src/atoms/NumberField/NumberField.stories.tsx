@@ -26,7 +26,7 @@ function NumberFieldCell({
   const { t } = useTranslation('NumberField');
   const [value, setValue] = useState(initialValue);
   return (
-    <div style={{ width: 320 }}>
+    <div style={{ width: 320, maxWidth: '100%' }}>
       <NumberField
         {...props}
         label={t(labelKey)}

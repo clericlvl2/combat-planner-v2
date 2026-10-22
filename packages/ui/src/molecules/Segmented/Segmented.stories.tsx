@@ -23,8 +23,9 @@ interface SegmentedCellProps extends Omit<
 }
 
 const stage = {
-  boxSizing: 'content-box',
-  padding: 16,
+  boxSizing: 'border-box',
+  maxWidth: '100%',
+  padding: 8,
   borderRadius: 12,
   background: 'var(--cp-color-surface)',
 } as const;
@@ -57,7 +58,7 @@ function SegmentedCell({
     disabled: disabledValues.includes(option) || undefined,
   }));
   return (
-    <div style={{ ...stage, width }} ref={frame}>
+    <div style={{ ...stage, width: width + 16 }} ref={frame}>
       <Segmented
         {...props}
         tone={tone}

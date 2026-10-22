@@ -329,6 +329,11 @@ export const SearchResetsOnClose = meta.story({
 
 export const QueryStopsAtNameLimit = meta.story({
   tags: ['!dev'],
+  parameters: {
+    geometry: {
+      wordBreaks: 'a tag name of 24 letters without a break point wraps by letter in the 320 list',
+    },
+  },
   args: assignArgs,
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TagSheet');

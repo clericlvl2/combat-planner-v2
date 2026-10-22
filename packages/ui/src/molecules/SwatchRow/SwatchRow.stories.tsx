@@ -13,12 +13,19 @@ interface SwatchRowCellProps extends SwatchRowProps {
 function SwatchRowCell({
   value: initialValue,
   onChange,
-  width = 330,
+  width = 264,
   ...props
 }: SwatchRowCellProps) {
   const [value, setValue] = useState(initialValue);
   return (
-    <div style={{ width: width + 24, padding: 12, background: 'var(--cp-color-surface)' }}>
+    <div
+      style={{
+        boxSizing: 'border-box',
+        width: width + 24,
+        padding: 12,
+        background: 'var(--cp-color-surface)',
+      }}
+    >
       <SwatchRow
         {...props}
         value={value}
@@ -61,14 +68,14 @@ export const HasEightColours = meta.story({
   },
 });
 
-export const NarrowRow = meta.story({
-  tags: ['visual'],
-  args: { value: 4, width: 296 },
+export const SwatchesShrinkToTheRow = meta.story({
+  tags: ['!dev'],
+  args: { value: 4 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'SwatchRow');
     const teal = canvas.getByRole('button', { name: t('teal') });
-    await expect(teal.getBoundingClientRect().width).toBe(30);
-    await expect(teal.getBoundingClientRect().height).toBe(30);
+    await expect(teal.getBoundingClientRect().width).toBe(26);
+    await expect(teal.getBoundingClientRect().height).toBe(26);
     await expect(getComputedStyle(teal).boxShadow).toContain('rgb(35, 31, 28)');
   },
 });

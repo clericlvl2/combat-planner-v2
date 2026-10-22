@@ -15,7 +15,9 @@ const list: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: layout.listGap,
+  minHeight: 0,
   padding: layout.contentEdge,
+  overflowY: 'auto',
 };
 
 const ambush = {

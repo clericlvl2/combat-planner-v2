@@ -35,7 +35,7 @@ function TextAreaCell({
   const { t } = useTranslation('TextArea');
   const [value, setValue] = useState(initialValue ?? (valueKey ? t(valueKey) : ''));
   return (
-    <div style={{ width }}>
+    <div style={{ width, maxWidth: '100%' }}>
       <TextArea
         {...props}
         label={labelKey ? t(labelKey) : undefined}

@@ -63,7 +63,7 @@ export const DisabledWithHint = meta.story({
 
 export const LongLabel = meta.story({
   args: {
-    label: 'Новое сражение с огром',
+    label: 'Новое сражение',
     hint: 'Достигнут лимит сражений: удалите старое сражение, чтобы создать новое',
     disabled: true,
   },

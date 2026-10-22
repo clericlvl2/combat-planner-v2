@@ -35,7 +35,7 @@ function TextFieldCell({
   const { t } = useTranslation('TextField');
   const [value, setValue] = useState(initialValue ?? (valueKey ? t(valueKey) : ''));
   return (
-    <div style={{ width }}>
+    <div style={{ width, maxWidth: '100%' }}>
       <TextField
         {...props}
         label={labelKey ? t(labelKey) : undefined}

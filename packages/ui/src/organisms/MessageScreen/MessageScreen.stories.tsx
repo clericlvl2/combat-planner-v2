@@ -102,7 +102,7 @@ export const LongTitleAndBody = meta.story({
     kind: 'offline',
     title: 'Не удаётся установить соединение с сервером боевого планировщика',
     body: 'Проверьте подключение к интернету, убедитесь, что мастер не остановил сервер, и попробуйте открыть ссылку ещё раз через несколько минут.',
-    actionLabel: 'Повторить подключение к серверу',
+    actionLabel: 'Подключиться снова',
   },
   play: async ({ canvas }) => {
     await expect(
@@ -111,7 +111,7 @@ export const LongTitleAndBody = meta.story({
         name: 'Не удаётся установить соединение с сервером боевого планировщика',
       }),
     ).toBeVisible();
-    const button = canvas.getByRole('button', { name: 'Повторить подключение к серверу' });
+    const button = canvas.getByRole('button', { name: 'Подключиться снова' });
     await expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
   },
 });

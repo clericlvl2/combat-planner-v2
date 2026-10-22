@@ -19,6 +19,7 @@ const stage = {
   flexDirection: 'column',
   gap: 12,
   width: 346,
+  maxWidth: '100%',
   padding: 12,
   borderRadius: 16,
   background: 'var(--cp-color-background)',
