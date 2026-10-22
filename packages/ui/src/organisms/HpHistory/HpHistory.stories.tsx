@@ -105,7 +105,7 @@ function HpHistoryCell({
     );
   }
   return (
-    <div style={{ width: 334 }}>
+    <div style={{ width: '100%' }}>
       <HpHistory
         variant="inline"
         entries={entries}
@@ -221,7 +221,7 @@ export const ExpandedLongList = meta.story({
     const t = storyT(globals, 'HpHistory');
     const list = canvas.getByRole('list', { name: t('title') });
     await expect(canvas.getAllByRole('listitem')).toHaveLength(10);
-    await expect(list.clientHeight).toBe(248);
+    await expect(list.clientHeight).toBe(320);
     await expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
     await expect(list).toHaveAttribute('tabindex', '0');
     await expect(canvasElement.querySelector('[data-fade]')).not.toBeNull();
