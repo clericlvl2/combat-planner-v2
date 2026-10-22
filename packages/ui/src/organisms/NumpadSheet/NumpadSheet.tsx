@@ -1,7 +1,14 @@
-import { LIMITS, apply, healthSegments, healthStatus } from '@combat-planner/domain';
-import type { Action, Combat, HpHistoryEntry, HpHistoryKind, Role } from '@combat-planner/domain';
-import { UnstyledButton } from '@mantine/core';
-import { IconArrowRight } from '@tabler/icons-react';
+import { LIMITS, apply, healthStatus } from '@combat-planner/domain';
+import type {
+  Action,
+  Combat,
+  HealthStatus,
+  HpHistoryEntry,
+  HpHistoryKind,
+  Role,
+} from '@combat-planner/domain';
+import { UnstyledButton, VisuallyHidden } from '@mantine/core';
+import { IconArrowRight, IconBackspace } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
@@ -35,7 +42,7 @@ export const hpFlashDuration = 2000;
 const previewId = '00000000000000000000000000';
 const previewAt = '1970-01-01T00:00:00.000Z';
 const amountDigits = String(LIMITS.amount.max).length;
-const digitKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9'] as const;
+const keypadKeys = ['1', '2', '3', 'delete', '4', '5', '6', 'clear', '7', '8', '9', '0'] as const;
 const actionKinds = ['damage', 'heal', 'temp', 'max'] as const satisfies readonly HpHistoryKind[];
 const actionLabels = {
   damage: 'damage',
@@ -43,7 +50,8 @@ const actionLabels = {
   temp: 'setTemp',
   max: 'setMax',
 } as const satisfies Record<HpHistoryKind, string>;
-const pipSlots = [0, 1, 2, 3] as const;
+const pipSlots = [0, 1] as const;
+const filledPips: Record<HealthStatus, number> = { full: 2, wounded: 1, staggered: 1, dead: 0 };
 
 function hpAction(kind: HpHistoryKind, amount: number): Action {
   const target = { id: previewId, version: 0, unitId: previewId, amount };
@@ -132,7 +140,6 @@ interface HpReadingProps {
 function HpReading({ label, health, side }: HpReadingProps) {
   const { t } = useTranslation('NumpadSheet');
   const status = healthStatus(health.hp, health.maxHp);
-  const segments = healthSegments(status, health.hp, health.maxHp);
   const current = formatNumber(health.hp);
   const length = `${current}/${health.maxHp}`.length;
   return (
@@ -147,18 +154,25 @@ function HpReading({ label, health, side }: HpReadingProps) {
         <span className={classes.current}>{current}</span>
         <span className={classes.max}>/{health.maxHp}</span>
       </span>
-      <span className={classes.pips} aria-hidden="true">
-        {pipSlots.map((slot) => (
-          <span key={slot} className={classes.pip} data-filled={slot < segments || undefined} />
-        ))}
-      </span>
-      <span className={classes.status} data-part="status">
-        {t(status)}
-      </span>
-      {health.tempHp > 0 ? (
-        <span className={classes.temp} data-part="temp">
-          {t('temp', { amount: health.tempHp })}
+      <span className={classes.marks}>
+        <span className={classes.pips} aria-hidden="true">
+          {pipSlots.map((slot) => (
+            <span
+              key={slot}
+              className={classes.pip}
+              data-filled={slot < filledPips[status] || undefined}
+            />
+          ))}
         </span>
+        {health.tempHp > 0 ? (
+          <span className={classes.tempBadge} data-part="tempBadge" aria-hidden="true">
+            +{health.tempHp}
+          </span>
+        ) : null}
+      </span>
+      <VisuallyHidden data-part="status">{t(status)}</VisuallyHidden>
+      {health.tempHp > 0 ? (
+        <VisuallyHidden data-part="temp">{t('temp', { amount: health.tempHp })}</VisuallyHidden>
       ) : null}
     </div>
   );
@@ -260,7 +274,7 @@ export function NumpadSheet({
       title={name}
       onClose={onClose}
       actions={
-        <div className={classes.actions}>
+        <div className={classes.actions} data-viewer={viewer}>
           {kinds.map((kind) => (
             <Button
               key={kind}
@@ -268,6 +282,7 @@ export function NumpadSheet({
               data-kind={kind}
               data-sheet-action=""
               data-tap={tap === kind ? '' : undefined}
+              size={kind === 'damage' ? 'M' : 'S'}
               fullWidth
               disabled={!enabled(kind)}
               onPointerEnter={() => setPreviewKind(kind)}
@@ -285,7 +300,7 @@ export function NumpadSheet({
             <span className={classes.initiative}>
               {initiative === null ? '—' : formatNumber(initiative)}
             </span>
-            <span className={classes.roleLabel}>{t(role)}</span>
+            <VisuallyHidden>{t(role)}</VisuallyHidden>
           </span>
           <h2 className={classes.name}>{name}</h2>
         </>
@@ -294,7 +309,13 @@ export function NumpadSheet({
       <div ref={bodyRef} className={classes.body}>
         <div className={classes.preview}>
           <HpReading label={t('now')} health={now} side="now" />
-          <IconArrowRight className={classes.arrow} size={32} stroke={2} aria-hidden="true" />
+          <IconArrowRight
+            className={classes.arrow}
+            data-part="arrow"
+            size={24}
+            stroke={2}
+            aria-hidden="true"
+          />
           <HpReading label={t('after')} health={after} side="after" />
         </div>
         <div className={classes.amount}>
@@ -311,45 +332,43 @@ export function NumpadSheet({
           <span className={classes.caret} aria-hidden="true" />
         </div>
         <div className={classes.keys} role="group" aria-label={t('keypad')}>
-          {digitKeys.map((digit) => (
-            <UnstyledButton
-              key={digit}
-              component="button"
-              type="button"
-              className={classes.key}
-              onClick={() => append(digit)}
-            >
-              {digit}
-            </UnstyledButton>
-          ))}
-          <UnstyledButton
-            component="button"
-            type="button"
-            className={classes.key}
-            data-kind="clear"
-            aria-label={t('clear')}
-            onClick={clear}
-          >
-            C
-          </UnstyledButton>
-          <UnstyledButton
-            component="button"
-            type="button"
-            className={classes.key}
-            onClick={() => append('0')}
-          >
-            0
-          </UnstyledButton>
-          <UnstyledButton
-            component="button"
-            type="button"
-            className={classes.key}
-            data-kind="delete"
-            aria-label={t('delete')}
-            onClick={deleteDigit}
-          >
-            {'<'}
-          </UnstyledButton>
+          {keypadKeys.map((key) =>
+            key === 'delete' ? (
+              <UnstyledButton
+                key={key}
+                component="button"
+                type="button"
+                className={classes.key}
+                data-kind="delete"
+                aria-label={t('delete')}
+                onClick={deleteDigit}
+              >
+                <IconBackspace size={24} stroke={2} aria-hidden="true" />
+              </UnstyledButton>
+            ) : key === 'clear' ? (
+              <UnstyledButton
+                key={key}
+                component="button"
+                type="button"
+                className={classes.key}
+                data-kind="clear"
+                aria-label={t('clear')}
+                onClick={clear}
+              >
+                C
+              </UnstyledButton>
+            ) : (
+              <UnstyledButton
+                key={key}
+                component="button"
+                type="button"
+                className={classes.key}
+                onClick={() => append(key)}
+              >
+                {key}
+              </UnstyledButton>
+            ),
+          )}
         </div>
         <HpHistory
           className={classes.history}

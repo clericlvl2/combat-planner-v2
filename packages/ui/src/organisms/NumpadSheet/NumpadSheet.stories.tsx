@@ -226,6 +226,21 @@ const readingOf = (canvasElement: HTMLElement, side: 'now' | 'after') => {
 const numbersOf = (canvasElement: HTMLElement, side: 'now' | 'after') =>
   readingOf(canvasElement, side).querySelector('[data-part="numbers"]');
 
+const screenOf = (canvasElement: HTMLElement) => {
+  const frame = canvasElement.ownerDocument.querySelector<HTMLElement>('[data-phone-frame]');
+  if (!frame) throw new Error('phone frame not rendered');
+  return { width: frame.clientWidth, height: frame.clientHeight };
+};
+
+const filledPips = (canvasElement: HTMLElement, side: 'now' | 'after') =>
+  readingOf(canvasElement, side).querySelectorAll('[data-filled]').length;
+
+const isVisuallyHidden = (element: Element | null) => {
+  if (!element) throw new Error('hidden text not rendered');
+  const style = getComputedStyle(element);
+  return style.clip !== 'auto' || style.clipPath !== 'none';
+};
+
 const actionKeys = ['damage', 'heal', 'setTemp', 'setMax'];
 
 const previewAction = async (canvas: Canvas, name: string) => {
@@ -256,6 +271,22 @@ export const AmountTyped = meta.story({
     await expect(numbersOf(canvasElement, 'now')).toHaveTextContent('14/40');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('2/40');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('staggered'));
+    await expect(
+      isVisuallyHidden(readingOf(canvasElement, 'after').querySelector('[data-part="status"]')),
+    ).toBe(true);
+    await expect(filledPips(canvasElement, 'after')).toBe(1);
+    const now = readingOf(canvasElement, 'now').getBoundingClientRect();
+    const after = readingOf(canvasElement, 'after').getBoundingClientRect();
+    const arrow = canvasElement.querySelector('[data-part="arrow"]');
+    if (screenOf(canvasElement).width < 384) {
+      await expect(arrow).not.toBeVisible();
+      await expect(
+        numbersOf(canvasElement, 'after')?.getBoundingClientRect().top ?? 0,
+      ).toBeGreaterThan(numbersOf(canvasElement, 'now')?.getBoundingClientRect().bottom ?? 0);
+    } else {
+      await expect(arrow).toBeVisible();
+      await expect(after.left).toBeGreaterThan(now.right);
+    }
   },
 });
 
@@ -328,6 +359,12 @@ export const PlayerView = meta.story({
     await expect(canvas.queryByRole('button', { name: t('setMax') })).toBeNull();
     await expect(canvas.getByRole('button', { name: t('setTemp') })).toBeEnabled();
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('13/36');
+    const damage = canvas.getByRole('button', { name: t('damage') }).getBoundingClientRect();
+    const heal = canvas.getByRole('button', { name: t('heal') }).getBoundingClientRect();
+    const setTemp = canvas.getByRole('button', { name: t('setTemp') }).getBoundingClientRect();
+    await expect(heal.top).toBeGreaterThan(damage.bottom);
+    await expect(setTemp.top).toBe(heal.top);
+    await expect(damage.width).toBe(setTemp.right - heal.left);
   },
 });
 
@@ -349,6 +386,7 @@ export const OverkillDead = meta.story({
     await typeAmount(canvas, '400');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−113/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('dead'));
+    await expect(filledPips(canvasElement, 'after')).toBe(0);
   },
 });
 
@@ -377,12 +415,21 @@ export const AmountTypedHistoryExpanded = meta.story({
 
 export const KeysAppendUpToThreeDigits = meta.story({
   tags: ['!dev'],
-  play: async ({ args, canvas, globals }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'NumpadSheet');
     const dialog = await sheetOf(canvas);
     const keys = within(dialog).getByRole('group', { name: t('keypad') });
+    await expect(
+      within(keys)
+        .getAllByRole('button')
+        .map((key) => key.ariaLabel ?? key.textContent),
+    ).toEqual(['1', '2', '3', t('delete'), '4', '5', '6', t('clear'), '7', '8', '9', '0']);
     for (const digit of ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']) {
       await expect(within(keys).getByRole('button', { name: digit })).toBeVisible();
+    }
+    const keyHeight = screenOf(canvasElement).height < 700 ? 44 : 56;
+    for (const key of within(keys).getAllByRole('button')) {
+      await expect(key.getBoundingClientRect().height).toBe(keyHeight);
     }
     await typeAmount(canvas, '0');
     await expect(amountOf(canvas, t)).toHaveTextContent('0');
@@ -572,6 +619,10 @@ export const WithTempHp = meta.story({
     const t = storyT(globals, 'NumpadSheet');
     await sheetOf(canvas);
     await expect(readingOf(canvasElement, 'now')).toHaveTextContent(t('temp', { amount: 5 }));
+    const now = readingOf(canvasElement, 'now');
+    await expect(isVisuallyHidden(now.querySelector('[data-part="temp"]'))).toBe(true);
+    await expect(now.querySelector('[data-part="tempBadge"]')).toHaveTextContent('+5');
+    await expect(now.querySelector('[data-part="tempBadge"]')).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('damage') })).toBeDisabled();
   },
 });
