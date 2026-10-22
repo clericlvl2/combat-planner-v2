@@ -122,6 +122,7 @@ export const fontFamilies = {
 } as const;
 
 export const fontSizes = {
+  caps: 8,
   micro: 11,
   meta: 12,
   small: 14,
@@ -239,6 +240,7 @@ export const theme: MantineThemeOverride = createTheme({
     md: px(fontSizes.body),
     lg: px(fontSizes.number),
     xl: px(fontSizes.heading),
+    caps: px(fontSizes.caps),
     micro: px(fontSizes.micro),
     meta: px(fontSizes.meta),
     small: px(fontSizes.small),

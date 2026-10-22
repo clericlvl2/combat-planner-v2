@@ -2,7 +2,6 @@
   "hero": "Hero",
   "enemy": "Enemy",
   "ally": "Ally",
-  "hp": "HP",
   "you": "You",
   "noInitiative": "No initiative"
 }

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
 import { DefenseLine } from '../../molecules/DefenseLine/DefenseLine.tsx';
+import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
 import { Menu } from '../Menu/Menu.tsx';
 import type { MenuItem } from '../Menu/Menu.tsx';
 import classes from './PresetCard.module.css';
@@ -63,7 +64,7 @@ export function PresetCard({
       data-expanded={expanded || undefined}
     >
       <div className={classes.head}>
-        <RoleBlock fill unitRole={preset.role} top={{ kind: 'hp', value: preset.maxHp }} />
+        <RoleBlock fill unitRole={preset.role} top={{ kind: 'none' }} />
         <div className={classes.text}>
           <span className={classes.name}>{preset.name}</span>
           <span className={classes.tags} data-tag-line data-empty={tags.length === 0 || undefined}>
@@ -72,6 +73,7 @@ export function PresetCard({
         </div>
         <span className={classes.defenses}>
           <DefenseLine variant="squares" ac={preset.ac} pd={preset.pd} md={preset.md} />
+          <HpBox viewer="dm" preset maxHp={preset.maxHp} />
         </span>
         <UnstyledButton
           component="button"

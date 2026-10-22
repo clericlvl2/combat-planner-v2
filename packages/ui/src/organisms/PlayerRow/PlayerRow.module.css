@@ -1,7 +1,7 @@
 .root {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr) max-content;
+  grid-template-columns: 48px minmax(0, 1fr) max-content;
   container-type: inline-size;
   min-height: 72px;
   border: 2px solid var(--cp-color-border);

@@ -2,7 +2,7 @@
   position: relative;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 62px minmax(0, 1fr) 100px 40px;
+  grid-template-columns: 48px minmax(0, 1fr) 100px 40px;
   min-height: 72px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);

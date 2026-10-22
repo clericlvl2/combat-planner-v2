@@ -186,6 +186,14 @@ const typeScale = [
     weight: 700,
     sample: 'HP · AC · ENEMY',
   },
+  {
+    name: 'Caps',
+    spec: 'Rubik 700 · 8 · caps',
+    display: false,
+    size: fontSizes.caps,
+    weight: 700,
+    sample: 'HERO · ENEMY · ALLY',
+  },
 ];
 
 const radii = [

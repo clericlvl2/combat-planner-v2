@@ -82,16 +82,28 @@ export const NoInitiativeDie = meta.story({
   },
 });
 
-export const PresetLongHp = meta.story({
+export const NeutralPreset = meta.story({
   tags: ['visual'],
-  args: { unitRole: 'enemy', top: { kind: 'hp', value: 999 } },
-  play: async ({ canvas, canvasElement }) => {
-    const value = canvas.getByText('999');
-    await expect(value).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
-    const block = canvasElement.querySelector<HTMLElement>('[data-unit-role]');
-    await expect(block?.getBoundingClientRect().width).toBe(62);
-    await expect(value.getBoundingClientRect().width).toBeLessThanOrEqual(58);
+  render: () => (
+    <div style={{ display: 'flex', gap: 8, height: 64 }}>
+      {(['hero', 'enemy', 'ally'] as const).map((unitRole) => (
+        <RoleBlock key={unitRole} fill unitRole={unitRole} top={{ kind: 'none' }} />
+      ))}
+    </div>
+  ),
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
+    const blocks = [...canvasElement.querySelectorAll<HTMLElement>('[data-unit-role]')];
+    await expect(blocks).toHaveLength(3);
+    for (const block of blocks) {
+      await expect(getComputedStyle(block).backgroundColor).toBe(rgb(base.soft));
+      await expect(getComputedStyle(block).color).toBe(rgb(base.ink));
+      await expect(block.getBoundingClientRect().width).toBe(48);
+    }
+    await expect(canvas.getByText(t('enemy'))).toBeVisible();
+    await expect(getComputedStyle(canvas.getByText(t('enemy'))).textTransform).toBe('uppercase');
+    await expect(canvas.queryByRole('img', { name: t('noInitiative') })).toBeNull();
+    await expect(blocks.map((block) => block.textContent).join('')).not.toMatch(/\d/);
   },
 });
 
@@ -103,17 +115,6 @@ export const FocusRing = meta.story({
     const t = storyT(globals, 'RoleBlock');
     const button = canvas.getByRole('button', { name: `15 ${t('hero')}` });
     await expect(getComputedStyle(button).outlineWidth).toBe('2px');
-  },
-});
-
-export const PresetWidthIsFixed = meta.story({
-  tags: ['!dev'],
-  args: { unitRole: 'enemy', top: { kind: 'hp', value: 320 } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('320')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
-    const block = canvasElement.querySelector<HTMLElement>('[data-unit-role]');
-    await expect(block?.getBoundingClientRect().width).toBe(62);
   },
 });
 
@@ -170,7 +171,15 @@ export const FillTakesRowHeight = meta.story({
   tags: ['!dev'],
   args: { unitRole: 'enemy', top: { kind: 'initiative', value: 17 }, fill: true },
   render: (args: RoleBlockProps) => (
-    <div style={{ display: 'flex', height: 64, width: 300, background: 'var(--cp-color-surface)' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        height: 64,
+        width: 300,
+        background: 'var(--cp-color-surface)',
+      }}
+    >
       <RoleBlock {...args} />
       <RoleBlock {...args} fill={false} data-testid="intrinsic" />
     </div>
@@ -178,6 +187,8 @@ export const FillTakesRowHeight = meta.story({
   play: async ({ canvas, canvasElement }) => {
     const filled = canvasElement.querySelector<HTMLElement>('[data-fill]');
     await expect(filled?.getBoundingClientRect().height).toBe(64);
-    await expect(canvas.getByTestId('intrinsic').getBoundingClientRect().height).toBe(80);
+    await expect(filled?.getBoundingClientRect().width).toBe(48);
+    await expect(getComputedStyle(filled as HTMLElement).borderTopLeftRadius).toBe('0px');
+    await expect(canvas.getByTestId('intrinsic').getBoundingClientRect().height).toBeLessThan(64);
   },
 });
