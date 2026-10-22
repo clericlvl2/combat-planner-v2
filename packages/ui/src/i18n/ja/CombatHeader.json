@@ -6,13 +6,16 @@
   "setEscalation": "エスカレーションダイスを設定、エスカレーション{{value}}",
   "escalationTitle": "エスカレーションダイス",
   "escalationFace": "エスカレーション{{value}}",
+  "escalationCaption": "エスカレーション",
   "escalationHint": "「次のターン」で毎ラウンド1ずつ上がり、最大{{max}}",
   "roundHint": "{{min}}–{{max}}。ラウンドを変えてもターンは移りません。",
   "menu": "メニュー",
   "menuLabel": "戦闘メニュー",
+  "playerMenuLabel": "プレイヤーメニュー",
   "addUnit": "ユニットを追加",
   "undo": "元に戻す",
   "share": "共有",
   "restart": "戦闘をやり直す",
-  "clear": "戦闘をクリア"
+  "clear": "戦闘をクリア",
+  "heroes": "ヒーロー"
 }

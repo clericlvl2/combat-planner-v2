@@ -125,7 +125,7 @@ const typeAmount = async (sheet: HTMLElement, digits: string) => {
 };
 
 const openMenu = async (canvas: Canvas, t: TFunction) => {
-  await userEvent.click(await canvas.findByRole('button', { name: t('PlayerHeader:menu') }));
+  await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
   return canvas.findByRole('menu', { name: t('CombatHeader:menuLabel') });
 };
 

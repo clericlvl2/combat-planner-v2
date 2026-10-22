@@ -6,13 +6,16 @@
   "setEscalation": "Eskalationswürfel setzen, Eskalation {{value}}",
   "escalationTitle": "Eskalationswürfel",
   "escalationFace": "Eskalation {{value}}",
+  "escalationCaption": "Eskalation",
   "escalationHint": "„Nächster Zug“ erhöht ihn jede Runde um 1, bis {{max}}",
   "roundHint": "{{min}}–{{max}}. Eine Rundenänderung verschiebt den Zug nicht.",
   "menu": "Menü",
   "menuLabel": "Kampfmenü",
+  "playerMenuLabel": "Spielermenü",
   "addUnit": "Einheit hinzufügen",
   "undo": "Rückgängig",
   "share": "Teilen",
   "restart": "Kampf neu starten",
-  "clear": "Kampf leeren"
+  "clear": "Kampf leeren",
+  "heroes": "Helden"
 }

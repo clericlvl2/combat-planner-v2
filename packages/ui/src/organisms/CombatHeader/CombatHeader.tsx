@@ -6,6 +6,7 @@ import {
   IconDots,
   IconRefresh,
   IconShare,
+  IconSwitchHorizontal,
   IconTrash,
   IconUserPlus,
 } from '@tabler/icons-react';
@@ -31,6 +32,8 @@ export type CombatHeaderPopover = 'round' | 'escalation' | 'menu';
 
 export type CombatMenuAction = 'addUnit' | 'undo' | 'share' | 'restart' | 'clear';
 
+export type CombatHeaderViewer = 'dm' | 'player';
+
 export interface CombatHeaderProps extends Omit<
   ComponentPropsWithoutRef<'header'>,
   'children' | 'title'
@@ -38,15 +41,17 @@ export interface CombatHeaderProps extends Omit<
   title: string;
   round: number | null;
   escalation: EscalationValue;
+  viewer?: CombatHeaderViewer;
   open?: CombatHeaderPopover | null;
-  onBack: () => void;
+  onBack?: () => void;
   onRound?: () => void;
   onEscalation?: () => void;
   onMenu: () => void;
   onClose: () => void;
   onRoundChange?: (round: number) => void;
   onEscalationChange?: (value: EscalationValue) => void;
-  onMenuSelect: (action: CombatMenuAction) => void;
+  onMenuSelect?: (action: CombatMenuAction) => void;
+  onHeroes?: () => void;
   undoDisabled?: boolean;
 }
 
@@ -54,9 +59,9 @@ const MENU_WIDTH = 240;
 
 const ROUND_WIDTH = 240;
 
-const POPOVER_OFFSET = 8;
+const ESCALATION_WIDTH = 240;
 
-const ESCALATION_SHIFT = 62;
+const POPOVER_OFFSET = 8;
 
 const FOCUS_FRAMES = 30;
 
@@ -83,7 +88,6 @@ function focusSource(source: HTMLElement | null) {
 interface HeaderPopoverProps {
   opened: boolean;
   position: 'bottom-start' | 'bottom-end';
-  crossShift?: number;
   sourceRef: RefObject<HTMLElement | null>;
   initialFocus: string;
   label: string;
@@ -96,7 +100,6 @@ interface HeaderPopoverProps {
 function HeaderPopover({
   opened,
   position,
-  crossShift = 0,
   sourceRef,
   initialFocus,
   label,
@@ -176,7 +179,7 @@ function HeaderPopover({
     <Popover
       opened={opened}
       position={position}
-      offset={{ mainAxis: POPOVER_OFFSET, crossAxis: crossShift }}
+      offset={POPOVER_OFFSET}
       withRoles={false}
       withinPortal={false}
       closeOnEscape={false}
@@ -253,6 +256,7 @@ export function CombatHeader({
   title,
   round,
   escalation,
+  viewer = 'dm',
   open = null,
   onBack,
   onRound,
@@ -262,26 +266,39 @@ export function CombatHeader({
   onRoundChange,
   onEscalationChange,
   onMenuSelect,
+  onHeroes,
   undoDisabled = false,
   className,
   ...rest
 }: CombatHeaderProps) {
   const { t } = useTranslation('CombatHeader');
   const roundRef = useRef<HTMLButtonElement | null>(null);
-  const dieRef = useRef<HTMLSpanElement | null>(null);
+  const escalationRef = useRef<HTMLButtonElement | null>(null);
   const discardRoundRef = useRef(false);
   const setup = round === null;
+  const player = viewer === 'player';
+  const editRound = player ? undefined : onRound;
+  const editEscalation = player ? undefined : onEscalation;
   const roundOpen = !setup && open === 'round';
   const escalationOpen = !setup && open === 'escalation';
   const menuOpen = open === 'menu';
 
-  const items: MenuItem[] = [
-    { id: 'addUnit', icon: IconUserPlus, label: t('addUnit') },
-    { id: 'undo', icon: IconArrowBackUp, label: t('undo'), disabled: undoDisabled },
-    { id: 'share', icon: IconShare, label: t('share') },
-    ...(setup ? [] : [{ id: 'restart', icon: IconRefresh, label: t('restart'), divider: true }]),
-    { id: 'clear', icon: IconTrash, label: t('clear'), tone: 'danger', divider: setup },
-  ];
+  const items: MenuItem[] = player
+    ? [{ id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') }]
+    : [
+        { id: 'addUnit', icon: IconUserPlus, label: t('addUnit') },
+        { id: 'undo', icon: IconArrowBackUp, label: t('undo'), disabled: undoDisabled },
+        { id: 'share', icon: IconShare, label: t('share') },
+        ...(setup
+          ? []
+          : [{ id: 'restart', icon: IconRefresh, label: t('restart'), divider: true }]),
+        { id: 'clear', icon: IconTrash, label: t('clear'), tone: 'danger', divider: setup },
+      ];
+
+  const selectItem = (id: string) => {
+    if (player) onHeroes?.();
+    else onMenuSelect?.(id as CombatMenuAction);
+  };
 
   useEffect(() => {
     if (roundOpen) discardRoundRef.current = false;
@@ -294,136 +311,155 @@ export function CombatHeader({
     focusSource(roundRef.current);
   };
 
-  const roundLabel = (
+  const roundContent = (
     <>
-      <span>{t('round')}</span> <span className={classes.roundNumber}>{round}</span>
+      <span className={classes.caption}>{t('round')}</span>{' '}
+      <span className={classes.number}>{round}</span>
     </>
+  );
+
+  const escalationContent = (
+    <>
+      <EscalationDie className={classes.ticketDie} value={escalation} readOnly aria-hidden="true" />
+      <span className={classes.stack}>
+        <span className={classes.caption}>{t('escalationCaption')}</span>{' '}
+        <span className={classes.number}>+{escalation}</span>
+      </span>
+    </>
+  );
+
+  const roundCell = editRound ? (
+    <HeaderPopover
+      opened={roundOpen}
+      position="bottom-start"
+      sourceRef={roundRef}
+      initialFocus='input[role="spinbutton"]'
+      label={t('round')}
+      onClose={onClose}
+      onEscape={() => {
+        discardRoundRef.current = true;
+      }}
+      target={
+        <UnstyledButton
+          ref={roundRef}
+          component="button"
+          type="button"
+          className={`${classes.cell} ${classes.roundCell}`}
+          aria-label={t('editRound', { round })}
+          aria-haspopup="dialog"
+          aria-expanded={roundOpen}
+          data-open={roundOpen || undefined}
+          onClick={() => editRound()}
+        >
+          {roundContent}
+        </UnstyledButton>
+      }
+    >
+      <PopoverFrame title={t('round')} width={ROUND_WIDTH} onKeyDown={handleRoundKeyDown}>
+        <Stepper
+          value={round}
+          min={LIMITS.round.min}
+          max={LIMITS.round.max}
+          signed={false}
+          onChange={(next) => {
+            if (!discardRoundRef.current) onRoundChange?.(next);
+          }}
+        />
+        <span className={classes.roundHint}>{t('roundHint', LIMITS.round)}</span>
+      </PopoverFrame>
+    </HeaderPopover>
+  ) : (
+    <div className={`${classes.cell} ${classes.roundCell}`}>{roundContent}</div>
+  );
+
+  const escalationCell = editEscalation ? (
+    <HeaderPopover
+      opened={escalationOpen}
+      position="bottom-end"
+      sourceRef={escalationRef}
+      initialFocus="button[data-selected]"
+      label={t('escalationTitle')}
+      onClose={onClose}
+      target={
+        <UnstyledButton
+          ref={escalationRef}
+          component="button"
+          type="button"
+          className={`${classes.cell} ${classes.escalationCell}`}
+          aria-label={t('setEscalation', { value: escalation })}
+          aria-haspopup="dialog"
+          aria-expanded={escalationOpen}
+          data-open={escalationOpen || undefined}
+          onClick={() => editEscalation()}
+        >
+          {escalationContent}
+        </UnstyledButton>
+      }
+    >
+      <PopoverFrame title={t('escalationTitle')} width={ESCALATION_WIDTH}>
+        <FacePicker
+          value={escalation}
+          onPick={(value) => {
+            onEscalationChange?.(value);
+            onClose();
+            focusSource(escalationRef.current);
+          }}
+        />
+        <span className={classes.escalationHint}>
+          {t('escalationHint', { max: LIMITS.escalation.max })}
+        </span>
+      </PopoverFrame>
+    </HeaderPopover>
+  ) : (
+    <div className={`${classes.cell} ${classes.escalationCell}`}>{escalationContent}</div>
   );
 
   return (
     <header {...rest} className={className ? `${classes.root} ${className}` : classes.root}>
       <div className={classes.statusBar} aria-hidden="true" />
-      <div className={classes.body}>
-        <IconButton
-          className={classes.back}
-          variant="plain"
-          icon={IconChevronLeft}
-          aria-label={t('back')}
-          onClick={() => onBack()}
-        />
-        <div className={classes.text}>
-          <h1 className={classes.title}>{title}</h1>
-          <div className={classes.main}>
-            {setup ? (
-              t('setup')
-            ) : onRound ? (
-              <HeaderPopover
-                opened={roundOpen}
-                position="bottom-start"
-                sourceRef={roundRef}
-                initialFocus='input[role="spinbutton"]'
-                label={t('round')}
-                onClose={onClose}
-                onEscape={() => {
-                  discardRoundRef.current = true;
-                }}
-                target={
-                  <UnstyledButton
-                    ref={roundRef}
-                    component="button"
-                    type="button"
-                    className={classes.round}
-                    aria-label={t('editRound', { round })}
-                    aria-haspopup="dialog"
-                    aria-expanded={roundOpen}
-                    data-open={roundOpen || undefined}
-                    onClick={() => onRound()}
-                  >
-                    {roundLabel}
-                  </UnstyledButton>
-                }
-              >
-                <PopoverFrame title={t('round')} width={ROUND_WIDTH} onKeyDown={handleRoundKeyDown}>
-                  <Stepper
-                    value={round}
-                    min={LIMITS.round.min}
-                    max={LIMITS.round.max}
-                    signed={false}
-                    onChange={(next) => {
-                      if (!discardRoundRef.current) onRoundChange?.(next);
-                    }}
-                  />
-                  <span className={classes.roundHint}>{t('roundHint', LIMITS.round)}</span>
-                </PopoverFrame>
-              </HeaderPopover>
-            ) : (
-              <span className={classes.roundStatic}>{roundLabel}</span>
-            )}
-          </div>
-        </div>
-        {setup ? null : onEscalation ? (
-          <HeaderPopover
-            opened={escalationOpen}
-            position="bottom-end"
-            crossShift={ESCALATION_SHIFT}
-            sourceRef={dieRef}
-            initialFocus="button[data-selected]"
-            label={t('escalationTitle')}
-            onClose={onClose}
-            target={
-              <span ref={dieRef} className={classes.dieSlot}>
-                <EscalationDie
-                  value={escalation}
-                  aria-label={t('setEscalation', { value: escalation })}
-                  aria-haspopup="dialog"
-                  aria-expanded={escalationOpen}
-                  data-open={escalationOpen || undefined}
-                  data-tap={escalationOpen || undefined}
-                  onClick={() => onEscalation()}
-                />
-              </span>
-            }
-          >
-            <PopoverFrame title={t('escalationTitle')}>
-              <FacePicker
-                value={escalation}
-                onPick={(value) => {
-                  onEscalationChange?.(value);
-                  onClose();
-                  focusSource(dieRef.current);
-                }}
-              />
-              <span className={classes.escalationHint}>
-                {t('escalationHint', { max: LIMITS.escalation.max })}
-              </span>
-            </PopoverFrame>
-          </HeaderPopover>
-        ) : (
-          <EscalationDie value={escalation} readOnly />
-        )}
+      <div className={classes.bar} data-back={onBack ? '' : undefined}>
+        {onBack ? (
+          <IconButton
+            className={classes.back}
+            variant="plain"
+            icon={IconChevronLeft}
+            aria-label={t('back')}
+            onClick={() => onBack()}
+          />
+        ) : null}
+        <h1 className={classes.title}>{title}</h1>
         <Menu
           opened={menuOpen}
           width={MENU_WIDTH}
-          aria-label={t('menuLabel')}
+          aria-label={player ? t('playerMenuLabel') : t('menuLabel')}
           items={items}
-          onSelect={(id) => onMenuSelect(id as CombatMenuAction)}
+          onSelect={selectItem}
           onClose={() => onClose()}
           target={
             <UnstyledButton
               component="button"
               type="button"
               className={classes.menu}
+              aria-label={t('menu')}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
               onClick={() => onMenu()}
             >
-              <span className={classes.tile} aria-hidden="true">
-                <IconDots size={24} stroke={2} />
-              </span>
-              <span className={classes.caption}>{t('menu')}</span>
+              <IconDots size={24} stroke={2} aria-hidden="true" />
             </UnstyledButton>
           }
         />
+      </div>
+      <div className={classes.ticket} data-setup={setup || undefined}>
+        {setup ? (
+          <div className={classes.setup}>{t('setup')}</div>
+        ) : (
+          <>
+            {roundCell}
+            <span className={classes.divider} aria-hidden="true" />
+            {escalationCell}
+          </>
+        )}
       </div>
     </header>
   );
