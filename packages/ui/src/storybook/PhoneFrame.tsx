@@ -15,13 +15,14 @@ export interface PhoneFrameParameter {
   overlay?: boolean;
 }
 
-const viewportNames: Record<Viewport, string> = {
+export const viewportNames: Record<Viewport, string> = {
   narrow: 'Narrow',
   phone: 'Phone',
+  large: 'Large',
   desktop: 'Desktop',
 };
 
-const viewportList = Object.keys(viewportNames) as Viewport[];
+export const viewportList = Object.keys(viewportNames) as Viewport[];
 
 export const frameGlobalType = {
   frame: {
@@ -43,7 +44,7 @@ function isViewport(value: unknown): value is Viewport {
 }
 
 export function frameViewportOf(frame: unknown): Viewport {
-  return isViewport(frame) ? frame : 'phone';
+  return isViewport(frame) ? frame : 'narrow';
 }
 
 function phoneStyle(viewport: Viewport): CSSProperties {
@@ -59,7 +60,7 @@ export function PhoneFrame({
   children,
   overlay = false,
   docs = false,
-  viewport = 'phone',
+  viewport = 'narrow',
 }: PhoneFrameProps) {
   return (
     <div

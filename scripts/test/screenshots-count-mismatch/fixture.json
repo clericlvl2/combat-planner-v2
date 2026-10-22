@@ -1,9 +1,0 @@
-{
-  "script": "check-screenshots",
-  "expect": "baseline count",
-  "ops": [
-    {
-      "remove": "packages/ui/__screenshots__/Button/FullWidthWithIcon.png"
-    }
-  ]
-}
