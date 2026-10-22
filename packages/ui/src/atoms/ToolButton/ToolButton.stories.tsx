@@ -36,6 +36,7 @@ const sortDefault = { icon: IconSortDescending, ariaKey: 'sort' } as const;
 const sortActive = { icon: IconSortDescending, labelKey: 'lastPlayed', active: true } as const;
 const tagsDefault = { icon: IconTags, labelKey: 'tags' } as const;
 const tagsActiveCount = { icon: IconTags, labelKey: 'tags', count: 2, active: true } as const;
+const tagsIconCount = { icon: IconTags, ariaKey: 'tags', count: 2, active: true } as const;
 
 const states = ['default', 'pressed', 'disabled', 'focus'] as const;
 type State = (typeof states)[number];
@@ -65,6 +66,7 @@ export const AllStates = meta.story({
         row('Label', tagsDefault),
         row('Active', sortActive),
         row('Active with count', tagsActiveCount),
+        row('Icon with count', tagsIconCount),
       ]}
     />
   ),
@@ -72,10 +74,29 @@ export const AllStates = meta.story({
 
 export const LongCount = meta.story({
   tags: ['visual'],
-  args: { ...tagsActiveCount, count: 12 },
+  args: { ...tagsIconCount, count: 12 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'ToolButton');
-    await expect(canvas.getByRole('button', { name: `${t('tags')} 12` })).toBeVisible();
+    const button = canvas.getByRole('button', { name: t('tags') });
+    const badge = canvas.getByText('12');
+    await expect(button).toContainElement(badge);
+    const box = button.getBoundingClientRect();
+    const corner = badge.getBoundingClientRect();
+    await expect(corner.top).toBeLessThan(box.top);
+    await expect(corner.right).toBeGreaterThan(box.right);
+  },
+});
+
+export const LabelledCountInline = meta.story({
+  tags: ['!dev'],
+  args: tagsActiveCount,
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ToolButton');
+    const button = canvas.getByRole('button', { name: `${t('tags')} 2` });
+    const box = button.getBoundingClientRect();
+    const count = canvas.getByText('2').getBoundingClientRect();
+    await expect(count.top).toBeGreaterThanOrEqual(box.top);
+    await expect(count.right).toBeLessThanOrEqual(box.right);
   },
 });
 
