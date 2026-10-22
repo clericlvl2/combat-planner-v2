@@ -67,13 +67,6 @@ function ShareSheetCell({
   );
 }
 
-const openSheetGeometry = {
-  truncation: {
-    reason: 'the player link ends with an ellipsis by design',
-    except: '[data-url]',
-  },
-};
-
 const meta = preview.meta({
   title: 'Organisms/ShareSheet',
   component: ShareSheetCell,
@@ -112,7 +105,6 @@ const restFocusOnSheet = async (sheet: HTMLElement) => {
 
 export const Default = meta.story({
   tags: ['visual'],
-  parameters: { geometry: openSheetGeometry },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'ShareSheet');
     await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
@@ -127,7 +119,6 @@ export const Default = meta.story({
 
 export const LinkCopied = meta.story({
   tags: ['visual'],
-  parameters: { geometry: openSheetGeometry },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'ShareSheet');
     await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
@@ -142,7 +133,6 @@ export const LinkCopied = meta.story({
 });
 
 export const LongCombatTitle = meta.story({
-  parameters: { geometry: openSheetGeometry },
   args: { combatTitle: 'Засада у переправы через Чёрную реку на рассвете второго дня' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'ShareSheet');
@@ -156,7 +146,6 @@ export const LongCombatTitle = meta.story({
 
 export const LinkEllipsisAndQr = meta.story({
   tags: ['!dev'],
-  parameters: { geometry: openSheetGeometry },
   play: async ({ args, canvas, canvasElement }) => {
     const link = canvas.getByText(linkG3);
     await expect(link).toHaveTextContent(linkG3);
@@ -171,7 +160,6 @@ export const LinkEllipsisAndQr = meta.story({
 
 export const AfterReissueNewLink = meta.story({
   tags: ['!dev'],
-  parameters: { geometry: openSheetGeometry },
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'ShareSheet');
     await userEvent.click(canvas.getByRole('button', { name: t('reissue') }));
@@ -187,7 +175,6 @@ export const AfterReissueNewLink = meta.story({
 
 export const FailedCopyKeepsCopy = meta.story({
   tags: ['!dev'],
-  parameters: { geometry: openSheetGeometry },
   args: { copyResult: false },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'ShareSheet');
@@ -203,7 +190,6 @@ export const FailedCopyKeepsCopy = meta.story({
 
 export const AsyncCopyShowsCopied = meta.story({
   tags: ['!dev'],
-  parameters: { geometry: openSheetGeometry },
   args: { copyResult: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'ShareSheet');
@@ -220,7 +206,6 @@ export const ReopenResetsCopied = meta.story({
   tags: ['!dev'],
   parameters: {
     geometry: {
-      ...openSheetGeometry,
       tapTargets: {
         reason: 'the Share opener is a story fixture, not product UI',
         except: '[data-story-fixture]',

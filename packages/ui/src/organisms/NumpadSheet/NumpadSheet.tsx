@@ -302,7 +302,9 @@ export function NumpadSheet({
             </span>
             <VisuallyHidden>{t(role)}</VisuallyHidden>
           </span>
-          <h2 className={classes.name}>{name}</h2>
+          <h2 className={classes.name} data-ellipsis="">
+            {name}
+          </h2>
         </>
       }
     >

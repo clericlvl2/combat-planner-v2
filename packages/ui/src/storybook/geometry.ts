@@ -340,6 +340,7 @@ function truncationFindings(root: HTMLElement): Finding[] {
   return findingsOf(
     shownElements(root).filter((element) => {
       if (!hasOwnText(element) || isTextControl(element)) return false;
+      if (element.hasAttribute('data-ellipsis')) return false;
       const style = getComputedStyle(element);
       if (isScroller(style.overflowX) || isScroller(style.overflowY)) return false;
       if (element.scrollWidth > element.clientWidth) return true;

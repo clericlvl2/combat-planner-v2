@@ -21,7 +21,9 @@ export function PlayerHeader({ title, round, escalation, className, ...rest }: P
       <div className={classes.statusBar} aria-hidden="true" />
       <div className={classes.body}>
         <div className={classes.text}>
-          <span className={classes.title}>{title}</span>
+          <span className={classes.title} data-ellipsis="">
+            {title}
+          </span>
           <h1 className={classes.main}>{setup ? t('setup') : t('round', { round })}</h1>
         </div>
         {setup ? null : <EscalationDie value={escalation} readOnly />}

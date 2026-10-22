@@ -427,7 +427,9 @@ export function CombatHeader({
             onClick={() => onBack()}
           />
         ) : null}
-        <h1 className={classes.title}>{title}</h1>
+        <h1 className={classes.title} data-ellipsis="">
+          {title}
+        </h1>
         <Menu
           opened={menuOpen}
           width={MENU_WIDTH}

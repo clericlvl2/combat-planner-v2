@@ -155,13 +155,6 @@ const wyrmling = playerUnit({
 
 const pageCellInset = layout.contentEdge;
 
-const noteEllipsis = {
-  truncation: {
-    reason: 'the collapsed note is one line with an ellipsis by design',
-    except: '[data-note-line]',
-  },
-};
-
 const screen: CSSProperties = { padding: pageCellInset };
 
 type PlayerRowCellProps = Omit<PlayerRowProps, 'claimedByName'> & { hostCollapse?: boolean };
@@ -252,7 +245,6 @@ const meta = preview.meta({
 });
 
 export const OwnHero = meta.story({
-  parameters: { geometry: noteEllipsis },
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -279,7 +271,6 @@ export const OwnHero = meta.story({
 });
 
 export const OwnHeroActiveTurn = meta.story({
-  parameters: { geometry: noteEllipsis },
   args: { active: true },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('[data-active][data-mine]')).not.toBeNull();
@@ -332,7 +323,6 @@ export const NoteEditing = meta.story({
 });
 
 export const SetupNoInitiative = meta.story({
-  parameters: { geometry: noteEllipsis },
   args: {
     unit: playerUnit({ ...vashtiSeed, initiative: null }),
     setup: true,
@@ -447,7 +437,6 @@ export const FourConditions = meta.story({
 });
 
 export const OwnHeroDead = meta.story({
-  parameters: { geometry: noteEllipsis },
   args: { unit: playerUnit({ ...vashtiSeed, hp: -4, conditions: [] }) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -457,7 +446,6 @@ export const OwnHeroDead = meta.story({
 });
 
 export const OwnHeroLongName = meta.story({
-  parameters: { geometry: noteEllipsis },
   args: { unit: playerUnit({ ...vashtiSeed, name: 'Вашти Заклинательница с Чёрной переправы' }) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -469,7 +457,6 @@ export const OwnHeroLongName = meta.story({
 });
 
 export const ChangedRowFlash = meta.story({
-  parameters: { geometry: noteEllipsis },
   args: { flash: true },
   render: (args) => (
     <div style={{ display: 'grid', alignContent: 'start', minHeight: 0, overflowY: 'auto' }}>
@@ -488,7 +475,6 @@ export const ChangedRowFlash = meta.story({
   },
 });
 export const TapRowExpandsAndCollapses = meta.story({
-  parameters: { geometry: noteEllipsis },
   tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
@@ -534,7 +520,6 @@ export const TapNoteEditsEnterSaves = meta.story({
 });
 
 export const CollapseSavesNote = meta.story({
-  parameters: { geometry: noteEllipsis },
   tags: ['!dev'],
   args: { expanded: true },
   play: async ({ args, canvas, globals }) => {
@@ -558,7 +543,6 @@ export const HostCollapseSavesNote = meta.story({
   tags: ['!dev'],
   parameters: {
     geometry: {
-      ...noteEllipsis,
       tapTargets: {
         reason: 'the story harness button that drives the host is a test fixture, not product UI',
         except: '[data-story-fixture]',
@@ -583,7 +567,6 @@ export const HostCollapseSavesNote = meta.story({
 });
 
 export const RoleFillsRow = meta.story({
-  parameters: { geometry: noteEllipsis },
   tags: ['!dev'],
   play: async ({ canvas, canvasElement }) => {
     const row = canvas
@@ -677,7 +660,7 @@ async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: 
 
 export const KeyboardWithMotionOn = meta.story({
   tags: ['!dev'],
-  parameters: { motion: 'on', geometry: noteEllipsis },
+  parameters: { motion: 'on' },
   play: async ({ args, canvasElement, globals }) => {
     const t = storyT(globals, 'PlayerRow');
     await keyboardWalk(canvasElement, args, t);

@@ -95,15 +95,6 @@ const shadowArcher = unitOf({
   disabled: true,
 });
 
-const noteEllipsis = {
-  geometry: {
-    truncation: {
-      reason: 'the collapsed note is one line with an ellipsis by design',
-      except: '[data-note-line]',
-    },
-  },
-};
-
 const screen: CSSProperties = { padding: layout.contentEdge };
 
 type UnitRowCellProps = Omit<UnitRowProps, 'claimedByName' | 'readOnly' | keyof UnitRowCallbacks> &
@@ -299,7 +290,6 @@ export const AllyTempHpLongName = meta.story({
 });
 
 export const WithNote = meta.story({
-  parameters: noteEllipsis,
   args: { active: false, unit: unitOf({ ...vashtiSeed, note: hexNote }) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'UnitRow');
@@ -368,7 +358,6 @@ export const ConditionsOpen = meta.story({
 });
 
 export const InitiativePopoverOpen = meta.story({
-  parameters: noteEllipsis,
   tags: ['visual'],
   args: { unit: vashtiExpanded, initiativeOpen: true },
   play: async ({ canvas, globals }) => {
@@ -543,7 +532,6 @@ export const ReadOnly = meta.story({
 });
 
 export const TapRowExpands = meta.story({
-  parameters: noteEllipsis,
   tags: ['!dev'],
   args: { unit: vashtiExpanded },
   play: async ({ args, canvas, globals }) => {
@@ -563,7 +551,6 @@ export const TapRowExpands = meta.story({
 });
 
 export const TapRoleBlockSetsInitiative = meta.story({
-  parameters: noteEllipsis,
   tags: ['!dev'],
   args: { unit: vashtiExpanded, active: false },
   play: async ({ args, canvas, globals }) => {
@@ -624,7 +611,6 @@ export const EachActionFiresOnce = meta.story({
 });
 
 export const RoleBlockClosesPopover = meta.story({
-  parameters: noteEllipsis,
   tags: ['!dev'],
   args: { unit: vashtiExpanded, active: false, initiativeOpen: true },
   play: async ({ args, canvas, globals }) => {

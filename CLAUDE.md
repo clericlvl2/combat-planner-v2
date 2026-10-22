@@ -103,7 +103,8 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `UiProvider` takes `motion: 'off'` in Storybook.
 - Geometry invariants run after every story (`packages/ui/.storybook/preview.tsx` → `expectGeometry`):
   no horizontal overflow, tap targets at least `layout.tapTarget` (44 px), content inside the phone
-  frame, no unintended truncation, overlays aligned with the frame, no Latin or Cyrillic word split
+  frame, no unintended truncation (an element whose one-line or clamped ellipsis is designed carries
+  `data-ellipsis` and is skipped), overlays aligned with the frame, no Latin or Cyrillic word split
   across lines (`wordBreaks`), every `[data-sheet-action]` of an open sheet visible without scrolling
   (`actionsVisible`), a drawer scrim strip at least `layout.tapTarget` wide (`scrimTarget`). A story
   opts out per check through `parameters.geometry`, with a reason string or

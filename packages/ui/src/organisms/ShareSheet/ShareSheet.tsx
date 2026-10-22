@@ -66,7 +66,7 @@ export function ShareSheet({
           />
         </div>
         <div className={classes.link}>
-          <span className={classes.url} data-url="">
+          <span className={classes.url} data-url="" data-ellipsis="">
             {url}
           </span>
           <UnstyledButton

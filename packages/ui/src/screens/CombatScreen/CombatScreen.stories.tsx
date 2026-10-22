@@ -509,12 +509,6 @@ export const ConditionAndNoteSaved = meta.story({
 
 export const RowWithConditionsAndNote = meta.story({
   parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the collapsed note is one line with an ellipsis by design',
-        except: '[data-note-line]',
-      },
-    },
     scenario: runningScenario({
       units: rosterUnits({ vashti: { conditions: ['dazed', 'weakened'] } }),
     }),
@@ -746,14 +740,6 @@ export const UndoLastAction = meta.story({
 
 export const ShareSheet = meta.story({
   tags: ['visual'],
-  parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the player link ends with an ellipsis by design',
-        except: '[data-url]',
-      },
-    },
-  },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const sheet = await openShare(canvas, t);
@@ -785,14 +771,6 @@ export const CopyLinkToClipboard = meta.story({
 });
 
 export const RevokeLinkConfirmation = meta.story({
-  parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the player link ends with an ellipsis by design',
-        except: '[data-url]',
-      },
-    },
-  },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const sheet = await openShare(canvas, t);
@@ -1112,14 +1090,6 @@ export const RemoveUndoIgnoredAfterNextTurn = meta.story({
 
 export const RevokeReissuesLink = meta.story({
   tags: ['!dev'],
-  parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the player link ends with an ellipsis by design',
-        except: '[data-url]',
-      },
-    },
-  },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const sheet = await openShare(canvas, t);

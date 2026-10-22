@@ -80,7 +80,7 @@ export function NoteField({
           role="img"
           aria-label={fieldLabel}
         />
-        <span className={classes.lineText} data-note-line="">
+        <span className={classes.lineText} data-note-line="" data-ellipsis="">
           {value}
         </span>
       </div>

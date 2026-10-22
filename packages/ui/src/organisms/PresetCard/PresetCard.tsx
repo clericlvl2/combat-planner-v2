@@ -88,7 +88,12 @@ export function PresetCard({
           {preset.name}
         </UnstyledButton>
         <DefenseLine ac={preset.ac} pd={preset.pd} md={preset.md} />
-        <span className={classes.tags} data-tag-line data-empty={tags.length === 0 || undefined}>
+        <span
+          className={classes.tags}
+          data-tag-line
+          data-ellipsis=""
+          data-empty={tags.length === 0 || undefined}
+        >
           {tags.length > 0 ? tags.join(TAG_SEPARATOR) : t('noTags')}
         </span>
       </div>

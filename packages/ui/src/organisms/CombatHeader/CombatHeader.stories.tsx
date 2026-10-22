@@ -208,11 +208,6 @@ export const SetupMenuOpen = meta.story({
 
 export const LongTitle = meta.story({
   tags: ['visual'],
-  parameters: {
-    geometry: {
-      truncation: { reason: 'the long combat title ends with an ellipsis by design', except: 'h1' },
-    },
-  },
   args: { title: 'Капитан стражи переправы: засада у моста', round: 99, escalation: 6 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatHeader');

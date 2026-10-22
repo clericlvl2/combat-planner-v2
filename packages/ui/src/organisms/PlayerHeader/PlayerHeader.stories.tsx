@@ -50,14 +50,6 @@ export const Setup = meta.story({
 });
 
 export const LongTitle = meta.story({
-  parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the long combat title ends with an ellipsis by design',
-        except: 'span:has(+ h1)',
-      },
-    },
-  },
   args: { title: 'Капитан стражи переправы: засада у моста', round: 12, escalation: 6 },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerHeader');

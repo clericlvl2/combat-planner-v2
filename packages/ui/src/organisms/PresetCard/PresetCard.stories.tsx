@@ -184,14 +184,6 @@ export const ThreeDigitHp = meta.story({
 });
 
 export const ManyTagsEllipsis = meta.story({
-  parameters: {
-    geometry: {
-      truncation: {
-        reason: 'the tag line is one line with an ellipsis by design',
-        except: '[data-tag-line]',
-      },
-    },
-  },
   args: {
     tags: ['Orcs', 'Ferry', 'Bosses', 'Named NPCs', 'Mountains', 'Night ambush', 'Chapter 3'],
   },
