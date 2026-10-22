@@ -89,9 +89,11 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    Ports published by Docker bypass ufw; `compose.yml` publishes only Caddy's 80/tcp and
    443/tcp+udp.
 
-4. **Docker.** Docker Engine with the compose plugin from Docker's apt repository:
+4. **Docker.** Docker Engine with the compose plugin from Docker's apt repository, in place of
+   Ubuntu's `docker.io` packages:
 
    ```sh
+   apt-get remove -y docker.io docker-compose docker-compose-v2 podman-docker containerd runc
    apt-get install -y ca-certificates curl git
    install -m 0755 -d /etc/apt/keyrings
    curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -100,7 +102,9 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    apt-get update
    apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
    echo '{"log-driver": "local", "log-opts": {"max-size": "10m", "max-file": "3"}}' > /etc/docker/daemon.json
-   systemctl restart docker
+   systemctl daemon-reload
+   systemctl reset-failed docker.service docker.socket
+   systemctl restart docker.socket docker
    usermod -aG docker deploy
    ```
 
@@ -109,7 +113,7 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 5. **Files.** The checkout is read-only on the server; only `deploy/.env` is added.
 
    ```sh
-   git clone https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
+   git clone --branch main https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
    chown -R deploy:deploy /opt/combat-planner
    ```
 
