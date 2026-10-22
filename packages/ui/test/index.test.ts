@@ -11,7 +11,6 @@ const names = [
   'Radio',
   'RoleBlock',
   'SearchField',
-  'StatSquare',
   'Swatch',
   'TextArea',
   'TextField',

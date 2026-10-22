@@ -72,7 +72,7 @@ export function PresetCard({
           </span>
         </div>
         <span className={classes.defenses}>
-          <DefenseLine variant="squares" ac={preset.ac} pd={preset.pd} md={preset.md} />
+          <DefenseLine ac={preset.ac} pd={preset.pd} md={preset.md} />
           <HpBox viewer="dm" preset maxHp={preset.maxHp} />
         </span>
         <UnstyledButton

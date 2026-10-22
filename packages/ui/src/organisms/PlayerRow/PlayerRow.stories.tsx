@@ -254,9 +254,11 @@ export const OwnHero = meta.story({
     await expect(canvas.getByText('Mika')).toBeVisible();
     await expect(canvas.getByRole('img', { name: t('claimedBy') })).toBeVisible();
     await expect(
-      canvas.getByText(
-        `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
-      ),
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
+      }),
     ).toBeVisible();
     await expect(canvas.getByRole('listitem')).toHaveTextContent(t('dazed'));
     await expect(canvas.getByText('Concentrating on Hex')).toBeVisible();
@@ -384,9 +386,11 @@ export const AllyTempHpLongName = meta.story({
     const t = storyT(globals, 'PlayerRow');
     await expect(canvas.getByText(t('HpBox:temp', { amount: 5 }))).toBeVisible();
     await expect(
-      canvas.getByText(
-        `${t('DefenseLine:ac')} 17 · ${t('DefenseLine:pd')} 15 · ${t('DefenseLine:md')} 13`,
-      ),
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 17 · ${t('DefenseLine:pd')} 15 · ${t('DefenseLine:md')} 13`,
+      }),
     ).toBeVisible();
     await expect(canvas.queryByRole('img', { name: t('claimedBy') })).toBeNull();
   },
@@ -474,9 +478,11 @@ export const TapRowExpandsAndCollapses = meta.story({
     const t = storyT(globals, 'PlayerRow');
     const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
     await userEvent.click(
-      canvas.getByText(
-        `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
-      ),
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
+      }),
     );
     await expect(args.onToggle).toHaveBeenCalledOnce();
     await expect(name).toHaveAttribute('aria-expanded', 'true');

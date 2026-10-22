@@ -209,9 +209,11 @@ export const ActiveTurnWounded = meta.story({
     await expect(chevron).toHaveAttribute('aria-expanded', 'false');
     await expect(canvas.getByText('Vashti the Hexer')).toBeVisible();
     await expect(
-      canvas.getByText(
-        `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 14 · ${t('DefenseLine:md')} 19`,
-      ),
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 14 · ${t('DefenseLine:md')} 19`,
+      }),
     ).toBeVisible();
     await expect(canvas.getByRole('listitem')).toHaveTextContent(t('dazed'));
     await expect(

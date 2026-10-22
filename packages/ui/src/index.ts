@@ -35,7 +35,6 @@ export { NumberField } from './atoms/NumberField/NumberField.tsx';
 export { Radio } from './atoms/Radio/Radio.tsx';
 export { RoleBlock } from './atoms/RoleBlock/RoleBlock.tsx';
 export { SearchField } from './atoms/SearchField/SearchField.tsx';
-export { StatSquare } from './atoms/StatSquare/StatSquare.tsx';
 export { Swatch } from './atoms/Swatch/Swatch.tsx';
 export { TextArea } from './atoms/TextArea/TextArea.tsx';
 export { TextField } from './atoms/TextField/TextField.tsx';
