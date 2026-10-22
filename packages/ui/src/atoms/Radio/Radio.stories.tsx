@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Radio.json';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 import { Radio } from './Radio.tsx';
 import type { RadioProps } from './Radio.tsx';
 
@@ -82,36 +84,42 @@ const meta = preview.meta({
   args: { checked: false, onChange: fn() },
 });
 
-const renderTap = (args: RadioCellProps) => <RadioCell {...args} data-tap="" />;
-
 const renderGroup = (args: RadioCellProps) => <RadioGroupCell {...args} />;
 
-export const OnM = meta.story({
-  name: 'On, M',
-  args: { checked: true, size: 'M' },
+const states = ['off', 'on', 'disabled', 'disabled on', 'focus', 'tap'] as const;
+type State = (typeof states)[number];
+
+const row = (size: RadioProps['size'] & string) => ({
+  label: size,
+  render: (state: State) => (
+    <RadioCell
+      size={size}
+      name={`${size}-${state}`}
+      onChange={fn()}
+      checked={state === 'on' || state === 'disabled on' || state === 'tap'}
+      disabled={state === 'disabled' || state === 'disabled on'}
+      data-focus={state === 'focus' ? '' : undefined}
+      data-tap={state === 'tap' ? '' : undefined}
+    />
+  ),
 });
 
-export const Off = meta.story({
-  name: 'Off',
-  args: { checked: false },
+export const AllStates = meta.story({
+  tags: ['visual'],
+  render: () => <StateGrid columns={states} rows={[row('S'), row('M'), row('L')]} />,
 });
 
-export const On = meta.story({
-  name: 'On',
-  args: { checked: true },
+export const GroupOfOptions = meta.story({
+  args: { checked: false, onChange: fn() },
+  render: renderGroup,
 });
 
-export const Tap = meta.story({
-  name: 'Tap',
-  args: { checked: true },
-  render: renderTap,
-});
-
-export const Disabled = meta.story({
-  name: 'Disabled',
+export const DisabledIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { checked: false, disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const radio = canvas.getByRole('radio', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    const radio = canvas.getByRole('radio', { name: t('select') });
     await expect(radio).toBeDisabled();
     await userEvent.click(radio, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -119,31 +127,12 @@ export const Disabled = meta.story({
   },
 });
 
-export const OnDisabled = meta.story({
-  name: 'On, disabled',
-  args: { checked: true, disabled: true },
-});
-
-export const S = meta.story({
-  name: 'S',
-  args: { checked: true, size: 'S' },
-});
-
-export const M = meta.story({
-  name: 'M',
-  args: { checked: true, size: 'M' },
-});
-
-export const L = meta.story({
-  name: 'L',
-  args: { checked: true, size: 'L' },
-});
-
-export const ExtraSelect = meta.story({
-  name: 'Tap selects',
+export const ClickSelects = meta.story({
+  tags: ['!dev'],
   args: { checked: false, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const radio = canvas.getByRole('radio', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    const radio = canvas.getByRole('radio', { name: t('select') });
     await userEvent.click(radio);
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('newestFirst');
@@ -153,25 +142,27 @@ export const ExtraSelect = meta.story({
   },
 });
 
-export const ExtraLabelClick = meta.story({
-  name: 'Label click selects',
+export const LabelClickSelects = meta.story({
+  tags: ['!dev'],
   args: { checked: false, onChange: fn() },
   render: renderGroup,
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
-    await userEvent.click(canvas.getByText('Last played'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
+    await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith('lastPlayed');
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).not.toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).not.toBeChecked();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Space selects',
+export const SpaceSelects = meta.story({
+  tags: ['!dev'],
   args: { checked: false, labelKey: 'lastPlayed', value: 'lastPlayed', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const radio = canvas.getByRole('radio', { name: 'Last played' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    const radio = canvas.getByRole('radio', { name: t('lastPlayed') });
     await userEvent.tab();
     await expect(radio).toHaveFocus();
     await userEvent.keyboard('[Space]');
@@ -180,76 +171,28 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraGroupArrows = meta.story({
-  name: 'Group: arrow keys move the selection',
+export const ArrowsMoveWithinGroup = meta.story({
+  tags: ['!dev'],
   args: { checked: false, onChange: fn() },
   render: renderGroup,
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('lastPlayed');
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
   },
 });
 
-export const ExtraDisabledLabel = meta.story({
-  name: 'Disabled group',
+export const DisabledGroupIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { checked: false, disabled: true, onChange: fn() },
   render: renderGroup,
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Last played'), { pointerEventsCheck: 0 });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Radio');
+    await userEvent.click(canvas.getByText(t('lastPlayed')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Zuletzt gespielt' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es',
-  globals: { locale: 'es' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Última partida' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr',
-  globals: { locale: 'fr' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Dernière partie' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: '最近プレイ順' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { checked: true },
-  render: renderGroup,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radio', { name: 'Последняя игра' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
   },
 });

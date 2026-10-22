@@ -14,17 +14,11 @@ import {
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import zlib from 'node:zlib';
 
 const testDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(testDir, '../..');
-const checkScripts = ['check-stories', 'check-i18n', 'check-screenshots'];
-const copiedTrees = [
-  'packages/ui/src',
-  'packages/ui/__screenshots__',
-  'packages/ui/test',
-  'vite.config.ts',
-];
+const checkScripts = ['check-stories', 'check-i18n'];
+const copiedTrees = ['packages/ui/src', 'packages/ui/test', 'vite.config.ts'];
 
 function plantTree() {
   const copy = mkdtempSync(path.join(os.tmpdir(), 'cp-check-'));
@@ -41,29 +35,6 @@ function plantTree() {
   }
   symlinkSync(path.join(rootDir, 'node_modules'), path.join(copy, 'node_modules'), 'dir');
   return copy;
-}
-
-function crcChunk(type, data) {
-  const typed = Buffer.concat([Buffer.from(type, 'ascii'), data]);
-  const length = Buffer.alloc(4);
-  length.writeUInt32BE(data.length);
-  const crc = Buffer.alloc(4);
-  crc.writeUInt32BE(zlib.crc32(typed));
-  return Buffer.concat([length, typed, crc]);
-}
-
-function png(width, height) {
-  const header = Buffer.alloc(13);
-  header.writeUInt32BE(width, 0);
-  header.writeUInt32BE(height, 4);
-  header.set([8, 2, 0, 0, 0], 8);
-  const rows = Buffer.alloc((width * 3 + 1) * height);
-  return Buffer.concat([
-    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    crcChunk('IHDR', header),
-    crcChunk('IDAT', zlib.deflateSync(rows)),
-    crcChunk('IEND', Buffer.alloc(0)),
-  ]);
 }
 
 function applyOperation(copy, operation) {
@@ -90,10 +61,6 @@ function applyOperation(copy, operation) {
     const file = path.join(copy, operation.write);
     mkdirSync(path.dirname(file), { recursive: true });
     writeFileSync(file, operation.content);
-  } else if (operation.png) {
-    const file = path.join(copy, operation.png);
-    mkdirSync(path.dirname(file), { recursive: true });
-    writeFileSync(file, png(operation.width, operation.height));
   } else {
     throw new Error(`unknown fixture operation ${JSON.stringify(operation)}`);
   }

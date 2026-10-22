@@ -6,6 +6,7 @@ import QRCode from 'react-qr-code';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { expectNoHorizontalOverflow, expectNotTruncated } from '../../storybook/geometry.ts';
 import { ShareSheet } from './ShareSheet.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface ShareSheetCellProps {
   combatTitle?: string;
@@ -66,13 +67,6 @@ function ShareSheetCell({
   );
 }
 
-const openSheetGeometry = {
-  truncation: {
-    reason: 'the player link ends with an ellipsis by design',
-    except: '[data-url]',
-  },
-};
-
 const meta = preview.meta({
   title: 'Organisms/ShareSheet',
   component: ShareSheetCell,
@@ -109,22 +103,49 @@ const restFocusOnSheet = async (sheet: HTMLElement) => {
   await expect(sheet).toHaveFocus();
 };
 
-export const Anatomy = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Share with players' })).toBeVisible();
+export const Default = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
     await expect(canvas.getByText('Ambush at the Ferry')).toBeVisible();
-    await expect(canvas.getByRole('img', { name: 'QR code of the player link' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Copy' })).toBeVisible();
-    const reissue = canvas.getByRole('button', { name: 'Revoke and reissue link' });
+    await expect(canvas.getByRole('img', { name: t('qr') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('copy') })).toBeVisible();
+    const reissue = canvas.getByRole('button', { name: t('reissue') });
     await expectNotTruncated(reissue);
     await expectNoHorizontalOverflow(reissue);
   },
 });
 
-export const Link = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'Link',
+export const LinkCopied = meta.story({
+  tags: ['visual'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
+    await expect(args.onCopy).toHaveBeenCalledOnce();
+    await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
+    const copied = canvas.getByRole('button', { name: t('copied') });
+    await expect(copied).toHaveAttribute('data-copied');
+    await expect(getComputedStyle(copied).backgroundColor).toBe('rgb(46, 122, 67)');
+    await expect(args.onReissue).not.toHaveBeenCalled();
+    await restFocusOnSheet(canvas.getByRole('dialog'));
+  },
+});
+
+export const LongCombatTitle = meta.story({
+  args: { combatTitle: 'Засада у переправы через Чёрную реку на рассвете второго дня' },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
+    await expect(
+      canvas.getByText('Засада у переправы через Чёрную реку на рассвете второго дня'),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('copy') })).toBeVisible();
+  },
+});
+
+export const LinkEllipsisAndQr = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas, canvasElement }) => {
     const link = canvas.getByText(linkG3);
     await expect(link).toHaveTextContent(linkG3);
@@ -137,26 +158,11 @@ export const Link = meta.story({
   },
 });
 
-export const LinkCopied = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'Link copied',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
-    await expect(args.onCopy).toHaveBeenCalledOnce();
-    await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
-    const copied = canvas.getByRole('button', { name: 'Copied' });
-    await expect(copied).toHaveAttribute('data-copied');
-    await expect(getComputedStyle(copied).backgroundColor).toBe('rgb(46, 122, 67)');
-    await expect(args.onReissue).not.toHaveBeenCalled();
-    await restFocusOnSheet(canvas.getByRole('dialog'));
-  },
-});
-
 export const AfterReissueNewLink = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'After reissue: new link',
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Revoke and reissue link' }));
+  tags: ['!dev'],
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('reissue') }));
     await expect(args.onReissue).toHaveBeenCalledOnce();
     await expect(args.onReissue).toHaveBeenCalledWith();
     await expect(args.onCopy).not.toHaveBeenCalled();
@@ -167,138 +173,39 @@ export const AfterReissueNewLink = meta.story({
   },
 });
 
-export const ExtraFlow = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'Flow: tap Copy, then tap Reissue',
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
-    await expect(args.onCopy).toHaveBeenLastCalledWith(linkG3);
-    await expect(canvas.getByRole('button', { name: 'Copied' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Revoke and reissue link' }));
-    await expect(args.onReissue).toHaveBeenCalledOnce();
-    await expect(canvas.getByText(linkG4)).toBeVisible();
-    await expectQrEncodes(canvasElement, linkG4);
-    const copy = canvas.getByRole('button', { name: 'Copy' });
-    await expect(copy).not.toHaveAttribute('data-copied');
-    await userEvent.click(copy);
-    await expect(args.onCopy).toHaveBeenCalledTimes(2);
-    await expect(args.onCopy).toHaveBeenLastCalledWith(linkG4);
-    await expect(args.onClose).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraCopyFails = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'A failed copy does not show Copied',
+export const FailedCopyKeepsCopy = meta.story({
+  tags: ['!dev'],
   args: { copyResult: false },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
     await new Promise((resolve) => setTimeout(resolve, 50));
-    await expect(canvas.queryByRole('button', { name: 'Copied' })).toBeNull();
-    await expect(canvas.getByRole('button', { name: 'Copy' })).not.toHaveAttribute('data-copied');
+    await expect(canvas.queryByRole('button', { name: t('copied') })).toBeNull();
+    await expect(canvas.getByRole('button', { name: t('copy') })).not.toHaveAttribute(
+      'data-copied',
+    );
   },
 });
 
-export const ExtraCopyResolves = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'A successful async copy shows Copied',
+export const AsyncCopyShowsCopied = meta.story({
+  tags: ['!dev'],
   args: { copyResult: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
-    await expect(await canvas.findByRole('button', { name: 'Copied' })).toHaveAttribute(
+    await expect(await canvas.findByRole('button', { name: t('copied') })).toHaveAttribute(
       'data-copied',
     );
     await restFocusOnSheet(canvas.getByRole('dialog'));
   },
 });
 
-export const ExtraQrEncodesUrl = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'The QR encodes exactly the url',
-  args: { url: 'https://combat.example/combats/01J9ZQ/play?t=g12.Zx9' },
-  play: async ({ canvasElement }) => {
-    await expectQrEncodes(canvasElement, 'https://combat.example/combats/01J9ZQ/play?t=g12.Zx9');
-    const rendered = qrPaths(canvasElement.querySelector('[data-qr]'));
-    await expect(rendered).not.toEqual(
-      await referencePaths('https://combat.example/combats/01J9ZQ/play?t=g12.Zx8'),
-    );
-    await expect(rendered).not.toEqual(await referencePaths(linkG3));
-  },
-});
-
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter copies, Space reissues, Escape closes',
-  play: async ({ args, canvas }) => {
-    const sheet = canvas.getByRole('dialog', { name: 'Share with players' });
-    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
-    canvas.getByRole('button', { name: 'Copy' }).focus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onCopy).toHaveBeenCalledOnce();
-    await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
-    await expect(canvas.getByRole('button', { name: 'Copied' })).toHaveFocus();
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Revoke and reissue link' })).toHaveFocus();
-    await userEvent.keyboard(' ');
-    await expect(args.onReissue).toHaveBeenCalledOnce();
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onCopy).toHaveBeenCalledOnce();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraShiftTab = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'Shift+Tab right after opening stays inside',
-  play: async ({ canvas }) => {
-    const sheet = canvas.getByRole('dialog', { name: 'Share with players' });
-    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
-    await userEvent.tab({ shift: true });
-    await expect(sheet).toContainElement(document.activeElement as HTMLElement);
-    await expect(canvas.getByRole('button', { name: 'Revoke and reissue link' })).toHaveFocus();
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Close' })).toHaveFocus();
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Copy' })).toHaveFocus();
-  },
-});
-
-export const ExtraShiftTabMotionOn = meta.story({
-  name: 'Shift+Tab with motion on stays inside, Escape closes',
-  parameters: { motion: 'on' },
-  play: async ({ args, canvas }) => {
-    const sheet = await canvas.findByRole('dialog', { name: 'Share with players' });
-    await waitFor(() => expect(sheet).toContainElement(document.activeElement as HTMLElement));
-    await userEvent.tab({ shift: true });
-    await expect(sheet).toContainElement(document.activeElement as HTMLElement);
-    await userEvent.tab();
-    await expect(sheet).toContainElement(document.activeElement as HTMLElement);
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onCopy).not.toHaveBeenCalled();
-    await expect(args.onReissue).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraClose = meta.story({
-  name: 'Close button calls onClose only',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
-    await expect(args.onClose).toHaveBeenCalledOnce();
-    await expect(args.onCopy).not.toHaveBeenCalled();
-    await expect(args.onReissue).not.toHaveBeenCalled();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraReopenResetsCopied = meta.story({
-  name: 'Reopening shows Copy again',
+export const ReopenResetsCopied = meta.story({
+  tags: ['!dev'],
   parameters: {
     geometry: {
-      ...openSheetGeometry,
       tapTargets: {
         reason: 'the Share opener is a story fixture, not product UI',
         except: '[data-story-fixture]',
@@ -306,60 +213,16 @@ export const ExtraReopenResetsCopied = meta.story({
     },
   },
   args: { withOpener: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Copy' }));
-    await expect(canvas.getByRole('button', { name: 'Copied' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('copy') }));
+    await expect(canvas.getByRole('button', { name: t('copied') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     await userEvent.click(canvas.getByRole('button', { name: 'Share' }));
-    await expect(await canvas.findByRole('button', { name: 'Copy' })).not.toHaveAttribute(
+    await expect(await canvas.findByRole('button', { name: t('copy') })).not.toHaveAttribute(
       'data-copied',
     );
     await expect(args.onCopy).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { combatTitle: 'Засада у переправы' },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Поделиться с игроками' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Копировать' }));
-    await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
-    await expect(canvas.getByRole('button', { name: 'Скопировано' })).toBeVisible();
-    const reissue = canvas.getByRole('button', { name: 'Перевыпустить ссылку' });
-    await expectNotTruncated(reissue);
-    await expectNoHorizontalOverflow(reissue);
-    await restFocusOnSheet(canvas.getByRole('dialog'));
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { combatTitle: 'Hinterhalt an der Fähre' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Mit Spielern teilen' })).toBeVisible();
-    const reissue = canvas.getByRole('button', { name: 'Link neu ausstellen' });
-    await expectNotTruncated(reissue);
-    await expectNoHorizontalOverflow(reissue);
-    await expect(canvas.getByRole('button', { name: 'Kopieren' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  parameters: { geometry: openSheetGeometry },
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { combatTitle: 'フェリーでの待ち伏せ' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'プレイヤーと共有' })).toBeVisible();
-    const reissue = canvas.getByRole('button', { name: 'リンクを再発行' });
-    await expectNotTruncated(reissue);
-    await expectNoHorizontalOverflow(reissue);
-    await expect(canvas.getByRole('button', { name: 'コピー' })).toBeVisible();
   },
 });

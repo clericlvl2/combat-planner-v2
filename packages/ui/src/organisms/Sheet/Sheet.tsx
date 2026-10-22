@@ -1,6 +1,14 @@
 import { Modal, useProps } from '@mantine/core';
 import { IconChevronLeft, IconX } from '@tabler/icons-react';
-import { Children, Fragment, isValidElement, useCallback, useRef, useState } from 'react';
+import {
+  Children,
+  Fragment,
+  isValidElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
@@ -25,6 +33,8 @@ const defaultProps = { autoFocus: true } satisfies Partial<SheetProps>;
 function isFragment(node: ReactNode): node is ReactElement<{ children?: ReactNode }> {
   return isValidElement(node) && node.type === Fragment;
 }
+
+const textEntry = 'input:not([type="checkbox"], [type="radio"]), textarea';
 
 function flattenActions(node: ReactNode): ReactNode[] {
   return Children.toArray(node).flatMap((child) =>
@@ -54,6 +64,21 @@ export function Sheet(props: SheetProps) {
   autoFocusRef.current = autoFocus;
   const [present, setPresent] = useState(opened);
   if (opened && !present) setPresent(true);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const revealFocused = useCallback(() => {
+    const target = document.activeElement;
+    if (!(target instanceof HTMLElement) || !target.matches(textEntry)) return;
+    if (!contentRef.current?.contains(target)) return;
+    target.scrollIntoView({ block: 'nearest', behavior: motion === 'off' ? 'instant' : 'smooth' });
+  }, [motion]);
+
+  useEffect(() => {
+    const viewport = window.visualViewport;
+    if (!opened || !viewport) return;
+    viewport.addEventListener('resize', revealFocused);
+    return () => viewport.removeEventListener('resize', revealFocused);
+  }, [opened, revealFocused]);
 
   const attachSheet = useCallback((sheet: HTMLElement | null) => {
     if (!sheet || !autoFocusRef.current) return;
@@ -104,7 +129,12 @@ export function Sheet(props: SheetProps) {
           )}
           <IconButton icon={IconX} variant="outline" aria-label={t('close')} onClick={onClose} />
         </div>
-        <div className={classes.content} data-sheet-content="">
+        <div
+          ref={contentRef}
+          className={classes.content}
+          data-sheet-content=""
+          onFocus={revealFocused}
+        >
           {children}
         </div>
         {actionList.length > 0 ? (

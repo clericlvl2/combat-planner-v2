@@ -45,24 +45,26 @@ export function ConditionPicker({
       subtitle={unitName}
       onClose={onClose}
       actions={
-        <Button variant="primary" fullWidth onClick={onClose}>
+        <Button variant="primary" fullWidth onClick={onClose} data-sheet-action="">
           {t('done')}
         </Button>
       }
     >
-      <div className={classes.grid} style={gridStyle} role="group" aria-label={t('title')}>
-        {rows.map(({ condition, label }) => (
-          <Checkbox
-            key={condition}
-            className={classes.row}
-            data-condition={condition}
-            shape="round"
-            condition={condition}
-            checked={selected.has(condition)}
-            onChange={(checked) => toggle(condition, checked)}
-            label={<Chip condition={condition}>{label}</Chip>}
-          />
-        ))}
+      <div className={classes.picker}>
+        <div className={classes.grid} style={gridStyle} role="group" aria-label={t('title')}>
+          {rows.map(({ condition, label }) => (
+            <Checkbox
+              key={condition}
+              className={classes.row}
+              data-condition={condition}
+              shape="round"
+              condition={condition}
+              checked={selected.has(condition)}
+              onChange={(checked) => toggle(condition, checked)}
+              label={<Chip condition={condition}>{label}</Chip>}
+            />
+          ))}
+        </div>
       </div>
     </Sheet>
   );

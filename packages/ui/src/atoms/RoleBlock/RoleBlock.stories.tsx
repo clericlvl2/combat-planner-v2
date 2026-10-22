@@ -1,16 +1,16 @@
 import preview from '#.storybook/preview';
 import { expect, fn, userEvent } from 'storybook/test';
-import { base, interaction, roles } from '../../theme.ts';
+import { base, roles } from '../../theme.ts';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 import { RoleBlock } from './RoleBlock.tsx';
-import type { RoleBlockProps } from './RoleBlock.tsx';
+import type { RoleBlockProps, UnitRole } from './RoleBlock.tsx';
 
 const meta = preview.meta({
   title: 'Atoms/RoleBlock',
   component: RoleBlock,
   args: { unitRole: 'enemy', top: null },
 });
-
-const renderTap = (args: RoleBlockProps) => <RoleBlock {...args} data-tap="" />;
 
 const rgb = (hex: string) => {
   const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
@@ -22,111 +22,38 @@ const fillOf = (canvasElement: HTMLElement) => {
   return block ? getComputedStyle(block).backgroundColor : null;
 };
 
+const states = ['default', 'active turn', 'editable', 'dead', 'focus', 'tap'] as const;
+type State = (typeof states)[number];
+
+const row = (label: string, unitRole: UnitRole, value: number) => ({
+  label,
+  render: (state: State) => (
+    <RoleBlock
+      unitRole={unitRole}
+      top={{ kind: 'initiative', value }}
+      active={state === 'active turn'}
+      editable={state === 'editable' || state === 'focus' || state === 'tap'}
+      dead={state === 'dead'}
+      onClick={state === 'editable' || state === 'focus' || state === 'tap' ? fn() : undefined}
+      data-focus={state === 'focus' ? '' : undefined}
+      data-tap={state === 'tap' ? '' : undefined}
+    />
+  ),
+});
+
 const underlineOf = (element: HTMLElement) => getComputedStyle(element).borderBottomStyle;
 
-export const Anatomy = meta.story({
-  args: {
-    unitRole: 'hero',
-    top: { kind: 'initiative', value: 15 },
-    active: true,
-    editable: true,
-    onClick: fn(),
-  },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('15')).toBeVisible();
-    await expect(canvas.getByText('Hero')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.hero));
-    const notch = canvasElement.querySelector<HTMLElement>('[data-notch]');
-    await expect(notch && getComputedStyle(notch).borderLeftColor).toBe(rgb(base.accent));
-  },
-});
-
-export const Enemy = meta.story({
-  name: 'Enemy',
-  args: { unitRole: 'enemy', top: { kind: 'initiative', value: 17 } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('17')).toBeVisible();
-    await expect(canvas.getByText('Enemy')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
-    await expect(underlineOf(canvas.getByText('17'))).toBe('none');
-  },
-});
-
-export const Hero = meta.story({
-  name: 'Hero',
-  args: { unitRole: 'hero', top: { kind: 'initiative', value: 19 } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('19')).toBeVisible();
-    await expect(canvas.getByText('Hero')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.hero));
-  },
-});
-
-export const Ally = meta.story({
-  name: 'Ally',
-  args: { unitRole: 'ally', top: { kind: 'initiative', value: 9 } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('9')).toBeVisible();
-    await expect(canvas.getByText('Ally')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.ally));
-  },
-});
-
-export const ActiveTurn = meta.story({
-  name: 'Active turn',
-  args: { unitRole: 'hero', top: { kind: 'initiative', value: 15 }, active: true },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('15')).toBeVisible();
-    await expect(canvas.getByText('Hero')).toBeVisible();
-    await expect(canvasElement.querySelector('[data-notch]')).not.toBeNull();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.hero));
-  },
-});
-
-export const DMEditable = meta.story({
-  name: 'DM: editable',
-  args: {
-    unitRole: 'enemy',
-    top: { kind: 'initiative', value: 17 },
-    editable: true,
-    onClick: fn(),
-  },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(underlineOf(canvas.getByText('17'))).toBe('dashed');
-    await expect(canvas.getByRole('button', { name: '17 Enemy' })).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
-  },
-});
-
-export const Tap = meta.story({
-  name: 'Tap',
-  args: {
-    unitRole: 'enemy',
-    top: { kind: 'initiative', value: 17 },
-    editable: true,
-    onClick: fn(),
-  },
-  render: renderTap,
-  play: async ({ canvas, canvasElement }) => {
-    const button = canvas.getByRole('button', { name: '17 Enemy' });
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
-    await expect(getComputedStyle(button).outlineColor).toBe(rgb(interaction.tapMarker));
-    await expect(getComputedStyle(button).outlineWidth).toBe('3px');
-  },
-});
-
-export const NoInitiativeDie = meta.story({
-  name: 'No initiative: die',
-  args: { unitRole: 'hero', top: null },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('img', { name: 'No initiative' })).toBeVisible();
-    await expect(canvas.getByText('Hero')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.hero));
-  },
+export const AllStates = meta.story({
+  tags: ['visual'],
+  render: () => (
+    <StateGrid
+      columns={states}
+      rows={[row('Hero', 'hero', 19), row('Enemy', 'enemy', 17), row('Ally', 'ally', 9)]}
+    />
+  ),
 });
 
 export const OwnHero = meta.story({
-  name: 'Own hero',
   args: {
     unitRole: 'hero',
     top: { kind: 'initiative', value: 15 },
@@ -134,8 +61,9 @@ export const OwnHero = meta.story({
     editable: true,
     onClick: fn(),
   },
-  play: async ({ canvas }) => {
-    const chip = canvas.getByText('You');
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
+    const chip = canvas.getByText(t('you'));
     await expect(chip).toBeVisible();
     await expect(getComputedStyle(chip).color).toBe(rgb(roles.hero));
     await expect(getComputedStyle(chip).backgroundColor).toBe(rgb(base.surface));
@@ -143,87 +71,93 @@ export const OwnHero = meta.story({
   },
 });
 
-export const DeadDisabled = meta.story({
-  name: 'Dead / disabled',
-  args: { unitRole: 'enemy', top: { kind: 'initiative', value: 12 }, dead: true },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Enemy')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.inactive));
+export const NoInitiativeDie = meta.story({
+  tags: ['visual'],
+  args: { unitRole: 'hero', top: null },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
+    await expect(canvas.getByRole('img', { name: t('noInitiative') })).toBeVisible();
+    await expect(canvas.getByText(t('hero'))).toBeVisible();
+    await expect(fillOf(canvasElement)).toBe(rgb(roles.hero));
   },
 });
 
-export const PresetHP = meta.story({
-  name: 'Preset: HP',
-  args: { unitRole: 'enemy', top: { kind: 'hp', value: 40 } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('40')).toBeVisible();
-    await expect(canvas.getByText('HP')).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
+export const NeutralPreset = meta.story({
+  tags: ['visual'],
+  render: () => (
+    <div style={{ display: 'flex', gap: 8, height: 64 }}>
+      {(['hero', 'enemy', 'ally'] as const).map((unitRole) => (
+        <RoleBlock key={unitRole} fill unitRole={unitRole} top={{ kind: 'none' }} />
+      ))}
+    </div>
+  ),
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
+    const blocks = [...canvasElement.querySelectorAll<HTMLElement>('[data-unit-role]')];
+    await expect(blocks).toHaveLength(3);
+    for (const block of blocks) {
+      await expect(getComputedStyle(block).backgroundColor).toBe(rgb(base.soft));
+      await expect(getComputedStyle(block).color).toBe(rgb(base.ink));
+      await expect(block.getBoundingClientRect().width).toBe(48);
+    }
+    await expect(canvas.getByText(t('enemy'))).toBeVisible();
+    await expect(getComputedStyle(canvas.getByText(t('enemy'))).textTransform).toBe('uppercase');
+    await expect(canvas.queryByRole('img', { name: t('noInitiative') })).toBeNull();
+    await expect(blocks.map((block) => block.textContent).join('')).not.toMatch(/\d/);
   },
 });
 
-export const Preset320HP = meta.story({
-  name: 'Preset: 320 HP',
-  args: { unitRole: 'enemy', top: { kind: 'hp', value: 320 } },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('320')).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
-    const block = canvasElement.querySelector<HTMLElement>('[data-unit-role]');
-    await expect(block?.getBoundingClientRect().width).toBe(62);
+export const FocusRing = meta.story({
+  tags: ['!dev'],
+  args: { unitRole: 'hero', top: { kind: 'initiative', value: 15 }, editable: true, onClick: fn() },
+  render: (args: RoleBlockProps) => <RoleBlock {...args} data-focus="" />,
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
+    const button = canvas.getByRole('button', { name: `15 ${t('hero')}` });
+    await expect(getComputedStyle(button).outlineWidth).toBe('2px');
   },
 });
 
-export const Preset999HP = meta.story({
-  name: 'Preset: 999 HP',
-  args: { unitRole: 'enemy', top: { kind: 'hp', value: 999 } },
-  play: async ({ canvas, canvasElement }) => {
-    const value = canvas.getByText('999');
-    await expect(value).toBeVisible();
-    await expect(fillOf(canvasElement)).toBe(rgb(roles.enemy));
-    const block = canvasElement.querySelector<HTMLElement>('[data-unit-role]');
-    await expect(block?.getBoundingClientRect().width).toBe(62);
-    await expect(value.getBoundingClientRect().width).toBeLessThanOrEqual(58);
-  },
-});
-
-export const ExtraDisabledUnit = meta.story({
-  name: 'Disabled unit',
+export const DisabledUnitStaysClickable = meta.story({
+  tags: ['!dev'],
   args: { unitRole: 'ally', top: { kind: 'initiative', value: 8 }, disabled: true, onClick: fn() },
-  play: async ({ args, canvas, canvasElement }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
     await expect(fillOf(canvasElement)).toBe(rgb(roles.inactive));
-    await userEvent.click(canvas.getByRole('button', { name: '8 Ally' }));
+    await userEvent.click(canvas.getByRole('button', { name: `8 ${t('ally')}` }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
 
-export const ExtraNegativeInitiative = meta.story({
-  name: 'Negative initiative',
+export const NegativeInitiativeUsesMinus = meta.story({
+  tags: ['!dev'],
   args: { unitRole: 'enemy', top: { kind: 'initiative', value: -9 } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText('−9')).toBeVisible();
   },
 });
 
-export const ExtraClick = meta.story({
-  name: 'DM taps the block',
+export const ClickFiresOnce = meta.story({
+  tags: ['!dev'],
   args: {
     unitRole: 'enemy',
     top: { kind: 'initiative', value: 17 },
     editable: true,
     onClick: fn(),
   },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: '17 Enemy' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
+    await userEvent.click(canvas.getByRole('button', { name: `17 ${t('enemy')}` }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter and Space',
+export const EnterAndSpaceActivate = meta.story({
+  tags: ['!dev'],
   args: { unitRole: 'hero', top: { kind: 'initiative', value: 15 }, editable: true, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: '15 Hero' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RoleBlock');
+    const button = canvas.getByRole('button', { name: `15 ${t('hero')}` });
     await userEvent.tab();
     await expect(button).toHaveFocus();
     await userEvent.keyboard('{Enter}');
@@ -233,21 +167,19 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraFocus = meta.story({
-  name: 'Focus',
-  args: { unitRole: 'hero', top: { kind: 'initiative', value: 15 }, editable: true, onClick: fn() },
-  render: (args: RoleBlockProps) => <RoleBlock {...args} data-focus="" />,
-  play: async ({ canvas }) => {
-    const button = canvas.getByRole('button', { name: '15 Hero' });
-    await expect(getComputedStyle(button).outlineWidth).toBe('2px');
-  },
-});
-
-export const ExtraFill = meta.story({
-  name: 'fill takes the row height',
+export const FillTakesRowHeight = meta.story({
+  tags: ['!dev'],
   args: { unitRole: 'enemy', top: { kind: 'initiative', value: 17 }, fill: true },
   render: (args: RoleBlockProps) => (
-    <div style={{ display: 'flex', height: 64, width: 300, background: 'var(--cp-color-surface)' }}>
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        height: 64,
+        width: 300,
+        background: 'var(--cp-color-surface)',
+      }}
+    >
       <RoleBlock {...args} />
       <RoleBlock {...args} fill={false} data-testid="intrinsic" />
     </div>
@@ -255,56 +187,8 @@ export const ExtraFill = meta.story({
   play: async ({ canvas, canvasElement }) => {
     const filled = canvasElement.querySelector<HTMLElement>('[data-fill]');
     await expect(filled?.getBoundingClientRect().height).toBe(64);
-    await expect(canvas.getByTestId('intrinsic').getBoundingClientRect().height).toBe(80);
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { unitRole: 'ally', top: { kind: 'initiative', value: 9 }, mine: true },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByText('Verbündeter')).toBeVisible();
-    await expect(canvas.getByText('Du')).toBeVisible();
-    const block = canvasElement.querySelector<HTMLElement>('[data-unit-role]');
-    await expect(block?.getBoundingClientRect().width).toBe(62);
-  },
-});
-
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es',
-  globals: { locale: 'es' },
-  args: { unitRole: 'enemy', top: { kind: 'hp', value: 40 } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('PG')).toBeVisible();
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr',
-  globals: { locale: 'fr' },
-  args: { unitRole: 'hero', top: { kind: 'initiative', value: 15 }, mine: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Héros')).toBeVisible();
-    await expect(canvas.getByText('Vous')).toBeVisible();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { unitRole: 'hero', top: { kind: 'initiative', value: 15 }, mine: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('ヒーロー')).toBeVisible();
-    await expect(canvas.getByText('あなた')).toBeVisible();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { unitRole: 'ally', top: { kind: 'initiative', value: 9 } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Союзник')).toBeVisible();
+    await expect(filled?.getBoundingClientRect().width).toBe(48);
+    await expect(getComputedStyle(filled as HTMLElement).borderTopLeftRadius).toBe('0px');
+    await expect(canvas.getByTestId('intrinsic').getBoundingClientRect().height).toBeLessThan(64);
   },
 });

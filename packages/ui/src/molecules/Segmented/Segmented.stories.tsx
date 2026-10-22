@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { Segmented } from './Segmented.tsx';
 import type { SegmentedOption, SegmentedProps } from './Segmented.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type Source = 'new' | 'library';
 
@@ -15,14 +17,15 @@ interface SegmentedCellProps extends Omit<
   kind?: 'role' | 'source';
   labels?: readonly string[];
   disabledValues?: readonly string[];
-  tap?: number;
+  width?: number;
+  mark?: { index: number; attribute: 'data-pressed' | 'data-focus' | 'data-tap' };
   onChange: (value: string) => void;
 }
 
 const stage = {
-  boxSizing: 'content-box',
-  width: 330,
-  padding: 16,
+  boxSizing: 'border-box',
+  maxWidth: '100%',
+  padding: 8,
   borderRadius: 12,
   background: 'var(--cp-color-surface)',
 } as const;
@@ -34,7 +37,8 @@ function SegmentedCell({
   kind = 'role',
   labels,
   disabledValues = [],
-  tap,
+  width = 330,
+  mark,
   tone = 'role',
   value: initialValue,
   onChange,
@@ -44,9 +48,9 @@ function SegmentedCell({
   const [value, setValue] = useState(initialValue);
   const frame = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
-    if (tap === undefined) return;
-    frame.current?.querySelectorAll('[role="radio"]')[tap]?.setAttribute('data-tap', '');
-  }, [tap]);
+    if (mark === undefined) return;
+    frame.current?.querySelectorAll('[role="radio"]')[mark.index]?.setAttribute(mark.attribute, '');
+  }, [mark]);
   const values: readonly string[] = kind === 'role' ? roleValues : sourceValues;
   const options: SegmentedOption<string>[] = values.map((option, index) => ({
     value: option,
@@ -54,7 +58,7 @@ function SegmentedCell({
     disabled: disabledValues.includes(option) || undefined,
   }));
   return (
-    <div style={stage} ref={frame}>
+    <div style={{ ...stage, width: width + 16 }} ref={frame}>
       <Segmented
         {...props}
         tone={tone}
@@ -76,115 +80,91 @@ const meta = preview.meta({
   args: { value: 'enemy', onChange: fn() },
 });
 
-export const Anatomy = meta.story({});
+const columns = ['Default', 'Pressed', 'Disabled', 'Focus', 'Tap'] as const;
 
-export const TypeRoleDefault = meta.story({
-  name: 'Type · role · default',
+type SegmentedState = (typeof columns)[number];
+
+const markOf = (state: SegmentedState, index: number): SegmentedCellProps['mark'] => {
+  if (state === 'Pressed') return { index, attribute: 'data-pressed' };
+  if (state === 'Focus') return { index, attribute: 'data-focus' };
+  if (state === 'Tap') return { index, attribute: 'data-tap' };
+  return undefined;
+};
+
+const gridRows = (
+  [
+    { label: 'Role M', kind: 'role', tone: 'role', size: 'M' },
+    { label: 'Ink M', kind: 'source', tone: 'ink', size: 'M' },
+    { label: 'Role S', kind: 'role', tone: 'role', size: 'S' },
+    { label: 'Role L', kind: 'role', tone: 'role', size: 'L' },
+  ] as const
+).map(({ label, kind, tone, size }) => ({
+  label,
+  render: (state: SegmentedState) => (
+    <SegmentedCell
+      kind={kind}
+      tone={tone}
+      size={size}
+      value={kind === 'role' ? 'enemy' : 'new'}
+      width={302}
+      disabled={state === 'Disabled'}
+      mark={markOf(state, kind === 'role' ? 2 : 1)}
+      onChange={() => {}}
+    />
+  ),
+}));
+
+export const AllStates = meta.story({
+  tags: ['visual'],
+  render: () => <StateGrid rows={gridRows} columns={columns} />,
 });
 
-export const TypeRoleTap = meta.story({
-  name: 'Type · role · tap',
-  args: { tap: 2 },
-});
-
-export const TypeRoleDisabled = meta.story({
-  name: 'Type · role · disabled',
+export const DisabledIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { disabled: true },
-  play: async ({ args, canvas }) => {
-    const ally = canvas.getByRole('radio', { name: 'Ally' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    const ally = canvas.getByRole('radio', { name: t('ally') });
     await expect(ally).toBeDisabled();
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('enemy') })).toBeChecked();
     await userEvent.click(ally, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(ally).not.toBeChecked();
   },
 });
 
-export const UnitSourceInkDefault = meta.story({
-  name: 'Unit source · ink · default',
-  args: { kind: 'source', tone: 'ink', value: 'new' },
+export const LongLabels = meta.story({
+  tags: ['visual'],
+  args: { labels: ['Персонаж', 'Противник', 'Союзник'], value: 'ally' },
 });
 
-export const UnitSourceInkTap = meta.story({
-  name: 'Unit source · ink · tap',
-  args: { kind: 'source', tone: 'ink', value: 'new', tap: 1 },
-});
-
-export const UnitSourceInkDisabled = meta.story({
-  name: 'Unit source · ink · disabled',
-  args: { kind: 'source', tone: 'ink', value: 'new', disabled: true },
-});
-
-export const SegmentedS = meta.story({
-  name: 'Segmented · S',
-  args: { size: 'S' },
-});
-
-export const SegmentedM = meta.story({
-  name: 'Segmented · M',
-  args: { size: 'M' },
-});
-
-export const SegmentedL = meta.story({
-  name: 'Segmented · L',
-  args: { size: 'L' },
-});
-
-export const RoleDe = meta.story({
-  name: 'Role · de',
-  args: { labels: ['Held', 'Feind', 'Verbündeter'], value: 'ally' },
-});
-
-export const RoleRu = meta.story({
-  name: 'Role · ru',
-  args: { labels: ['Герой', 'Враг', 'Союзник'], value: 'ally' },
-});
-
-export const RoleFr = meta.story({
-  name: 'Role · fr',
-  args: { labels: ['Héros', 'Ennemi', 'Allié'], value: 'ally' },
-});
-
-export const SourceDe = meta.story({
-  name: 'Source · de',
-  args: { kind: 'source', tone: 'ink', labels: ['Neu', 'Aus Bibliothek'], value: 'library' },
-});
-
-export const SourceRu = meta.story({
-  name: 'Source · ru',
-  args: { kind: 'source', tone: 'ink', labels: ['Новый', 'Из библиотеки'], value: 'library' },
-});
-
-export const SourceFr = meta.story({
-  name: 'Source · fr',
-  args: { kind: 'source', tone: 'ink', labels: ['Nouveau', 'Bibliothèque'], value: 'library' },
-});
-
-export const ExtraClick = meta.story({
-  name: 'Tap selects at once',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('radio', { name: 'Ally' }));
+export const TapSelectsAtOnce = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    await userEvent.click(canvas.getByRole('radio', { name: t('ally') }));
     await expect(args.onChange).toHaveBeenCalledWith('ally');
-    await expect(canvas.getByRole('radio', { name: 'Ally' })).toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).not.toBeChecked();
-    await userEvent.click(canvas.getByRole('radio', { name: 'Ally' }));
+    await expect(canvas.getByRole('radio', { name: t('ally') })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('enemy') })).not.toBeChecked();
+    await userEvent.click(canvas.getByRole('radio', { name: t('ally') }));
     await expect(args.onChange).toHaveBeenCalledOnce();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: arrows move and select',
-  play: async ({ args, canvas }) => {
-    const group = canvas.getByRole('radiogroup', { name: 'Type' });
+export const ArrowsMoveAndSelect = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    const group = canvas.getByRole('radiogroup', { name: t('type') });
     await expect(group).toBeVisible();
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('enemy') })).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(args.onChange).toHaveBeenLastCalledWith('ally');
-    await expect(canvas.getByRole('radio', { name: 'Ally' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('ally') })).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(args.onChange).toHaveBeenLastCalledWith('hero');
-    await expect(canvas.getByRole('radio', { name: 'Hero' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('hero') })).toBeChecked();
     await userEvent.keyboard('{ArrowLeft}');
     await expect(args.onChange).toHaveBeenLastCalledWith('ally');
     await userEvent.keyboard('{End}{Home}');
@@ -193,11 +173,12 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraOptionDisabled = meta.story({
-  name: 'One option disabled',
+export const DisabledOptionIsSkipped = meta.story({
+  tags: ['!dev'],
   args: { disabledValues: ['hero'] },
-  play: async ({ args, canvas }) => {
-    const hero = canvas.getByRole('radio', { name: 'Hero' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
+    const hero = canvas.getByRole('radio', { name: t('hero') });
     await expect(hero).toBeDisabled();
     await userEvent.click(hero, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -211,25 +192,17 @@ export const ExtraOptionDisabled = meta.story({
   },
 });
 
-export const ExtraNoMatch = meta.story({
-  name: 'Value matching no option',
+export const ValueMatchingNoOption = meta.story({
+  tags: ['!dev'],
   args: { value: 'neutral' },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Segmented');
     for (const radio of canvas.getAllByRole('radio')) {
       await expect(radio).not.toBeChecked();
     }
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Hero' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('hero') })).toHaveFocus();
     await userEvent.keyboard('{ArrowRight}');
     await expect(args.onChange).toHaveBeenLastCalledWith('enemy');
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radiogroup', { name: 'Typ' })).toBeVisible();
-    await expect(canvas.getByRole('radio', { name: 'Feind' })).toBeChecked();
   },
 });

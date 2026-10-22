@@ -1,4 +1,5 @@
 import preview from '#.storybook/preview';
+import type { TFunction } from 'i18next';
 import type { HpHistoryEntry, HpHistoryKind, Unit } from '@combat-planner/domain';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
@@ -7,6 +8,7 @@ import { layout } from '../../layout.ts';
 import { UnitRow } from '../UnitRow/UnitRow.tsx';
 import { NumpadSheet, hpAfter, useHpFlash } from './NumpadSheet.tsx';
 import type { NumpadViewer } from './NumpadSheet.tsx';
+import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 const at = '2026-10-15T18:00:00.000Z';
 
@@ -107,7 +109,6 @@ interface NumpadSheetCellProps {
   tempHp?: number;
   history?: HistorySet;
   viewer?: NumpadViewer;
-  tap?: HpHistoryKind;
   onApply?: (kind: HpHistoryKind, amount: number) => void;
   onClose?: () => void;
 }
@@ -148,7 +149,6 @@ function NumpadSheetCell({
   tempHp = 0,
   history = 'full',
   viewer = 'dm',
-  tap,
   onApply,
   onClose,
 }: NumpadSheetCellProps) {
@@ -181,7 +181,6 @@ function NumpadSheetCell({
         tempHp={before.tempHp}
         history={histories[history]}
         viewer={viewer}
-        data-tap={tap}
         onApply={(kind, amount) => {
           onApply?.(kind, amount);
           setAfter({ ...before, ...hpAfter(before, kind, amount) });
@@ -215,7 +214,8 @@ const typeAmount = async (canvas: Canvas, digits: string) => {
   dialog.focus();
 };
 
-const amountOf = (canvas: Canvas) => canvas.getByRole('status', { name: 'Amount' });
+const amountOf = (canvas: Canvas, t: TFunction) =>
+  canvas.getByRole('status', { name: t('amount') });
 
 const readingOf = (canvasElement: HTMLElement, side: 'now' | 'after') => {
   const reading = canvasElement.querySelector<HTMLElement>(`[data-side="${side}"]`);
@@ -226,7 +226,22 @@ const readingOf = (canvasElement: HTMLElement, side: 'now' | 'after') => {
 const numbersOf = (canvasElement: HTMLElement, side: 'now' | 'after') =>
   readingOf(canvasElement, side).querySelector('[data-part="numbers"]');
 
-const actionNames = ['Damage', 'Heal', 'Set Temp', 'Set Max'];
+const screenOf = (canvasElement: HTMLElement) => {
+  const frame = canvasElement.ownerDocument.querySelector<HTMLElement>('[data-phone-frame]');
+  if (!frame) throw new Error('phone frame not rendered');
+  return { width: frame.clientWidth, height: frame.clientHeight };
+};
+
+const filledPips = (canvasElement: HTMLElement, side: 'now' | 'after') =>
+  readingOf(canvasElement, side).querySelectorAll('[data-filled]').length;
+
+const isVisuallyHidden = (element: Element | null) => {
+  if (!element) throw new Error('hidden text not rendered');
+  const style = getComputedStyle(element);
+  return style.clip !== 'auto' || style.clipPath !== 'none';
+};
+
+const actionKeys = ['damage', 'heal', 'setTemp', 'setMax'];
 
 const previewAction = async (canvas: Canvas, name: string) => {
   await userEvent.hover(canvas.getByRole('button', { name }));
@@ -234,7 +249,9 @@ const previewAction = async (canvas: Canvas, name: string) => {
 
 const expandHistory = async (canvas: Canvas, title: string) => {
   const dialog = await sheetOf(canvas);
-  await userEvent.click(within(dialog).getByRole('button', { name: new RegExp(`^${title}`) }));
+  await userEvent.click(
+    within(dialog).getByRole('button', { name: new RegExp(`^${escapeRegExp(title)}`) }),
+  );
   dialog.focus();
 };
 
@@ -245,233 +262,210 @@ const scrollSheetToTop = async (canvasElement: HTMLElement) => {
   body.scrollTop = 0;
 };
 
-export const Anatomy = meta.story({
-  name: 'Anatomy',
-  play: async ({ canvas, canvasElement }) => {
+export const AmountTyped = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '12');
-    await expect(amountOf(canvas)).toHaveTextContent('12');
+    await expect(amountOf(canvas, t)).toHaveTextContent('12');
     await expect(numbersOf(canvasElement, 'now')).toHaveTextContent('14/40');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('2/40');
-    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Staggered');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('staggered'));
+    await expect(
+      isVisuallyHidden(readingOf(canvasElement, 'after').querySelector('[data-part="status"]')),
+    ).toBe(true);
+    await expect(filledPips(canvasElement, 'after')).toBe(1);
+    const now = readingOf(canvasElement, 'now').getBoundingClientRect();
+    const after = readingOf(canvasElement, 'after').getBoundingClientRect();
+    const arrow = canvasElement.querySelector('[data-part="arrow"]');
+    if (screenOf(canvasElement).width < 384) {
+      await expect(arrow).not.toBeVisible();
+      await expect(
+        numbersOf(canvasElement, 'after')?.getBoundingClientRect().top ?? 0,
+      ).toBeGreaterThan(numbersOf(canvasElement, 'now')?.getBoundingClientRect().bottom ?? 0);
+    } else {
+      await expect(arrow).toBeVisible();
+      await expect(after.left).toBeGreaterThan(now.right);
+    }
   },
 });
 
-export const Collapsed = meta.story({
-  name: 'Collapsed',
-  play: async ({ args, canvas }) => {
+export const EmptyAmount = meta.story({
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     const dialog = await sheetOf(canvas);
     await expect(within(dialog).getByRole('heading', { name: 'Orc Berserker' })).toBeVisible();
-    await expect(amountOf(canvas)).toHaveTextContent('0');
-    for (const name of actionNames) {
-      await expect(canvas.getByRole('button', { name })).toBeDisabled();
+    await expect(amountOf(canvas, t)).toHaveTextContent('0');
+    for (const key of actionKeys) {
+      await expect(canvas.getByRole('button', { name: t(key) })).toBeDisabled();
     }
-    await userEvent.click(canvas.getByRole('button', { name: 'Damage' }), {
+    await userEvent.click(canvas.getByRole('button', { name: t('damage') }), {
       pointerEventsCheck: 0,
     });
     await expect(args.onApply).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('button', { name: /^HP History/ })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
+    await expect(
+      canvas.getByRole('button', {
+        name: (label: string) => label.startsWith(t('HpHistory:title')),
+      }),
+    ).toHaveAttribute('aria-expanded', 'false');
   },
 });
 
-export const OpenNoChangesYet = meta.story({
-  name: 'Open, no changes yet',
+export const HistoryExpandedEmpty = meta.story({
   args: { history: 'none' },
-  play: async ({ canvas }) => {
-    await expandHistory(canvas, 'HP History');
-    await expect(canvas.getByText('No changes yet')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await expandHistory(canvas, t('HpHistory:title'));
+    await expect(canvas.getByText(t('HpHistory:empty'))).toBeVisible();
   },
 });
 
-export const OpenAFewChanges = meta.story({
-  name: 'Open, a few changes',
+export const HistoryExpandedFewChanges = meta.story({
   args: { who: 'vashti', history: 'short' },
-  play: async ({ canvas }) => {
-    await expandHistory(canvas, 'HP History');
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await expandHistory(canvas, t('HpHistory:title'));
     await expect(canvas.getAllByRole('listitem')).toHaveLength(3);
   },
 });
 
-export const OpenEveryKind = meta.story({
-  name: 'Open, every kind',
-  play: async ({ canvas }) => {
-    await expandHistory(canvas, 'HP History');
+export const HistoryExpanded = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await expandHistory(canvas, t('HpHistory:title'));
     await expect(canvas.getAllByRole('listitem')).toHaveLength(6);
   },
 });
 
-export const OpenLongScrollsInsideTheSheet = meta.story({
-  name: 'Open, long: scrolls inside the sheet',
+export const HistoryExpandedLong = meta.story({
   args: { history: 'long' },
-  play: async ({ canvas }) => {
-    await expandHistory(canvas, 'HP History');
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await expandHistory(canvas, t('HpHistory:title'));
     await expect(canvas.getAllByRole('listitem')).toHaveLength(10);
-    await expect(canvas.getByRole('list', { name: 'HP History' })).toHaveAttribute('data-long');
+    await expect(canvas.getByRole('list', { name: t('HpHistory:title') })).toHaveAttribute(
+      'data-long',
+    );
   },
 });
 
-export const PlayerTyped7 = meta.story({
-  name: 'Player, typed 7',
+export const PlayerView = meta.story({
+  tags: ['visual'],
   args: { who: 'vashti', viewer: 'player' },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '7');
-    await expect(canvas.queryByRole('button', { name: 'Set Max' })).toBeNull();
-    await expect(canvas.getByRole('button', { name: 'Set Temp' })).toBeEnabled();
+    await expect(canvas.queryByRole('button', { name: t('setMax') })).toBeNull();
+    await expect(canvas.getByRole('button', { name: t('setTemp') })).toBeEnabled();
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('13/36');
+    const damage = canvas.getByRole('button', { name: t('damage') }).getBoundingClientRect();
+    const heal = canvas.getByRole('button', { name: t('heal') }).getBoundingClientRect();
+    const setTemp = canvas.getByRole('button', { name: t('setTemp') }).getBoundingClientRect();
+    await expect(heal.top).toBeGreaterThan(damage.bottom);
+    await expect(setTemp.top).toBe(heal.top);
+    await expect(damage.width).toBe(setTemp.right - heal.left);
   },
 });
 
-export const PlayerPressedDamage = meta.story({
-  name: 'Player, pressed Damage',
-  args: { who: 'vashti', viewer: 'player', tap: 'damage' },
-  play: async ({ canvas, canvasElement }) => {
-    await typeAmount(canvas, '7');
-    await expect(canvas.getByRole('button', { name: 'Damage' })).toHaveAttribute('data-tap');
-    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('13/36');
-  },
-});
-
-export const Opened287320 = meta.story({
-  name: 'Opened, 287/320',
+export const ThreeDigitHpWounded = meta.story({
+  name: 'Three Digit HP Wounded',
   args: { who: 'dragon' },
-  play: async ({ canvas, canvasElement }) => {
-    await sheetOf(canvas);
-    await expect(numbersOf(canvasElement, 'now')).toHaveTextContent('287/320');
-    await expect(numbersOf(canvasElement, 'now')).toHaveAttribute('data-compact');
-  },
-});
-
-export const Damage120167320 = meta.story({
-  name: 'Damage 120 → 167/320',
-  args: { who: 'dragon' },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '120');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('167/320');
-    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Wounded');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('wounded'));
   },
 });
 
-export const Damage400113320 = meta.story({
-  name: 'Damage 400 → −113/320',
+export const OverkillDead = meta.story({
   args: { who: 'dragon' },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '400');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−113/320');
-    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Dead');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('dead'));
+    await expect(filledPips(canvasElement, 'after')).toBe(0);
   },
 });
 
-export const SetMax999 = meta.story({
-  name: 'Set Max 999',
+export const SetMaxPreview = meta.story({
   args: { who: 'dragon' },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '999');
-    await previewAction(canvas, 'Set Max');
+    await previewAction(canvas, t('setMax'));
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('287/999');
-    await expect(readingOf(canvasElement, 'after')).toHaveTextContent('Staggered');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('staggered'));
   },
 });
 
-const openLocale = async (
-  { canvas, canvasElement }: { canvas: Canvas; canvasElement: HTMLElement },
-  history: string,
-  action: string,
-) => {
-  await typeAmount(canvas, '12');
-  await expandHistory(canvas, history);
-  await scrollSheetToTop(canvasElement);
-  return canvas.getByRole('button', { name: action });
-};
-
-export const Deutsch = meta.story({
-  name: 'Deutsch',
-  globals: { locale: 'de' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'TP-Verlauf', 'Temp. setzen')).toBeEnabled();
-    await expect(context.canvas.getByText('Danach')).toBeVisible();
+export const AmountTypedHistoryExpanded = meta.story({
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await typeAmount(canvas, '12');
+    await expandHistory(canvas, t('HpHistory:title'));
+    await scrollSheetToTop(canvasElement);
+    await expect(canvas.getByRole('button', { name: t('setMax') })).toBeEnabled();
+    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('2/40');
+    await expect(canvas.getAllByRole('listitem')).toHaveLength(6);
   },
 });
 
-export const EspaOl = meta.story({
-  name: 'Español',
-  globals: { locale: 'es' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'Historial de PG', 'Fijar máx.')).toBeEnabled();
-    await expect(context.canvas.getByText('Después')).toBeVisible();
-  },
-});
-
-export const FranAis = meta.story({
-  name: 'Français',
-  globals: { locale: 'fr' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'Historique des PV', 'Dégâts')).toBeEnabled();
-    await expect(context.canvas.getByText('Après')).toBeVisible();
-  },
-});
-
-export const EdgeCasesLanguages = meta.story({
-  name: '日本語',
-  globals: { locale: 'ja' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'HP履歴', '最大HP')).toBeEnabled();
-    await expect(context.canvas.getByText('変更後')).toBeVisible();
-  },
-});
-
-export const EdgeCasesLanguages2 = meta.story({
-  name: 'Русский',
-  globals: { locale: 'ru' },
-  play: async (context) => {
-    await expect(await openLocale(context, 'История ОЗ', 'Макс. ОЗ')).toBeEnabled();
-    await expect(context.canvas.getByText('После')).toBeVisible();
-  },
-});
-
-export const ExtraKeysAppendUpToThreeDigits = meta.story({
-  name: 'Keys append up to three digits, < deletes, C clears',
-  play: async ({ args, canvas }) => {
+export const KeysAppendUpToThreeDigits = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     const dialog = await sheetOf(canvas);
-    const keys = within(dialog).getByRole('group', { name: 'Keypad' });
+    const keys = within(dialog).getByRole('group', { name: t('keypad') });
+    await expect(
+      within(keys)
+        .getAllByRole('button')
+        .map((key) => key.ariaLabel ?? key.textContent),
+    ).toEqual(['1', '2', '3', t('delete'), '4', '5', '6', t('clear'), '7', '8', '9', '0']);
     for (const digit of ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']) {
       await expect(within(keys).getByRole('button', { name: digit })).toBeVisible();
     }
+    const keyHeight = screenOf(canvasElement).height < 700 ? 44 : 56;
+    for (const key of within(keys).getAllByRole('button')) {
+      await expect(key.getBoundingClientRect().height).toBe(keyHeight);
+    }
     await typeAmount(canvas, '0');
-    await expect(amountOf(canvas)).toHaveTextContent('0');
-    await expect(canvas.getByRole('button', { name: 'Damage' })).toBeDisabled();
+    await expect(amountOf(canvas, t)).toHaveTextContent('0');
+    await expect(canvas.getByRole('button', { name: t('damage') })).toBeDisabled();
     await typeAmount(canvas, '4');
-    await expect(amountOf(canvas)).toHaveTextContent('4');
+    await expect(amountOf(canvas, t)).toHaveTextContent('4');
     await typeAmount(canvas, '5');
-    await expect(amountOf(canvas)).toHaveTextContent('45');
+    await expect(amountOf(canvas, t)).toHaveTextContent('45');
     await typeAmount(canvas, '6');
-    await expect(amountOf(canvas)).toHaveTextContent('456');
+    await expect(amountOf(canvas, t)).toHaveTextContent('456');
     await typeAmount(canvas, '7');
-    await expect(amountOf(canvas)).toHaveTextContent('456');
-    await userEvent.click(within(keys).getByRole('button', { name: 'Delete' }));
-    await expect(amountOf(canvas)).toHaveTextContent('45');
-    await userEvent.click(within(keys).getByRole('button', { name: 'Clear' }));
-    await expect(amountOf(canvas)).toHaveTextContent('0');
-    for (const name of actionNames) {
-      await expect(canvas.getByRole('button', { name })).toBeDisabled();
+    await expect(amountOf(canvas, t)).toHaveTextContent('456');
+    await userEvent.click(within(keys).getByRole('button', { name: t('delete') }));
+    await expect(amountOf(canvas, t)).toHaveTextContent('45');
+    await userEvent.click(within(keys).getByRole('button', { name: t('clear') }));
+    await expect(amountOf(canvas, t)).toHaveTextContent('0');
+    for (const key of actionKeys) {
+      await expect(canvas.getByRole('button', { name: t(key) })).toBeDisabled();
     }
     await typeAmount(canvas, '3');
-    await userEvent.click(within(keys).getByRole('button', { name: 'Delete' }));
-    await expect(canvas.getByRole('button', { name: 'Heal' })).toBeDisabled();
+    await userEvent.click(within(keys).getByRole('button', { name: t('delete') }));
+    await expect(canvas.getByRole('button', { name: t('heal') })).toBeDisabled();
     await expect(args.onApply).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: digits and Backspace type, Escape closes',
-  play: async ({ args, canvas }) => {
+export const KeyboardTypesAndEscapeCloses = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     const dialog = await sheetOf(canvas);
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
     await userEvent.keyboard('2345');
-    await expect(amountOf(canvas)).toHaveTextContent('234');
+    await expect(amountOf(canvas, t)).toHaveTextContent('234');
     await userEvent.keyboard('{Backspace}');
-    await expect(amountOf(canvas)).toHaveTextContent('23');
+    await expect(amountOf(canvas, t)).toHaveTextContent('23');
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onApply).not.toHaveBeenCalled();
@@ -479,11 +473,12 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraEnterOnFocusedAction = meta.story({
-  name: 'Enter on a focused action previews and applies it',
-  play: async ({ args, canvas, canvasElement }) => {
+export const EnterOnFocusedActionApplies = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '5');
-    const heal = canvas.getByRole('button', { name: 'Heal' });
+    const heal = canvas.getByRole('button', { name: t('heal') });
     heal.focus();
     await expect(heal).toHaveFocus();
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('19/40');
@@ -493,30 +488,19 @@ export const ExtraEnterOnFocusedAction = meta.story({
   },
 });
 
-export const ExtraEveryDigitAppends = meta.story({
-  name: 'Every key 0–9 appends its digit',
-  play: async ({ canvas }) => {
-    const dialog = await sheetOf(canvas);
-    const keys = within(dialog).getByRole('group', { name: 'Keypad' });
-    for (const digit of ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']) {
-      await userEvent.click(within(keys).getByRole('button', { name: 'Clear' }));
-      await typeAmount(canvas, `1${digit}`);
-      await expect(amountOf(canvas)).toHaveTextContent(`1${digit}`);
-    }
-  },
-});
-
-export const ExtraSetTempZero = meta.story({
-  name: 'Set Temp at 0 clears temp HP, the other actions stay disabled',
+export const SetTempZeroClearsTempHp = meta.story({
+  name: 'Set Temp Zero Clears Temp HP',
+  tags: ['!dev'],
   args: { tempHp: 5 },
-  play: async ({ args, canvas, canvasElement }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '0');
-    await expect(canvas.getByRole('button', { name: 'Damage' })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Heal' })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Set Max' })).toBeDisabled();
-    const setTemp = canvas.getByRole('button', { name: 'Set Temp' });
+    await expect(canvas.getByRole('button', { name: t('damage') })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: t('heal') })).toBeDisabled();
+    await expect(canvas.getByRole('button', { name: t('setMax') })).toBeDisabled();
+    const setTemp = canvas.getByRole('button', { name: t('setTemp') });
     await expect(setTemp).toBeEnabled();
-    await previewAction(canvas, 'Set Temp');
+    await previewAction(canvas, t('setTemp'));
     await expect(
       readingOf(canvasElement, 'now').querySelector('[data-part="temp"]'),
     ).not.toBeNull();
@@ -527,12 +511,13 @@ export const ExtraSetTempZero = meta.story({
   },
 });
 
-export const ExtraDoubleTapAppliesOnce = meta.story({
-  name: 'A second tap during the exit transition does not apply twice',
+export const DoubleTapAppliesOnce = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '5');
-    const damage = canvas.getByRole('button', { name: 'Damage' });
+    const damage = canvas.getByRole('button', { name: t('damage') });
     damage.click();
     damage.click();
     await expect(args.onApply).toHaveBeenCalledOnce();
@@ -540,43 +525,12 @@ export const ExtraDoubleTapAppliesOnce = meta.story({
   },
 });
 
-export const ExtraSpaceOnAction = meta.story({
-  name: 'Space on a focused action applies it',
-  play: async ({ args, canvas }) => {
-    await typeAmount(canvas, '5');
-    canvas.getByRole('button', { name: 'Heal' }).focus();
-    await userEvent.keyboard(' ');
-    await expect(args.onApply).toHaveBeenCalledOnce();
-    await expect(args.onApply).toHaveBeenCalledWith('heal', 5);
-  },
-});
-
-export const ExtraTapDoesNotPinPreview = meta.story({
-  name: 'The tap marker does not pin the After preview',
-  args: { tap: 'heal' },
-  play: async ({ canvas, canvasElement }) => {
-    await typeAmount(canvas, '8');
-    await previewAction(canvas, 'Damage');
-    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('6/40');
-    await expect(canvas.getByRole('button', { name: 'Heal' })).toHaveAttribute('data-tap');
-  },
-});
-
-export const ExtraActionPressedColour = meta.story({
-  name: 'A pressed action takes the Button pressed colour',
-  play: async ({ canvas }) => {
-    await typeAmount(canvas, '5');
-    const damage = canvas.getByRole('button', { name: 'Damage' });
-    damage.setAttribute('data-pressed', '');
-    await expect(getComputedStyle(damage).backgroundColor).toBe('rgb(58, 53, 49)');
-  },
-});
-
-export const ExtraCloseWithoutChange = meta.story({
-  name: 'Close button closes without a change',
-  play: async ({ args, canvas }) => {
+export const CloseWithoutChange = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, '9');
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:close') }));
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onApply).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
@@ -590,7 +544,13 @@ interface FlowStep {
   kind: HpHistoryKind;
   now: string;
   after: string;
-  result: string;
+  result: string | ((t: TFunction) => string);
+}
+
+interface StepContext {
+  canvas: Canvas;
+  canvasElement: HTMLElement;
+  globals: Record<string, unknown>;
 }
 
 const runFlow = async (
@@ -598,197 +558,142 @@ const runFlow = async (
   canvasElement: HTMLElement,
   args: { onApply?: unknown; onClose?: unknown },
   step: FlowStep,
+  t: TFunction,
 ) => {
   await sheetOf(canvas);
-  for (const name of step.args.viewer === 'player' ? actionNames.slice(0, 3) : actionNames) {
-    await expect(canvas.getByRole('button', { name })).toBeDisabled();
+  for (const key of step.args.viewer === 'player' ? actionKeys.slice(0, 3) : actionKeys) {
+    await expect(canvas.getByRole('button', { name: t(key) })).toBeDisabled();
   }
   await expect(numbersOf(canvasElement, 'after')).toHaveTextContent(step.now);
   await typeAmount(canvas, step.amount);
-  await previewAction(canvas, step.action);
+  await previewAction(canvas, t(step.action));
   await expect(numbersOf(canvasElement, 'after')).toHaveTextContent(step.after);
-  await userEvent.click(canvas.getByRole('button', { name: step.action }));
+  await userEvent.click(canvas.getByRole('button', { name: t(step.action) }));
   await expect(args.onApply).toHaveBeenCalledOnce();
   await expect(args.onApply).toHaveBeenCalledWith(step.kind, Number(step.amount));
   await expect(args.onClose).toHaveBeenCalledOnce();
   await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   const result = canvasElement.querySelector('[data-result]');
   await expect(result).toHaveAttribute('data-flash');
-  await expect(result).toHaveTextContent(step.result);
+  await expect(result).toHaveTextContent(
+    typeof step.result === 'string' ? step.result : step.result(t),
+  );
 };
 
 const typedPlay =
   (step: FlowStep) =>
-  async ({ canvas, canvasElement }: { canvas: Canvas; canvasElement: HTMLElement }) => {
+  async ({ canvas, canvasElement, globals }: StepContext) => {
+    const t = storyT(globals, 'NumpadSheet');
     await typeAmount(canvas, step.amount);
-    await previewAction(canvas, step.action);
+    await previewAction(canvas, t(step.action));
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent(step.after);
-    await expect(canvas.getByRole('button', { name: step.action })).toBeEnabled();
-  };
-
-const pressedPlay =
-  (step: FlowStep) =>
-  async ({ canvas, canvasElement }: { canvas: Canvas; canvasElement: HTMLElement }) => {
-    await typeAmount(canvas, step.amount);
-    await expect(canvas.getByRole('button', { name: step.action })).toHaveAttribute('data-tap');
-    await previewAction(canvas, step.action);
-    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent(step.after);
+    await expect(canvas.getByRole('button', { name: t(step.action) })).toBeEnabled();
   };
 
 const step = (
   args: FlowStep['args'],
   [amount, action, kind]: [string, string, HpHistoryKind],
-  [now, after, result]: [string, string, string],
+  [now, after, result]: [string, string, FlowStep['result']],
 ): FlowStep => ({ args, amount, action, kind, now, after, result });
 
-const np1 = step({}, ['12', 'Damage', 'damage'], ['14/40', '2/40', '2/40']);
-const np2 = step({ tempHp: 5 }, ['8', 'Damage', 'damage'], ['14/40', '11/40', '11/40']);
-const np3 = step({ who: 'vashti' }, ['8', 'Heal', 'heal'], ['20/36', '28/36', '28/36']);
-const np4 = step({}, ['5', 'Set Temp', 'temp'], ['14/40', '14/40', '+5 temp']);
-const np5 = step({}, ['30', 'Set Max', 'max'], ['14/40', '14/30', '14/30']);
+const np1 = step({}, ['12', 'damage', 'damage'], ['14/40', '2/40', '2/40']);
+const np2 = step({ tempHp: 5 }, ['8', 'damage', 'damage'], ['14/40', '11/40', '11/40']);
+const np3 = step({ who: 'vashti' }, ['8', 'heal', 'heal'], ['20/36', '28/36', '28/36']);
+const np4 = step({}, ['5', 'setTemp', 'temp'], ['14/40', '14/40', (t) => t('temp', { amount: 5 })]);
+const np5 = step({}, ['30', 'setMax', 'max'], ['14/40', '14/30', '14/30']);
 
-export const ExtraNp1Pressed = meta.story({
-  name: 'NP-1 · 3 · Pressed Damage',
-  args: { ...np1.args, tap: np1.kind },
-  play: async (context) => {
-    await pressedPlay(np1)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP1 = meta.story({
-  name: 'NP-1 · Damage',
+export const DamageApplies = meta.story({
+  tags: ['!dev'],
   args: np1.args,
-  play: async ({ args, canvas, canvasElement }) => {
-    await runFlow(canvas, canvasElement, args, np1);
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await runFlow(canvas, canvasElement, args, np1, t);
     await expect(canvasElement.querySelectorAll('[data-readonly]')).toHaveLength(2);
   },
 });
 
-export const ExtraNp2Opened = meta.story({
-  name: 'NP-2 · 1 · Opened: actions disabled',
+export const WithTempHp = meta.story({
+  name: 'With Temp HP',
   args: np2.args,
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
     await sheetOf(canvas);
-    await expect(readingOf(canvasElement, 'now')).toHaveTextContent('+5 temp');
-    await expect(canvas.getByRole('button', { name: 'Damage' })).toBeDisabled();
+    await expect(readingOf(canvasElement, 'now')).toHaveTextContent(t('temp', { amount: 5 }));
+    const now = readingOf(canvasElement, 'now');
+    await expect(isVisuallyHidden(now.querySelector('[data-part="temp"]'))).toBe(true);
+    await expect(now.querySelector('[data-part="tempBadge"]')).toHaveTextContent('+5');
+    await expect(now.querySelector('[data-part="tempBadge"]')).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('damage') })).toBeDisabled();
   },
 });
 
-export const ExtraNp2Typed = meta.story({
-  name: 'NP-2 · 2 · Typed 8: After previews',
+export const TempHpAbsorbsDamage = meta.story({
+  name: 'Temp HP Absorbs Damage',
   args: np2.args,
   play: async (context) => {
     await typedPlay(np2)(context);
-    await expect(readingOf(context.canvasElement, 'after')).not.toHaveTextContent('temp');
+    await expect(
+      readingOf(context.canvasElement, 'after').querySelector('[data-part="temp"]'),
+    ).toBeNull();
   },
 });
 
-export const ExtraNp2Pressed = meta.story({
-  name: 'NP-2 · 3 · Pressed Damage',
-  args: { ...np2.args, tap: np2.kind },
-  play: async (context) => {
-    await pressedPlay(np2)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP2 = meta.story({
-  name: 'NP-2 · Damage with temp',
+export const DamageWithTempApplies = meta.story({
+  tags: ['!dev'],
   args: np2.args,
-  play: async ({ args, canvas, canvasElement }) => {
-    await runFlow(canvas, canvasElement, args, np2);
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await runFlow(canvas, canvasElement, args, np2, t);
     await expect(canvasElement.querySelectorAll('[data-readonly]')).toHaveLength(2);
   },
 });
 
-export const ExtraNp3Opened = meta.story({
-  name: 'NP-3 · 1 · Opened: actions disabled',
-  args: np3.args,
-  play: async ({ canvas, canvasElement }) => {
-    await sheetOf(canvas);
-    await expect(numbersOf(canvasElement, 'now')).toHaveTextContent('20/36');
-    await expect(canvas.getByRole('button', { name: 'Heal' })).toBeDisabled();
-  },
-});
-
-export const ExtraNp3Typed = meta.story({
-  name: 'NP-3 · 2 · Typed 8: After previews',
+export const HealPreview = meta.story({
   args: np3.args,
   play: async (context) => {
+    const t = storyT(context.globals, 'NumpadSheet');
     await typedPlay(np3)(context);
-    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent('Wounded');
+    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent(t('wounded'));
   },
 });
 
-export const ExtraNp3Pressed = meta.story({
-  name: 'NP-3 · 3 · Pressed Heal',
-  args: { ...np3.args, tap: np3.kind },
-  play: async (context) => {
-    await pressedPlay(np3)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP3 = meta.story({
-  name: 'NP-3 · Heal',
+export const HealApplies = meta.story({
+  tags: ['!dev'],
   args: np3.args,
-  play: async ({ args, canvas, canvasElement }) => {
-    await runFlow(canvas, canvasElement, args, np3);
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await runFlow(canvas, canvasElement, args, np3, t);
     await expect(canvasElement.querySelectorAll('[data-readonly]')).toHaveLength(2);
   },
 });
 
-export const ExtraNp4Typed = meta.story({
-  name: 'NP-4 · 2 · Typed 5: After previews',
+export const SetTempPreview = meta.story({
   args: np4.args,
   play: async (context) => {
+    const t = storyT(context.globals, 'NumpadSheet');
     await typedPlay(np4)(context);
-    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent('+5 temp');
+    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent(
+      t('temp', { amount: 5 }),
+    );
   },
 });
 
-export const ExtraNp4Pressed = meta.story({
-  name: 'NP-4 · 3 · Pressed Set Temp',
-  args: { ...np4.args, tap: np4.kind },
-  play: async (context) => {
-    await pressedPlay(np4)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP4 = meta.story({
-  name: 'NP-4 · Set Temp',
+export const SetTempApplies = meta.story({
+  tags: ['!dev'],
   args: np4.args,
-  play: async ({ args, canvas, canvasElement }) => {
-    await runFlow(canvas, canvasElement, args, np4);
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await runFlow(canvas, canvasElement, args, np4, t);
     await expect(canvasElement.querySelectorAll('[data-readonly]')).toHaveLength(2);
   },
 });
 
-export const ExtraNp5Typed = meta.story({
-  name: 'NP-5 · 2 · Typed 30: After previews',
+export const SetMaxApplies = meta.story({
+  tags: ['!dev'],
   args: np5.args,
-  play: async (context) => {
-    await typedPlay(np5)(context);
-    await expect(readingOf(context.canvasElement, 'after')).toHaveTextContent('Staggered');
-  },
-});
-
-export const ExtraNp5Pressed = meta.story({
-  name: 'NP-5 · 3 · Pressed Set Max',
-  args: { ...np5.args, tap: np5.kind },
-  play: async (context) => {
-    await pressedPlay(np5)(context);
-    await expect(context.args.onApply).not.toHaveBeenCalled();
-  },
-});
-
-export const NP5 = meta.story({
-  name: 'NP-5 · Set Max',
-  args: np5.args,
-  play: async ({ args, canvas, canvasElement }) => {
-    await runFlow(canvas, canvasElement, args, np5);
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await runFlow(canvas, canvasElement, args, np5, t);
     await expect(canvasElement.querySelectorAll('[data-readonly]')).toHaveLength(2);
   },
 });

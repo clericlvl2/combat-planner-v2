@@ -6,12 +6,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  width: 62px;
-  min-height: 80px;
-  padding: 8px 2px;
+  gap: 3px;
+  width: 48px;
+  padding: 8px 0;
   border: none;
-  border-radius: 14px 0 0 14px;
+  border-radius: 0;
   background: var(--cp-role-enemy);
   color: var(--cp-color-surface);
   font-family: var(--cp-font-ui);
@@ -23,7 +22,6 @@
   }
 
   &[data-fill] {
-    min-height: 0;
     align-self: stretch;
   }
 
@@ -37,6 +35,11 @@
 
   &[data-inactive][data-unit-role] {
     background: var(--cp-role-inactive);
+  }
+
+  &[data-neutral][data-unit-role] {
+    background: var(--cp-color-soft);
+    color: var(--cp-color-ink);
   }
 
   &[data-unit-role]:focus-visible,
@@ -65,9 +68,10 @@
 
 .value {
   font-family: var(--cp-font-display);
-  font-size: var(--mantine-font-size-heading);
+  padding-bottom: 2px;
+  font-size: var(--mantine-font-size-number);
   font-weight: 700;
-  line-height: var(--mantine-line-height-snug);
+  line-height: var(--mantine-line-height-tight);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 
@@ -88,18 +92,18 @@
 
 .label {
   max-width: 100%;
-  font-size: var(--mantine-font-size-micro);
-  font-weight: 600;
+  font-size: var(--mantine-font-size-caps);
+  font-weight: 700;
   line-height: var(--mantine-line-height-tight);
+  letter-spacing: 0.08em;
   text-align: center;
-  overflow-wrap: anywhere;
+  text-transform: uppercase;
 }
 
 .chip {
   box-sizing: border-box;
-  max-width: 56px;
-  margin-top: 2px;
-  padding: 4px 6px;
+  max-width: 44px;
+  padding: 1px 5px;
   overflow: hidden;
   border-radius: var(--mantine-radius-full);
   background: var(--cp-color-surface);

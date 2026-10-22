@@ -77,11 +77,11 @@
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   padding-top: 4px;
 }
 
 .action {
   flex: 1 1 0;
-  min-width: 0;
 }

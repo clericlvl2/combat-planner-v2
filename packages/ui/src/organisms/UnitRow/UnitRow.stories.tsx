@@ -1,13 +1,14 @@
 import preview from '#.storybook/preview';
+import type { TFunction } from 'i18next';
 import { CONDITIONS } from '@combat-planner/domain';
 import type { Condition, Unit } from '@combat-planner/domain';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
-import { ConditionPicker } from '../ConditionPicker/ConditionPicker.tsx';
 import { UnitRow } from './UnitRow.tsx';
 import type { UnitRowCallbacks, UnitRowProps } from './UnitRow.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp'> &
   Partial<Unit> & { defenses: [number, number, number] };
@@ -99,7 +100,6 @@ const screen: CSSProperties = { padding: layout.contentEdge };
 type UnitRowCellProps = Omit<UnitRowProps, 'claimedByName' | 'readOnly' | keyof UnitRowCallbacks> &
   UnitRowCallbacks & {
     readOnly?: boolean;
-    picker?: boolean;
   };
 
 function UnitRowCell({
@@ -107,8 +107,7 @@ function UnitRowCell({
   expanded: initiallyExpanded = false,
   initiativeOpen: initiallyInitiativeOpen = false,
   menuOpen: initiallyMenuOpen = false,
-  conditionsOpen: initiallyConditionsOpen = false,
-  picker = false,
+  conditionsOpen = false,
   onToggle,
   onInitiative,
   onInitiativeSet,
@@ -125,7 +124,6 @@ function UnitRowCell({
   const [expanded, setExpanded] = useState(initiallyExpanded);
   const [initiativeOpen, setInitiativeOpen] = useState(initiallyInitiativeOpen);
   const [menuOpen, setMenuOpen] = useState(initiallyMenuOpen);
-  const [conditionsOpen, setConditionsOpen] = useState(initiallyConditionsOpen);
   return (
     <div style={screen}>
       <UnitRow
@@ -157,10 +155,7 @@ function UnitRowCell({
           setInitiativeOpen(false);
           onInitiativeClose();
         }}
-        onConditions={() => {
-          if (picker) setConditionsOpen(true);
-          onConditions();
-        }}
+        onConditions={() => onConditions()}
         onNoteChange={(note) => {
           setUnit((current) => ({ ...current, note }));
           onNoteChange(note);
@@ -174,15 +169,6 @@ function UnitRowCell({
           onMenuClose();
         }}
       />
-      {picker ? (
-        <ConditionPicker
-          opened={conditionsOpen}
-          unitName={unit.name}
-          value={unit.conditions}
-          onChange={(conditions) => setUnit((current) => ({ ...current, conditions }))}
-          onClose={() => setConditionsOpen(false)}
-        />
-      ) : null}
     </div>
   );
 }
@@ -215,19 +201,31 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({
-  play: async ({ canvas, canvasElement }) => {
-    const chevron = canvas.getByRole('button', { name: 'Unit details' });
-    await expect(chevron).toHaveAttribute('aria-expanded', 'false');
-    await expect(canvas.getByText('Vashti the Hexer')).toBeVisible();
-    await expect(canvas.getByText('AC 16 · PD 14 · MD 19')).toBeVisible();
-    await expect(canvas.getByRole('listitem')).toHaveTextContent('dazed');
-    await expect(canvas.getByRole('button', { name: '20 /36 Wounded' })).toBeVisible();
+export const ActiveTurnWounded = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.getByRole('button', { name: 'Vashti the Hexer' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    await expect(
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 14 · ${t('DefenseLine:md')} 19`,
+      }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('listitem')).toHaveTextContent(t('dazed'));
+    await expect(
+      canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` }),
+    ).toBeVisible();
     await expect(canvasElement.querySelector('[data-active] [data-notch]')).not.toBeNull();
   },
 });
 
-export const Full = meta.story({
+export const FullHp = meta.story({
+  name: 'Full HP',
   args: {
     active: false,
     unit: unitOf({
@@ -242,25 +240,23 @@ export const Full = meta.story({
   },
 });
 
-export const ActiveTurnWounded = meta.story({
-  name: 'Active turn, Wounded',
-});
-
-export const Staggered = meta.story({
+export const StaggeredWithCondition = meta.story({
   args: { active: false, unit: unitOf({ ...orcSeed, conditions: ['hampered'] }) },
 });
 
 export const Dead = meta.story({
+  tags: ['visual'],
   args: { active: false, unit: unitOf(goblinSeed) },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
     await expect(getComputedStyle(canvas.getByText('Goblin Archer 1')).textDecorationLine).toBe(
       'line-through',
     );
-    await expect(canvas.getByText('Dead')).toBeVisible();
+    await expect(canvas.getByText(t('HpBox:dead'))).toBeVisible();
   },
 });
 
-export const Disabled = meta.story({
+export const DisabledUnit = meta.story({
   args: { active: false, unit: shadowArcher },
   play: async ({ canvas, canvasElement }) => {
     await expect(getComputedStyle(canvas.getByText('影の射手ゴブリン')).textDecorationLine).toBe(
@@ -271,8 +267,9 @@ export const Disabled = meta.story({
   },
 });
 
-export const AllyTempHPLongName = meta.story({
-  name: 'Ally, temp HP, long name',
+export const AllyTempHpLongName = meta.story({
+  name: 'Ally Temp HP Long Name',
+  tags: ['visual'],
   args: {
     active: false,
     unit: unitOf({
@@ -286,152 +283,146 @@ export const AllyTempHPLongName = meta.story({
       defenses: [19, 15, 17],
     }),
   },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('+5 temp')).toBeVisible();
-  },
-});
-
-export const VariantsStates40CharactersRu = meta.story({
-  name: '40 characters, ru',
-  args: {
-    active: false,
-    unit: unitOf({
-      id: '01JC00000000000000000SVYT1',
-      name: 'Капитан стражи переправы Святослав Огнев',
-      role: 'ally',
-      initiative: 10,
-      hp: 40,
-      maxHp: 40,
-      defenses: [19, 16, 13],
-    }),
-  },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Капитан стражи переправы Святослав Огнев')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.getByText(t('HpBox:temp', { amount: 5 }))).toBeVisible();
   },
 });
 
 export const WithNote = meta.story({
-  name: 'With note',
   args: { active: false, unit: unitOf({ ...vashtiSeed, note: hexNote }) },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText(hexNote)).toBeVisible();
-    await expect(canvas.getByRole('img', { name: 'Note' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const note = canvas.getByText(hexNote);
+    await expect(note).toBeVisible();
+    await expect(getComputedStyle(note).textOverflow).toBe('ellipsis');
+    await expect(note.scrollWidth).toBeGreaterThan(note.clientWidth);
+    await expect(canvas.getByRole('img', { name: t('NoteField:label') })).toBeVisible();
   },
 });
 
 const claimedConditions: Condition[] = ['dazed', 'weakened', 'hampered'];
 
-export const ShortPlayerName = meta.story({
-  name: 'Short player name',
+export const ClaimedByPlayer = meta.story({
   args: {
     active: false,
     unit: unitOf({ ...vashtiSeed, conditions: claimedConditions, claimedBy: MIKA }),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Mika')).toBeVisible();
-    await expect(canvas.getByRole('img', { name: 'Claimed by' })).toBeVisible();
+    const claimer = canvas.getByText('@Mika');
+    await expect(claimer).toBeVisible();
+    await expect(claimer.parentElement).toHaveTextContent('Vashti the Hexer @Mika');
+    const lines = [...canvas.getByText('Vashti the Hexer').getClientRects()];
+    await expect(lines.at(-1)?.top).toBe(claimer.getBoundingClientRect().top);
   },
 });
 
-export const LongPlayerName37Characters = meta.story({
-  name: 'Long player name, 37 characters',
+export const ClaimedLongPlayerName = meta.story({
   args: {
     active: false,
     unit: unitOf({ ...vashtiSeed, conditions: claimedConditions, claimedBy: ALEXANDRA }),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText('Александра Константиновна Вишневецкая')).toBeVisible();
+    await expect(canvas.getByText('@Александра Константиновна Вишневецкая')).toBeVisible();
   },
 });
 
 export const Expanded = meta.story({
+  tags: ['visual'],
   args: { unit: vashtiExpanded, expanded: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Unit details' })).toHaveAttribute(
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.getByRole('button', { name: 'Vashti the Hexer' })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
-    await expect(canvas.getByRole('button', { name: 'Conditions' })).not.toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('conditions') })).not.toHaveAttribute(
       'data-tap',
     );
-    await expect(canvas.getByRole('button', { name: 'HP History' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: `Note: ${hexNote}` })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Edit' })).toBeVisible();
-    await expect(canvas.queryByRole('img', { name: 'Note' })).toBeNull();
+    await expect(canvas.getByRole('button', { name: t('hpHistory') })).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: `${t('NoteField:label')}: ${hexNote}` }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    await expect(canvas.queryByRole('img', { name: t('NoteField:label') })).toBeNull();
   },
 });
 
-export const ConditionsListOpen = meta.story({
-  name: 'Conditions: list open',
+export const ConditionsOpen = meta.story({
+  tags: ['visual'],
   args: { unit: vashtiExpanded, expanded: true, conditionsOpen: true },
-  play: async ({ canvas }) => {
-    const trigger = canvas.getByRole('button', { name: 'Conditions' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const trigger = canvas.getByRole('button', { name: t('conditions') });
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(trigger).toHaveAttribute('data-open');
   },
 });
 
-export const InitiativeTapTheRoleBlock = meta.story({
-  name: 'Initiative: tap the role block',
-  args: { unit: vashtiExpanded, initiativeOpen: true, 'data-tap': 'initiative' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Roll d20 +3' })).toBeVisible();
+export const InitiativePopoverOpen = meta.story({
+  tags: ['visual'],
+  args: { unit: vashtiExpanded, initiativeOpen: true },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.getByRole('dialog', { name: t('InitiativePopover:title') })).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: t('InitiativePopover:roll', { bonus: '+3' }) }),
+    ).toBeVisible();
   },
 });
 
-export const HPHistoryOpen = meta.story({
-  name: 'HP History open',
+export const HpHistoryOpen = meta.story({
+  name: 'HP History Open',
+  tags: ['visual'],
   args: { unit: vashtiExpanded, expanded: true, historyOpen: true },
-  play: async ({ canvas }) => {
-    const trigger = canvas.getByRole('button', { name: 'HP History' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const trigger = canvas.getByRole('button', { name: t('hpHistory') });
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(trigger).toHaveAttribute('data-open');
   },
 });
 
-export const EditAnd = meta.story({
-  name: 'Edit and ⋯',
-  args: { unit: vashtiExpanded, expanded: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Edit' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'More actions' })).toHaveAttribute(
-      'aria-expanded',
-      'false',
-    );
-  },
-});
-
-export const Open = meta.story({
-  name: '⋯ open',
+export const MenuOpen = meta.story({
   args: { unit: vashtiExpanded, expanded: true, menuOpen: true },
-  play: async ({ canvas }) => {
-    const menu = await canvas.findByRole('menu', { name: 'Actions for Vashti the Hexer' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const menu = await canvas.findByRole('menu', {
+      name: t('menuLabel', { name: 'Vashti the Hexer' }),
+    });
     const items = within(menu)
       .getAllByRole('menuitem')
       .map((item) => item.textContent);
     await expect(items).toEqual([
-      'Duplicate',
-      'Disable',
-      'Save as preset',
-      'Release claim',
-      'Remove',
+      t('duplicate'),
+      t('disable'),
+      t('saveAsPreset'),
+      t('releaseClaim'),
+      t('remove'),
     ]);
   },
 });
 
-export const Wounded287320 = meta.story({
-  name: 'Wounded, 287/320',
-  args: { active: false, unit: unitOf(dragonSeed) },
+export const MenuOpenWithClaim = meta.story({
+  args: { unit: { ...vashtiExpanded, claimedBy: MIKA }, expanded: true, menuOpen: true },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.getByText('@Mika')).toBeVisible();
+    const menu = await canvas.findByRole('menu', {
+      name: t('menuLabel', { name: 'Vashti the Hexer' }),
+    });
+    await expect(within(menu).getByRole('menuitem', { name: t('releaseClaim') })).toBeEnabled();
+  },
 });
 
-export const StaggeredTemp120 = meta.story({
-  name: 'Staggered, temp +120',
+export const ThreeDigitHpWithTemp = meta.story({
+  name: 'Three Digit HP With Temp',
   args: { active: false, unit: unitOf({ ...dragonSeed, hp: 112, tempHp: 120 }) },
 });
 
-export const Full999999 = meta.story({
-  name: 'Full, 999/999',
+export const MaximumHp = meta.story({
+  name: 'Maximum HP',
+  tags: ['visual'],
   args: {
     active: false,
     unit: unitOf({
@@ -446,92 +437,25 @@ export const Full999999 = meta.story({
   },
 });
 
-export const Dead105320 = meta.story({
-  name: 'Dead, −105/320',
-  args: { active: false, unit: unitOf({ ...dragonSeed, hp: -105 }) },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('−105')).toBeVisible();
-  },
-});
-
-export const DeStaggered = meta.story({
-  name: 'de · Staggered',
-  globals: { locale: 'de' },
-  args: { active: false, unit: unitOf({ ...orcSeed, name: 'Ork-Berserker' }) },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Taumelnd')).toBeVisible();
-  },
-});
-
-export const EsTambaleanteTemp = meta.story({
-  name: 'es · Tambaleante + temp',
-  globals: { locale: 'es' },
-  args: { active: false, unit: unitOf({ ...orcSeed, name: 'Berserker orco', tempHp: 5 }) },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Tambaleante')).toBeVisible();
-    await expect(canvas.getByText('+5 temp.')).toBeVisible();
-  },
-});
-
-export const FrChancelant3Digits = meta.story({
-  name: 'fr · Chancelant, 3 digits',
-  globals: { locale: 'fr' },
-  args: { active: false, unit: unitOf({ ...dragonSeed, name: 'Dragon noir ancien', hp: 112 }) },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Chancelant')).toBeVisible();
-  },
-});
-
-export const Ja = meta.story({
-  name: 'ja · よろめき',
-  globals: { locale: 'ja' },
-  args: { active: false, unit: unitOf({ ...orcSeed, name: 'オークの狂戦士' }) },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('よろめき')).toBeVisible();
-  },
-});
-
-export const Ru3DigitsTemp = meta.story({
-  name: 'ru · Шатается, 3 digits + temp',
-  globals: { locale: 'ru' },
-  args: {
-    active: false,
-    unit: unitOf({ ...dragonSeed, name: 'Древний чёрный дракон', hp: 112, tempHp: 120 }),
-  },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Шатается')).toBeVisible();
-    await expect(canvas.getByText('+120 врем.')).toBeVisible();
-  },
-});
-
-export const Ru = meta.story({
-  name: 'ru · Мёртв',
-  globals: { locale: 'ru' },
-  args: { active: false, unit: unitOf({ ...goblinSeed, name: 'Гоблин-лучник' }) },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Мёртв')).toBeVisible();
-  },
-});
-
-export const FourConditionsAllShown = meta.story({
-  name: 'Four conditions, all shown',
+export const FourConditions = meta.story({
+  tags: ['visual'],
   args: {
     active: false,
     unit: unitOf({ ...orcSeed, conditions: ['hampered', 'dazed', 'vulnerable', 'stuck'] }),
   },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
     const chips = canvas.getAllByRole('listitem');
     await expect(chips.map((chip) => chip.textContent)).toEqual([
-      'hampered',
-      'dazed',
-      'vulnerable',
-      'stuck',
+      t('hampered'),
+      t('dazed'),
+      t('vulnerable'),
+      t('stuck'),
     ]);
   },
 });
 
-export const All12Colors = meta.story({
-  name: 'All 12 colors',
+export const AllConditions = meta.story({
   args: {
     active: false,
     unit: unitOf({
@@ -550,123 +474,20 @@ export const All12Colors = meta.story({
   },
 });
 
-export const ExtraFlowTapRow = meta.story({
-  name: 'Flow: tap the row to expand it',
-  args: { unit: vashtiExpanded },
-  play: async ({ args, canvas }) => {
-    const chevron = canvas.getByRole('button', { name: 'Unit details' });
-    await userEvent.click(canvas.getByText('Vashti the Hexer'));
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-    await userEvent.click(canvas.getByRole('button', { name: 'HP History' }));
-    await expect(args.onHistory).toHaveBeenCalledOnce();
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-  },
-});
-
-export const ExtraFlowTapRoleBlock = meta.story({
-  name: 'Flow: tap the role block to set initiative',
-  args: { unit: vashtiExpanded, active: false },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Roll initiative' }));
-    await expect(args.onInitiative).toHaveBeenCalledOnce();
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    const dialog = canvas.getByRole('dialog', { name: 'Initiative' });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Increase' }));
-    await expect(args.onInitiativeSet).toHaveBeenCalledOnce();
-    await expect(args.onInitiativeSet).toHaveBeenCalledWith(16);
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Roll d20 +3' }));
-    await expect(args.onInitiativeRoll).toHaveBeenCalledOnce();
-    await expect(args.onInitiativeRoll).toHaveBeenCalledWith(14, 11);
-    await expect(canvas.getByRole('button', { name: 'Roll initiative' })).toHaveTextContent(/^14/);
-    await expect(args.onToggle).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraChevronToggles = meta.story({
-  name: 'Chevron toggles, a tap on HP never does',
-  args: { unit: vashtiExpanded },
-  play: async ({ args, canvas }) => {
-    const chevron = canvas.getByRole('button', { name: 'Unit details' });
-    await userEvent.click(canvas.getByRole('button', { name: '20 /36 Wounded' }));
-    await userEvent.click(canvas.getByText('Wounded'));
-    await expect(args.onHp).toHaveBeenCalledTimes(2);
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    await userEvent.click(chevron);
-    await expect(args.onToggle).toHaveBeenCalledOnce();
-    await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-    await expect(canvas.getByRole('button', { name: 'Edit' })).toBeVisible();
-    await userEvent.click(chevron);
-    await expect(args.onToggle).toHaveBeenCalledTimes(2);
-    await expect(chevron).toHaveAttribute('aria-expanded', 'false');
-    await expect(canvas.queryByRole('button', { name: 'Edit' })).toBeNull();
-  },
-});
-
-async function pickMenuItem(canvasElement: HTMLElement, name: string) {
-  const canvas = within(canvasElement);
-  await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
-  await userEvent.click(await canvas.findByRole('menuitem', { name }));
-  await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
-}
-
-export const ExtraActions = meta.story({
-  name: 'Each action fires its own callback once',
-  args: { unit: { ...vashtiExpanded, claimedBy: MIKA }, expanded: true },
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }));
-    await expect(args.onEdit).toHaveBeenCalledOnce();
-    await userEvent.click(canvas.getByRole('button', { name: 'Conditions' }));
-    await expect(args.onConditions).toHaveBeenCalledOnce();
-    await userEvent.click(canvas.getByRole('button', { name: 'HP History' }));
-    await expect(args.onHistory).toHaveBeenCalledOnce();
-    await pickMenuItem(canvasElement, 'Duplicate');
-    await expect(args.onDuplicate).toHaveBeenCalledOnce();
-    await pickMenuItem(canvasElement, 'Disable');
-    await expect(args.onSetDisabled).toHaveBeenCalledOnce();
-    await expect(args.onSetDisabled).toHaveBeenCalledWith(true);
-    await pickMenuItem(canvasElement, 'Save as preset');
-    await expect(args.onSaveAsPreset).toHaveBeenCalledOnce();
-    await pickMenuItem(canvasElement, 'Release claim');
-    await expect(args.onReleaseClaim).toHaveBeenCalledOnce();
-    await pickMenuItem(canvasElement, 'Remove');
-    await expect(args.onRemove).toHaveBeenCalledOnce();
-    await expect(args.onMore).toHaveBeenCalledTimes(5);
-    await expect(args.onMenuClose).toHaveBeenCalledTimes(5);
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    await expect(args.onHp).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraReleaseClaimUnclaimed = meta.story({
-  name: 'Release claim stays visible and disabled when nobody claimed the unit',
-  args: { unit: vashtiExpanded, expanded: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
-    const release = await canvas.findByRole('menuitem', { name: 'Release claim' });
-    await expect(release).toBeDisabled();
-    await userEvent.click(release, { pointerEventsCheck: 0 });
-    await expect(args.onReleaseClaim).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toBeEnabled();
-  },
-});
-
-export const ExtraDuplicateDisabled = meta.story({
-  name: 'Duplicate disabled at the unit limit',
+export const MenuOpenDuplicateDisabled = meta.story({
   args: { unit: vashtiExpanded, expanded: true, duplicateDisabled: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
-    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
+    const duplicate = await canvas.findByRole('menuitem', { name: t('duplicate') });
     await expect(duplicate).toBeDisabled();
     await userEvent.click(duplicate, { pointerEventsCheck: 0 });
     await expect(args.onDuplicate).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('menuitem', { name: 'Disable' })).toBeEnabled();
+    await expect(canvas.getByRole('menuitem', { name: t('disable') })).toBeEnabled();
   },
 });
 
-export const ExtraFlashSkipsDeadAndDisabled = meta.story({
-  name: 'The flash border skips dead and disabled rows',
+export const ChangedRowFlash = meta.story({
   args: { active: false, flash: true },
   render: (args) => (
     <div style={{ ...screen, display: 'grid', gap: layout.listGap }}>
@@ -683,44 +504,129 @@ export const ExtraFlashSkipsDeadAndDisabled = meta.story({
   },
 });
 
-export const ExtraRoleBlockTogglesPopover = meta.story({
-  name: 'The role block closes its own popover',
+export const SetupNoInitiative = meta.story({
+  args: { active: false, unit: unitOf({ ...vashtiSeed, initiative: null }) },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.getByRole('img', { name: t('RoleBlock:noInitiative') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('rollInitiative') }));
+    await expect(args.onInitiative).toHaveBeenCalledOnce();
+    const dialog = canvas.getByRole('dialog', { name: t('InitiativePopover:title') });
+    await expect(within(dialog).getByRole('spinbutton')).toHaveValue('—');
+    await expect(args.onToggle).not.toHaveBeenCalled();
+  },
+});
+
+export const ReadOnly = meta.story({
+  args: { active: false, readOnly: true, expanded: true, initiativeOpen: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.queryByRole('button')).toBeNull();
+    await expect(canvas.queryByRole('dialog')).toBeNull();
+    await userEvent.click(canvas.getByText('Vashti the Hexer'));
+    await userEvent.click(canvas.getByText('20'));
+    await userEvent.click(canvas.getByText('15'));
+    await expect(args.onToggle).not.toHaveBeenCalled();
+    await expect(args.onHp).not.toHaveBeenCalled();
+    await expect(args.onInitiative).not.toHaveBeenCalled();
+    await expect(canvas.queryByText(t('conditions'))).toBeNull();
+  },
+});
+
+export const TapRowExpands = meta.story({
+  tags: ['!dev'],
+  args: { unit: vashtiExpanded },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
+    await userEvent.click(canvas.getByRole('group'));
+    await expect(args.onToggle).toHaveBeenCalledOnce();
+    await expect(name).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(canvas.getByRole('button', { name: t('hpHistory') }));
+    await expect(args.onHistory).toHaveBeenCalledOnce();
+    await expect(args.onToggle).toHaveBeenCalledOnce();
+    await expect(name).toHaveAttribute('aria-expanded', 'true');
+    await userEvent.click(name);
+    await expect(args.onToggle).toHaveBeenCalledTimes(2);
+    await expect(name).toHaveAttribute('aria-expanded', 'false');
+  },
+});
+
+export const TapRoleBlockSetsInitiative = meta.story({
+  tags: ['!dev'],
+  args: { unit: vashtiExpanded, active: false },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await userEvent.click(canvas.getByRole('button', { name: t('rollInitiative') }));
+    await expect(args.onInitiative).toHaveBeenCalledOnce();
+    await expect(args.onToggle).not.toHaveBeenCalled();
+    const dialog = canvas.getByRole('dialog', { name: t('InitiativePopover:title') });
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Stepper:increase') }));
+    await expect(args.onInitiativeSet).toHaveBeenCalledOnce();
+    await expect(args.onInitiativeSet).toHaveBeenCalledWith(16);
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: t('InitiativePopover:roll', { bonus: '+3' }) }),
+    );
+    await expect(args.onInitiativeRoll).toHaveBeenCalledOnce();
+    await expect(args.onInitiativeRoll).toHaveBeenCalledWith(14, 11);
+    await expect(canvas.getByRole('button', { name: t('rollInitiative') })).toHaveTextContent(
+      /^14/,
+    );
+    await expect(args.onToggle).not.toHaveBeenCalled();
+  },
+});
+
+async function pickMenuItem(canvasElement: HTMLElement, name: string, t: TFunction) {
+  const canvas = within(canvasElement);
+  await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
+  await userEvent.click(await canvas.findByRole('menuitem', { name }));
+  await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
+}
+
+export const EachActionFiresOnce = meta.story({
+  tags: ['!dev'],
+  args: { unit: { ...vashtiExpanded, claimedBy: MIKA }, expanded: true },
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:edit') }));
+    await expect(args.onEdit).toHaveBeenCalledOnce();
+    await userEvent.click(canvas.getByRole('button', { name: t('conditions') }));
+    await expect(args.onConditions).toHaveBeenCalledOnce();
+    await userEvent.click(canvas.getByRole('button', { name: t('hpHistory') }));
+    await expect(args.onHistory).toHaveBeenCalledOnce();
+    await pickMenuItem(canvasElement, t('duplicate'), t);
+    await expect(args.onDuplicate).toHaveBeenCalledOnce();
+    await pickMenuItem(canvasElement, t('disable'), t);
+    await expect(args.onSetDisabled).toHaveBeenCalledOnce();
+    await expect(args.onSetDisabled).toHaveBeenCalledWith(true);
+    await pickMenuItem(canvasElement, t('saveAsPreset'), t);
+    await expect(args.onSaveAsPreset).toHaveBeenCalledOnce();
+    await pickMenuItem(canvasElement, t('releaseClaim'), t);
+    await expect(args.onReleaseClaim).toHaveBeenCalledOnce();
+    await pickMenuItem(canvasElement, t('remove'), t);
+    await expect(args.onRemove).toHaveBeenCalledOnce();
+    await expect(args.onMore).toHaveBeenCalledTimes(5);
+    await expect(args.onMenuClose).toHaveBeenCalledTimes(5);
+    await expect(args.onToggle).not.toHaveBeenCalled();
+    await expect(args.onHp).not.toHaveBeenCalled();
+  },
+});
+
+export const RoleBlockClosesPopover = meta.story({
+  tags: ['!dev'],
   args: { unit: vashtiExpanded, active: false, initiativeOpen: true },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Roll initiative' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await expect(canvas.getByRole('dialog', { name: t('InitiativePopover:title') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('rollInitiative') }));
     await expect(args.onInitiativeClose).toHaveBeenCalledOnce();
     await expect(args.onInitiative).not.toHaveBeenCalled();
     await expect(canvas.queryByRole('dialog')).toBeNull();
   },
 });
 
-export const ExtraTapMarkerOnActiveRow = meta.story({
-  name: 'The tap marker stays visible on the active row',
-  args: { active: true, 'data-tap': 'hp' },
-  play: async ({ canvas }) => {
-    const hp = canvas.getByRole('button', { name: '20 /36 Wounded' });
-    await expect(getComputedStyle(hp).outlineColor).toBe('rgb(35, 31, 28)');
-  },
-});
-
-export const ExtraReadOnlyWithoutCallbacks = meta.story({
-  name: 'A read-only row needs no callbacks',
-  args: { active: false },
-  render: () => (
-    <div style={screen}>
-      <UnitRow unit={vashti} readOnly />
-    </div>
-  ),
-  play: async ({ canvas }) => {
-    await userEvent.click(canvas.getByText('Vashti the Hexer'));
-    await expect(canvas.queryByRole('button')).toBeNull();
-    await expect(canvas.getByText('Vashti the Hexer')).toBeVisible();
-  },
-});
-
-export const ExtraReadOnlyEveryTapWithoutCallbacks = meta.story({
-  name: 'A read-only row with every flag set survives every tap without callbacks',
+export const ReadOnlySurvivesEveryTap = meta.story({
+  tags: ['!dev'],
   args: { active: false },
   render: () => (
     <div style={screen}>
@@ -756,65 +662,18 @@ export const ExtraReadOnlyEveryTapWithoutCallbacks = meta.story({
   },
 });
 
-export const ExtraDisabledOpensHp = meta.story({
-  name: 'Disabled unit still opens HP and offers Enable',
+export const DisabledUnitOpensHp = meta.story({
+  name: 'Disabled Unit Opens HP',
+  tags: ['!dev'],
   args: { active: false, unit: shadowArcher, expanded: true },
-  play: async ({ args, canvas, canvasElement }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'UnitRow');
     await userEvent.click(canvas.getByRole('button', { name: '18 /18' }));
     await expect(args.onHp).toHaveBeenCalledOnce();
     await expect(args.onToggle).not.toHaveBeenCalled();
-    await pickMenuItem(canvasElement, 'Enable');
+    await pickMenuItem(canvasElement, t('enable'), t);
     await expect(args.onSetDisabled).toHaveBeenCalledOnce();
     await expect(args.onSetDisabled).toHaveBeenCalledWith(false);
-  },
-});
-
-export const ExtraConditionsPicker = meta.story({
-  name: 'Conditions opens the picker and the chips follow',
-  args: { unit: vashtiExpanded, active: false, expanded: true, 'data-tap': 'conditions' },
-  render: (args) => <UnitRowCell {...args} picker />,
-  play: async ({ args, canvas }) => {
-    const trigger = canvas.getByRole('button', { name: 'Conditions' });
-    await expect(trigger).toHaveAttribute('data-tap');
-    await userEvent.click(trigger);
-    await expect(args.onConditions).toHaveBeenCalledOnce();
-    const sheet = await canvas.findByRole('dialog', { name: 'Conditions' });
-    await userEvent.click(within(sheet).getByRole('checkbox', { name: 'hampered' }));
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Done' }));
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-    const chips = canvas.getAllByRole('listitem');
-    await expect(chips.map((chip) => chip.textContent)).toEqual(['dazed', 'hampered', 'weakened']);
-    await expect(args.onToggle).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraNoteEnterSaves = meta.story({
-  name: 'Note: tap edits in place, Enter saves',
-  args: { unit: vashtiExpanded, expanded: true, 'data-tap': 'note' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: `Note: ${hexNote}` }));
-    const editor = canvas.getByRole('textbox', { name: 'Note' });
-    await waitFor(() => expect(editor).toHaveFocus());
-    await userEvent.clear(editor);
-    await userEvent.type(editor, 'Hex ends next round');
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onNoteChange).toHaveBeenCalledOnce();
-    await expect(args.onNoteChange).toHaveBeenCalledWith('Hex ends next round');
-    await expect(canvas.getByRole('button', { name: 'Note: Hex ends next round' })).toBeVisible();
-    await expect(args.onToggle).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraSetupNoInitiative = meta.story({
-  name: 'Setup, no initiative',
-  args: { active: false, unit: unitOf({ ...vashtiSeed, initiative: null }) },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('img', { name: 'No initiative' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Roll initiative' }));
-    await expect(args.onInitiative).toHaveBeenCalledOnce();
-    const dialog = canvas.getByRole('dialog', { name: 'Initiative' });
-    await expect(within(dialog).getByRole('spinbutton')).toHaveValue('—');
-    await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
 
@@ -823,100 +682,53 @@ type KeyboardSpies = Pick<
   'onInitiative' | 'onInitiativeClose' | 'onHp' | 'onToggle' | 'onConditions'
 >;
 
-async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies) {
+async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: TFunction) {
   const canvas = within(canvasElement);
-  const role = canvas.getByRole('button', { name: 'Roll initiative' });
-  const chevron = canvas.getByRole('button', { name: 'Unit details' });
+  const role = canvas.getByRole('button', { name: t('rollInitiative') });
+  const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
   await userEvent.tab();
   await waitFor(() => expect(role).toHaveFocus());
   await userEvent.keyboard('{Enter}');
   await expect(args.onInitiative).toHaveBeenCalledOnce();
-  const dialog = await canvas.findByRole('dialog', { name: 'Initiative' });
+  const dialog = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
   await userEvent.tab();
   await waitFor(() =>
-    expect(within(dialog).getByRole('button', { name: 'Decrease' })).toHaveFocus(),
+    expect(within(dialog).getByRole('button', { name: t('Stepper:decrease') })).toHaveFocus(),
   );
   await userEvent.keyboard('{Escape}');
   await expect(args.onInitiativeClose).toHaveBeenCalledOnce();
   await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   await waitFor(() => expect(role).toHaveFocus());
   await userEvent.tab();
-  const hp = canvas.getByRole('button', { name: '20 /36 Wounded' });
+  await waitFor(() => expect(name).toHaveFocus());
+  await userEvent.keyboard('{Enter}');
+  await expect(args.onToggle).toHaveBeenCalledOnce();
+  await expect(name).toHaveAttribute('aria-expanded', 'true');
+  await userEvent.tab();
+  const hp = canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` });
   await waitFor(() => expect(hp).toHaveFocus());
   await userEvent.keyboard(' ');
   await expect(args.onHp).toHaveBeenCalledOnce();
   await userEvent.tab();
-  await waitFor(() => expect(chevron).toHaveFocus());
-  await userEvent.keyboard('{Enter}');
-  await expect(args.onToggle).toHaveBeenCalledOnce();
-  await expect(chevron).toHaveAttribute('aria-expanded', 'true');
-  await userEvent.tab();
-  const conditions = canvas.getByRole('button', { name: 'Conditions' });
+  const conditions = canvas.getByRole('button', { name: t('conditions') });
   await waitFor(() => expect(conditions).toHaveFocus());
   await userEvent.keyboard('{Enter}');
   await expect(args.onConditions).toHaveBeenCalledOnce();
   await userEvent.tab({ shift: true });
-  await waitFor(() => expect(chevron).toHaveFocus());
+  await userEvent.tab({ shift: true });
+  await waitFor(() => expect(name).toHaveFocus());
   await userEvent.keyboard(' ');
   await expect(args.onToggle).toHaveBeenCalledTimes(2);
-  await expect(chevron).toHaveAttribute('aria-expanded', 'false');
-  await expect(chevron).toHaveFocus();
+  await expect(name).toHaveAttribute('aria-expanded', 'false');
+  await expect(name).toHaveFocus();
 }
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Tab, Enter, Space and Escape',
-  play: async ({ args, canvasElement }) => {
-    await keyboardWalk(canvasElement, args);
-    await expect(args.onInitiativeSet).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraKeyboardMotion = meta.story({
-  name: 'Keyboard with motion on',
+export const KeyboardWithMotionOn = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
-  play: async ({ args, canvasElement }) => {
-    await keyboardWalk(canvasElement, args);
+  play: async ({ args, canvasElement, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    await keyboardWalk(canvasElement, args, t);
     await expect(args.onInitiativeSet).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraReadOnly = meta.story({
-  name: 'Read-only row in NumpadSheet never fires',
-  args: { active: false, readOnly: true, expanded: true, initiativeOpen: true },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.queryByRole('button')).toBeNull();
-    await expect(canvas.queryByRole('dialog')).toBeNull();
-    await userEvent.click(canvas.getByText('Vashti the Hexer'));
-    await userEvent.click(canvas.getByText('20'));
-    await userEvent.click(canvas.getByText('15'));
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    await expect(args.onHp).not.toHaveBeenCalled();
-    await expect(args.onInitiative).not.toHaveBeenCalled();
-    await expect(canvas.queryByText('Conditions')).toBeNull();
-  },
-});
-
-export const ExtraNumpadResult = meta.story({
-  name: 'NumpadSheet result: before, after flashes',
-  args: { active: false },
-  render: (args) => (
-    <div style={{ ...screen, display: 'grid', gap: layout.listGap }}>
-      <UnitRow {...args} unit={unitOf({ ...orcSeed, conditions: ['hampered'] })} readOnly />
-      <UnitRow
-        {...args}
-        unit={unitOf({ ...orcSeed, hp: 2, conditions: ['hampered'] })}
-        readOnly
-        flash
-      />
-    </div>
-  ),
-  play: async ({ args, canvasElement }) => {
-    const rows = canvasElement.querySelectorAll('[data-readonly]');
-    await expect(rows).toHaveLength(2);
-    await expect(rows[0]).not.toHaveAttribute('data-flash');
-    await expect(rows[1]).toHaveAttribute('data-flash');
-    await userEvent.click(within(canvasElement).getByText('2'));
-    await expect(args.onHp).not.toHaveBeenCalled();
-    await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });

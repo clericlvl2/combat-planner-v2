@@ -3,16 +3,34 @@ import { EDGE_WIDTH, OPEN_DISTANCE, watchEdgeSwipe } from './edgeSwipe.ts';
 
 type PointerType = 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel';
 
-const pointer = (type: PointerType, clientX: number, clientY: number, pointerId = 1, button = 0) =>
-  Object.assign(new Event(type), { pointerId, clientX, clientY, button });
+type Device = 'touch' | 'pen' | 'mouse';
 
-const setup = (canStart?: () => boolean) => {
+const pointer = (
+  type: PointerType,
+  clientX: number,
+  clientY: number,
+  pointerId = 1,
+  button = 0,
+  pointerType: Device = 'touch',
+) => Object.assign(new Event(type), { pointerId, pointerType, clientX, clientY, button });
+
+const setup = (canStart?: () => boolean, device: Device = 'touch', edgeLeft?: () => number) => {
   const target = new EventTarget();
   const onSwipe = vi.fn();
-  const stop = watchEdgeSwipe(target, canStart ? { onSwipe, canStart } : { onSwipe });
+  const stop = watchEdgeSwipe(target, {
+    onSwipe,
+    ...(canStart ? { canStart } : {}),
+    ...(edgeLeft ? { edgeLeft } : {}),
+  });
   const send = (type: PointerType, x: number, y: number, pointerId?: number, button?: number) =>
-    target.dispatchEvent(pointer(type, x, y, pointerId, button));
+    target.dispatchEvent(pointer(type, x, y, pointerId, button, device));
   return { onSwipe, stop, send };
+};
+
+const dragFromEdge = (send: ReturnType<typeof setup>['send']) => {
+  send('pointerdown', 4, 300);
+  send('pointermove', 4 + OPEN_DISTANCE, 302);
+  send('pointerup', 4 + OPEN_DISTANCE * 2, 302);
 };
 
 describe('watchEdgeSwipe', () => {
@@ -34,11 +52,38 @@ describe('watchEdgeSwipe', () => {
     expect(onSwipe).toHaveBeenCalledOnce();
   });
 
+  it.each<Device>(['touch', 'pen'])('opens on a %s drag from the left edge', (device) => {
+    const { onSwipe, send } = setup(undefined, device);
+    dragFromEdge(send);
+    expect(onSwipe).toHaveBeenCalledOnce();
+  });
+
+  it('ignores a mouse drag from the left edge', () => {
+    const { onSwipe, send } = setup(undefined, 'mouse');
+    dragFromEdge(send);
+    expect(onSwipe).not.toHaveBeenCalled();
+  });
+
   it('ignores a swipe that starts past the edge', () => {
     const { onSwipe, send } = setup();
     send('pointerdown', EDGE_WIDTH + 1, 300);
     send('pointermove', EDGE_WIDTH + 1 + OPEN_DISTANCE * 3, 300);
     expect(onSwipe).not.toHaveBeenCalled();
+  });
+
+  it('measures the edge from the left of an offset column', () => {
+    const left = 420;
+    const { onSwipe, send } = setup(undefined, 'touch', () => left);
+    send('pointerdown', 4, 300);
+    send('pointerup', 4 + OPEN_DISTANCE * 2, 300);
+    send('pointerdown', left - 1, 300);
+    send('pointerup', left - 1 + OPEN_DISTANCE * 2, 300);
+    send('pointerdown', left + EDGE_WIDTH + 1, 300);
+    send('pointerup', left + EDGE_WIDTH + 1 + OPEN_DISTANCE * 2, 300);
+    expect(onSwipe).not.toHaveBeenCalled();
+    send('pointerdown', left + EDGE_WIDTH, 300);
+    send('pointerup', left + EDGE_WIDTH + OPEN_DISTANCE, 300);
+    expect(onSwipe).toHaveBeenCalledOnce();
   });
 
   it('ignores a short swipe and a vertical scroll from the edge', () => {

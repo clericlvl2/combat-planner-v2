@@ -15,12 +15,11 @@
 
 .hint {
   max-width: 100%;
-  overflow: hidden;
   color: var(--cp-color-secondary);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   font-weight: 600;
   line-height: var(--mantine-line-height-snug);
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  text-align: center;
+  text-wrap: balance;
 }

@@ -106,6 +106,7 @@ export function PresetFormSheet({
         onClose={onClose}
         actions={
           <Button
+            data-sheet-action=""
             variant="primary"
             fullWidth
             disabled={pending}

@@ -1,8 +1,7 @@
 {
   "hero": "Held",
   "enemy": "Feind",
-  "ally": "Verbündeter",
-  "hp": "TP",
+  "ally": "Verbün\u00addeter",
   "you": "Du",
   "noInitiative": "Keine Initiative"
 }

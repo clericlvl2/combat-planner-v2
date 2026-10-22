@@ -3,5 +3,6 @@
   "wounded": "Wounded",
   "staggered": "Staggered",
   "dead": "Dead",
-  "temp": "+{{amount}} temp"
+  "temp": "+{{amount}} temp",
+  "hp": "HP"
 }

@@ -15,13 +15,14 @@ export interface PhoneFrameParameter {
   overlay?: boolean;
 }
 
-const viewportNames: Record<Viewport, string> = {
+export const viewportNames: Record<Viewport, string> = {
   narrow: 'Narrow',
   phone: 'Phone',
+  large: 'Large',
   desktop: 'Desktop',
 };
 
-const viewportList = Object.keys(viewportNames) as Viewport[];
+export const viewportList = Object.keys(viewportNames) as Viewport[];
 
 export const frameGlobalType = {
   frame: {
@@ -31,7 +32,7 @@ export const frameGlobalType = {
       icon: 'mobile' as const,
       items: viewportList.map((value) => ({
         value,
-        title: `${viewportNames[value]} ${layout.viewports[value]}`,
+        title: `${viewportNames[value]} ${layout.viewports[value].width}×${layout.viewports[value].height}`,
       })),
       dynamicTitle: true,
     },
@@ -42,11 +43,16 @@ function isViewport(value: unknown): value is Viewport {
   return viewportList.some((viewport) => viewport === value);
 }
 
+export function frameViewportOf(frame: unknown): Viewport {
+  return isViewport(frame) ? frame : 'narrow';
+}
+
 function phoneStyle(viewport: Viewport): CSSProperties {
   return {
-    width: layout.viewports[viewport],
-    height: layout.phone.height,
+    width: layout.viewports[viewport].width,
+    height: layout.viewports[viewport].height,
     '--cp-layout-status-bar': `${layout.statusBar}px`,
+    '--cp-layout-viewport-width': `${layout.viewports[viewport].width}px`,
   } as CSSProperties;
 }
 
@@ -54,7 +60,7 @@ export function PhoneFrame({
   children,
   overlay = false,
   docs = false,
-  viewport = 'phone',
+  viewport = 'narrow',
 }: PhoneFrameProps) {
   return (
     <div
@@ -96,7 +102,7 @@ export const withPhoneFrame: Decorator = (Story, { globals, parameters, viewMode
     <PhoneFrame
       overlay={phoneFrame.overlay === true}
       docs={viewMode === 'docs'}
-      viewport={isViewport(globals.frame) ? globals.frame : 'phone'}
+      viewport={frameViewportOf(globals.frame)}
     >
       <Story />
     </PhoneFrame>

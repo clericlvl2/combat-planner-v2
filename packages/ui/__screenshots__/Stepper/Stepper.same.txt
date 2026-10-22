@@ -1,2 +1,0 @@
-Anatomy WithLabelDefault
-WithLabelMax ValuesAndLabels999

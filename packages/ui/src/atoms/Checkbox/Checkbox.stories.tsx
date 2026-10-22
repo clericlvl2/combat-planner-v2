@@ -3,6 +3,9 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import type en from '../../i18n/en/Checkbox.json';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
+import { conditionNames } from '../../theme.ts';
 import { Checkbox } from './Checkbox.tsx';
 import type { CheckboxProps } from './Checkbox.tsx';
 
@@ -10,19 +13,17 @@ type LabelKey = keyof typeof en;
 
 interface CheckboxCellProps extends Omit<CheckboxProps, 'label'> {
   labelKey?: LabelKey;
-  label?: string;
 }
 
 function CheckboxCell({
   checked: initialChecked,
   onChange,
   labelKey,
-  label,
   ...props
 }: CheckboxCellProps) {
   const { t } = useTranslation('Checkbox');
   const [checked, setChecked] = useState(initialChecked);
-  const text = label ?? (labelKey ? t(labelKey) : undefined);
+  const text = labelKey ? t(labelKey) : undefined;
   return (
     <div
       style={{
@@ -52,34 +53,71 @@ const meta = preview.meta({
   args: { checked: false, onChange: fn() },
 });
 
-const renderTap = (args: CheckboxCellProps) => <CheckboxCell {...args} data-tap="" />;
+const states = ['off', 'on', 'disabled off', 'disabled on', 'focus', 'tap'] as const;
+type State = (typeof states)[number];
 
-export const AnatomySquareOn = meta.story({
-  name: 'Anatomy · square · on',
-  args: { shape: 'square', checked: true },
+const row = (label: string, props: Partial<CheckboxCellProps>) => ({
+  label,
+  render: (state: State) => (
+    <CheckboxCell
+      {...props}
+      onChange={fn()}
+      checked={state === 'on' || state === 'disabled on' || state === 'tap'}
+      disabled={state === 'disabled off' || state === 'disabled on'}
+      data-focus={state === 'focus' ? '' : undefined}
+      data-tap={state === 'tap' ? '' : undefined}
+    />
+  ),
 });
 
-export const SquareOff = meta.story({
-  name: 'Square · off',
-  args: { shape: 'square', checked: false },
+export const AllStates = meta.story({
+  tags: ['visual'],
+  render: () => (
+    <StateGrid
+      columns={states}
+      rows={[
+        row('Square S', { shape: 'square', size: 'S' }),
+        row('Square M', { shape: 'square', size: 'M' }),
+        row('Square L', { shape: 'square', size: 'L' }),
+        row('Round S', { shape: 'round', size: 'S' }),
+        row('Round M', { shape: 'round', size: 'M' }),
+        row('Round L', { shape: 'round', size: 'L' }),
+      ]}
+    />
+  ),
 });
 
-export const VariantsStatesSquareOn = meta.story({
-  name: 'Square · on',
-  args: { shape: 'square', checked: true },
+export const AllConditions = meta.story({
+  render: () => (
+    <StateGrid
+      columns={conditionNames}
+      rows={[
+        {
+          label: 'Round on',
+          render: (condition) => (
+            <CheckboxCell shape="round" checked condition={condition} onChange={fn()} />
+          ),
+        },
+      ]}
+    />
+  ),
 });
 
-export const SquareTap = meta.story({
-  name: 'Square · tap',
-  args: { shape: 'square', checked: true },
-  render: renderTap,
+export const WithLabel = meta.story({
+  render: () => (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+      <CheckboxCell checked={false} labelKey="tagUndead" onChange={fn()} />
+      <CheckboxCell checked labelKey="tagUndead" onChange={fn()} />
+    </div>
+  ),
 });
 
-export const SquareDisabled = meta.story({
-  name: 'Square · disabled',
+export const DisabledIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { shape: 'square', checked: false, disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const box = canvas.getByRole('checkbox', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    const box = canvas.getByRole('checkbox', { name: t('select') });
     await expect(box).toBeDisabled();
     await userEvent.click(box, { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
@@ -87,116 +125,12 @@ export const SquareDisabled = meta.story({
   },
 });
 
-export const SquareOnDisabled = meta.story({
-  name: 'Square · on, disabled',
-  args: { shape: 'square', checked: true, disabled: true },
-});
-
-export const RoundOff = meta.story({
-  name: 'Round · off',
-  args: { shape: 'round', checked: false },
-});
-
-export const RoundOnDazed = meta.story({
-  name: 'Round · on, dazed',
-  args: { shape: 'round', checked: true, condition: 'dazed' },
-});
-
-export const RoundOnHampered = meta.story({
-  name: 'Round · on, hampered',
-  args: { shape: 'round', checked: true, condition: 'hampered' },
-});
-
-export const SSquare = meta.story({
-  name: 'S · square',
-  args: { size: 'S', shape: 'square', checked: true },
-});
-
-export const SRound = meta.story({
-  name: 'S · round',
-  args: { size: 'S', shape: 'round', checked: true },
-});
-
-export const MSquare = meta.story({
-  name: 'M · square',
-  args: { size: 'M', shape: 'square', checked: true },
-});
-
-export const MRound = meta.story({
-  name: 'M · round',
-  args: { size: 'M', shape: 'round', checked: true },
-});
-
-export const LSquare = meta.story({
-  name: 'L · square',
-  args: { size: 'L', shape: 'square', checked: true },
-});
-
-export const LRound = meta.story({
-  name: 'L · round',
-  args: { size: 'L', shape: 'round', checked: true },
-});
-
-export const Charmed = meta.story({
-  name: 'charmed',
-  args: { shape: 'round', checked: true, condition: 'charmed' },
-});
-
-export const Confused = meta.story({
-  name: 'confused',
-  args: { shape: 'round', checked: true, condition: 'confused' },
-});
-
-export const Dazed = meta.story({
-  name: 'dazed',
-  args: { shape: 'round', checked: true, condition: 'dazed' },
-});
-
-export const Fear = meta.story({
-  name: 'fear',
-  args: { shape: 'round', checked: true, condition: 'fear' },
-});
-
-export const Helpless = meta.story({
-  name: 'helpless',
-  args: { shape: 'round', checked: true, condition: 'helpless' },
-});
-
-export const Hampered = meta.story({
-  name: 'hampered',
-  args: { shape: 'round', checked: true, condition: 'hampered' },
-});
-
-export const Shocked = meta.story({
-  name: 'shocked',
-  args: { shape: 'round', checked: true, condition: 'shocked' },
-});
-
-export const Stuck = meta.story({
-  name: 'stuck',
-  args: { shape: 'round', checked: true, condition: 'stuck' },
-});
-
-export const Stunned = meta.story({
-  name: 'stunned',
-  args: { shape: 'round', checked: true, condition: 'stunned' },
-});
-
-export const Vulnerable = meta.story({
-  name: 'vulnerable',
-  args: { shape: 'round', checked: true, condition: 'vulnerable' },
-});
-
-export const Weakened = meta.story({
-  name: 'weakened',
-  args: { shape: 'round', checked: true, condition: 'weakened' },
-});
-
-export const ExtraToggle = meta.story({
-  name: 'Toggle on tap',
+export const ClickToggles = meta.story({
+  tags: ['!dev'],
   args: { checked: false, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const box = canvas.getByRole('checkbox', { name: 'Select' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    const box = canvas.getByRole('checkbox', { name: t('select') });
     await userEvent.click(box);
     await expect(args.onChange).toHaveBeenLastCalledWith(true);
     await expect(box).toBeChecked();
@@ -206,22 +140,24 @@ export const ExtraToggle = meta.story({
   },
 });
 
-export const ExtraLabelClick = meta.story({
-  name: 'Label click toggles',
+export const LabelClickToggles = meta.story({
+  tags: ['!dev'],
   args: { checked: false, labelKey: 'tagUndead', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Undead'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    await userEvent.click(canvas.getByText(t('tagUndead')));
     await expect(args.onChange).toHaveBeenCalledOnce();
     await expect(args.onChange).toHaveBeenCalledWith(true);
-    await expect(canvas.getByRole('checkbox', { name: 'Undead' })).toBeChecked();
+    await expect(canvas.getByRole('checkbox', { name: t('tagUndead') })).toBeChecked();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Space toggles',
+export const SpaceToggles = meta.story({
+  tags: ['!dev'],
   args: { checked: false, labelKey: 'tagUndead', onChange: fn() },
-  play: async ({ args, canvas }) => {
-    const box = canvas.getByRole('checkbox', { name: 'Undead' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    const box = canvas.getByRole('checkbox', { name: t('tagUndead') });
     await userEvent.tab();
     await expect(box).toHaveFocus();
     await userEvent.keyboard('[Space]');
@@ -233,57 +169,13 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraDisabledLabel = meta.story({
-  name: 'Disabled with label',
+export const DisabledLabelIgnoresClick = meta.story({
+  tags: ['!dev'],
   args: { checked: true, labelKey: 'tagUndead', disabled: true, onChange: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByText('Undead'), { pointerEventsCheck: 0 });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Checkbox');
+    await userEvent.click(canvas.getByText(t('tagUndead')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('checkbox', { name: 'Undead' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { checked: true, labelKey: 'tagUndead' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('checkbox', { name: 'Untote' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es',
-  globals: { locale: 'es' },
-  args: { checked: true, labelKey: 'tagUndead' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('checkbox', { name: 'No muertos' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr',
-  globals: { locale: 'fr' },
-  args: { checked: true, labelKey: 'tagUndead' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('checkbox', { name: 'Morts-vivants' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { checked: true, labelKey: 'tagUndead' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('checkbox', { name: 'アンデッド' })).toBeChecked();
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { checked: true, labelKey: 'tagUndead' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('checkbox', { name: 'Нежить' })).toBeChecked();
+    await expect(canvas.getByRole('checkbox', { name: t('tagUndead') })).toBeChecked();
   },
 });

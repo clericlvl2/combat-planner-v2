@@ -220,7 +220,14 @@ export function UnitForm({
         subtitle={adding ? combatTitle : (value?.name ?? draft.name)}
         onClose={onCancel}
         actions={
-          <Button variant="primary" fullWidth disabled={library && !pickedPreset} onClick={submit}>
+          <Button
+            className={classes.submit}
+            variant="primary"
+            fullWidth
+            disabled={library && !pickedPreset}
+            onClick={submit}
+            data-sheet-action=""
+          >
             {ctaLabel}
           </Button>
         }

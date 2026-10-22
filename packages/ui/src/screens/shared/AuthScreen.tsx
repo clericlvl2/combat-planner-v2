@@ -24,11 +24,13 @@ export function AuthScreen({
   return (
     <div className={classes.root}>
       <div className={classes.body}>
-        <span className={classes.logo} aria-hidden="true">
-          <IconSwords size={32} stroke={2} />
-        </span>
         <div className={classes.heading}>
-          <h1 className={classes.title}>{title}</h1>
+          <div className={classes.brand}>
+            <span className={classes.logo} aria-hidden="true">
+              <IconSwords size={24} stroke={2} />
+            </span>
+            <h1 className={classes.title}>{title}</h1>
+          </div>
           <p className={classes.subtitle}>{subtitle}</p>
         </div>
         {children}

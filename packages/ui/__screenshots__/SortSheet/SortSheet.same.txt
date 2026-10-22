@@ -1,2 +1,0 @@
-Anatomy VariantsCombatListNewestFirst
-ExtraCloseWithoutChange ExtraDoneWithoutChange ExtraFlowLibraryByType ExtraFlowTapAZ ExtraKeyboard ExtraShiftTabMotionOn

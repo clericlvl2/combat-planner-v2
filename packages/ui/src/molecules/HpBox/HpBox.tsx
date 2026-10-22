@@ -1,6 +1,6 @@
-import { healthSegments, healthStatus } from '@combat-planner/domain';
+import { healthStatus } from '@combat-planner/domain';
 import type { HealthStatus } from '@combat-planner/domain';
-import { UnstyledButton } from '@mantine/core';
+import { UnstyledButton, VisuallyHidden } from '@mantine/core';
 import type { HTMLAttributes, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import classes from './HpBox.module.css';
@@ -8,8 +8,9 @@ import classes from './HpBox.module.css';
 export type HpBoxViewer = 'dm' | 'player';
 
 export type HpBoxHealth =
-  | { hp: number; maxHp: number; tempHp?: number; status?: never }
-  | { status: HealthStatus; hp?: never; maxHp?: never; tempHp?: never };
+  | { hp: number; maxHp: number; tempHp?: number; status?: never; preset?: never }
+  | { status: HealthStatus; hp?: never; maxHp?: never; tempHp?: never; preset?: never }
+  | { preset: true; maxHp: number; hp?: never; tempHp?: never; status?: never };
 
 export type HpBoxProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'onClick'> &
   HpBoxHealth & {
@@ -19,7 +20,9 @@ export type HpBoxProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'onClick
     onClick?: MouseEventHandler<HTMLButtonElement>;
   };
 
-const segmentSlots = [0, 1, 2, 3] as const;
+const pipSlots = [0, 1] as const;
+
+const pipsOf: Record<HealthStatus, number> = { full: 2, wounded: 1, staggered: 1, dead: 0 };
 
 function formatHp(value: number): string {
   return value < 0 ? `−${Math.abs(value)}` : String(value);
@@ -30,6 +33,7 @@ export function HpBox({
   maxHp,
   tempHp = 0,
   status: statusProp,
+  preset,
   viewer,
   mine = false,
   disabled = false,
@@ -38,52 +42,57 @@ export function HpBox({
   ...rest
 }: HpBoxProps) {
   const { t } = useTranslation('HpBox');
-  const numbers = hp !== undefined && maxHp !== undefined ? { hp, maxHp } : null;
+  const numbers = !preset && hp !== undefined && maxHp !== undefined ? { hp, maxHp } : null;
   const status = numbers ? healthStatus(numbers.hp, numbers.maxHp) : (statusProp ?? 'full');
-  const segments = healthSegments(status, numbers?.hp, numbers?.maxHp);
+  const pips = pipsOf[status];
   const dm = viewer === 'dm';
-  const off = status === 'dead' || disabled;
-  const showStatus = !dm || status !== 'full';
-  const content = (
+  const off = !preset && (status === 'dead' || disabled);
+  const button = Boolean(onClick && numbers);
+  const editable = Boolean(numbers) && !off && (mine || button);
+  const showStatus = !preset && (!dm || status !== 'full');
+  const content = preset ? (
+    <span className={classes.numbers} data-part="numbers">
+      <span className={classes.current}>{maxHp}</span>
+      <span className={classes.max}>{t('hp')}</span>
+    </span>
+  ) : (
     <>
       {numbers ? (
-        <span
-          className={classes.numbers}
-          data-part="numbers"
-          data-mine={(mine && !off) || undefined}
-        >
+        <span className={classes.numbers} data-part="numbers" data-editable={editable || undefined}>
           <span className={classes.current}>{formatHp(numbers.hp)}</span>
           <span className={classes.max}>/{numbers.maxHp}</span>
         </span>
       ) : null}
-      {dm ? (
-        <span className={classes.segments} aria-hidden="true">
-          {segmentSlots.map((slot) => (
-            <span
-              key={slot}
-              className={classes.segment}
-              data-segment=""
-              data-filled={slot < segments || undefined}
-            />
-          ))}
-        </span>
+      <span className={classes.pips} aria-hidden="true">
+        {pipSlots.map((slot) => (
+          <span
+            key={slot}
+            className={classes.pip}
+            data-pip=""
+            data-filled={slot < pips || undefined}
+          />
+        ))}
+      </span>
+      {showStatus ? <VisuallyHidden data-part="status">{t(status)}</VisuallyHidden> : null}
+      {tempHp > 0 ? (
+        <>
+          <span className={classes.badge} data-part="temp-badge" aria-hidden="true">
+            +{tempHp}
+          </span>
+          <VisuallyHidden data-part="temp">{t('temp', { amount: tempHp })}</VisuallyHidden>
+        </>
       ) : null}
-      {showStatus ? (
-        <span className={classes.status} data-part="status">
-          {t(status)}
-        </span>
-      ) : null}
-      {tempHp > 0 ? <span className={classes.temp}>{t('temp', { amount: tempHp })}</span> : null}
     </>
   );
   const shared = {
     className: className ? `${classes.root} ${className}` : classes.root,
     'data-viewer': viewer,
-    'data-status': status,
-    'data-segments': dm ? segments : undefined,
+    'data-status': preset ? undefined : status,
+    'data-pips': preset ? undefined : pips,
+    'data-preset': preset,
     'data-off': off || undefined,
   };
-  if (!onClick || !numbers) {
+  if (!button) {
     return (
       <div {...rest} {...shared}>
         {content}

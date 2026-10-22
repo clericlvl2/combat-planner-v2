@@ -17,7 +17,6 @@ const skippedDirectories = new Set([
   'drizzle',
   'docs',
   '.claude',
-  '__screenshots__',
 ]);
 const checkedExtensions = new Set(['.ts', '.tsx', '.css']);
 const allowedPrefixes = [

@@ -100,4 +100,12 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
+
+  .root:not([data-labelled]) & {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    padding: 0 4px;
+    border: 2px solid var(--cp-color-background);
+  }
 }

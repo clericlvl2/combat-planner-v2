@@ -6,13 +6,16 @@
   "setEscalation": "Fijar dado de escalada, escalada {{value}}",
   "escalationTitle": "Dado de escalada",
   "escalationFace": "Escalada {{value}}",
+  "escalationCaption": "Escalada",
   "escalationHint": "«Siguiente turno» lo sube en 1 cada ronda, hasta {{max}}",
   "roundHint": "{{min}}–{{max}}. Cambiar la ronda no mueve el turno.",
   "menu": "Menú",
   "menuLabel": "Menú del combate",
+  "playerMenuLabel": "Menú del jugador",
   "addUnit": "Añadir unidad",
   "undo": "Deshacer",
   "share": "Compartir",
   "restart": "Reiniciar combate",
-  "clear": "Vaciar combate"
+  "clear": "Vaciar combate",
+  "heroes": "Héroes"
 }

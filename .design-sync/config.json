@@ -1,0 +1,189 @@
+{
+  "projectId": "fbddc215-2bc6-42e0-be0e-28a257546a95",
+  "pkg": "@combat-planner/ui",
+  "shape": "storybook",
+  "storybookConfigDir": "packages/ui/.storybook",
+  "storybookStatic": ".design-sync/sb-reference",
+  "buildCmd": "node .design-sync/build-ui.mjs",
+  "entry": "dist/index.js",
+  "cssEntry": "dist/design-sync.css",
+  "extraFonts": [
+    "node_modules/@fontsource/unbounded/600.css",
+    "node_modules/@fontsource/unbounded/700.css",
+    "node_modules/@fontsource/rubik/400.css",
+    "node_modules/@fontsource/rubik/500.css",
+    "node_modules/@fontsource/rubik/600.css",
+    "node_modules/@fontsource/rubik/700.css",
+    "node_modules/@fontsource/noto-sans-jp/400.css",
+    "node_modules/@fontsource/noto-sans-jp/500.css",
+    "node_modules/@fontsource/noto-sans-jp/700.css"
+  ],
+  "libOverrides": {
+    "source-storybook.mjs": ".storybook/preview imports @fontsource CSS (font files need an empty loader; fonts ship through extraFonts), and its decorators import DS modules such as src/provider.tsx by relative path, which must resolve to the shipped bundle so contexts match and Vite-only import.meta.glob never bundles; preview loaders (apiLoader) run synchronously into ctx.loaded for the global decorators; cfg.extraEntries resolve to the DS global in the decorator bundle",
+    "story-imports.mjs": "stories use CSF factories (preview.meta / meta.story from definePreview in @storybook/react-vite) and export no default meta; the stub merges meta into each story object and runs the preview decorators per story with real globals, parameters and loaded; storybook-addon-remix-react-router becomes a memory router on the DS react-router"
+  },
+  "storyImports": {
+    "shim": [
+      "packages/ui/src/provider.tsx",
+      "packages/ui/src/api/",
+      "packages/ui/src/layout.ts",
+      "packages/ui/src/theme.ts"
+    ]
+  },
+  "extraEntries": ["react-router", "@tanstack/react-query", "react-i18next"],
+  "overrides": {
+    "Library": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "SignIn": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "NumberField": {
+      "cardMode": "column"
+    },
+    "CardActions": {
+      "cardMode": "column"
+    },
+    "CheckList": {
+      "cardMode": "column"
+    },
+    "HistoryRow": {
+      "cardMode": "column"
+    },
+    "InitiativePopover": {
+      "cardMode": "column"
+    },
+    "NoteField": {
+      "cardMode": "column"
+    },
+    "RadioList": {
+      "cardMode": "column"
+    },
+    "Segmented": {
+      "cardMode": "column"
+    },
+    "Stepper": {
+      "cardMode": "column"
+    },
+    "SwatchRow": {
+      "cardMode": "column"
+    },
+    "ConditionPicker": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "Dialog": {
+      "cardMode": "single"
+    },
+    "Drawer": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "HpHistory": {
+      "cardMode": "single"
+    },
+    "Menu": {
+      "cardMode": "single"
+    },
+    "NumpadSheet": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "PresetCard": {
+      "cardMode": "column"
+    },
+    "ShareSheet": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "Sheet": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "SortSheet": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "TagSheet": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "UnitForm": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "Toast": {
+      "viewport": "900x930"
+    },
+    "TurnBar": {
+      "viewport": "900x930"
+    },
+    "About": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "Account": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "CantReachServer": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "CombatDeleted": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "CombatList": {
+      "cardMode": "single",
+      "viewport": "900x930",
+      "primaryStory": "Default"
+    },
+    "CombatNotFound": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "CombatScreen": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "Heroes": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "LinkExpired": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "NotFound": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "PlayerView": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "Settings": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "SignUp": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "TurnOrder": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "UnexpectedError": {
+      "cardMode": "single",
+      "viewport": "900x930"
+    },
+    "BottomBar": {
+      "viewport": "900x930"
+    }
+  },
+  "readmeHeader": "conventions.md"
+}

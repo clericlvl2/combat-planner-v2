@@ -1,11 +1,13 @@
 import preview from '#.storybook/preview';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { locales } from '../../provider.tsx';
 import { localeNames } from '../../storybook/withLocale.tsx';
 import { RadioList } from './RadioList.tsx';
 import type { RadioListOption, RadioListProps } from './RadioList.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface RadioListCellProps extends Omit<
   RadioListProps<string>,
@@ -15,13 +17,13 @@ interface RadioListCellProps extends Omit<
   labels?: readonly string[];
   sub?: boolean;
   disabledValues?: readonly string[];
-  tap?: number;
   onChange: (value: string) => void;
 }
 
 const stage = {
-  boxSizing: 'content-box',
-  width: 330,
+  boxSizing: 'border-box',
+  width: 362,
+  maxWidth: '100%',
   padding: 16,
   borderRadius: 12,
   background: 'var(--cp-color-surface)',
@@ -34,20 +36,12 @@ function RadioListCell({
   labels,
   sub = false,
   disabledValues = [],
-  tap,
   value: initialValue,
   onChange,
   ...props
 }: RadioListCellProps) {
   const { t } = useTranslation('RadioList');
   const [value, setValue] = useState(initialValue);
-  const frame = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    if (tap === undefined) return;
-    frame.current
-      ?.querySelector('[role="radiogroup"]')
-      ?.children[tap]?.setAttribute('data-tap', '');
-  }, [tap]);
   const options: RadioListOption<string>[] =
     kind === 'language'
       ? locales.map((locale) => ({ value: locale, label: localeNames[locale] }))
@@ -58,7 +52,7 @@ function RadioListCell({
           disabled: disabledValues.includes(option) || undefined,
         }));
   return (
-    <div style={stage} ref={frame}>
+    <div style={stage}>
       <RadioList
         {...props}
         aria-label={kind === 'language' ? t('language') : t('sortCombats')}
@@ -79,82 +73,50 @@ const meta = preview.meta({
   args: { value: 'newestFirst', onChange: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const Default = meta.story({ tags: ['visual'] });
 
-export const SortCombatsDefault = meta.story({
-  name: 'Sort combats · default',
-});
-
-export const SortCombatsTap = meta.story({
-  name: 'Sort combats · tap',
-  args: { tap: 1 },
-});
-
-export const LanguageDefault = meta.story({
-  name: 'Language · default',
+export const Language = meta.story({
   args: { kind: 'language', value: 'ru' },
 });
 
-export const LanguageTap = meta.story({
-  name: 'Language · tap',
-  args: { kind: 'language', value: 'ru', tap: 0 },
+const sizeColumns = ['Default'] as const;
+
+const sizeRows = (['S', 'M', 'L'] as const).map((size) => ({
+  label: size,
+  render: () => <RadioListCell size={size} value="newestFirst" onChange={() => {}} />,
+}));
+
+export const AllSizes = meta.story({
+  tags: ['visual'],
+  render: () => <StateGrid rows={sizeRows} columns={sizeColumns} />,
 });
 
-export const RadioListS = meta.story({
-  name: 'RadioList · S',
-  args: { size: 'S' },
-});
-
-export const RadioListM = meta.story({
-  name: 'RadioList · M',
-  args: { size: 'M' },
-});
-
-export const RadioListL = meta.story({
-  name: 'RadioList · L',
-  args: { size: 'L' },
-});
-
-export const SortCombatsDe = meta.story({
-  name: 'Sort combats · de',
-  args: {
-    labels: ['Neueste zuerst', 'Zuletzt gespielt zuerst', 'Alphabetisch von A bis Z'],
-    value: 'lastPlayed',
-  },
-});
-
-export const SortCombatsRu = meta.story({
-  name: 'Sort combats · ru',
-  args: {
-    labels: ['Сначала новые', 'Сначала последние сыгранные', 'По алфавиту от А до Я'],
-    value: 'lastPlayed',
-  },
-});
-
-export const ExtraTap = meta.story({
-  name: 'Tap a row applies at once',
-  play: async ({ args, canvas, canvasElement }) => {
-    const lastPlayed = canvas.getByRole('radio', { name: 'Last played' });
-    await userEvent.click(canvas.getByText('Last played'));
+export const TapAppliesAtOnce = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    const lastPlayed = canvas.getByRole('radio', { name: t('lastPlayed') });
+    await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).toHaveBeenCalledWith('lastPlayed');
     await expect(lastPlayed).toBeChecked();
     const tinted = canvasElement.querySelector<HTMLElement>('[data-selected]');
-    await expect(tinted).toHaveTextContent('Last played');
+    await expect(tinted).toHaveTextContent(t('lastPlayed'));
     await expect(tinted && getComputedStyle(tinted).backgroundColor).toBe('rgb(255, 244, 210)');
-    await userEvent.click(canvas.getByText('Last played'));
+    await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).toHaveBeenCalledOnce();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: arrows, Space and Enter',
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('radiogroup', { name: 'Sort combats' })).toBeVisible();
+export const ArrowsMoveTheSelection = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    await expect(canvas.getByRole('radiogroup', { name: t('sortCombats') })).toBeVisible();
     await userEvent.tab();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toHaveFocus();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('lastPlayed');
-    await expect(canvas.getByRole('radio', { name: 'Last played' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('lastPlayed') })).toBeChecked();
     await userEvent.keyboard('{ArrowDown}');
     await expect(args.onChange).toHaveBeenLastCalledWith('alphabetical');
     await userEvent.keyboard('{ArrowUp}');
@@ -164,10 +126,11 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraEnter = meta.story({
-  name: 'Keyboard: Enter selects the focused row',
-  play: async ({ args, canvas }) => {
-    const alphabetical = canvas.getByRole('radio', { name: 'A–Z' });
+export const EnterSelectsFocusedRow = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    const alphabetical = canvas.getByRole('radio', { name: t('alphabetical') });
     alphabetical.focus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onChange).toHaveBeenCalledWith('alphabetical');
@@ -175,29 +138,36 @@ export const ExtraEnter = meta.story({
   },
 });
 
-export const ExtraDisabledOption = meta.story({
-  name: 'Disabled option',
+export const DisabledOption = meta.story({
   args: { disabledValues: ['alphabetical'] },
-  play: async ({ args, canvas }) => {
-    const alphabetical = canvas.getByRole('radio', { name: 'A–Z' });
+});
+
+export const LongLabels = meta.story({
+  args: {
+    labels: [
+      'Сначала новые бои, созданные недавно',
+      'Сначала последние сыгранные бои за неделю',
+      'По алфавиту от А до Я по названию боя',
+    ],
+    sub: true,
+    value: 'lastPlayed',
+  },
+});
+
+export const DisabledOptionIgnoresClick = meta.story({
+  tags: ['!dev'],
+  args: { disabledValues: ['alphabetical'] },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'RadioList');
+    const alphabetical = canvas.getByRole('radio', { name: t('alphabetical') });
     await expect(alphabetical).toBeDisabled();
-    await userEvent.click(canvas.getByText('A–Z'), { pointerEventsCheck: 0 });
+    await userEvent.click(canvas.getByText(t('alphabetical')), { pointerEventsCheck: 0 });
     await expect(args.onChange).not.toHaveBeenCalled();
     await expect(alphabetical).not.toBeChecked();
-    await expect(canvas.getByRole('radio', { name: 'Newest first' })).toBeChecked();
+    await expect(canvas.getByRole('radio', { name: t('newestFirst') })).toBeChecked();
   },
 });
 
-export const ExtraSubLine = meta.story({
-  name: 'With sub lines',
+export const WithSubLines = meta.story({
   args: { sub: true },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('radiogroup', { name: '戦闘の並べ替え' })).toBeVisible();
-    await expect(canvas.getByRole('radio', { name: '新しい順' })).toBeChecked();
-  },
 });

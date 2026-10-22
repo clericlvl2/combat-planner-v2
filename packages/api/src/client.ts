@@ -31,6 +31,21 @@ export const LOCALES = ['en', 'de', 'es', 'fr', 'ja', 'ru'] as const;
 export const localeSchema = z.enum(LOCALES);
 export type Locale = z.infer<typeof localeSchema>;
 
+export function browserLocale(languages: readonly string[]): Locale {
+  for (const language of languages) {
+    const primary = language.toLowerCase().split('-')[0];
+    const locale = LOCALES.find((candidate) => candidate === primary);
+    if (locale) return locale;
+  }
+  return 'en';
+}
+
+export const acceptLanguages = (header: string | null): string[] =>
+  (header ?? '')
+    .split(',')
+    .map((part) => part.split(';')[0]?.trim() ?? '')
+    .filter((language) => language !== '');
+
 export const versionSchema = z.number().int().nonnegative();
 export const versionResultSchema = z.object({ version: versionSchema });
 export type VersionResult = z.infer<typeof versionResultSchema>;

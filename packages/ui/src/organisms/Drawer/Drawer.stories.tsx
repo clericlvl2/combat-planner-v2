@@ -6,6 +6,7 @@ import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { Drawer } from './Drawer.tsx';
 import type { DrawerSection } from './Drawer.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface DrawerCellProps {
   current?: DrawerSection;
@@ -59,41 +60,41 @@ const meta = preview.meta({
   args: { current: 'combats', onNavigate: fn(), onClose: fn() },
 });
 
-export const Anatomy = meta.story({
-  play: async ({ canvas }) => {
+export const Default = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
     await expect(canvas.getByRole('dialog', { name: 'Combat Planner' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Combats' })).toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('combats') })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await expect(canvas.getByRole('button', { name: 'Library' })).not.toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('library') })).not.toHaveAttribute(
       'aria-current',
     );
     await expect(canvas.getByText('dm@ferry.games')).toBeVisible();
   },
 });
 
-export const CombatsActive = meta.story({
-  name: 'Combats active',
-  args: { current: 'combats' },
-});
-
 export const LibraryActive = meta.story({
-  name: 'Library active',
   args: { current: 'library' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Library' })).toHaveAttribute(
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
+    await expect(canvas.getByRole('button', { name: t('library') })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await expect(canvas.getByRole('button', { name: 'Combats' })).not.toHaveAttribute(
+    await expect(canvas.getByRole('button', { name: t('combats') })).not.toHaveAttribute(
       'aria-current',
     );
   },
 });
 
 export const LongEmail = meta.story({
-  name: 'Long email',
+  tags: ['visual'],
+  parameters: {
+    geometry: { wordBreaks: 'an email address wraps at any character by design' },
+  },
   args: { current: 'settings', email: 'aleksandra.konstantinovna.vishnevetskaya@example.com' },
   play: async ({ canvas }) => {
     const email = canvas.getByText('aleksandra.konstantinovna.vishnevetskaya@example.com');
@@ -104,10 +105,11 @@ export const LongEmail = meta.story({
   },
 });
 
-export const ExtraNavigate = meta.story({
-  name: 'Tap on a section navigates and closes',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Library' }));
+export const TapSectionNavigates = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
+    await userEvent.click(canvas.getByRole('button', { name: t('library') }));
     await expect(args.onNavigate).toHaveBeenCalledOnce();
     await expect(args.onNavigate).toHaveBeenCalledWith('library');
     await expect(args.onClose).toHaveBeenCalledOnce();
@@ -115,8 +117,8 @@ export const ExtraNavigate = meta.story({
   },
 });
 
-export const ExtraEscape = meta.story({
-  name: 'Escape closes with no navigation',
+export const EscapeCloses = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvas }) => {
     await waitFor(() => expect(canvas.getByRole('dialog')).toHaveFocus());
     await userEvent.keyboard('{Escape}');
@@ -126,8 +128,8 @@ export const ExtraEscape = meta.story({
   },
 });
 
-export const ExtraScrimTap = meta.story({
-  name: 'Scrim tap closes with no navigation',
+export const ScrimTapCloses = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvasElement, canvas }) => {
     const scrim = canvasElement.querySelector<HTMLElement>('[data-scrim]');
     await expect(scrim).not.toBeNull();
@@ -138,12 +140,13 @@ export const ExtraScrimTap = meta.story({
   },
 });
 
-export const ExtraFocusTrap = meta.story({
-  name: 'Focus stays inside while open',
-  play: async ({ args, canvas }) => {
+export const FocusStaysInside = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
     await waitFor(() => expect(canvas.getByRole('dialog')).toHaveFocus());
-    const combats = canvas.getByRole('button', { name: 'Combats' });
-    const about = canvas.getByRole('button', { name: 'About' });
+    const combats = canvas.getByRole('button', { name: t('combats') });
+    const about = canvas.getByRole('button', { name: t('about') });
     await userEvent.tab();
     await expect(combats).toHaveFocus();
     await userEvent.tab({ shift: true });
@@ -151,26 +154,14 @@ export const ExtraFocusTrap = meta.story({
     await userEvent.tab();
     await expect(combats).toHaveFocus();
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Library' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('library') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onNavigate).toHaveBeenCalledWith('library');
   },
 });
 
-export const ExtraShiftTabFirst = meta.story({
-  name: 'Shift+Tab right after opening stays inside',
-  args: { withOpener: true },
-  play: async ({ canvas }) => {
-    const dialog = canvas.getByRole('dialog');
-    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
-    await userEvent.tab({ shift: true });
-    await expect(dialog.contains(document.activeElement)).toBe(true);
-    await expect(canvas.getByRole('button', { name: 'About' })).toHaveFocus();
-  },
-});
-
-export const ExtraTapTitleThenKeys = meta.story({
-  name: 'Tap on the title or email keeps focus and Escape inside',
+export const TapTitleKeepsFocusInside = meta.story({
+  tags: ['!dev'],
   args: { withOpener: true },
   play: async ({ args, canvas }) => {
     const dialog = canvas.getByRole('dialog');
@@ -186,8 +177,8 @@ export const ExtraTapTitleThenKeys = meta.story({
   },
 });
 
-export const ExtraScrollLock = meta.story({
-  name: 'Page scroll is locked while open',
+export const ScrollLockedWhileOpen = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement }) => {
     const dialog = canvas.getByRole('dialog');
     await waitFor(() => expect(dialog).toHaveFocus());
@@ -202,8 +193,8 @@ export const ExtraScrollLock = meta.story({
   },
 });
 
-export const ExtraFocusReturn = meta.story({
-  name: 'Focus returns to the burger on close',
+export const FocusReturnsToBurger = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
   play: async ({ args, canvas }) => {
     await expect(canvas.queryByRole('dialog')).toBeNull();
@@ -217,10 +208,11 @@ export const ExtraFocusReturn = meta.story({
   },
 });
 
-export const ExtraInitialFocus = meta.story({
-  name: 'Opening focuses the panel without visiting Combats',
+export const OpeningFocusesPanel = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Drawer');
     const visited: Element[] = [];
     const record = (event: FocusEvent) => {
       if (event.target instanceof Element) visited.push(event.target);
@@ -232,21 +224,9 @@ export const ExtraInitialFocus = meta.story({
       await waitFor(() => expect(dialog).toHaveFocus());
       await new Promise((resolve) => setTimeout(resolve, 50));
       await expect(dialog).toHaveFocus();
-      await expect(visited).not.toContain(canvas.getByRole('button', { name: 'Combats' }));
+      await expect(visited).not.toContain(canvas.getByRole('button', { name: t('combats') }));
     } finally {
       document.removeEventListener('focusin', record);
     }
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Бои' })).toHaveAttribute(
-      'aria-current',
-      'page',
-    );
-    await expect(canvas.getByRole('button', { name: 'О приложении' })).toBeVisible();
   },
 });

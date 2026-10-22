@@ -3,8 +3,7 @@
   "start": "Start",
   "damage": "Damage",
   "heal": "Heal",
-  "temp": "Temp",
-  "max": "Max",
-  "tempAmount": "+{{amount}} temp",
+  "temp": "Temp HP",
+  "max": "Set Max",
   "absorbed": "({{amount}} temp)"
 }

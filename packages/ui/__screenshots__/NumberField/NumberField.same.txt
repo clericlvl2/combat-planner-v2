@@ -1,3 +1,0 @@
-Anatomy AmountFilled ExtraFrameClick
-Amount999 ExtraClampMax
-AmountTyping ExtraTyping

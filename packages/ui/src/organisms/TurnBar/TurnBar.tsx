@@ -27,8 +27,8 @@ export function TurnBar({
 }: TurnBarProps) {
   const { t } = useTranslation('TurnBar');
   const title = mode === 'start' ? t('startCombat') : t('nextTurn');
-  const secondary =
-    disabled && reason ? reason : mode === 'start' ? t('rollsMissingInitiative') : nextName;
+  const hint = disabled && reason ? reason : mode === 'start' ? t('rollsMissingInitiative') : null;
+  const secondary = hint ?? nextName;
   return (
     <div className={classes.root}>
       <UnstyledButton
@@ -41,7 +41,11 @@ export function TurnBar({
         onClick={onClick}
       >
         <span className={classes.title}>{title}</span>
-        {secondary ? <span className={classes.secondary}>{secondary}</span> : null}
+        {secondary ? (
+          <span className={classes.secondary} data-ellipsis="">
+            {secondary}
+          </span>
+        ) : null}
       </UnstyledButton>
     </div>
   );

@@ -3,5 +3,6 @@
   "wounded": "負傷",
   "staggered": "よろめき",
   "dead": "死亡",
-  "temp": "+{{amount}}一時"
+  "temp": "+{{amount}}一時",
+  "hp": "HP"
 }

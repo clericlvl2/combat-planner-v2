@@ -3,14 +3,19 @@ import { expect } from 'storybook/test';
 import { base } from '../../theme.ts';
 import { DefenseLine } from './DefenseLine.tsx';
 import type { DefenseLineProps } from './DefenseLine.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
+import { storyT } from '../../storybook/storyT.ts';
+
+const NAME_COLUMN = 146;
 
 function DefenseLineCell(props: DefenseLineProps) {
   return (
     <div
       style={{
         display: 'flex',
-        width: props.variant === 'squares' ? 160 : 260,
-        padding: 16,
+        boxSizing: 'content-box',
+        width: NAME_COLUMN,
+        padding: 12,
         background: base.surface,
       }}
     >
@@ -22,7 +27,7 @@ function DefenseLineCell(props: DefenseLineProps) {
 const meta = preview.meta({
   title: 'Molecules/DefenseLine',
   component: DefenseLineCell,
-  args: { variant: 'line', ac: 16, pd: 14, md: 19 },
+  args: { ac: 16, pd: 14, md: 19 },
 });
 
 const rgb = (hex: string) => {
@@ -30,128 +35,81 @@ const rgb = (hex: string) => {
   return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
 };
 
-const rootOf = (canvasElement: HTMLElement) => {
-  const root = canvasElement.querySelector<HTMLElement>('[data-variant]');
-  if (!root) throw new Error('DefenseLine not rendered');
-  return root;
-};
+const chipsOf = (canvasElement: HTMLElement) => [
+  ...canvasElement.querySelectorAll<HTMLElement>('[data-stat]'),
+];
 
 const valuesOf = (canvasElement: HTMLElement) =>
-  (rootOf(canvasElement).textContent ?? '')
-    .split('\u00A0· ')
-    .map((pair) => pair.split('\u00A0')[1]);
+  chipsOf(canvasElement).map((chip) => chip.lastElementChild?.textContent);
 
-const linesOf = (root: HTMLElement) => {
-  const node = root.firstChild;
-  const text = node?.textContent ?? '';
-  const lines = new Map<number, string>();
-  for (let index = 0; index < text.length; index += 1) {
-    const range = document.createRange();
-    range.setStart(node as Node, index);
-    range.setEnd(node as Node, index + 1);
-    const top = Math.round(range.getBoundingClientRect().top);
-    lines.set(top, (lines.get(top) ?? '') + text.charAt(index));
-  }
-  return [...lines.values()].map((line) => line.trim());
+const columns = ['Default', 'Two digits', 'Missing value'] as const;
+
+type DefenseLineState = (typeof columns)[number];
+
+const states: Record<DefenseLineState, Pick<DefenseLineProps, 'ac' | 'pd' | 'md'>> = {
+  Default: { ac: 16, pd: 14, md: 9 },
+  'Two digits': { ac: 99, pd: 99, md: 99 },
+  'Missing value': { ac: 16, pd: null, md: 19 },
 };
 
-const squareValuesOf = (canvasElement: HTMLElement) =>
-  [...canvasElement.querySelectorAll<HTMLElement>('[data-stat]')].map(
-    (square) => square.lastElementChild?.textContent,
-  );
+export const AllStates = meta.story({
+  tags: ['visual'],
+  render: () => (
+    <StateGrid
+      columns={columns}
+      rows={[{ label: 'Chips', render: (state) => <DefenseLineCell {...states[state]} /> }]}
+    />
+  ),
+});
 
-export const Anatomy = meta.story({
-  args: { variant: 'line', ac: 16, pd: 14, md: 19 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 16 · PD 14 · MD 19');
-    await expect(valuesOf(canvasElement)).toEqual(['16', '14', '19']);
-    await expect(getComputedStyle(rootOf(canvasElement)).color).toBe(rgb(base.secondary));
+export const LabelAndChips = meta.story({
+  tags: ['!dev'],
+  args: { ac: 18, pd: 16, md: 12 },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(
+      canvas.getByRole('group', {
+        name: `${t('ac')}\u00A018\u00A0· ${t('pd')}\u00A016\u00A0· ${t('md')}\u00A012`,
+      }),
+    ).toBeVisible();
+    await expect(valuesOf(canvasElement)).toEqual(['18', '16', '12']);
+    const [chip] = chipsOf(canvasElement);
+    if (!chip) throw new Error('chip not rendered');
+    const style = getComputedStyle(chip);
+    await expect(chip.getBoundingClientRect().height).toBe(22);
+    await expect(style.borderTopWidth).toBe('1px');
+    await expect(style.borderTopColor).toBe(rgb(base.border));
+    await expect(style.backgroundColor).toBe(rgb(base.surface));
+    const label = chip.firstElementChild;
+    await expect(label && getComputedStyle(label).color).toBe(rgb(base.secondary));
+    const value = chip.lastElementChild;
+    await expect(value && getComputedStyle(value).color).toBe(rgb(base.ink));
   },
 });
 
-export const Line = meta.story({
-  name: 'Line',
-  args: { variant: 'line', ac: 16, pd: 14, md: 19 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 16 · PD 14 · MD 19');
-    await expect(valuesOf(canvasElement)).toEqual(['16', '14', '19']);
-  },
-});
-
-export const Squares = meta.story({
-  name: 'Squares',
-  args: { variant: 'squares', ac: 18, pd: 16, md: 12 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('group')).toHaveAttribute('aria-label', 'AC 18 · PD 16 · MD 12');
-    await expect(squareValuesOf(canvasElement)).toEqual(['18', '16', '12']);
-    await expect(canvasElement.querySelectorAll('[data-stat]')).toHaveLength(3);
-  },
-});
-
-export const LineTwoDigits = meta.story({
-  name: 'Line, two digits',
-  args: { variant: 'line', ac: 24, pd: 22, md: 20 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 24 · PD 22 · MD 20');
-    await expect(valuesOf(canvasElement)).toEqual(['24', '22', '20']);
-  },
-});
-
-export const LineThreeDigits = meta.story({
-  name: 'Line, three digits',
-  args: { variant: 'line', ac: 105, pd: 99, md: 120 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 105 · PD 99 · MD 120');
-    await expect(valuesOf(canvasElement)).toEqual(['105', '99', '120']);
-  },
-});
-
-export const LineMissingValue = meta.story({
-  name: 'Line, missing value',
-  args: { variant: 'line', ac: 16, pd: null, md: 19 },
-  play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('AC 16 · PD — · MD 19');
-    await expect(valuesOf(canvasElement)).toEqual(['16', '—', '19']);
-  },
-});
-
-export const SquaresTwoDigits = meta.story({
-  name: 'Squares, two digits',
-  args: { variant: 'squares', ac: 30, pd: 28, md: 26 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('group')).toHaveAttribute('aria-label', 'AC 30 · PD 28 · MD 26');
-    await expect(squareValuesOf(canvasElement)).toEqual(['30', '28', '26']);
-  },
-});
-
-export const SquaresMissingValue = meta.story({
-  name: 'Squares, missing value',
-  args: { variant: 'squares', ac: 18, pd: null, md: 12 },
-  play: async ({ canvas, canvasElement }) => {
-    await expect(canvas.getByRole('group')).toHaveAttribute('aria-label', 'AC 18 · PD — · MD 12');
-    await expect(squareValuesOf(canvasElement)).toEqual(['18', '—', '12']);
+export const MissingIsMarked = meta.story({
+  tags: ['!dev'],
+  args: { ac: 18, pd: null, md: 12 },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(canvas.getByRole('group')).toHaveAttribute(
+      'aria-label',
+      `${t('ac')}\u00A018\u00A0· ${t('pd')}\u00A0—\u00A0· ${t('md')}\u00A012`,
+    );
+    await expect(valuesOf(canvasElement)).toEqual(['18', '—', '12']);
     await expect(canvasElement.querySelector('[data-stat="pd"]')).toHaveAttribute('data-empty');
   },
 });
 
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { variant: 'line', ac: 16, pd: null, md: 19 },
+export const StaysOnOneLine = meta.story({
+  tags: ['!dev'],
+  args: { ac: 99, pd: 99, md: 99 },
   play: async ({ canvasElement }) => {
-    await expect(rootOf(canvasElement).textContent).toBe('КД 16 · ФЗ — · МЗ 19');
-  },
-});
-
-export const ExtraWrapsBetweenPairs = meta.story({
-  name: 'Wraps between pairs only',
-  args: { variant: 'line', ac: 105, pd: 99, md: 120 },
-  render: (args) => (
-    <div style={{ width: 80, padding: 16, background: base.surface }}>
-      <DefenseLine {...args} />
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    await expect(linesOf(rootOf(canvasElement))).toEqual(['AC 105 ·', 'PD 99 ·', 'MD 120']);
+    await document.fonts.ready;
+    const boxes = chipsOf(canvasElement).map((chip) => chip.getBoundingClientRect());
+    await expect(new Set(boxes.map((box) => box.top)).size).toBe(1);
+    const first = boxes.at(0);
+    const last = boxes.at(-1);
+    await expect(first && last && last.right - first.left).toBeLessThanOrEqual(NAME_COLUMN);
   },
 });

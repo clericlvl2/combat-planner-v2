@@ -6,7 +6,7 @@ import classes from './RoleBlock.module.css';
 
 export type UnitRole = 'hero' | 'enemy' | 'ally';
 
-export type RoleBlockTop = { kind: 'initiative'; value: number } | { kind: 'hp'; value: number };
+export type RoleBlockTop = { kind: 'initiative'; value: number } | { kind: 'none' };
 
 export interface RoleBlockProps extends Omit<HTMLAttributes<HTMLElement>, 'children' | 'onClick'> {
   unitRole: UnitRole;
@@ -40,19 +40,20 @@ export function RoleBlock({
   ...rest
 }: RoleBlockProps) {
   const { t } = useTranslation('RoleBlock');
-  const shownLabel = label ?? (top?.kind === 'hp' ? t('hp') : t(unitRole));
+  const shownLabel = label ?? t(unitRole);
+  const neutral = top?.kind === 'none';
   const content = (
     <>
       {active ? <span className={classes.notch} data-notch="" aria-hidden="true" /> : null}
-      {top ? (
-        <span className={classes.value} data-editable={editable || undefined}>
-          {formatValue(top.value)}
-        </span>
-      ) : (
+      {top === null ? (
         <span className={classes.die} role="img" aria-label={t('noInitiative')}>
           <IconDice5 size={20} stroke={2} aria-hidden="true" />
         </span>
-      )}
+      ) : top.kind === 'initiative' ? (
+        <span className={classes.value} data-editable={editable || undefined}>
+          {formatValue(top.value)}
+        </span>
+      ) : null}
       <span className={classes.label}>{shownLabel}</span>
       {mine ? <span className={classes.chip}>{t('you')}</span> : null}
     </>
@@ -60,6 +61,7 @@ export function RoleBlock({
   const shared = {
     className: className ? `${classes.root} ${className}` : classes.root,
     'data-unit-role': unitRole,
+    'data-neutral': neutral || undefined,
     'data-active': active || undefined,
     'data-inactive': dead || disabled || undefined,
     'data-fill': fill || undefined,

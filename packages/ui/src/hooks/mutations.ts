@@ -1,4 +1,6 @@
+import { ApiError } from '@combat-planner/api/client';
 import type { QueryClient, QueryKey } from '@tanstack/react-query';
+import { queryKeys } from './queryKeys.ts';
 import { errorToast, toastStoreOf } from './toasts.ts';
 import type { ToastInput, Translate } from './toasts.ts';
 
@@ -7,6 +9,12 @@ export interface MutationContext {
   show: (input: ToastInput) => string;
   t: Translate;
 }
+
+export const forgetSessionOn = (queryClient: QueryClient, error: unknown): void => {
+  if (error instanceof ApiError && error.code === 'unauthorized') {
+    queryClient.setQueryData(queryKeys.session, null);
+  }
+};
 
 export interface MutationSpec<Args extends unknown[], Result> {
   send: (...args: Args) => Promise<Result>;
@@ -48,6 +56,7 @@ export function mutation<Args extends unknown[], Result>(
         sent.then(
           (result) => settle(result, args).then(resolve, reject),
           (error: unknown) => {
+            forgetSessionOn(context.queryClient, error);
             if (toastStore.generation() !== generation) {
               reject(error);
               return;

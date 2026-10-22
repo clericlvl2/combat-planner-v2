@@ -1,3 +1,0 @@
-Anatomy TwoSelected
-ExtraCloseButton ExtraDoneCloses ExtraKeyboard
-ExtraOrderAZ NothingSelected

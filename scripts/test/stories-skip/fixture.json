@@ -4,8 +4,8 @@
   "ops": [
     {
       "replace": "packages/ui/src/atoms/Button/Button.stories.tsx",
-      "search": "export const ExtraClick = meta.story({",
-      "with": "export const ExtraClick = meta.story.skip({"
+      "search": "export const ClickFiresOnce = meta.story({",
+      "with": "export const ClickFiresOnce = meta.story.skip({"
     }
   ]
 }

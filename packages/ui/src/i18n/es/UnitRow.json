@@ -1,8 +1,6 @@
 {
-  "claimedBy": "Jugado por",
   "conditions": "Estados",
   "hpHistory": "Historial de PG",
-  "details": "Detalles de la unidad",
   "charmed": "hechizado",
   "confused": "confundido",
   "dazed": "atontado",

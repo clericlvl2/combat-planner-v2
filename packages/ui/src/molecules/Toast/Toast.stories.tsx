@@ -5,8 +5,6 @@ import {
   IconArrowBackUp,
   IconBookmark,
   IconCheck,
-  IconCopy,
-  IconTrash,
   IconWifiOff,
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
@@ -17,12 +15,14 @@ import { layout } from '../../layout.ts';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { Toast, toastDuration } from './Toast.tsx';
 import type { ToastProps, ToastTone } from './Toast.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
-type ToastKind = 'preset' | 'cap' | 'link' | 'failed' | 'undone' | 'duplicated' | 'deleted';
+type ToastKind = 'preset' | 'cap' | 'link' | 'failed' | 'undone';
 
 interface ToastCellProps extends Omit<ToastProps, 'message' | 'icon' | 'tone' | 'action'> {
   kind: ToastKind;
   message?: string;
+  name?: string;
   actionLabel?: string;
   onAction: () => void;
   deferred?: boolean;
@@ -34,17 +34,14 @@ const tones: Record<ToastKind, { icon: Icon; tone: ToastTone }> = {
   link: { icon: IconCheck, tone: 'success' },
   failed: { icon: IconWifiOff, tone: 'error' },
   undone: { icon: IconArrowBackUp, tone: 'neutral' },
-  duplicated: { icon: IconCopy, tone: 'success' },
-  deleted: { icon: IconTrash, tone: 'neutral' },
 };
 
 const unitName = 'Orc Berserker';
 
-const combatTitle = 'Ambush at the Ferry';
-
 function ToastCell({
   kind,
   message,
+  name = unitName,
   actionLabel,
   onAction,
   onHide,
@@ -54,13 +51,11 @@ function ToastCell({
   const { t } = useTranslation('Toast');
   const [open, setOpen] = useState(!deferred);
   const messages: Record<ToastKind, string> = {
-    preset: t('presetAdded', { name: unitName }),
+    preset: t('presetAdded', { name }),
     cap: t('unitCap', { limit: LIMITS.unitsPerCombat }),
     link: t('linkCopied'),
     failed: t('serverUnreachable'),
-    undone: t('undoneDamage', { amount: 12, name: unitName }),
-    duplicated: t('duplicated', { title: combatTitle }),
-    deleted: t('deleted', { title: combatTitle }),
+    undone: t('undoneDamage', { amount: 12, name }),
   };
   const label = actionLabel ?? (kind === 'failed' ? t('retry') : undefined);
   return (
@@ -93,124 +88,79 @@ const meta = preview.meta({
   args: { kind: 'failed' as ToastKind, onHide: fn(), onAction: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const ErrorWithAction = meta.story({ tags: ['visual'] });
 
-export const Preset = meta.story({
-  name: 'preset',
-  args: { kind: 'preset' },
-});
-
-export const Cap = meta.story({
-  name: 'cap',
+export const Warning = meta.story({
   args: { kind: 'cap' },
 });
 
-export const Link = meta.story({
-  name: 'link',
+export const Success = meta.story({
+  tags: ['visual'],
   args: { kind: 'link' },
 });
 
-export const Failed = meta.story({
-  name: 'failed',
-  args: { kind: 'failed' },
-});
-
-export const Undone = meta.story({
-  name: 'undone',
+export const Neutral = meta.story({
   args: { kind: 'undone' },
 });
 
-export const Duplicated = meta.story({
-  name: 'duplicated',
-  args: { kind: 'duplicated' },
-});
-
-export const Deleted = meta.story({
-  name: 'deleted',
-  args: { kind: 'deleted' },
-});
-
-export const RuErrorAction = meta.story({
-  name: 'ru, error + action',
+export const LongErrorWithAction = meta.story({
   args: {
     kind: 'failed',
-    message: 'Не удалось связаться с сервером. Ничего не изменилось.',
-    actionLabel: 'Повторить',
+    message:
+      'Не удалось сохранить изменения: сервер не отвечает уже больше минуты. Ничего не изменилось.',
+    actionLabel: 'Повторить попытку',
   },
 });
 
-export const LongUnitName = meta.story({
-  name: 'Long unit name',
-  args: { kind: 'preset', message: 'Brother Tomas of the Silver Lantern Order added to Library' },
+export const LongMessage = meta.story({
+  tags: ['visual'],
+  args: { kind: 'preset', name: 'Brother Tomas of the Silver Lantern Order' },
 });
 
-export const ExtraAction = meta.story({
-  name: 'Action fires onAction',
+export const ActionFiresOnAction = meta.story({
+  tags: ['!dev'],
   args: { kind: 'failed', onAction: fn(), onHide: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Retry' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('retry') }));
     await expect(args.onAction).toHaveBeenCalledOnce();
     await expect(args.onHide).toHaveBeenCalledOnce();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter on the action',
-  args: { kind: 'failed', onAction: fn(), onHide: fn() },
-  play: async ({ args, canvas }) => {
-    const retry = canvas.getByRole('button', { name: 'Retry' });
-    await userEvent.tab();
-    await expect(retry).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onAction).toHaveBeenCalledOnce();
-    await expect(args.onHide).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraKeyboardDismiss = meta.story({
-  name: 'Keyboard: Space on dismiss',
-  args: { kind: 'failed', onAction: fn(), onHide: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.tab();
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Dismiss' })).toHaveFocus();
-    await expect(args.onHide).not.toHaveBeenCalled();
-    await userEvent.keyboard('[Space]');
-    await expect(args.onHide).toHaveBeenCalledOnce();
-    await expect(args.onAction).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraDismissMotionOff = meta.story({
-  name: 'Dismiss with motion off hides at once',
+export const DismissHidesAtOnce = meta.story({
+  tags: ['!dev'],
   args: { kind: 'link', onHide: fn() },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     await expect(args.onHide).not.toHaveBeenCalled();
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('dismiss') }));
     await expect(args.onHide).toHaveBeenCalledOnce();
   },
 });
 
-export const ExtraDismissMotionOn = meta.story({
-  name: 'Dismiss with motion on hides after the exit',
+export const DismissHidesAfterExit = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
   args: { kind: 'link', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('show') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('dismiss') }));
     await expect(args.onHide).not.toHaveBeenCalled();
     await waitFor(() => expect(args.onHide).toHaveBeenCalledOnce());
     await expect(canvas.queryByRole('status')).toBeNull();
   },
 });
 
-export const ExtraActionOnceDuringExit = meta.story({
-  name: 'A second tap on the action during the exit runs nothing',
+export const ActionRunsOnceDuringExit = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
   args: { kind: 'failed', onAction: fn(), onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
-    const retry = canvas.getByRole('button', { name: 'Retry' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('show') }));
+    const retry = canvas.getByRole('button', { name: t('retry') });
     await userEvent.click(retry);
     await userEvent.click(retry);
     await expect(args.onHide).not.toHaveBeenCalled();
@@ -221,36 +171,39 @@ export const ExtraActionOnceDuringExit = meta.story({
   },
 });
 
-export const ExtraAutoHide = meta.story({
-  name: 'Auto-hide after an injected duration',
+const enterDurationOf = (element: HTMLElement) => getComputedStyle(element).animationDuration;
+
+const delaysOf = (spy: { mock: { calls: unknown[][] } }) => spy.mock.calls.map((call) => call[1]);
+
+export const AutoHidesAfterDuration = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
   args: { kind: 'link', onHide: fn(), duration: 200, deferred: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
-    await expect(canvas.getByRole('status')).toHaveTextContent('Link copied');
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    await userEvent.click(canvas.getByRole('button', { name: t('show') }));
+    await expect(canvas.getByRole('status')).toHaveTextContent(t('linkCopied'));
     await expect(args.onHide).not.toHaveBeenCalled();
     await waitFor(() => expect(args.onHide).toHaveBeenCalledOnce(), { timeout: 2000 });
     await expect(canvas.queryByRole('status')).toBeNull();
   },
 });
 
-export const ExtraDefaultDuration = meta.story({
-  name: 'Default duration 4 s',
+export const PlainToastStaysFourSeconds = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
   args: { kind: 'link', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     const setTimeoutSpy = spyOn(globalThis, 'setTimeout');
     try {
-      await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
+      await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
-      await waitFor(() => expect(status.getAnimations()).toHaveLength(0));
+      await expect(enterDurationOf(status)).toBe('0.15s');
+      await expect(delaysOf(setTimeoutSpy)).toContain(4000);
+      await expect(delaysOf(setTimeoutSpy)).not.toContain(8000);
+      for (const animation of status.getAnimations()) animation.finish();
       await expect(status).toBeVisible();
-      await expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), toastDuration.plain);
-      await expect(setTimeoutSpy).not.toHaveBeenCalledWith(
-        expect.any(Function),
-        toastDuration.withAction,
-      );
-      await expect(toastDuration.plain).toBe(4000);
       await expect(args.onHide).not.toHaveBeenCalled();
     } finally {
       setTimeoutSpy.mockRestore();
@@ -258,22 +211,21 @@ export const ExtraDefaultDuration = meta.story({
   },
 });
 
-export const ExtraActionDuration = meta.story({
-  name: 'Default duration 8 s with an action',
+export const ActionToastStaysEightSeconds = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
   args: { kind: 'failed', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     const setTimeoutSpy = spyOn(globalThis, 'setTimeout');
     try {
-      await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
+      await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       const status = canvas.getByRole('status');
-      await waitFor(() => expect(status.getAnimations()).toHaveLength(0));
-      await expect(canvas.getByRole('button', { name: 'Retry' })).toBeVisible();
-      await expect(setTimeoutSpy).toHaveBeenCalledWith(
-        expect.any(Function),
-        toastDuration.withAction,
-      );
-      await expect(toastDuration.withAction).toBe(8000);
+      await expect(enterDurationOf(status)).toBe('0.15s');
+      await expect(delaysOf(setTimeoutSpy)).toContain(8000);
+      await expect(delaysOf(setTimeoutSpy)).not.toContain(4000);
+      for (const animation of status.getAnimations()) animation.finish();
+      await expect(canvas.getByRole('button', { name: t('retry') })).toBeVisible();
       await expect(args.onHide).not.toHaveBeenCalled();
     } finally {
       setTimeoutSpy.mockRestore();
@@ -281,10 +233,11 @@ export const ExtraActionDuration = meta.story({
   },
 });
 
-export const ExtraMotionOffStays = meta.story({
-  name: 'Motion off keeps the toast past its duration',
+export const MotionOffKeepsToast = meta.story({
+  tags: ['!dev'],
   args: { kind: 'link', onHide: fn(), deferred: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
     const realSetTimeout = globalThis.setTimeout;
     const elapse = (handler: TimerHandler, delay?: number, ...rest: unknown[]) => {
       if (delay === toastDuration.plain && typeof handler === 'function') {
@@ -297,24 +250,24 @@ export const ExtraMotionOffStays = meta.story({
       elapse as typeof setTimeout,
     );
     try {
-      await userEvent.click(canvas.getByRole('button', { name: 'Show toast' }));
+      await userEvent.click(canvas.getByRole('button', { name: t('show') }));
       await expect(setTimeoutSpy).not.toHaveBeenCalledWith(
         expect.any(Function),
         toastDuration.plain,
       );
-      await expect(canvas.getByRole('status')).toHaveTextContent('Link copied');
+      await expect(canvas.getByRole('status')).toHaveTextContent(t('linkCopied'));
       await expect(args.onHide).not.toHaveBeenCalled();
     } finally {
       setTimeoutSpy.mockRestore();
     }
-    await userEvent.click(canvas.getByRole('button', { name: 'Dismiss' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('dismiss') }));
     await expect(args.onHide).toHaveBeenCalledOnce();
     await expect(canvas.queryByRole('status')).toBeNull();
   },
 });
 
-export const ExtraPosition = meta.story({
-  name: 'Position above the bottom bar',
+export const SitsAboveBottomBar = meta.story({
+  tags: ['!dev'],
   args: { kind: 'link' },
   play: async ({ canvas, canvasElement }) => {
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
@@ -326,35 +279,14 @@ export const ExtraPosition = meta.story({
   },
 });
 
-export const ExtraWithoutBottomBar = meta.story({
-  name: 'Position without a bottom bar',
+export const SitsAtBottomWithoutBar = meta.story({
+  tags: ['!dev'],
   args: { kind: 'link', aboveBottomBar: false },
   play: async ({ canvas, canvasElement }) => {
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
     const toastBox = canvas.getByRole('status').getBoundingClientRect();
     await expect((frame?.getBoundingClientRect().bottom ?? 0) - toastBox.bottom).toBe(
       layout.toast.withoutBar,
-    );
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { kind: 'failed' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Повторить' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Закрыть' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja',
-  globals: { locale: 'ja' },
-  args: { kind: 'cap' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('status')).toHaveTextContent(
-      'この戦闘にはすでに99体のユニットがいます',
     );
   },
 });

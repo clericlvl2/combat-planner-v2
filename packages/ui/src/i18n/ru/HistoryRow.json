@@ -3,8 +3,7 @@
   "start": "Начало",
   "damage": "Урон",
   "heal": "Лечение",
-  "temp": "Врем.",
-  "max": "Макс.",
-  "tempAmount": "+{{amount}} врем.",
+  "temp": "Врем. ОЗ",
+  "max": "Макс. ОЗ",
   "absorbed": "({{amount}} врем.)"
 }

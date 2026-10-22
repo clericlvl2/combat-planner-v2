@@ -1,16 +1,14 @@
 import preview from '#.storybook/preview';
 import { LIMITS } from '@combat-planner/domain';
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
 import type { Mock } from 'storybook/test';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { InitiativePopover } from './InitiativePopover.tsx';
 import type { InitiativePopoverProps } from './InitiativePopover.tsx';
-
-type TapTarget = 'plus' | 'roll';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface InitiativePopoverCellProps extends Omit<InitiativePopoverProps, 'anchor' | 'triggerRef'> {
-  tap?: TapTarget;
   withAnchor?: boolean;
   withTrigger?: boolean;
 }
@@ -25,35 +23,26 @@ const stage = {
   background: 'var(--cp-color-background)',
 } as const;
 
-const tapIndex: Record<TapTarget, number> = { plus: 1, roll: 2 };
-
 function InitiativePopoverCell({
   value: initialValue,
   open: initialOpen,
   onSet,
   onRoll,
   onClose,
-  tap,
   withAnchor = false,
   withTrigger = false,
   ...props
 }: InitiativePopoverCellProps) {
-  const stageRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLSpanElement>(null);
   const [value, setValue] = useState(initialValue);
   const [open, setOpen] = useState(initialOpen);
 
-  useLayoutEffect(() => {
-    if (!tap) return;
-    stageRef.current?.querySelectorAll('button')[tapIndex[tap]]?.setAttribute('data-tap', '');
-  }, [tap]);
-
   return (
-    <div ref={stageRef} style={stage}>
+    <div style={stage}>
       {withTrigger ? (
         <span ref={triggerRef} style={{ display: 'inline-flex', alignSelf: 'flex-start' }}>
           <Button variant="secondary" size="S" onClick={() => setOpen(!open)}>
-            Set initiative
+            Задать инициативу
           </Button>
         </span>
       ) : null}
@@ -65,7 +54,7 @@ function InitiativePopoverCell({
         anchor={
           withAnchor ? (
             <Button variant="secondary" size="S" onClick={() => setOpen(true)}>
-              Set initiative
+              Задать инициативу
             </Button>
           ) : undefined
         }
@@ -100,11 +89,13 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({
+export const Default = meta.story({
+  tags: ['visual'],
   args: { value: 15, bonus: 3 },
 });
 
-export const Set = meta.story({
+export const SetsTheValue = meta.story({
+  tags: ['!dev'],
   args: { value: 15, bonus: 3 },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('spinbutton')).toHaveValue('15');
@@ -112,105 +103,54 @@ export const Set = meta.story({
 });
 
 export const NoInitiativeYet = meta.story({
-  name: 'No initiative yet',
   args: { value: null, bonus: 2 },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     const field = canvas.getByRole('spinbutton');
     await expect(field).toHaveValue('—');
     await expect(field).not.toHaveAttribute('aria-valuenow');
-    await expect(canvas.getByRole('button', { name: 'Roll d20 +2' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('roll', { bonus: '+2' }) })).toBeVisible();
   },
 });
 
-export const Tap = meta.story({
-  name: 'Tap +',
-  args: { value: 15, bonus: 3, tap: 'plus' },
-});
-
-export const TapRoll = meta.story({
-  name: 'Tap Roll',
-  args: { value: 15, bonus: 3, tap: 'roll' },
-});
-
 export const NegativeBonus = meta.story({
-  name: 'Negative bonus',
   args: { value: 4, bonus: -1 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Roll d20 −1' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
+    await expect(canvas.getByRole('button', { name: t('roll', { bonus: '−1' }) })).toBeVisible();
     await expect(canvas.getByText('(−1)')).toBeVisible();
     await expect(canvas.getByRole('spinbutton')).toHaveValue('4');
   },
 });
 
-export const HighRoll = meta.story({
-  name: 'High roll',
-  args: { value: 27, bonus: 7 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('27');
-  },
-});
-
-export const Ru = meta.story({
-  name: 'ru',
-  globals: { locale: 'ru' },
+export const MinusAndPlusSetTheValue = meta.story({
+  tags: ['!dev'],
   args: { value: 15, bonus: 3 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Инициатива' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Бросить к20 +3' })).toBeVisible();
-  },
-});
-
-export const ExtraStep = meta.story({
-  name: 'Minus and plus set the value',
-  args: { value: 15, bonus: 3 },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     const field = canvas.getByRole('spinbutton');
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:increase') }));
     await expect(args.onSet).toHaveBeenLastCalledWith(16);
     await expect(field).toHaveAttribute('aria-valuenow', '16');
-    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Decrease' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:decrease') }));
     await expect(args.onSet).toHaveBeenLastCalledWith(14);
     await expect(field).toHaveAttribute('aria-valuenow', '14');
     await expect(args.onRoll).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraTypeValue = meta.story({
-  name: 'Keyboard: type a value and Enter',
-  args: { value: null, bonus: 3 },
-  play: async ({ args, canvas }) => {
-    const field = canvas.getByRole('spinbutton');
-    await userEvent.click(field);
-    await userEvent.clear(field);
-    await userEvent.type(field, '22{Enter}');
-    await expect(args.onSet).toHaveBeenLastCalledWith(22);
-    await expect(field).toHaveAttribute('aria-valuenow', '22');
-    await expect(field).toHaveValue('22');
-  },
-});
-
-export const ExtraMax = meta.story({
-  name: 'Plus stops at the maximum',
-  args: { value: LIMITS.initiative.max, bonus: 3 },
-  play: async ({ args, canvas }) => {
-    const increase = canvas.getByRole('button', { name: 'Increase' });
-    await expect(increase).toBeDisabled();
-    await userEvent.click(increase, { pointerEventsCheck: 0 });
-    await expect(args.onSet).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraRollBounds = meta.story({
-  name: 'Roll d20 adds the bonus',
+export const RollAddsTheBonus = meta.story({
+  tags: ['!dev'],
   args: {
     value: 15,
     bonus: 3,
     random: fn<() => number>(),
   },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     (args.random as Mock<() => number>).mockReturnValueOnce(0).mockReturnValueOnce(0.9999);
-    const roll = canvas.getByRole('button', { name: 'Roll d20 +3' });
+    const roll = canvas.getByRole('button', { name: t('roll', { bonus: '+3' }) });
     await userEvent.click(roll);
     await expect(args.onRoll).toHaveBeenLastCalledWith(LIMITS.roll.min + 3, LIMITS.roll.min);
     await userEvent.click(roll);
@@ -220,31 +160,13 @@ export const ExtraRollBounds = meta.story({
   },
 });
 
-export const ExtraRollRandom = meta.story({
-  name: 'Roll d20 with Math.random',
-  args: { value: 15, bonus: -1, random: Math.random },
-  play: async ({ args, canvas }) => {
-    for (let index = 0; index < 20; index += 1) {
-      await userEvent.click(canvas.getByRole('button', { name: 'Roll d20 −1' }));
-    }
-    await expect(args.onRoll).toHaveBeenCalledTimes(20);
-    for (const [initiative, roll] of (args.onRoll as Mock<InitiativePopoverProps['onRoll']>).mock
-      .calls) {
-      await expect(roll).toBeGreaterThanOrEqual(LIMITS.roll.min);
-      await expect(roll).toBeLessThanOrEqual(LIMITS.roll.max);
-      await expect(initiative).toBe(roll - 1);
-    }
-    await userEvent.keyboard('{Escape}');
-    await expect(canvas.queryByRole('dialog')).toBeNull();
-  },
-});
-
-export const ExtraEscape = meta.story({
-  name: 'Keyboard: Escape closes',
+export const EscapeCloses = meta.story({
+  tags: ['!dev'],
   args: { value: 15, bonus: 3 },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Decrease' })).toHaveFocus();
+    await expect(canvas.getByRole('button', { name: t('Stepper:decrease') })).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onSet).not.toHaveBeenCalled();
@@ -253,8 +175,8 @@ export const ExtraEscape = meta.story({
   },
 });
 
-export const ExtraKeyDownComposed = meta.story({
-  name: 'Keyboard: consumer onKeyDown and Escape',
+export const EscapeCallsConsumerKeyDown = meta.story({
+  tags: ['!dev'],
   args: { value: 15, bonus: 3, onKeyDown: fn() },
   play: async ({ args, canvas }) => {
     await userEvent.tab();
@@ -265,31 +187,33 @@ export const ExtraKeyDownComposed = meta.story({
   },
 });
 
-export const ExtraTriggerCloses = meta.story({
-  name: 'Tapping its own trigger closes the popover',
+export const TriggerCloses = meta.story({
+  tags: ['!dev'],
   parameters: {
     geometry: { overflow: 'the 264 px story stage holds both the trigger and the open popover' },
   },
   args: { value: 15, bonus: 3, withTrigger: true },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Задать инициативу' }));
     await expect(canvas.queryByRole('dialog')).toBeNull();
     await expect(args.onClose).not.toHaveBeenCalled();
-    await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
-    await expect(canvas.getByRole('dialog', { name: 'Initiative' })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: 'Задать инициативу' }));
+    await expect(canvas.getByRole('dialog', { name: t('title') })).toBeVisible();
   },
 });
 
-export const ExtraFlow = meta.story({
-  name: 'Flow: roll, plus, tap outside closes',
+export const RollPlusThenOutsideTapCloses = meta.story({
+  tags: ['!dev'],
   args: { value: null, bonus: 3, random: () => 0.65 },
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Roll d20 +3' }));
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
+    await userEvent.click(canvas.getByRole('button', { name: t('roll', { bonus: '+3' }) }));
     await expect(args.onRoll).toHaveBeenCalledWith(17, 14);
     await expect(canvas.getByRole('spinbutton')).toHaveAttribute('aria-valuenow', '17');
     await expect(canvas.getByRole('spinbutton')).toHaveValue('17');
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('Stepper:increase') }));
     await expect(args.onSet).toHaveBeenCalledWith(18);
     await expect(canvas.getByRole('spinbutton')).toHaveValue('18');
     await expect(args.onClose).not.toHaveBeenCalled();
@@ -299,29 +223,24 @@ export const ExtraFlow = meta.story({
   },
 });
 
-export const ExtraAnchor = meta.story({
-  name: 'Opens from the anchor',
+export const ClosedWithAnchor = meta.story({
   args: { value: 15, bonus: 3, open: false, withAnchor: true },
-  play: async ({ args, canvas, canvasElement }) => {
+});
+
+export const OpensFromAnchor = meta.story({
+  tags: ['!dev'],
+  args: { value: 15, bonus: 3, open: false, withAnchor: true },
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'InitiativePopover');
     const body = within(canvasElement.ownerDocument.body);
     await expect(body.queryByRole('dialog')).toBeNull();
-    await userEvent.click(canvas.getByRole('button', { name: 'Set initiative' }));
-    const dialog = await body.findByRole('dialog', { name: 'Initiative' });
-    await userEvent.click(within(dialog).getByRole('button', { name: 'Increase' }));
+    await userEvent.click(canvas.getByRole('button', { name: 'Задать инициативу' }));
+    const dialog = await body.findByRole('dialog', { name: t('title') });
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Stepper:increase') }));
     await expect(args.onSet).toHaveBeenCalledWith(16);
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onRoll).not.toHaveBeenCalled();
     await expect(body.queryByRole('dialog')).toBeNull();
-  },
-});
-
-export const ExtraLocaleDe = meta.story({
-  name: 'Locale de',
-  globals: { locale: 'de' },
-  args: { value: 15, bonus: 3 },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Initiativewert' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'W20 +3 würfeln' })).toBeVisible();
   },
 });

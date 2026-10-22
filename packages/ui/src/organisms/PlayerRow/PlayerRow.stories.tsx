@@ -1,4 +1,5 @@
 import preview from '#.storybook/preview';
+import type { TFunction } from 'i18next';
 import { LIMITS, project } from '@combat-planner/domain';
 import type { Combat, Condition, PlayerUnit, Role, Unit } from '@combat-planner/domain';
 import { IconUserOff } from '@tabler/icons-react';
@@ -7,10 +8,10 @@ import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
-import { expectNotTruncated } from '../../storybook/geometry.ts';
 import { Menu } from '../Menu/Menu.tsx';
 import { PlayerRow } from './PlayerRow.tsx';
 import type { PlayerRowProps } from './PlayerRow.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 interface UnitSeed {
   id: string;
@@ -32,6 +33,13 @@ const JONAS = '01JC0000000000000000000JNS';
 const names: Record<string, string> = { [MIKA]: 'Mika', [JONAS]: 'Jonas' };
 
 const createdAt = '2026-10-16T18:00:00.000Z';
+
+async function expectNoDefenses(canvas: ReturnType<typeof within>, t: TFunction) {
+  for (const stat of ['ac', 'pd', 'md'] as const) {
+    const label = t(`DefenseLine:${stat}`);
+    await expect(canvas.queryAllByText((content: string) => content.includes(label))).toEqual([]);
+  }
+}
 
 function unitOf(seed: UnitSeed): Unit {
   const [ac, pd, md] = seed.defenses ?? [10, 10, 10];
@@ -145,7 +153,7 @@ const wyrmling = playerUnit({
   defenses: [20, 18, 17],
 });
 
-const pageCellInset = layout.contentEdge * 2;
+const pageCellInset = layout.contentEdge;
 
 const screen: CSSProperties = { padding: pageCellInset };
 
@@ -236,26 +244,35 @@ const meta = preview.meta({
   },
 });
 
-export const Anatomy = meta.story({
-  play: async ({ canvas }) => {
+export const OwnHero = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
     await expect(name).toHaveAttribute('aria-expanded', 'false');
-    await expect(canvas.getByText('You')).toBeVisible();
-    await expect(canvas.getByText('Mika')).toBeVisible();
-    await expect(canvas.getByRole('img', { name: 'Claimed by' })).toBeVisible();
-    await expect(canvas.getByText('AC 16 · PD 12 · MD 15')).toBeVisible();
-    await expect(canvas.getByRole('listitem')).toHaveTextContent('dazed');
+    await expect(canvas.getByText(t('RoleBlock:you'))).toBeVisible();
+    const claimer = canvas.getByText('@Mika');
+    await expect(claimer).toBeVisible();
+    await expect(name.contains(claimer)).toBe(false);
+    await expect(claimer.parentElement).toHaveTextContent('Vashti the Hexer @Mika');
+    const lines = [...canvas.getByText('Vashti the Hexer').getClientRects()];
+    await expect(lines.at(-1)?.top).toBe(claimer.getBoundingClientRect().top);
+    await expect(
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
+      }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('listitem')).toHaveTextContent(t('dazed'));
     await expect(canvas.getByText('Concentrating on Hex')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: '20 /36 Wounded' })).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` }),
+    ).toBeVisible();
   },
 });
 
-export const OwnHero = meta.story({
-  name: 'Own hero',
-});
-
-export const OwnActiveTurn = meta.story({
-  name: 'Own, active turn',
+export const OwnHeroActiveTurn = meta.story({
   args: { active: true },
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('[data-active][data-mine]')).not.toBeNull();
@@ -263,94 +280,102 @@ export const OwnActiveTurn = meta.story({
   },
 });
 
-export const OwnExpanded = meta.story({
-  name: 'Own, expanded',
+export const OwnHeroExpanded = meta.story({
+  tags: ['visual'],
   args: { expanded: true },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     await expect(canvas.getByRole('button', { name: 'Vashti the Hexer' })).toHaveAttribute(
       'aria-expanded',
       'true',
     );
-    await expect(canvas.getByRole('button', { name: 'Conditions' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'HP History' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Note: Concentrating on Hex' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Edit' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('conditions') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('hpHistory') })).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: `${t('NoteField:label')}: Concentrating on Hex` }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
   },
 });
 
-export const OwnConditionsOpen = meta.story({
-  name: 'Own, Conditions open',
-  args: { expanded: true, conditionsOpen: true, 'data-tap': 'conditions' },
-  play: async ({ canvas }) => {
-    const trigger = canvas.getByRole('button', { name: 'Conditions' });
+export const ConditionsOpen = meta.story({
+  tags: ['visual'],
+  args: { expanded: true, conditionsOpen: true },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    const trigger = canvas.getByRole('button', { name: t('conditions') });
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(trigger).toHaveAttribute('data-open');
-    await expect(trigger).toHaveAttribute('data-tap');
   },
 });
 
-export const OwnEditingNote = meta.story({
-  name: 'Own, editing note',
-  args: { expanded: true, 'data-tap': 'note' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note: Concentrating on Hex' }));
-    const editor = canvas.getByRole('textbox', { name: 'Note' });
+export const NoteEditing = meta.story({
+  args: { expanded: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await userEvent.click(
+      canvas.getByRole('button', { name: `${t('NoteField:label')}: Concentrating on Hex` }),
+    );
+    const editor = canvas.getByRole('textbox', { name: t('NoteField:label') });
     await waitFor(() => expect(editor).toHaveFocus());
-    await userEvent.type(editor, ', 2 rounds left');
-    await expect(editor).toHaveValue('Concentrating on Hex, 2 rounds left');
+    await expect(editor).toHaveValue('Concentrating on Hex');
     await expect(args.onNoteChange).not.toHaveBeenCalled();
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
 
-export const OwnSetupNoInitiative = meta.story({
-  name: 'Own, Setup, no initiative',
+export const SetupNoInitiative = meta.story({
   args: {
     unit: playerUnit({ ...vashtiSeed, initiative: null }),
     setup: true,
-    'data-tap': 'initiative',
   },
-  play: async ({ args, canvas }) => {
-    await expect(canvas.getByRole('img', { name: 'No initiative' })).toBeVisible();
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(canvas.getByRole('img', { name: t('RoleBlock:noInitiative') })).toBeVisible();
     await expect(canvas.queryByRole('listitem')).toBeNull();
-    await userEvent.click(canvas.getByRole('button', { name: /No initiative/ }));
+    await userEvent.click(
+      canvas.getByRole('button', {
+        name: (label: string) => label.includes(t('RoleBlock:noInitiative')),
+      }),
+    );
     await expect(args.onInitiative).toHaveBeenCalledOnce();
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
 
-export const OtherHero = meta.story({
-  name: 'Other hero',
+export const OtherPlayersHero = meta.story({
   args: { unit: aldric, mine: false },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Jonas')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(canvas.getByText('@Jonas')).toBeVisible();
     await expect(canvas.getByText('52')).toBeVisible();
-    await expect(canvas.queryByText('You')).toBeNull();
+    await expect(canvas.queryByText(t('RoleBlock:you'))).toBeNull();
     await expect(canvas.queryByRole('button')).toBeNull();
   },
 });
 
 export const EnemyStaggered = meta.story({
-  name: 'Enemy, Staggered',
   args: { unit: orc, mine: false },
-  play: async ({ args, canvas, canvasElement }) => {
-    await expect(canvas.getByText('Staggered')).toBeVisible();
-    await expect(canvas.getByRole('listitem')).toHaveTextContent('hampered');
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(canvas.getByText(t('HpBox:staggered'))).toBeVisible();
+    await expect(canvas.getByRole('listitem')).toHaveTextContent(t('hampered'));
     await expect(canvasElement.querySelector('[data-part="numbers"]')).toBeNull();
     await expect(canvas.queryByText(/\d+\/\d+/)).toBeNull();
-    await expect(canvas.queryByText(/AC/)).toBeNull();
+    await expectNoDefenses(canvas, t);
     await expect(canvas.queryByRole('button')).toBeNull();
-    await userEvent.click(canvas.getByText('Staggered'));
+    await userEvent.click(canvas.getByText(t('HpBox:staggered')));
     await expect(args.onHp).not.toHaveBeenCalled();
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
 
 export const EnemyDead = meta.story({
-  name: 'Enemy, Dead',
+  tags: ['visual'],
   args: { unit: goblin, mine: false },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Dead')).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(canvas.getByText(t('HpBox:dead'))).toBeVisible();
     await expect(getComputedStyle(canvas.getByText('Goblin Archer 1')).textDecorationLine).toBe(
       'line-through',
     );
@@ -358,28 +383,36 @@ export const EnemyDead = meta.story({
   },
 });
 
-export const AllyTempHPLongName = meta.story({
-  name: 'Ally, temp HP, long name',
+export const AllyTempHpLongName = meta.story({
+  name: 'Ally Temp HP Long Name',
   args: { unit: tomas, mine: false },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('+5 temp')).toBeVisible();
-    await expect(canvas.getByText('AC 17 · PD 15 · MD 13')).toBeVisible();
-    await expect(canvas.queryByRole('img', { name: 'Claimed by' })).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(canvas.getByText(t('HpBox:temp', { amount: 5 }))).toBeVisible();
+    await expect(
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 17 · ${t('DefenseLine:pd')} 15 · ${t('DefenseLine:md')} 13`,
+      }),
+    ).toBeVisible();
+    await expect(canvas.queryByText(/^@/)).toBeNull();
   },
 });
 
-export const AllyThreeDigitHP = meta.story({
-  name: 'Ally, three-digit HP',
+export const AllyThreeDigitHp = meta.story({
+  name: 'Ally Three Digit HP',
   args: { unit: wyrmling, mine: false },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     await expect(canvas.getByText('187')).toBeVisible();
     await expect(canvas.getByText('/240')).toBeVisible();
-    await expect(canvas.getByText('+120 temp')).toBeVisible();
+    await expect(canvas.getByText(t('HpBox:temp', { amount: 120 }))).toBeVisible();
   },
 });
 
-export const RuFourConditions = meta.story({
-  name: 'ru, four conditions',
+export const FourConditions = meta.story({
+  tags: ['visual'],
   args: {
     unit: playerUnit({
       id: '01JC00000000000000000ORCRU',
@@ -392,59 +425,111 @@ export const RuFourConditions = meta.story({
     }),
     mine: false,
   },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     await expect(canvas.getByText('Орк-берсерк')).toBeVisible();
     const chips = canvas.getAllByRole('listitem');
     await expect(chips.map((chip) => chip.textContent)).toEqual([
-      'hampered',
-      'dazed',
-      'vulnerable',
-      'stuck',
+      t('hampered'),
+      t('dazed'),
+      t('vulnerable'),
+      t('stuck'),
     ]);
   },
 });
 
-export const ExtraFlowTapRow = meta.story({
-  name: 'Flow: tap row expands and collapses',
-  play: async ({ args, canvas }) => {
+export const OwnHeroDead = meta.story({
+  args: { unit: playerUnit({ ...vashtiSeed, hp: -4, conditions: [] }) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(canvas.getByRole('button', { name: `−4 /36 ${t('HpBox:dead')}` })).toBeVisible();
+    await expect(canvas.getByText(t('RoleBlock:you'))).toBeVisible();
+  },
+});
+
+export const OwnHeroLongName = meta.story({
+  args: { unit: playerUnit({ ...vashtiSeed, name: 'Вашти Заклинательница с Чёрной переправы' }) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await expect(
+      canvas.getByRole('button', { name: 'Вашти Заклинательница с Чёрной переправы' }),
+    ).toBeVisible();
+    await expect(canvas.getByText(t('RoleBlock:you'))).toBeVisible();
+  },
+});
+
+export const ChangedRowFlash = meta.story({
+  args: { flash: true },
+  render: (args) => (
+    <div style={{ display: 'grid', alignContent: 'start', minHeight: 0, overflowY: 'auto' }}>
+      <PlayerRowCell {...args} data-testid="own" />
+      <PlayerRowCell {...args} unit={goblin} mine={false} data-testid="dead" />
+      <PlayerRowCell {...args} unit={orc} mine={false} active data-testid="active" />
+      <PlayerRowCell {...args} unit={orc} mine={false} flash={false} data-testid="still" />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
+    await expect(canvas.getByTestId('own')).toHaveAttribute('data-flash');
+    await expect(border('own')).not.toBe(border('still'));
+    await expect(border('dead')).toBe(border('still'));
+    await expect(border('active')).toBe('rgb(35, 31, 28)');
+  },
+});
+export const TapRowExpandsAndCollapses = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
-    await userEvent.click(canvas.getByText('AC 16 · PD 12 · MD 15'));
+    await userEvent.click(
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
+      }),
+    );
     await expect(args.onToggle).toHaveBeenCalledOnce();
     await expect(name).toHaveAttribute('aria-expanded', 'true');
-    await expect(canvas.getByRole('button', { name: 'Conditions' })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Conditions' }));
+    await expect(canvas.getByRole('button', { name: t('conditions') })).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('conditions') }));
     await expect(args.onToggle).toHaveBeenCalledOnce();
     await userEvent.click(name);
     await expect(args.onToggle).toHaveBeenCalledTimes(2);
     await expect(name).toHaveAttribute('aria-expanded', 'false');
-    await expect(canvas.queryByRole('button', { name: 'Conditions' })).toBeNull();
+    await expect(canvas.queryByRole('button', { name: t('conditions') })).toBeNull();
   },
 });
 
-export const ExtraFlowTapNote = meta.story({
-  name: 'Flow: tap Note edits in place, Enter saves',
+export const TapNoteEditsEnterSaves = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note: Concentrating on Hex' }));
-    const editor = canvas.getByRole('textbox', { name: 'Note' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await userEvent.click(
+      canvas.getByRole('button', { name: `${t('NoteField:label')}: Concentrating on Hex` }),
+    );
+    const editor = canvas.getByRole('textbox', { name: t('NoteField:label') });
     await waitFor(() => expect(editor).toHaveFocus());
     await userEvent.type(editor, ' on Orc');
     await userEvent.keyboard('{Enter}');
     await expect(args.onNoteChange).toHaveBeenCalledOnce();
     await expect(args.onNoteChange).toHaveBeenCalledWith('Concentrating on Hex on Orc');
     await expect(
-      canvas.getByRole('button', { name: 'Note: Concentrating on Hex on Orc' }),
+      canvas.getByRole('button', { name: `${t('NoteField:label')}: Concentrating on Hex on Orc` }),
     ).toBeVisible();
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraCollapseSavesNote = meta.story({
-  name: 'Collapsing the row saves the note',
+export const CollapseSavesNote = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note: Concentrating on Hex' }));
-    const editor = canvas.getByRole('textbox', { name: 'Note' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await userEvent.click(
+      canvas.getByRole('button', { name: `${t('NoteField:label')}: Concentrating on Hex` }),
+    );
+    const editor = canvas.getByRole('textbox', { name: t('NoteField:label') });
     await waitFor(() => expect(editor).toHaveFocus());
     await userEvent.clear(editor);
     await userEvent.type(editor, 'Hex ends next round');
@@ -456,8 +541,8 @@ export const ExtraCollapseSavesNote = meta.story({
   },
 });
 
-export const ExtraHostCollapseSavesNote = meta.story({
-  name: 'A host collapse tap while editing saves the note',
+export const HostCollapseSavesNote = meta.story({
+  tags: ['!dev'],
   parameters: {
     geometry: {
       tapTargets: {
@@ -467,9 +552,12 @@ export const ExtraHostCollapseSavesNote = meta.story({
     },
   },
   args: { expanded: true, hostCollapse: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Note: Concentrating on Hex' }));
-    const editor = canvas.getByRole('textbox', { name: 'Note' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await userEvent.click(
+      canvas.getByRole('button', { name: `${t('NoteField:label')}: Concentrating on Hex` }),
+    );
+    const editor = canvas.getByRole('textbox', { name: t('NoteField:label') });
     await waitFor(() => expect(editor).toHaveFocus());
     await userEvent.clear(editor);
     await userEvent.type(editor, 'Hex ends next round');
@@ -480,8 +568,8 @@ export const ExtraHostCollapseSavesNote = meta.story({
   },
 });
 
-export const ExtraRoleFillsRow = meta.story({
-  name: 'The role block fills the row height',
+export const RoleFillsRow = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement }) => {
     const row = canvas
       .getByRole('button', { name: 'Vashti the Hexer' })
@@ -494,34 +582,36 @@ export const ExtraRoleFillsRow = meta.story({
   },
 });
 
-export const ExtraOwnCallbacks = meta.story({
-  name: 'Own row: every control fires its callback',
+export const OwnControlsFireCallbacks = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: '20 /36 Wounded' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await userEvent.click(canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` }));
     await expect(args.onHp).toHaveBeenCalledOnce();
     await userEvent.click(canvas.getByRole('button', { name: /^15/ }));
     await expect(args.onInitiative).toHaveBeenCalledOnce();
-    await userEvent.click(canvas.getByRole('button', { name: 'Conditions' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('conditions') }));
     await expect(args.onConditions).toHaveBeenCalledOnce();
-    await userEvent.click(canvas.getByRole('button', { name: 'HP History' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('hpHistory') }));
     await expect(args.onHistory).toHaveBeenCalledOnce();
-    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:edit') }));
     await expect(args.onEdit).toHaveBeenCalledOnce();
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
     await expect(args.onMore).toHaveBeenCalledOnce();
     await expect(args.onToggle).not.toHaveBeenCalled();
     await expect(args.onNoteChange).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraOtherReadOnly = meta.story({
-  name: 'Other rows are read-only and never expand',
+export const OtherRowsReadOnly = meta.story({
+  tags: ['!dev'],
   args: { unit: aldric, mine: false, expanded: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     await expect(canvas.queryByRole('button')).toBeNull();
-    await expect(canvas.queryByText('Conditions')).toBeNull();
-    await expect(canvas.queryByText('HP History')).toBeNull();
+    await expect(canvas.queryByText(t('conditions'))).toBeNull();
+    await expect(canvas.queryByText(t('hpHistory'))).toBeNull();
     await userEvent.click(canvas.getByText('Ser Aldric'));
     await userEvent.click(canvas.getByText('52'));
     await userEvent.click(canvas.getByText('19'));
@@ -540,7 +630,7 @@ interface KeyboardSpies {
   onConditions: unknown;
 }
 
-async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies) {
+async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: TFunction) {
   const canvas = within(canvasElement);
   const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
   await userEvent.tab();
@@ -554,11 +644,11 @@ async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies) {
   await expect(name).toHaveAttribute('aria-expanded', 'true');
   await expect(name).toHaveFocus();
   await userEvent.tab();
-  await expect(canvas.getByRole('button', { name: '20 /36 Wounded' })).toHaveFocus();
+  await expect(canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` })).toHaveFocus();
   await userEvent.keyboard(' ');
   await expect(args.onHp).toHaveBeenCalledOnce();
   await userEvent.tab();
-  await expect(canvas.getByRole('button', { name: 'Conditions' })).toHaveFocus();
+  await expect(canvas.getByRole('button', { name: t('conditions') })).toHaveFocus();
   await userEvent.keyboard('{Enter}');
   await expect(args.onConditions).toHaveBeenCalledOnce();
   await userEvent.tab({ shift: true });
@@ -570,35 +660,29 @@ async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies) {
   await expect(name).toHaveFocus();
 }
 
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Tab, Enter and Space',
-  play: async ({ args, canvasElement }) => {
-    await keyboardWalk(canvasElement, args);
-    await expect(args.onHistory).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraKeyboardMotion = meta.story({
-  name: 'Keyboard with motion on',
+export const KeyboardWithMotionOn = meta.story({
+  tags: ['!dev'],
   parameters: { motion: 'on' },
-  play: async ({ args, canvasElement }) => {
-    await keyboardWalk(canvasElement, args);
+  play: async ({ args, canvasElement, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    await keyboardWalk(canvasElement, args, t);
     await expect(args.onHistory).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraMoreMenu = meta.story({
-  name: 'More opens the menu with Release claim',
+export const MoreOpensReleaseClaimMenu = meta.story({
+  tags: ['!dev'],
   args: { expanded: true },
   render: (args) => <MoreMenuCell {...args} onMenuItem={onMenuSelect} />,
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     onMenuSelect.mockClear();
-    const more = canvas.getByRole('button', { name: 'More actions' });
+    const more = canvas.getByRole('button', { name: t('CardActions:more') });
     await userEvent.click(more);
     await expect(args.onMore).toHaveBeenCalledOnce();
     await expect(more).toHaveAttribute('aria-expanded', 'true');
-    const menu = canvas.getByRole('menu', { name: 'Actions' });
-    await userEvent.click(within(menu).getByRole('menuitem', { name: 'Release claim' }));
+    const menu = canvas.getByRole('menu', { name: t('Menu:menuLabel') });
+    await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:releaseClaim') }));
     await expect(onMenuSelect).toHaveBeenCalledOnce();
     await expect(onMenuSelect).toHaveBeenCalledWith('releaseClaim');
     await expect(args.onEdit).not.toHaveBeenCalled();
@@ -607,20 +691,8 @@ export const ExtraMoreMenu = meta.story({
   },
 });
 
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  args: { expanded: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('button', { name: 'Состояния' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'История ОЗ' })).toBeVisible();
-    await expect(canvas.getByRole('listitem')).toHaveTextContent('ошеломлён');
-    await expect(canvas.getByText('Вы')).toBeVisible();
-  },
-});
-
-export const ExtraEnemyWithFields = meta.story({
-  name: 'Enemy carrying friendly fields stays hidden',
+export const EnemyFriendlyFieldsHidden = meta.story({
+  tags: ['!dev'],
   args: {
     unit: {
       ...orc,
@@ -636,71 +708,27 @@ export const ExtraEnemyWithFields = meta.story({
     mine: true,
     expanded: true,
   },
-  play: async ({ args, canvas, canvasElement }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
     await expect(canvas.getByText('Orc Berserker')).toBeVisible();
-    await expect(canvas.getByText('Staggered')).toBeVisible();
+    await expect(canvas.getByText(t('HpBox:staggered'))).toBeVisible();
     await expect(canvasElement.querySelector('[data-part="numbers"]')).toBeNull();
     await expect(canvas.queryByText('14')).toBeNull();
     await expect(canvas.queryByText('/40')).toBeNull();
-    await expect(canvas.queryByText('+6 temp')).toBeNull();
-    await expect(canvas.queryByText(/AC/)).toBeNull();
-    await expect(canvas.queryByText('Mika')).toBeNull();
-    await expect(canvas.queryByRole('img', { name: 'Claimed by' })).toBeNull();
+    await expect(canvas.queryByText(t('HpBox:temp', { amount: 6 }))).toBeNull();
+    await expectNoDefenses(canvas, t);
+    await expect(canvas.queryByText('@Mika')).toBeNull();
     await expect(canvas.queryByText('Hidden note')).toBeNull();
-    await expect(canvas.queryByText('You')).toBeNull();
-    await expect(canvas.queryByText('Conditions')).toBeNull();
+    await expect(canvas.queryByText(t('RoleBlock:you'))).toBeNull();
+    await expect(canvas.queryByText(t('conditions'))).toBeNull();
     await expect(canvas.queryByRole('button')).toBeNull();
     await expect(canvasElement.querySelector('[data-mine]')).toBeNull();
     await userEvent.click(canvas.getByText('Orc Berserker'));
-    await userEvent.click(canvas.getByText('Staggered'));
+    await userEvent.click(canvas.getByText(t('HpBox:staggered')));
     await userEvent.click(canvas.getByText('17'));
     await expect(args.onToggle).not.toHaveBeenCalled();
     await expect(args.onHp).not.toHaveBeenCalled();
     await expect(args.onInitiative).not.toHaveBeenCalled();
     await expect(args.onNoteChange).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraLocaleFr = meta.story({
-  name: 'Locale fr, trigger labels fit',
-  globals: { locale: 'fr' },
-  args: { expanded: true },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expectNotTruncated(canvas.getByRole('button', { name: 'États' }));
-    await expectNotTruncated(canvas.getByRole('button', { name: 'Historique PV' }));
-    await expect(within(canvasElement).getByRole('button', { name: 'Modifier' })).toBeVisible();
-  },
-});
-
-export const ExtraLocaleEs = meta.story({
-  name: 'Locale es, trigger labels fit',
-  globals: { locale: 'es' },
-  args: { expanded: true },
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await expectNotTruncated(canvas.getByRole('button', { name: 'Estados' }));
-    await expectNotTruncated(canvas.getByRole('button', { name: 'Historial PG' }));
-    await expect(within(canvasElement).getByRole('button', { name: 'Editar' })).toBeVisible();
-  },
-});
-
-export const ExtraFlash = meta.story({
-  name: 'The flash border marks a changed row, not dead or active ones',
-  args: { flash: true },
-  render: (args) => (
-    <div style={{ display: 'grid' }}>
-      <PlayerRowCell {...args} data-testid="own" />
-      <PlayerRowCell {...args} unit={goblin} mine={false} data-testid="dead" />
-      <PlayerRowCell {...args} unit={orc} mine={false} active data-testid="active" />
-      <PlayerRowCell {...args} unit={orc} mine={false} flash={false} data-testid="still" />
-    </div>
-  ),
-  play: async ({ canvas }) => {
-    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
-    await expect(canvas.getByTestId('own')).toHaveAttribute('data-flash');
-    await expect(border('own')).not.toBe(border('still'));
-    await expect(border('dead')).toBe(border('still'));
-    await expect(border('active')).toBe('rgb(35, 31, 28)');
   },
 });

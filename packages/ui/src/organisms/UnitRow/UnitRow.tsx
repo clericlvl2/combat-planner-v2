@@ -7,7 +7,6 @@ import {
   IconCopy,
   IconPlayerPause,
   IconPlayerPlay,
-  IconUser,
   IconUserMinus,
   IconUserOff,
 } from '@tabler/icons-react';
@@ -214,35 +213,33 @@ export function UnitRow({
             readOnly ? undefined : () => (showInitiative ? closeInitiative() : onInitiative?.())
           }
         />
-      </div>
-      {showInitiative ? (
-        <div ref={initiativeRef} className={classes.initiative}>
-          <InitiativePopover
-            open
-            value={unit.initiative}
-            bonus={unit.initiativeBonus}
-            random={random}
-            triggerRef={roleCellRef}
-            onSet={onInitiativeSet ?? noop}
-            onRoll={onInitiativeRoll ?? noop}
-            onClose={closeInitiative}
-          />
-        </div>
-      ) : null}
-      <div className={classes.main}>
-        <span className={classes.name}>{unit.name}</span>
-        {claimName ? (
-          <span className={classes.claim}>
-            <IconUser
-              className={classes.claimIcon}
-              size={16}
-              stroke={2}
-              role="img"
-              aria-label={t('claimedBy')}
+        {showInitiative ? (
+          <div ref={initiativeRef} className={classes.initiative}>
+            <InitiativePopover
+              open
+              value={unit.initiative}
+              bonus={unit.initiativeBonus}
+              random={random}
+              triggerRef={roleCellRef}
+              onSet={onInitiativeSet ?? noop}
+              onRoll={onInitiativeRoll ?? noop}
+              onClose={closeInitiative}
             />
-            <span className={classes.claimName}>{claimName}</span>
-          </span>
+          </div>
         ) : null}
+      </div>
+      <div className={classes.main}>
+        <span className={classes.nameLine}>
+          <span className={classes.name} data-part="name">
+            {unit.name}
+          </span>
+          {claimName ? (
+            <>
+              {' '}
+              <span className={classes.claimer}>@{claimName}</span>
+            </>
+          ) : null}
+        </span>
         <DefenseLine ac={unit.ac} pd={unit.pd} md={unit.md} />
         {unit.conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
@@ -257,6 +254,17 @@ export function UnitRow({
           <NoteField value={unit.note} onChange={onNoteChange ?? noop} collapsed />
         ) : null}
       </div>
+      {readOnly ? null : (
+        <UnstyledButton
+          component="button"
+          type="button"
+          className={classes.toggle}
+          aria-label={unit.name}
+          aria-expanded={expanded}
+          aria-controls={expanded ? detailsId : undefined}
+          onClick={() => onToggle?.()}
+        />
+      )}
       <div className={classes.hp}>
         <HpBox
           viewer="dm"
@@ -268,23 +276,6 @@ export function UnitRow({
           onClick={readOnly ? undefined : () => onHp?.()}
         />
       </div>
-      {readOnly ? (
-        <span className={classes.chevronCell} aria-hidden="true">
-          <span className={classes.chevron} />
-        </span>
-      ) : (
-        <UnstyledButton
-          component="button"
-          type="button"
-          className={classes.chevronCell}
-          aria-label={t('details')}
-          aria-expanded={expanded}
-          aria-controls={expanded ? detailsId : undefined}
-          onClick={() => onToggle?.()}
-        >
-          <span className={classes.chevron} aria-hidden="true" />
-        </UnstyledButton>
-      )}
       {expanded ? (
         <div id={detailsId} className={classes.details} data-part="details">
           <div className={classes.triggers}>

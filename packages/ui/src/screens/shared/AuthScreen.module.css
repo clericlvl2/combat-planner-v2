@@ -16,9 +16,9 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   min-height: 0;
-  padding: 32px 24px 28px;
+  padding: 32px 28px 28px;
   overflow-y: auto;
 }
 
@@ -27,9 +27,9 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  border-radius: var(--mantine-radius-card);
+  width: 44px;
+  height: 44px;
+  border-radius: var(--mantine-radius-field);
   background: var(--cp-color-ink);
   color: var(--cp-color-accent);
 }
@@ -38,13 +38,21 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-bottom: 6px;
+  padding-bottom: 8px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .title {
   margin: 0;
   font-family: var(--cp-font-display);
-  font-size: var(--mantine-font-size-title);
+  flex: 1 1 0;
+  min-width: 0;
+  font-size: var(--mantine-font-size-heading);
   font-weight: 700;
   line-height: var(--mantine-line-height-snug);
   overflow-wrap: anywhere;
@@ -53,7 +61,7 @@
 .subtitle {
   margin: 0;
   color: var(--cp-color-secondary);
-  font-size: var(--mantine-font-size-body);
+  font-size: var(--mantine-font-size-small);
   line-height: var(--mantine-line-height-body);
 }
 

@@ -165,6 +165,7 @@ export interface FerryOptions {
   ilse?: boolean;
   vashtiInitiative?: number | null;
   vashtiHp?: number;
+  names?: Partial<Record<UnitKey, string>>;
 }
 
 export function ferryCombat({
@@ -174,10 +175,11 @@ export function ferryCombat({
   ilse = false,
   vashtiInitiative,
   vashtiHp,
+  names = {},
 }: FerryOptions = {}): Combat {
   const all = ilse ? [...seeds, ilseSeed] : seeds;
   const units = all
-    .map(unitOf)
+    .map((seed) => unitOf({ ...seed, name: names[seed.key] ?? seed.name }))
     .map((unit) => (status === 'setup' ? setupUnit(unit) : unit))
     .map((unit) => {
       if (unit.id !== unitIds.vashti) return unit;

@@ -4,16 +4,23 @@ export const VERTICAL_SLOP = 16;
 
 export type SwipeEvent = Pick<
   PointerEvent,
-  'pointerId' | 'clientX' | 'clientY' | 'button' | 'target'
+  'pointerId' | 'pointerType' | 'clientX' | 'clientY' | 'button' | 'target'
 >;
+
+const SWIPE_POINTERS: ReadonlySet<string> = new Set(['touch', 'pen']);
 
 export interface EdgeSwipeOptions {
   onSwipe: () => void;
   canStart?: (event: SwipeEvent) => boolean;
+  edgeLeft?: () => number;
 }
 
 const isPointer = (event: Event): event is Event & SwipeEvent =>
-  'pointerId' in event && 'clientX' in event && 'clientY' in event && 'button' in event;
+  'pointerId' in event &&
+  'pointerType' in event &&
+  'clientX' in event &&
+  'clientY' in event &&
+  'button' in event;
 
 interface Start {
   pointerId: number;
@@ -23,19 +30,16 @@ interface Start {
 
 export function watchEdgeSwipe(
   target: EventTarget,
-  { onSwipe, canStart = () => true }: EdgeSwipeOptions,
+  { onSwipe, canStart = () => true, edgeLeft = () => 0 }: EdgeSwipeOptions,
 ): () => void {
   let start: Start | null = null;
 
   const down = (pointer: Event) => {
     start = null;
-    if (
-      !isPointer(pointer) ||
-      pointer.button > 0 ||
-      pointer.clientX > EDGE_WIDTH ||
-      !canStart(pointer)
-    )
+    if (!isPointer(pointer) || !SWIPE_POINTERS.has(pointer.pointerType) || pointer.button > 0)
       return;
+    const offset = pointer.clientX - edgeLeft();
+    if (offset < 0 || offset > EDGE_WIDTH || !canStart(pointer)) return;
     start = { pointerId: pointer.pointerId, x: pointer.clientX, y: pointer.clientY };
   };
 

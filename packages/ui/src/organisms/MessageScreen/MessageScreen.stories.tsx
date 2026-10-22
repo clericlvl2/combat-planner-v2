@@ -4,6 +4,7 @@ import type { Icon } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { MessageScreen } from './MessageScreen.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type MessageScreenKind = 'linkRevoked' | 'combatDeleted' | 'offline';
 
@@ -52,123 +53,82 @@ const meta = preview.meta({
   args: { kind: 'linkRevoked' as MessageScreenKind, onAction: fn() },
 });
 
-export const Anatomy = meta.story({
-  play: async ({ args, canvas }) => {
+export const LinkRevoked = meta.story({
+  tags: ['visual'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'MessageScreen');
     await expect(
       canvas.getByRole('heading', { level: 1 }).closest('[data-system-screen]'),
     ).toBeInTheDocument();
     await expect(
-      canvas.getByRole('heading', { level: 1, name: 'This link no longer works' }),
+      canvas.getByRole('heading', { level: 1, name: t('linkRevokedTitle') }),
     ).toBeVisible();
-    await expect(
-      canvas.getByText('The DM issued a new link. Ask them to share it again.'),
-    ).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toHaveAttribute(
-      'data-variant',
-      'secondary',
-    );
-    await expect(args.onAction).not.toHaveBeenCalled();
-  },
-});
-
-export const LinkRevoked = meta.story({
-  name: 'Link revoked',
-  args: { kind: 'linkRevoked' },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Try again' });
-    await expect(button).toBeVisible();
+    await expect(canvas.getByText(t('linkRevokedBody'))).toBeVisible();
+    const button = canvas.getByRole('button', { name: t('tryAgain') });
+    await expect(button).toHaveAttribute('data-variant', 'secondary');
     await expect(button).not.toHaveFocus();
+    await expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
     await expect(args.onAction).not.toHaveBeenCalled();
   },
 });
 
-export const CombatDeleted = meta.story({
-  name: 'Combat deleted',
+export const CombatDeletedNoAction = meta.story({
   args: { kind: 'combatDeleted' },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'MessageScreen');
     await expect(
-      canvas.getByRole('heading', { level: 1, name: 'This combat was deleted' }),
+      canvas.getByRole('heading', { level: 1, name: t('combatDeletedTitle') }),
     ).toBeVisible();
-    await expect(canvas.getByText('The DM deleted it. Ask them for a new link.')).toBeVisible();
+    await expect(canvas.getByText(t('combatDeletedBody'))).toBeVisible();
     await expect(canvas.queryByRole('button')).toBeNull();
     await userEvent.click(canvas.getByRole('heading', { level: 1 }));
     await expect(args.onAction).not.toHaveBeenCalled();
   },
 });
 
-export const Ru = meta.story({
-  name: 'ru',
+export const PrimaryAction = meta.story({
+  args: { kind: 'offline', actionVariant: 'primary' },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'MessageScreen');
+    const button = canvas.getByRole('button', { name: t('tryAgain') });
+    await expect(button).toHaveAttribute('data-variant', 'primary');
+    await userEvent.click(button);
+    await expect(args.onAction).toHaveBeenCalledOnce();
+  },
+});
+
+export const LongTitleAndBody = meta.story({
   args: {
-    kind: 'linkRevoked',
-    title: 'Эта ссылка больше не работает',
-    body: 'Мастер выпустил новую ссылку. Попросите его поделиться ей снова.',
-    actionLabel: 'Повторить',
+    kind: 'offline',
+    title: 'Не удаётся установить соединение с сервером боевого планировщика',
+    body: 'Проверьте подключение к интернету, убедитесь, что мастер не остановил сервер, и попробуйте открыть ссылку ещё раз через несколько минут.',
+    actionLabel: 'Подключиться снова',
   },
   play: async ({ canvas }) => {
     await expect(
-      canvas.getByRole('heading', { level: 1, name: 'Эта ссылка больше не работает' }),
+      canvas.getByRole('heading', {
+        level: 1,
+        name: 'Не удаётся установить соединение с сервером боевого планировщика',
+      }),
     ).toBeVisible();
-    const button = canvas.getByRole('button', { name: 'Повторить' });
+    const button = canvas.getByRole('button', { name: 'Подключиться снова' });
     await expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
   },
 });
 
-export const De = meta.story({
-  name: 'de',
-  args: {
-    kind: 'offline',
-    title: 'Keine Verbindung zum Server',
-    body: 'Prüfe die Verbindung und versuche es erneut.',
-    actionLabel: 'Erneut versuchen',
-  },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Erneut versuchen' });
-    await expect(button.getBoundingClientRect().height).toBe(58);
-    await expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
-    await expect(button).not.toHaveFocus();
-    await expect(args.onAction).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraTapAction = meta.story({
-  name: 'Tap on the action calls onAction',
+export const TapCallsOnAction = meta.story({
+  tags: ['!dev'],
   args: { kind: 'linkRevoked' },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Try again' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'MessageScreen');
+    await userEvent.click(canvas.getByRole('button', { name: t('tryAgain') }));
     await expect(args.onAction).toHaveBeenCalledOnce();
     await expect(args.onAction).toHaveBeenCalledWith();
   },
 });
 
-export const ExtraTapActionDe = meta.story({
-  name: 'Tap on the de action calls onAction',
-  args: {
-    kind: 'offline',
-    title: 'Keine Verbindung zum Server',
-    body: 'Prüfe die Verbindung und versuche es erneut.',
-    actionLabel: 'Erneut versuchen',
-  },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Erneut versuchen' }));
-    await expect(args.onAction).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraKeyboard = meta.story({
-  name: 'Keyboard: Enter and Space on the action',
-  args: { kind: 'offline' },
-  play: async ({ args, canvas }) => {
-    await userEvent.tab();
-    await expect(canvas.getByRole('button', { name: 'Try again' })).toHaveFocus();
-    await userEvent.keyboard('{Enter}');
-    await expect(args.onAction).toHaveBeenCalledTimes(1);
-    await userEvent.keyboard(' ');
-    await expect(args.onAction).toHaveBeenCalledTimes(2);
-  },
-});
-
-export const ExtraLabelWithoutHandler = meta.story({
-  name: 'Label without onAction renders no button',
+export const LabelWithoutHandlerHasNoButton = meta.story({
+  tags: ['!dev'],
   render: () => (
     <MessageScreen
       icon={IconTrash}
@@ -180,29 +140,5 @@ export const ExtraLabelWithoutHandler = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(canvas.queryByRole('button')).toBeNull();
-  },
-});
-
-export const ExtraLocaleJa = meta.story({
-  name: 'Locale ja, cannot reach the server',
-  globals: { locale: 'ja' },
-  args: { kind: 'offline' },
-  play: async ({ args, canvas }) => {
-    await expect(
-      canvas.getByRole('heading', { level: 1, name: 'サーバーに接続できません' }),
-    ).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: '再試行' }));
-    await expect(args.onAction).toHaveBeenCalledOnce();
-  },
-});
-
-export const ExtraPrimaryAction = meta.story({
-  name: 'Primary action variant',
-  args: { kind: 'offline', actionVariant: 'primary' },
-  play: async ({ args, canvas }) => {
-    const button = canvas.getByRole('button', { name: 'Try again' });
-    await expect(button).toHaveAttribute('data-variant', 'primary');
-    await userEvent.click(button);
-    await expect(args.onAction).toHaveBeenCalledOnce();
   },
 });

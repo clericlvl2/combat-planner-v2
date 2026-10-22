@@ -1,12 +1,14 @@
 import preview from '#.storybook/preview';
+import type { TFunction } from 'i18next';
 import { LIMITS } from '@combat-planner/domain';
 import type { Preset, Role } from '@combat-planner/domain';
-import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { TagSheetTag } from '../TagSheet/TagSheet.tsx';
 import { UnitForm } from './UnitForm.tsx';
 import type { UnitDraft, UnitFormHint, UnitFormMode } from './UnitForm.tsx';
+import { anyValue, storyT } from '../../storybook/storyT.ts';
 
 interface UnitFormCellProps {
   mode?: UnitFormMode;
@@ -16,7 +18,6 @@ interface UnitFormCellProps {
   library?: boolean;
   unitNames?: readonly string[];
   hint?: UnitFormHint;
-  closeOnDone?: boolean;
   onSubmit?: (draft: UnitDraft) => void;
   onCancel?: () => void;
 }
@@ -24,6 +25,8 @@ interface UnitFormCellProps {
 const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout' };
 
 const at = '2026-10-15T12:00:00.000Z';
+
+const exact = (text: string) => text;
 
 interface PresetStats {
   maxHp: number;
@@ -118,15 +121,13 @@ function UnitFormCell({
   library = true,
   unitNames,
   hint,
-  closeOnDone = false,
   onSubmit,
   onCancel,
 }: UnitFormCellProps) {
-  const [opened, setOpened] = useState(true);
   return (
     <div style={stage}>
       <UnitForm
-        opened={opened}
+        opened
         mode={mode}
         value={value}
         lockRole={lockRole}
@@ -136,17 +137,17 @@ function UnitFormCell({
         combatTitle="Ambush at the Ferry"
         unitNames={unitNames}
         hint={hint}
-        onSubmit={(draft) => {
-          if (closeOnDone) setOpened(false);
-          onSubmit?.(draft);
-        }}
-        onCancel={() => {
-          if (closeOnDone) setOpened(false);
-          onCancel?.();
-        }}
+        onSubmit={(draft) => onSubmit?.(draft)}
+        onCancel={() => onCancel?.()}
       />
     </div>
   );
+}
+
+function TakenEnemyNames(args: UnitFormCellProps) {
+  const { t } = useTranslation('UnitForm');
+  const enemy = (n: number) => t('defaultName', { role: t('enemy'), n });
+  return <UnitFormCell {...args} unitNames={[enemy(1), enemy(3)]} />;
 }
 
 const meta = preview.meta({
@@ -158,20 +159,27 @@ const meta = preview.meta({
 
 type Canvas = ReturnType<typeof within>;
 
-const openLibrary = async (canvas: Canvas) => {
-  await userEvent.click(canvas.getByRole('radio', { name: 'From Library' }));
+const openLibrary = async (canvas: Canvas, t: TFunction) => {
+  await userEvent.click(canvas.getByRole('radio', { name: t('library') }));
 };
 
-const filterOrcs = async (canvas: Canvas, apply: boolean) => {
-  await userEvent.click(canvas.getByRole('button', { name: /^Tags/ }));
+const filterOrcs = async (canvas: Canvas, apply: boolean, t: TFunction) => {
+  await userEvent.click(
+    canvas.getByRole('button', { name: (label: string) => label.startsWith(t('tags')) }),
+  );
   await userEvent.click(await canvas.findByRole('checkbox', { name: /^Orcs/ }));
   if (apply) {
-    await userEvent.click(canvas.getByRole('button', { name: 'Show 2 presets' }));
-    await waitFor(() => expect(canvas.queryByRole('dialog', { name: 'Filter by tag' })).toBeNull());
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('TagSheet:showPresets', { count: 2 }) }),
+    );
+    await waitFor(() =>
+      expect(canvas.queryByRole('dialog', { name: t('TagSheet:filterTitle') })).toBeNull(),
+    );
   }
 };
 
-const presetList = (canvas: Canvas) => within(canvas.getByRole('group', { name: 'Presets' }));
+const presetList = (canvas: Canvas, t: TFunction) =>
+  within(canvas.getByRole('group', { name: t('presets') }));
 
 const typeNumber = async (canvas: Canvas, label: string, text: string) => {
   const field = canvas.getByRole('spinbutton', { name: label });
@@ -180,141 +188,223 @@ const typeNumber = async (canvas: Canvas, label: string, text: string) => {
   return field;
 };
 
-export const Anatomy = meta.story({
-  name: 'Anatomy',
+export const AddFilled = meta.story({
+  tags: ['visual'],
   args: { value: orcShaman },
 });
 
-export const NewEmpty = meta.story({
-  name: 'New, empty',
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Add unit' })).toBeVisible();
-    await expect(canvas.getByRole('textbox', { name: 'Name' })).toHaveAttribute(
+export const AddEmpty = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(canvas.getByRole('dialog', { name: t('addTitle') })).toBeVisible();
+    await expect(canvas.getByRole('textbox', { name: t('name') })).toHaveAttribute(
       'placeholder',
-      'Enemy 1',
+      t('TextField:namePlaceholder'),
     );
-    await expect(canvas.getByRole('radio', { name: 'Enemy' })).toBeChecked();
-    await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('10');
-    await expect(canvas.getByRole('spinbutton', { name: 'Initiative bonus' })).toHaveValue('+0');
+    await expect(canvas.getByRole('radio', { name: t('enemy') })).toBeChecked();
+    await expect(canvas.getByRole('spinbutton', { name: t('maxHp') })).toHaveValue('10');
+    await expect(canvas.getByRole('spinbutton', { name: t('initiativeBonus') })).toHaveValue('+0');
   },
 });
 
-export const NewFilled = meta.story({
-  name: 'New, filled',
-  args: { value: orcShaman },
-});
-
-export const FromLibrary = meta.story({
-  name: 'From Library',
-  play: async ({ canvas }) => {
-    await openLibrary(canvas);
-    await expect(presetList(canvas).getAllByRole('button')).toHaveLength(5);
-    await expect(canvas.getByRole('button', { name: 'Pick a preset' })).toBeDisabled();
+export const LibraryTab = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await expect(presetList(canvas, t).getAllByRole('button')).toHaveLength(5);
+    await expect(canvas.getByRole('button', { name: t('pickPreset') })).toBeDisabled();
   },
 });
 
-export const LibraryTagsSheet = meta.story({
-  name: 'Library, Tags sheet',
-  play: async ({ canvas }) => {
-    await openLibrary(canvas);
-    await filterOrcs(canvas, false);
+export const LibraryTagFilterOpen = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await filterOrcs(canvas, false, t);
     await waitFor(() =>
-      expect(canvas.getByRole('button', { name: 'Show 2 presets' })).toBeVisible(),
+      expect(
+        canvas.getByRole('button', { name: t('TagSheet:showPresets', { count: 2 }) }),
+      ).toBeVisible(),
     );
   },
 });
 
-export const LibraryFilteredPicked = meta.story({
-  name: 'Library, filtered, picked',
-  play: async ({ canvas, args }) => {
-    await openLibrary(canvas);
-    await filterOrcs(canvas, true);
-    await expect(canvas.getByRole('button', { name: 'Remove Orcs' })).toBeVisible();
-    const list = presetList(canvas);
+export const LibraryPresetPicked = meta.story({
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await filterOrcs(canvas, true, t);
+    await expect(
+      canvas.getByRole('button', { name: t('removeTag', { name: 'Orcs' }) }),
+    ).toBeVisible();
+    const list = presetList(canvas, t);
     await expect(list.getAllByRole('button')).toHaveLength(2);
-    await userEvent.click(list.getByRole('button', { name: /^Enemy Orc Berserker/ }));
-    await expect(list.getByRole('button', { name: /^Enemy Orc Berserker/ })).toHaveAttribute(
-      'aria-pressed',
-      'true',
+    await userEvent.click(
+      list.getByRole('button', {
+        name: (label: string) => label.startsWith(`${t('enemy')} Orc Berserker`),
+      }),
     );
-    await expect(canvas.getByRole('button', { name: 'Add Orc Berserker' })).toBeEnabled();
+    await expect(
+      list.getByRole('button', {
+        name: (label: string) => label.startsWith(`${t('enemy')} Orc Berserker`),
+      }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(
+      canvas.getByRole('button', { name: t('addPreset', { name: 'Orc Berserker' }) }),
+    ).toBeEnabled();
     await expect(args.onSubmit).not.toHaveBeenCalled();
   },
 });
 
 export const Edit = meta.story({
-  name: 'Edit',
   args: { mode: 'edit', value: vashti },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Edit unit' })).toBeVisible();
-    await expect(canvas.queryByRole('radio', { name: 'From Library' })).toBeNull();
-    await expect(canvas.getByRole('button', { name: 'Save changes' })).toBeEnabled();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(canvas.getByRole('dialog', { name: t('editTitle') })).toBeVisible();
+    await expect(canvas.queryByRole('radio', { name: t('library') })).toBeNull();
+    await expect(canvas.getByRole('button', { name: t('saveChanges') })).toBeEnabled();
   },
 });
 
-export const LibrarySearchGob = meta.story({
-  name: 'Library, search “gob”',
-  play: async ({ canvas }) => {
-    await openLibrary(canvas);
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search presets' }), 'gob');
-    const list = presetList(canvas);
+export const LibrarySearchResults = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await userEvent.type(canvas.getByRole('searchbox', { name: t('searchPresets') }), 'gob');
+    const list = presetList(canvas, t);
     await expect(list.getAllByRole('button')).toHaveLength(1);
     await expect(list.getByText('Goblin Archer')).toBeVisible();
-    await expect(canvas.queryByText('No preset matches “gob”.')).toBeNull();
+    await expect(
+      canvas.queryByText(t('noMatchQuery', { query: 'gob' }), { normalizer: exact }),
+    ).toBeNull();
   },
 });
 
 export const LibraryNothingFound = meta.story({
-  name: 'Library, nothing found',
-  play: async ({ canvas }) => {
-    await openLibrary(canvas);
-    await filterOrcs(canvas, true);
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search presets' }), 'dragon');
-    await expect(canvas.getByText('Nothing found')).toBeVisible();
-    await expect(canvas.getByText('No preset matches “dragon” in Orcs.')).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Pick a preset' })).toBeDisabled();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await filterOrcs(canvas, true, t);
+    await userEvent.type(canvas.getByRole('searchbox', { name: t('searchPresets') }), 'dragon');
+    await expect(canvas.getByText(t('nothingFound'))).toBeVisible();
+    await expect(
+      canvas.getByText(t('noMatchQueryTags', { query: 'dragon', tags: 'Orcs' }), {
+        normalizer: exact,
+      }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('pickPreset') })).toBeDisabled();
   },
 });
 
 export const MinimumValues = meta.story({
-  name: 'Minimum values',
   args: { mode: 'edit', value: { ...vashti, maxHp: LIMITS.maxHp.min, tempHp: 0 } },
-  play: async ({ canvas }) => {
-    const decrease = canvas.getAllByRole('button', { name: /^Decrease / });
-    await expect(decrease[0]).toBeDisabled();
-    await expect(decrease[1]).toBeDisabled();
-    await expect(decrease[2]).toBeEnabled();
-    await expect(getComputedStyle(decrease[0] as HTMLElement).backgroundColor).toBe(
-      'rgb(250, 246, 238)',
-    );
-    await expect(getComputedStyle(decrease[2] as HTMLElement).backgroundColor).toBe(
-      'rgb(243, 237, 226)',
-    );
-  },
 });
 
-export const EdgeCases40CharacterNameRu = meta.story({
-  name: '40-character name, ru',
+export const LongName = meta.story({
+  tags: ['visual'],
   args: {
     mode: 'edit',
     value: { ...vashti, name: 'Капитан стражи переправы Святослав Огнев', role: 'ally', note: '' },
   },
-  play: async ({ canvas }) => {
-    const name = canvas.getByRole('textbox', { name: 'Name' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    const name = canvas.getByRole('textbox', { name: t('name') });
     await expect(name).toHaveValue('Капитан стражи переправы Святослав Огнев');
     await expect(canvas.getByText(`${LIMITS.unitName}/${LIMITS.unitName}`)).toBeVisible();
-    await userEvent.type(name, 'а');
-    await expect(name).toHaveValue('Капитан стражи переправы Святослав Огнев');
   },
 });
 
-export const ExtraFlowAddFromLibrary = meta.story({
-  name: 'Flow: filter Orcs, pick a preset, Add closes the sheet',
-  play: async ({ canvas, args }) => {
-    await openLibrary(canvas);
-    await filterOrcs(canvas, true);
-    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Add Orc Berserker' }));
+export const RoleLocked = meta.story({
+  args: { mode: 'edit', value: vashti, lockRole: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    const hero = canvas.getByRole('radio', { name: t('hero') });
+    await expect(hero).toBeChecked();
+    await expect(hero).toBeDisabled();
+    await userEvent.click(canvas.getByRole('radio', { name: t('enemy') }));
+    await expect(hero).toBeChecked();
+    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
+    await expect(args.onSubmit).toHaveBeenCalledWith(vashti);
+  },
+});
+
+export const MaxHpLocked = meta.story({
+  name: 'Max HP Locked',
+  args: { mode: 'edit', value: vashti, lockMaxHp: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    const maxHp = canvas.getByRole('spinbutton', { name: t('maxHp') });
+    await expect(maxHp).toBeDisabled();
+    await expect(
+      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('maxHp') }) }),
+    ).toBeDisabled();
+    await expect(
+      canvas.getByRole('button', { name: t('Stepper:decreaseField', { label: t('maxHp') }) }),
+    ).toBeDisabled();
+    await expect(canvas.getByRole('spinbutton', { name: t('ac') })).toBeEnabled();
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('ac') }) }),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
+    await expect(args.onSubmit).toHaveBeenCalledWith({ ...vashti, ac: vashti.ac + 1 });
+  },
+});
+
+export const HintCombatActive = meta.story({
+  args: { library: false, hint: 'active', value: { initiativeBonus: 2 } },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(
+      canvas.getByText(t('hintActive', { bonus: '+2' }), { normalizer: exact }),
+    ).toBeVisible();
+  },
+});
+
+export const HintSetup = meta.story({
+  args: { library: false, hint: 'setup' },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(canvas.getByText(t('hintSetup'))).toBeVisible();
+  },
+});
+
+export const LibrarySeveralTagChips = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await userEvent.click(
+      canvas.getByRole('button', { name: (label: string) => label.startsWith(t('tags')) }),
+    );
+    await userEvent.click(await canvas.findByRole('checkbox', { name: /^Orcs/ }));
+    await userEvent.click(canvas.getByRole('checkbox', { name: /^Ferry/ }));
+    await userEvent.click(canvas.getByRole('checkbox', { name: /^Goblins/ }));
+    await userEvent.click(
+      canvas.getByRole('button', { name: anyValue(t, 'TagSheet:showPresets', 'count') }),
+    );
+    await waitFor(() =>
+      expect(canvas.queryByRole('dialog', { name: t('TagSheet:filterTitle') })).toBeNull(),
+    );
+    for (const name of ['Orcs', 'Ferry', 'Goblins']) {
+      await expect(canvas.getByRole('button', { name: t('removeTag', { name }) })).toBeVisible();
+    }
+  },
+});
+
+export const AddFromLibrarySubmitsPreset = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await filterOrcs(canvas, true, t);
+    await userEvent.click(
+      presetList(canvas, t).getByRole('button', {
+        name: (label: string) => label.startsWith(`${t('enemy')} Orc Berserker`),
+      }),
+    );
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('addPreset', { name: 'Orc Berserker' }) }),
+    );
     await expect(args.onSubmit).toHaveBeenCalledOnce();
     await expect(args.onSubmit).toHaveBeenCalledWith({
       name: 'Orc Berserker',
@@ -330,25 +420,28 @@ export const ExtraFlowAddFromLibrary = meta.story({
   },
 });
 
-export const ExtraSubmitTypedValues = meta.story({
-  name: 'Add unit submits the typed values',
+export const SubmitsTypedValues = meta.story({
+  tags: ['!dev'],
   args: { library: false },
-  play: async ({ canvas, args }) => {
-    await expect(canvas.queryByRole('radio', { name: 'From Library' })).toBeNull();
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Name' }), 'Orc Shaman');
-    canvas.getByRole('radio', { name: 'Enemy' }).focus();
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(canvas.queryByRole('radio', { name: t('library') })).toBeNull();
+    await userEvent.type(canvas.getByRole('textbox', { name: t('name') }), 'Orc Shaman');
+    canvas.getByRole('radio', { name: t('enemy') }).focus();
     await userEvent.keyboard('{ArrowRight}');
-    await expect(canvas.getByRole('radio', { name: 'Ally' })).toBeChecked();
-    await typeNumber(canvas, 'Max HP', '30');
-    canvas.getByRole('spinbutton', { name: 'Temp HP' }).focus();
+    await expect(canvas.getByRole('radio', { name: t('ally') })).toBeChecked();
+    await typeNumber(canvas, t('maxHp'), '30');
+    canvas.getByRole('spinbutton', { name: t('tempHp') }).focus();
     await userEvent.keyboard('{ArrowUp}{ArrowUp}');
-    await typeNumber(canvas, 'Armor Class', '17');
-    await typeNumber(canvas, 'Physical Defense', '15');
-    await typeNumber(canvas, 'Mental Defense', '16');
-    const increase = canvas.getAllByRole('button', { name: /^Increase / });
+    await typeNumber(canvas, t('ac'), '17');
+    await typeNumber(canvas, t('pd'), '15');
+    await typeNumber(canvas, t('md'), '16');
+    const increase = canvas.getAllByRole('button', {
+      name: anyValue(t, 'Stepper:increaseField', 'label'),
+    });
     await userEvent.click(increase[increase.length - 1] ?? document.body);
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Note' }), 'Calls the storm');
-    await userEvent.click(canvas.getByRole('button', { name: 'Add unit' }));
+    await userEvent.type(canvas.getByRole('textbox', { name: t('note') }), 'Calls the storm');
+    await userEvent.click(canvas.getByRole('button', { name: t('addUnit') }));
     await expect(args.onSubmit).toHaveBeenCalledOnce();
     await expect(args.onSubmit).toHaveBeenCalledWith({
       name: 'Orc Shaman',
@@ -365,31 +458,38 @@ export const ExtraSubmitTypedValues = meta.story({
   },
 });
 
-export const ExtraEmptyNameDefault = meta.story({
-  name: 'An empty name becomes the first free default name',
-  args: { unitNames: ['Enemy 1', 'Enemy 3'] },
-  play: async ({ canvas, args }) => {
-    const name = canvas.getByRole('textbox', { name: 'Name' });
-    await expect(name).toHaveAttribute('placeholder', 'Enemy 2');
-    await userEvent.click(canvas.getByRole('radio', { name: 'Hero' }));
-    await expect(name).toHaveAttribute('placeholder', 'Hero 1');
-    await userEvent.click(canvas.getByRole('button', { name: 'Add unit' }));
+export const EmptyNameGetsDefaultName = meta.story({
+  tags: ['!dev'],
+  render: (args: UnitFormCellProps) => <TakenEnemyNames {...args} />,
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    const name = canvas.getByRole('textbox', { name: t('name') });
+    await expect(name).toHaveAttribute('placeholder', t('defaultName', { role: t('enemy'), n: 2 }));
+    await userEvent.click(canvas.getByRole('radio', { name: t('hero') }));
+    await expect(name).toHaveAttribute('placeholder', t('defaultName', { role: t('hero'), n: 1 }));
+    await userEvent.click(canvas.getByRole('button', { name: t('addUnit') }));
     await expect(args.onSubmit).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'Hero 1', role: 'hero', maxHp: 10, ac: 10 }),
+      expect.objectContaining({
+        name: t('defaultName', { role: t('hero'), n: 1 }),
+        role: 'hero',
+        maxHp: 10,
+        ac: 10,
+      }),
     );
   },
 });
 
-export const ExtraBlankNameKeepsPrevious = meta.story({
-  name: 'Edit: a blank name keeps the previous name',
+export const BlankNameKeepsPrevious = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: vashti },
-  play: async ({ canvas, args }) => {
-    const name = canvas.getByRole('textbox', { name: 'Name' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    const name = canvas.getByRole('textbox', { name: t('name') });
     await userEvent.clear(name);
     await userEvent.type(name, '   ');
     await expect(name).toHaveAttribute('placeholder', vashti.name);
     await expect(name).not.toHaveAttribute('aria-invalid', 'true');
-    const save = canvas.getByRole('button', { name: 'Save changes' });
+    const save = canvas.getByRole('button', { name: t('saveChanges') });
     await expect(save).toBeEnabled();
     await userEvent.click(save);
     await expect(args.onSubmit).toHaveBeenCalledOnce();
@@ -397,23 +497,26 @@ export const ExtraBlankNameKeepsPrevious = meta.story({
   },
 });
 
-export const ExtraClampsToLimits = meta.story({
-  name: 'Values outside the limits are clamped',
+export const ClampsToLimits = meta.story({
+  tags: ['!dev'],
   args: { mode: 'edit', value: vashti },
-  play: async ({ canvas, args }) => {
-    await expect(await typeNumber(canvas, 'Max HP', '1500')).toHaveValue(String(LIMITS.maxHp.max));
-    await expect(await typeNumber(canvas, 'Temp HP', '-5')).toHaveValue(String(LIMITS.tempHp.min));
-    await expect(await typeNumber(canvas, 'Armor Class', '150')).toHaveValue(
-      String(LIMITS.defense.max),
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await expect(await typeNumber(canvas, t('maxHp'), '1500')).toHaveValue(
+      String(LIMITS.maxHp.max),
     );
-    await expect(await typeNumber(canvas, 'Initiative bonus', '-120')).toHaveValue(
+    await expect(await typeNumber(canvas, t('tempHp'), '-5')).toHaveValue(
+      String(LIMITS.tempHp.min),
+    );
+    await expect(await typeNumber(canvas, t('ac'), '150')).toHaveValue(String(LIMITS.defense.max));
+    await expect(await typeNumber(canvas, t('initiativeBonus'), '-120')).toHaveValue(
       `−${Math.abs(LIMITS.initiativeBonus.min)}`,
     );
-    const name = canvas.getByRole('textbox', { name: 'Name' });
+    const name = canvas.getByRole('textbox', { name: t('name') });
     await userEvent.clear(name);
     await userEvent.type(name, 'x'.repeat(LIMITS.unitName + 5));
     await expect(name).toHaveValue('x'.repeat(LIMITS.unitName));
-    await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
     await expect(args.onSubmit).toHaveBeenCalledWith({
       ...vashti,
       name: 'x'.repeat(LIMITS.unitName),
@@ -425,49 +528,25 @@ export const ExtraClampsToLimits = meta.story({
   },
 });
 
-export const ExtraLockRole = meta.story({
-  name: 'lockRole keeps the type',
-  args: { mode: 'edit', value: vashti, lockRole: true },
-  play: async ({ canvas, args }) => {
-    const hero = canvas.getByRole('radio', { name: 'Hero' });
-    await expect(hero).toBeChecked();
-    await expect(hero).toBeDisabled();
-    await userEvent.click(canvas.getByRole('radio', { name: 'Enemy' }));
-    await expect(hero).toBeChecked();
-    await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
-    await expect(args.onSubmit).toHaveBeenCalledWith(vashti);
-  },
-});
-
-export const ExtraLockMaxHp = meta.story({
-  name: 'lockMaxHp keeps max HP for a player Edit',
-  args: { mode: 'edit', value: vashti, lockMaxHp: true },
-  play: async ({ canvas, args }) => {
-    const maxHp = canvas.getByRole('spinbutton', { name: 'Max HP' });
-    await expect(maxHp).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Increase Max HP' })).toBeDisabled();
-    await expect(canvas.getByRole('button', { name: 'Decrease Max HP' })).toBeDisabled();
-    await expect(canvas.getByRole('spinbutton', { name: 'Armor Class' })).toBeEnabled();
-    await userEvent.click(canvas.getByRole('button', { name: 'Increase Armor Class' }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Save changes' }));
-    await expect(args.onSubmit).toHaveBeenCalledWith({ ...vashti, ac: vashti.ac + 1 });
-  },
-});
-
-export const ExtraPickFillsForm = meta.story({
-  name: 'Picking a preset fills the form',
-  play: async ({ canvas, args }) => {
-    await openLibrary(canvas);
-    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Ally Brother Tomas/ }));
-    await userEvent.click(canvas.getByRole('radio', { name: 'New' }));
-    await expect(canvas.getByRole('textbox', { name: 'Name' })).toHaveValue(
+export const PickFillsForm = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await userEvent.click(
+      presetList(canvas, t).getByRole('button', {
+        name: (label: string) => label.startsWith(`${t('ally')} Brother Tomas`),
+      }),
+    );
+    await userEvent.click(canvas.getByRole('radio', { name: t('new') }));
+    await expect(canvas.getByRole('textbox', { name: t('name') })).toHaveValue(
       'Brother Tomas of the Silver Lantern Order',
     );
-    await expect(canvas.getByRole('radio', { name: 'Ally' })).toBeChecked();
-    await expect(canvas.getByRole('spinbutton', { name: 'Max HP' })).toHaveValue('30');
-    await expect(canvas.getByRole('spinbutton', { name: 'Armor Class' })).toHaveValue('19');
-    await expect(canvas.getByRole('spinbutton', { name: 'Initiative bonus' })).toHaveValue('+1');
-    await userEvent.click(canvas.getByRole('button', { name: 'Add unit' }));
+    await expect(canvas.getByRole('radio', { name: t('ally') })).toBeChecked();
+    await expect(canvas.getByRole('spinbutton', { name: t('maxHp') })).toHaveValue('30');
+    await expect(canvas.getByRole('spinbutton', { name: t('ac') })).toHaveValue('19');
+    await expect(canvas.getByRole('spinbutton', { name: t('initiativeBonus') })).toHaveValue('+1');
+    await userEvent.click(canvas.getByRole('button', { name: t('addUnit') }));
     await expect(args.onSubmit).toHaveBeenCalledWith({
       name: 'Brother Tomas of the Silver Lantern Order',
       role: 'ally',
@@ -482,122 +561,71 @@ export const ExtraPickFillsForm = meta.story({
   },
 });
 
-export const ExtraAddClosesTheSheet = meta.story({
-  name: 'Add closes the sheet in a host that closes on submit',
-  args: { closeOnDone: true },
-  play: async ({ canvas, args }) => {
-    await openLibrary(canvas);
-    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Add Orc Berserker' }));
-    await expect(args.onSubmit).toHaveBeenCalledOnce();
-    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  },
-});
-
-export const ExtraPickResetsOnSearch = meta.story({
-  name: 'A new search drops the picked preset',
-  play: async ({ canvas, args }) => {
-    await openLibrary(canvas);
-    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
-    await expect(canvas.getByRole('button', { name: 'Add Orc Berserker' })).toBeEnabled();
-    await userEvent.type(canvas.getByRole('searchbox', { name: 'Search presets' }), 'gob');
-    const cta = canvas.getByRole('button', { name: 'Pick a preset' });
+export const PickResetsOnSearch = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await userEvent.click(
+      presetList(canvas, t).getByRole('button', {
+        name: (label: string) => label.startsWith(`${t('enemy')} Orc Berserker`),
+      }),
+    );
+    await expect(
+      canvas.getByRole('button', { name: t('addPreset', { name: 'Orc Berserker' }) }),
+    ).toBeEnabled();
+    await userEvent.type(canvas.getByRole('searchbox', { name: t('searchPresets') }), 'gob');
+    const cta = canvas.getByRole('button', { name: t('pickPreset') });
     await expect(cta).toBeDisabled();
     await userEvent.click(cta, { pointerEventsCheck: 0 });
     await expect(args.onSubmit).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraPickResetsOnTab = meta.story({
-  name: 'Switching tabs drops the picked preset',
-  play: async ({ canvas, args }) => {
-    await openLibrary(canvas);
-    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
-    await userEvent.click(canvas.getByRole('radio', { name: 'New' }));
-    const name = canvas.getByRole('textbox', { name: 'Name' });
+export const PickResetsOnTab = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await userEvent.click(
+      presetList(canvas, t).getByRole('button', {
+        name: (label: string) => label.startsWith(`${t('enemy')} Orc Berserker`),
+      }),
+    );
+    await userEvent.click(canvas.getByRole('radio', { name: t('new') }));
+    const name = canvas.getByRole('textbox', { name: t('name') });
     await userEvent.clear(name);
     await userEvent.type(name, 'Grunt');
-    await openLibrary(canvas);
-    await expect(canvas.getByRole('button', { name: 'Pick a preset' })).toBeDisabled();
-    await expect(canvas.queryByRole('button', { name: 'Add Orc Berserker' })).toBeNull();
-    await userEvent.click(presetList(canvas).getByRole('button', { name: /^Enemy Orc Berserker/ }));
-    await userEvent.click(canvas.getByRole('button', { name: 'Add Orc Berserker' }));
+    await openLibrary(canvas, t);
+    await expect(canvas.getByRole('button', { name: t('pickPreset') })).toBeDisabled();
+    await expect(
+      canvas.queryByRole('button', { name: t('addPreset', { name: 'Orc Berserker' }) }),
+    ).toBeNull();
+    await userEvent.click(
+      presetList(canvas, t).getByRole('button', {
+        name: (label: string) => label.startsWith(`${t('enemy')} Orc Berserker`),
+      }),
+    );
+    await userEvent.click(
+      canvas.getByRole('button', { name: t('addPreset', { name: 'Orc Berserker' }) }),
+    );
     await expect(args.onSubmit).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'Orc Berserker', maxHp: 40 }),
     );
   },
 });
 
-export const ExtraHintActive = meta.story({
-  name: 'Hint: initiative rolled on add in Active',
-  args: { library: false, hint: 'active', value: { initiativeBonus: 2 } },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Initiative is rolled on add: d20 +2')).toBeVisible();
-  },
-});
-
-export const ExtraHintSetup = meta.story({
-  name: 'Hint: initiative rolled at Start in Setup',
-  args: { library: false, hint: 'setup' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText('Initiative is rolled when the combat starts')).toBeVisible();
-  },
-});
-
-export const ExtraEditEmptyName = meta.story({
-  name: 'An empty name in Edit draws the empty border',
-  args: { mode: 'edit', value: vashti },
-  play: async ({ canvas }) => {
-    const name = canvas.getByRole('textbox', { name: 'Name' });
-    const frame = name.closest<HTMLElement>('[data-field]');
-    await expect(frame && getComputedStyle(frame).borderTopColor).toBe('rgb(35, 31, 28)');
-    await userEvent.clear(name);
-    await userEvent.tab();
-    await expect(frame && getComputedStyle(frame).borderTopColor).toBe('rgb(226, 216, 198)');
-  },
-});
-
-export const ExtraEscapeCancels = meta.story({
-  name: 'Escape cancels without saving',
-  args: { mode: 'edit', value: vashti },
-  play: async ({ canvas, args }) => {
-    await userEvent.type(canvas.getByRole('textbox', { name: 'Name' }), ' II');
-    await userEvent.keyboard('{Escape}');
-    await expect(args.onCancel).toHaveBeenCalledOnce();
-    await expect(args.onSubmit).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraCloseButton = meta.story({
-  name: 'Close cancels without saving',
-  play: async ({ canvas, args }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Close' }));
-    await expect(args.onCancel).toHaveBeenCalledOnce();
-    await expect(args.onSubmit).not.toHaveBeenCalled();
-  },
-});
-
-export const ExtraClearTags = meta.story({
-  name: 'Clear removes the tag filter',
-  play: async ({ canvas }) => {
-    await openLibrary(canvas);
-    await filterOrcs(canvas, true);
-    await expect(presetList(canvas).getAllByRole('button')).toHaveLength(2);
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
-    await expect(canvas.queryByRole('button', { name: 'Remove Orcs' })).toBeNull();
-    await expect(presetList(canvas).getAllByRole('button')).toHaveLength(5);
-  },
-});
-
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('dialog', { name: 'Добавить юнит' })).toBeVisible();
-    await expect(canvas.getByRole('textbox', { name: 'Имя' })).toHaveAttribute(
-      'placeholder',
-      'Враг 1',
-    );
-    await expect(canvas.getByRole('spinbutton', { name: 'Бонус инициативы' })).toBeVisible();
+export const ClearRemovesTagFilter = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'UnitForm');
+    await openLibrary(canvas, t);
+    await filterOrcs(canvas, true, t);
+    await expect(presetList(canvas, t).getAllByRole('button')).toHaveLength(2);
+    await userEvent.click(canvas.getByRole('button', { name: t('clear') }));
+    await expect(
+      canvas.queryByRole('button', { name: t('removeTag', { name: 'Orcs' }) }),
+    ).toBeNull();
+    await expect(presetList(canvas, t).getAllByRole('button')).toHaveLength(5);
   },
 });

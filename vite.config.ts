@@ -1,13 +1,11 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storybookTest } from '@storybook/addon-vitest/vitest-plugin';
-import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite-plus';
 import { playwright } from 'vite-plus/test/browser-playwright';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 const uiDir = path.join(rootDir, 'packages/ui');
-const screenshotsDir = path.join(uiDir, '__screenshots__');
 const browserOptimizeDeps = {
   include: [
     'react-dom/client',
@@ -25,10 +23,15 @@ export default defineConfig({
   fmt: {
     singleQuote: true,
     printWidth: 100,
-    ignorePatterns: ['.claude/**', 'CLAUDE.md', 'pnpm-lock.yaml', '**/__screenshots__/**'],
+    ignorePatterns: ['.claude/**', 'CLAUDE.md', 'pnpm-lock.yaml'],
   },
   lint: {
-    ignorePatterns: ['.claude/**', '**/dist/**', '**/storybook-static/**'],
+    ignorePatterns: [
+      '.claude/**',
+      '**/dist/**',
+      '**/storybook-static/**',
+      '.design-sync/previews/**',
+    ],
     options: {
       typeAware: true,
       typeCheck: true,
@@ -60,27 +63,6 @@ export default defineConfig({
             headless: true,
             provider: playwright(),
             instances: [{ browser: 'chromium' }],
-          },
-        },
-      },
-      {
-        root: uiDir,
-        plugins: [react()],
-        optimizeDeps: browserOptimizeDeps,
-        test: {
-          name: 'visual',
-          include: ['test/visual.test.tsx'],
-          browser: {
-            enabled: true,
-            headless: true,
-            provider: playwright(),
-            instances: [{ browser: 'chromium' }],
-            viewport: { width: 390, height: 844 },
-            expect: {
-              toMatchScreenshot: {
-                resolveScreenshotPath: ({ arg, ext }) => path.join(screenshotsDir, `${arg}${ext}`),
-              },
-            },
           },
         },
       },

@@ -139,7 +139,8 @@ export function Library() {
   const [pending, setPending] = useState(false);
   const tagCreates = useRef(new Map<TagId, Promise<Tag>>());
   const failedTags = useRef(new Map<TagId, string>());
-  const signedOut = error instanceof ApiError && error.code === 'unauthorized';
+  const signedOut =
+    session === null || (error instanceof ApiError && error.code === 'unauthorized');
 
   useEffect(() => {
     if (signedOut) void navigate('/auth/sign-in');
@@ -271,14 +272,13 @@ export function Library() {
                 {
                   id: SORT_TOOL,
                   icon: IconSortDescending,
-                  label: custom ? tSort(sort) : undefined,
-                  'aria-label': custom ? undefined : t('sort'),
+                  'aria-label': custom ? tSort(sort) : t('sort'),
                   active: custom,
                 },
                 {
                   id: TAGS_TOOL,
                   icon: IconTags,
-                  label: t('tags'),
+                  'aria-label': t('tags'),
                   count: activeFilter.length > 0 ? activeFilter.length : undefined,
                   active: activeFilter.length > 0,
                 },

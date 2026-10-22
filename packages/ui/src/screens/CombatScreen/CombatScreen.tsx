@@ -33,6 +33,7 @@ import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.ts
 import { combatKey } from '../../hooks/combat.ts';
 import type { CombatEntry } from '../../hooks/combat.ts';
 import type { ToastAction, ToastKind } from '../../hooks/toasts.ts';
+import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useCombatLink } from '../../hooks/useCombatLink.ts';
 import { useConnection } from '../../hooks/useConnection.ts';
@@ -146,8 +147,11 @@ export function CombatScreen({
   const link = useCombatLink(combatId, shareOpen);
   const knownVersion = useRef(0);
   const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const { session } = useAccount();
   const signedOut =
-    ended?.type === 'unauthorized' || (error instanceof ApiError && error.code === 'unauthorized');
+    session === null ||
+    ended?.type === 'unauthorized' ||
+    (error instanceof ApiError && error.code === 'unauthorized');
   const linkFailed = shareOpen && link.error !== null;
 
   useEffect(() => {

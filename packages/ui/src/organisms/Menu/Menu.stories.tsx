@@ -24,6 +24,7 @@ import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import { Menu, PopoverFrame } from './Menu.tsx';
 import type { MenuItem } from './Menu.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
 type Preset = 'combat' | 'unit' | 'card' | 'player';
 
@@ -162,101 +163,102 @@ const meta = preview.meta({
   args: { preset: 'combat', onSelect: fn(), onClose: fn() },
 });
 
-export const Anatomy = meta.story({
-  play: async ({ canvas }) => {
-    const menu = canvas.getByRole('menu', { name: 'Actions' });
-    await expect(menu.getBoundingClientRect().width).toBe(260);
-    await expect(canvas.getAllByRole('menuitem')).toHaveLength(5);
-    await expect(canvas.getByRole('menuitem', { name: /Undo/ })).toHaveTextContent('12 damage');
-  },
-});
-
-export const Round = meta.story({
-  name: 'Round',
-  render: () => <RoundCell />,
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('3');
-    await expect(canvas.getByText('1–99. Changing the round doesn’t move the turn.')).toBeVisible();
-  },
-});
-
-export const CombatMenu = meta.story({
-  name: 'Combat menu',
-  args: { preset: 'combat' },
-});
-
-export const UnitActionsInUnitRow = meta.story({
-  name: 'Unit actions (⋯ in UnitRow)',
-  args: { preset: 'unit' },
-});
-
-export const CardActionsInCombatCardPresetCard = meta.story({
-  name: 'Card actions (⋯ in CombatCard, PresetCard)',
-  args: { preset: 'card', width: 240 },
-});
-
-export const PlayerMenu = meta.story({
-  name: 'Player menu',
-  args: { preset: 'player', width: 240 },
-});
-
-export const Ru = meta.story({
-  name: 'ru',
-  args: {
-    items: [
-      { id: 'addUnit', icon: IconUserPlus, label: 'Добавить юнита' },
-      { id: 'undo', icon: IconArrowBackUp, label: 'Отменить', hint: '12 урона' },
-      { id: 'share', icon: IconShare, label: 'Поделиться' },
-      { id: 'restart', icon: IconRefresh, label: 'Начать бой заново', divider: true },
-      { id: 'clear', icon: IconTrash, label: 'Очистить бой', tone: 'danger' },
-    ],
-  },
-});
-
-export const De = meta.story({
-  name: 'de',
-  args: {
-    items: [
-      { id: 'duplicate', icon: IconCopy, label: 'Duplizieren' },
-      { id: 'disable', icon: IconPlayerPause, label: 'Deaktivieren' },
-      { id: 'saveAsPreset', icon: IconBookmark, label: 'Als Vorlage speichern' },
-      { id: 'releaseClaim', icon: IconUserOff, label: 'Anspruch freigeben' },
-      { id: 'remove', icon: IconUserMinus, label: 'Entfernen', tone: 'danger', divider: true },
-    ],
-  },
-  play: async ({ canvas }) => {
-    const menu = canvas.getByRole('menu');
-    await expect(menu.getBoundingClientRect().width).toBe(260);
-    await expect(canvas.getByRole('menuitem', { name: 'Als Vorlage speichern' })).toBeVisible();
-  },
-});
-
 const toSource = { preset: 'card', width: 240, source: 'iconButton', opened: false } as const;
 
 function focusInside(menu: HTMLElement): boolean {
   return menu.contains(document.activeElement);
 }
 
-export const ExtraSourceOpen = meta.story({
-  name: 'Open at the source with the ring',
+export const CombatMenu = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const menu = canvas.getByRole('menu', { name: t('menuLabel') });
+    await expect(menu.getBoundingClientRect().width).toBe(260);
+    await expect(canvas.getAllByRole('menuitem')).toHaveLength(5);
+    await expect(
+      canvas.getByRole('menuitem', { name: (label: string) => label.startsWith(t('undo')) }),
+    ).toHaveTextContent(t('undoHint', { n: 12 }));
+  },
+});
+
+export const RoundPopover = meta.story({
+  render: () => <RoundCell />,
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    await expect(canvas.getByRole('spinbutton')).toHaveValue('3');
+    await expect(canvas.getByText(t('roundHint', { min: 1, max: 99 }))).toBeVisible();
+  },
+});
+
+export const UnitMenu = meta.story({
+  args: { preset: 'unit' },
+});
+
+export const CardMenu = meta.story({
+  args: { preset: 'card', width: 240 },
+});
+
+export const PlayerMenu = meta.story({
+  args: { preset: 'player', width: 240 },
+});
+
+export const OpenAtSource = meta.story({
   args: { ...toSource, opened: true },
   play: async ({ canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+    const more = canvas.getByRole('button', { name: moreLabel });
     await expect(more).toHaveAttribute('data-open');
     await expect(getComputedStyle(more).backgroundColor).toBe('rgb(255, 231, 163)');
     await expect(canvas.getByRole('menu')).toBeVisible();
   },
 });
 
-export const ExtraSelect = meta.story({
-  name: 'Tap on an item selects, closes and returns focus',
+export const DisabledItem = meta.story({
+  args: { preset: 'unit', disabledIds: ['releaseClaim'] },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const release = canvas.getByRole('menuitem', { name: t('releaseClaim') });
+    await expect(release).toBeDisabled();
+    await userEvent.click(release, { pointerEventsCheck: 0 });
+    await expect(args.onSelect).not.toHaveBeenCalled();
+    await expect(args.onClose).not.toHaveBeenCalled();
+    await expect(canvas.getByRole('menu')).toBeVisible();
+  },
+});
+
+export const LongLabel = meta.story({
+  args: {
+    items: [
+      { id: 'duplicate', icon: IconCopy, label: 'Дублировать вместе с состояниями' },
+      { id: 'saveAsPreset', icon: IconBookmark, label: 'Сохранить как заготовку в библиотеке' },
+      {
+        id: 'remove',
+        icon: IconUserMinus,
+        label: 'Убрать из боя насовсем',
+        tone: 'danger',
+        divider: true,
+      },
+    ],
+  },
+  play: async ({ canvas }) => {
+    const menu = canvas.getByRole('menu');
+    await expect(menu.getBoundingClientRect().width).toBe(260);
+    await expect(
+      canvas.getByRole('menuitem', { name: 'Сохранить как заготовку в библиотеке' }),
+    ).toBeVisible();
+  },
+});
+
+export const TapItemSelects = meta.story({
+  tags: ['!dev'],
   args: toSource,
-  play: async ({ args, canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const more = canvas.getByRole('button', { name: moreLabel });
     await expect(more).not.toHaveAttribute('data-open');
     await userEvent.click(more);
     await expect(more).toHaveAttribute('data-open');
-    await userEvent.click(await canvas.findByRole('menuitem', { name: 'Duplicate' }));
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('duplicate') }));
     await expect(args.onSelect).toHaveBeenCalledOnce();
     await expect(args.onSelect).toHaveBeenCalledWith('duplicate');
     await expect(args.onClose).toHaveBeenCalledOnce();
@@ -266,13 +268,14 @@ export const ExtraSelect = meta.story({
   },
 });
 
-export const ExtraEscape = meta.story({
-  name: 'Escape closes with no selection',
+export const EscapeCloses = meta.story({
+  tags: ['!dev'],
   args: toSource,
-  play: async ({ args, canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const more = canvas.getByRole('button', { name: moreLabel });
     await userEvent.click(more);
-    const first = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    const first = await canvas.findByRole('menuitem', { name: t('duplicate') });
     await waitFor(() => expect(first).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
@@ -282,11 +285,11 @@ export const ExtraEscape = meta.story({
   },
 });
 
-export const ExtraEscapeOnSource = meta.story({
-  name: 'Escape with focus on the source closes',
+export const EscapeOnSourceCloses = meta.story({
+  tags: ['!dev'],
   args: toSource,
   play: async ({ args, canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+    const more = canvas.getByRole('button', { name: moreLabel });
     await userEvent.click(more);
     await canvas.findByRole('menu');
     more.focus();
@@ -297,18 +300,23 @@ export const ExtraEscapeOnSource = meta.story({
   },
 });
 
-export const ExtraTab = meta.story({
-  name: 'Tab and Shift+Tab close and return focus to the source',
+export const TabClosesToSource = meta.story({
+  tags: ['!dev'],
   args: toSource,
-  play: async ({ args, canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const more = canvas.getByRole('button', { name: moreLabel });
     await userEvent.click(more);
-    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
+    );
     await userEvent.tab();
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
     await expect(more).toHaveFocus();
     await userEvent.keyboard('{Enter}');
-    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
+    );
     await userEvent.tab({ shift: true });
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
     await expect(more).toHaveFocus();
@@ -317,20 +325,23 @@ export const ExtraTab = meta.story({
   },
 });
 
-export const ExtraTapInsidePanel = meta.story({
-  name: 'Tap on padding, divider or a disabled item keeps focus in the panel',
+export const TapInsideKeepsFocus = meta.story({
+  tags: ['!dev'],
   args: { ...toSource, preset: 'unit', width: 260, disabledIds: ['releaseClaim'] },
-  play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Menu');
+    await userEvent.click(canvas.getByRole('button', { name: moreLabel }));
     const menu = await canvas.findByRole('menu');
-    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
+    );
     await userEvent.click(menu);
     await expect(focusInside(menu)).toBe(true);
     const divider = canvasElement.querySelector<HTMLElement>('[role="separator"]');
     await expect(divider).not.toBeNull();
     if (divider) await userEvent.click(divider, { pointerEventsCheck: 0 });
     await expect(focusInside(menu)).toBe(true);
-    await userEvent.click(canvas.getByRole('menuitem', { name: 'Release claim' }), {
+    await userEvent.click(canvas.getByRole('menuitem', { name: t('releaseClaim') }), {
       pointerEventsCheck: 0,
     });
     await expect(focusInside(menu)).toBe(true);
@@ -341,11 +352,11 @@ export const ExtraTapInsidePanel = meta.story({
   },
 });
 
-export const ExtraOutsideTap = meta.story({
-  name: 'Outside tap closes with no selection',
+export const OutsideTapCloses = meta.story({
+  tags: ['!dev'],
   args: toSource,
   play: async ({ args, canvas, canvasElement }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    await userEvent.click(canvas.getByRole('button', { name: moreLabel }));
     await canvas.findByRole('menu');
     const outside = canvasElement.querySelector<HTMLElement>('[data-stage]');
     await expect(outside).not.toBeNull();
@@ -356,13 +367,14 @@ export const ExtraOutsideTap = meta.story({
   },
 });
 
-export const ExtraEditCloses = meta.story({
-  name: 'Tap on Edit next to the source closes the menu',
+export const EditNextToSourceCloses = meta.story({
+  tags: ['!dev'],
   args: { ...toSource, source: 'cardActions', onEdit: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
     await canvas.findByRole('menu');
-    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:edit') }));
     await expect(args.onEdit).toHaveBeenCalledOnce();
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onSelect).not.toHaveBeenCalled();
@@ -370,27 +382,28 @@ export const ExtraEditCloses = meta.story({
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Arrow keys skip disabled items',
+export const ArrowsSkipDisabled = meta.story({
+  tags: ['!dev'],
   args: { ...toSource, preset: 'unit', width: 260, disabledIds: ['releaseClaim'] },
-  play: async ({ args, canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const more = canvas.getByRole('button', { name: moreLabel });
     more.focus();
     await userEvent.keyboard('{Enter}');
-    const duplicate = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    const duplicate = await canvas.findByRole('menuitem', { name: t('duplicate') });
     await waitFor(() => expect(duplicate).toHaveFocus());
     await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: 'Disable' })).toHaveFocus();
+    await expect(canvas.getByRole('menuitem', { name: t('disable') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: 'Save as preset' })).toHaveFocus();
+    await expect(canvas.getByRole('menuitem', { name: t('saveAsPreset') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: 'Remove' })).toHaveFocus();
+    await expect(canvas.getByRole('menuitem', { name: t('remove') })).toHaveFocus();
     await userEvent.keyboard('{ArrowDown}');
     await expect(duplicate).toHaveFocus();
     await userEvent.keyboard('{ArrowUp}');
-    await expect(canvas.getByRole('menuitem', { name: 'Remove' })).toHaveFocus();
+    await expect(canvas.getByRole('menuitem', { name: t('remove') })).toHaveFocus();
     await userEvent.keyboard('{ArrowUp}');
-    await expect(canvas.getByRole('menuitem', { name: 'Save as preset' })).toHaveFocus();
+    await expect(canvas.getByRole('menuitem', { name: t('saveAsPreset') })).toHaveFocus();
     await userEvent.keyboard('{Enter}');
     await expect(args.onSelect).toHaveBeenCalledOnce();
     await expect(args.onSelect).toHaveBeenCalledWith('saveAsPreset');
@@ -399,18 +412,21 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraMotionOn = meta.story({
-  name: 'Motion on: Enter on the source focuses the first item',
+export const MotionOnFocusesFirstItem = meta.story({
+  tags: ['!dev'],
   args: toSource,
   parameters: { motion: 'on' },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
     await expect(document.documentElement.dataset.motion).toBe('on');
-    const more = canvas.getByRole('button', { name: 'More actions' });
+    const more = canvas.getByRole('button', { name: moreLabel });
     more.focus();
     await userEvent.keyboard('{Enter}');
-    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
+    );
     await userEvent.keyboard('{ArrowDown}');
-    await expect(canvas.getByRole('menuitem', { name: 'Delete' })).toHaveFocus();
+    await expect(canvas.getByRole('menuitem', { name: t('delete') })).toHaveFocus();
     await userEvent.keyboard('{Escape}');
     await expect(args.onClose).toHaveBeenCalledOnce();
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
@@ -418,35 +434,41 @@ export const ExtraMotionOn = meta.story({
   },
 });
 
-export const ExtraReopenDuringExit = meta.story({
-  name: 'Motion on: reopening during the exit transition focuses the first item',
+export const ReopenDuringExit = meta.story({
+  tags: ['!dev'],
   args: toSource,
   parameters: { motion: 'on' },
-  play: async ({ canvas }) => {
-    const more = canvas.getByRole('button', { name: 'More actions' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const more = canvas.getByRole('button', { name: moreLabel });
     more.focus();
     await userEvent.keyboard('{Enter}');
-    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
+    );
     await userEvent.keyboard('{Escape}');
     await expect(more).toHaveFocus();
     await expect(canvas.getByRole('menu')).toBeInTheDocument();
     await userEvent.keyboard('{Enter}');
-    await waitFor(() => expect(canvas.getByRole('menuitem', { name: 'Duplicate' })).toHaveFocus());
+    await waitFor(() =>
+      expect(canvas.getByRole('menuitem', { name: t('duplicate') })).toHaveFocus(),
+    );
   },
 });
 
-export const ExtraInsideSheet = meta.story({
-  name: 'Inside a Sheet, Escape closes only the menu',
+export const EscapeInsideSheetClosesMenu = meta.story({
+  tags: ['!dev'],
   args: { ...toSource, onSheetClose: fn() },
   render: ({ onSheetClose, ...args }) => (
     <Sheet opened title="Orc Berserker" onClose={onSheetClose ?? (() => undefined)}>
       <MenuCell {...args} />
     </Sheet>
   ),
-  play: async ({ args, canvas }) => {
-    const more = await canvas.findByRole('button', { name: 'More actions' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Menu');
+    const more = await canvas.findByRole('button', { name: moreLabel });
     await userEvent.click(more);
-    const first = await canvas.findByRole('menuitem', { name: 'Duplicate' });
+    const first = await canvas.findByRole('menuitem', { name: t('duplicate') });
     await waitFor(() => expect(first).toHaveFocus());
     await expect(first).toHaveAttribute('data-mantine-stop-propagation', 'true');
     await userEvent.keyboard('{Escape}');
@@ -454,18 +476,5 @@ export const ExtraInsideSheet = meta.story({
     await expect(args.onSheetClose).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
     await expect(canvas.getByRole('dialog', { name: 'Orc Berserker' })).toBeVisible();
-  },
-});
-
-export const ExtraDisabled = meta.story({
-  name: 'A disabled item never fires',
-  args: { preset: 'unit', disabledIds: ['releaseClaim'] },
-  play: async ({ args, canvas }) => {
-    const release = canvas.getByRole('menuitem', { name: 'Release claim' });
-    await expect(release).toBeDisabled();
-    await userEvent.click(release, { pointerEventsCheck: 0 });
-    await expect(args.onSelect).not.toHaveBeenCalled();
-    await expect(args.onClose).not.toHaveBeenCalled();
-    await expect(canvas.getByRole('menu')).toBeVisible();
   },
 });

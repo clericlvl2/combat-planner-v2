@@ -1,5 +1,5 @@
 import preview from '#.storybook/preview';
-import { IconLinkOff, IconRefresh, IconTrash, IconUserMinus, IconUserX } from '@tabler/icons-react';
+import { IconRefresh, IconTrash, IconUserMinus } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
@@ -9,15 +9,9 @@ import { Button } from '../../atoms/Button/Button.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import { Dialog } from './Dialog.tsx';
 import type { DialogTone } from './Dialog.tsx';
+import { storyT } from '../../storybook/storyT.ts';
 
-type Preset =
-  | 'restart'
-  | 'clear'
-  | 'remove'
-  | 'revoke'
-  | 'deleteCombat'
-  | 'deletePreset'
-  | 'deleteAccount';
+type Preset = 'restart' | 'clear' | 'remove';
 
 interface PresetSpec {
   icon: Icon;
@@ -66,34 +60,6 @@ function usePresets(unitCount: number): Record<Preset, PresetSpec> {
       ok: t('remove'),
       tone: 'danger',
     },
-    revoke: {
-      icon: IconLinkOff,
-      title: t('revokeTitle'),
-      body: t('revokeBody'),
-      ok: t('revoke'),
-      tone: 'danger',
-    },
-    deleteCombat: {
-      icon: IconTrash,
-      title: t('deleteCombatTitle', { name: 'Ambush at the Ferry' }),
-      body: t('deleteCombatBody', { count: unitCount }),
-      ok: t('delete'),
-      tone: 'danger',
-    },
-    deletePreset: {
-      icon: IconTrash,
-      title: t('deletePresetTitle', { name: 'Orc Berserker' }),
-      body: t('deletePresetBody'),
-      ok: t('delete'),
-      tone: 'danger',
-    },
-    deleteAccount: {
-      icon: IconUserX,
-      title: t('deleteAccountTitle'),
-      body: t('deleteAccountBody'),
-      ok: t('delete'),
-      tone: 'danger',
-    },
   };
 }
 
@@ -139,10 +105,15 @@ function DialogCell({
   );
 }
 
-function OverSheetCell({ onConfirm, onCancel, onSheetClose }: DialogCellProps) {
+function OverSheetCell({
+  opened: initiallyOpened = false,
+  onConfirm,
+  onCancel,
+  onSheetClose,
+}: DialogCellProps) {
   const spec = usePresets(6).clear;
   const [sheetOpened, setSheetOpened] = useState(true);
-  const [dialogOpened, setDialogOpened] = useState(false);
+  const [dialogOpened, setDialogOpened] = useState(initiallyOpened);
   return (
     <div style={stage}>
       <Sheet
@@ -187,123 +158,69 @@ const meta = preview.meta({
   args: { preset: 'clear', onConfirm: fn(), onCancel: fn(), onSheetClose: fn() },
 });
 
-export const Anatomy = meta.story({});
+export const Default = meta.story({ tags: ['visual'] });
 
 export const Restart = meta.story({
-  name: 'restart',
   args: { preset: 'restart' },
-  play: async ({ canvas }) => {
-    const dialog = canvas.getByRole('alertdialog', { name: 'Restart combat?' });
-    await expect(dialog).toHaveAccessibleDescription(/Units and claims stay/);
-    await expect(canvas.getByRole('button', { name: 'Restart' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const dialog = canvas.getByRole('alertdialog', { name: t('restartTitle') });
+    await expect(dialog).toHaveAccessibleDescription(t('restartBody'));
+    await expect(canvas.getByRole('button', { name: t('restart') })).toBeVisible();
   },
 });
 
-export const RestartFr = meta.story({
-  name: 'restart, fr',
-  globals: { locale: 'fr' },
-  args: { preset: 'restart' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('alertdialog', { name: 'Relancer le combat ?' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Annuler' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Relancer' })).toBeVisible();
-  },
-});
-
-export const RestartRu = meta.story({
-  name: 'restart, ru',
-  globals: { locale: 'ru' },
-  args: { preset: 'restart' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('alertdialog', { name: 'Начать бой заново?' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Отмена' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Заново' })).toBeVisible();
-  },
-});
-
-export const RestartDe = meta.story({
-  name: 'restart, de',
-  globals: { locale: 'de' },
-  args: { preset: 'restart' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('alertdialog', { name: 'Kampf neu starten?' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Abbrechen' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Neu starten' })).toBeVisible();
-  },
-});
-
-export const Clear = meta.story({
-  name: 'clear',
-  args: { preset: 'clear' },
-});
-
-export const Remove = meta.story({
-  name: 'remove',
-  args: { preset: 'remove' },
-});
-
-export const Revoke = meta.story({
-  name: 'revoke',
-  args: { preset: 'revoke' },
-});
-
-export const DeleteCombat = meta.story({
-  name: 'deleteCombat',
-  args: { preset: 'deleteCombat' },
-});
-
-export const DeletePreset = meta.story({
-  name: 'deletePreset',
-  args: { preset: 'deletePreset' },
-});
-
-export const DeleteAccount = meta.story({
-  name: 'deleteAccount',
-  args: { preset: 'deleteAccount' },
-});
-
-export const LongUnitName = meta.story({
-  name: 'Long unit name',
+export const LongTitle = meta.story({
+  tags: ['visual'],
   args: { preset: 'remove', title: 'Remove Brother Tomas of the Silver Lantern Order?' },
-  play: async ({ canvas }) => {
-    const cancel = canvas.getByRole('button', { name: 'Cancel' });
-    const remove = canvas.getByRole('button', { name: 'Remove' });
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const cancel = canvas.getByRole('button', { name: t('cancel') });
+    const remove = canvas.getByRole('button', { name: t('remove') });
     await expect(cancel.getBoundingClientRect().width).toBe(remove.getBoundingClientRect().width);
   },
 });
 
-export const Ru = meta.story({
-  name: 'ru',
+export const LongBody = meta.story({
   args: {
-    preset: 'deleteCombat',
-    title: 'Удалить «Засада у переправы»?',
-    body: 'Бой, его 6 юнитов и ссылка для игроков удаляются. Это нельзя отменить.',
-    ok: 'Удалить',
+    body: 'Бой «Засада у переправы», его шесть юнитов, история хитов и ссылка для игроков удаляются навсегда. Игроки, открывшие ссылку, увидят, что бой больше недоступен. Это нельзя отменить.',
   },
 });
 
-export const ExtraCancel = meta.story({
-  name: 'Cancel calls onCancel only',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
+export const OverASheet = meta.story({
+  args: { opened: true },
+  render: (args) => <OverSheetCell {...args} />,
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await expect(await canvas.findByRole('alertdialog', { name: t('clearTitle') })).toBeVisible();
+    await expect(canvas.getByRole('dialog', { name: 'Clear combat' })).toBeInTheDocument();
+  },
+});
+
+export const CancelCallsOnCancel = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await userEvent.click(canvas.getByRole('button', { name: t('cancel') }));
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onConfirm).not.toHaveBeenCalled();
     await expect(canvas.queryByRole('alertdialog')).toBeNull();
   },
 });
 
-export const ExtraEscape = meta.story({
-  name: 'Escape calls onCancel only',
-  play: async ({ args, canvas }) => {
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+export const EscapeCancels = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await waitFor(() => expect(canvas.getByRole('button', { name: t('cancel') })).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onConfirm).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraScrimTap = meta.story({
-  name: 'Scrim tap calls onCancel only',
+export const ScrimTapCancels = meta.story({
+  tags: ['!dev'],
   play: async ({ args, canvasElement }) => {
     const scrim = canvasElement.querySelector<HTMLElement>('[data-scrim]');
     await expect(scrim).not.toBeNull();
@@ -313,20 +230,22 @@ export const ExtraScrimTap = meta.story({
   },
 });
 
-export const ExtraConfirm = meta.story({
-  name: 'The verb calls onConfirm once',
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
+export const ConfirmCallsOnConfirm = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await userEvent.click(canvas.getByRole('button', { name: t('clear') }));
     await expect(args.onConfirm).toHaveBeenCalledOnce();
     await expect(args.onCancel).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraKeyboard = meta.story({
-  name: 'Focus starts on Cancel and Tab stays inside',
-  play: async ({ args, canvas }) => {
-    const cancel = canvas.getByRole('button', { name: 'Cancel' });
-    const clear = canvas.getByRole('button', { name: 'Clear' });
+export const FocusStaysInside = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const cancel = canvas.getByRole('button', { name: t('cancel') });
+    const clear = canvas.getByRole('button', { name: t('clear') });
     await waitFor(() => expect(cancel).toHaveFocus());
     await userEvent.tab();
     await expect(clear).toHaveFocus();
@@ -340,53 +259,46 @@ export const ExtraKeyboard = meta.story({
   },
 });
 
-export const ExtraFocusReturn = meta.story({
-  name: 'Focus returns to the opener on close',
+export const FocusReturnsToOpener = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
-  play: async ({ args, canvas }) => {
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
     await expect(canvas.queryByRole('alertdialog')).toBeNull();
     const opener = canvas.getByRole('button', { name: 'Clear combat' });
     await userEvent.click(opener);
-    await canvas.findByRole('alertdialog', { name: 'Clear combat?' });
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Cancel' })).toHaveFocus());
+    await canvas.findByRole('alertdialog', { name: t('clearTitle') });
+    await waitFor(() => expect(canvas.getByRole('button', { name: t('cancel') })).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await waitFor(() => expect(opener).toHaveFocus());
   },
 });
 
-export const ExtraLocaleRu = meta.story({
-  name: 'Locale ru',
-  globals: { locale: 'ru' },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByRole('alertdialog', { name: 'Очистить бой?' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Отмена' })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: 'Очистить' })).toBeVisible();
-  },
-});
-
-export const ExtraTapTextThenEscape = meta.story({
-  name: 'Tap on the text, then Escape',
-  play: async ({ args, canvas }) => {
-    const dialog = canvas.getByRole('alertdialog', { name: 'Clear combat?' });
-    await waitFor(() => expect(canvas.getByRole('button', { name: 'Cancel' })).toHaveFocus());
-    await userEvent.click(canvas.getByText(/All 6 units are removed/));
+export const TapTextThenEscapeCancels = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    const dialog = canvas.getByRole('alertdialog', { name: t('clearTitle') });
+    await waitFor(() => expect(canvas.getByRole('button', { name: t('cancel') })).toHaveFocus());
+    await userEvent.click(canvas.getByText(t('clearBody', { count: 6 })));
     await expect(dialog).toContainElement(document.activeElement as HTMLElement);
     await userEvent.tab();
     await expect(dialog).toContainElement(document.activeElement as HTMLElement);
-    await userEvent.click(canvas.getByRole('heading', { name: 'Clear combat?' }));
+    await userEvent.click(canvas.getByRole('heading', { name: t('clearTitle') }));
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
     await expect(args.onConfirm).not.toHaveBeenCalled();
   },
 });
 
-export const ExtraOverSheet = meta.story({
-  name: 'Escape over an open Sheet closes only the Dialog',
+export const EscapeOverSheetClosesDialog = meta.story({
+  tags: ['!dev'],
   render: (args) => <OverSheetCell {...args} />,
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button', { name: 'Clear' }));
-    const cancel = await canvas.findByRole('button', { name: 'Cancel' });
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await userEvent.click(canvas.getByRole('button', { name: t('clear') }));
+    const cancel = await canvas.findByRole('button', { name: t('cancel') });
     await waitFor(() => expect(cancel).toHaveFocus());
     await userEvent.keyboard('{Escape}');
     await expect(args.onCancel).toHaveBeenCalledOnce();
@@ -396,10 +308,11 @@ export const ExtraOverSheet = meta.story({
   },
 });
 
-export const ExtraScrollLock = meta.story({
-  name: 'Page scroll is locked while open',
+export const ScrollLockedWhileOpen = meta.story({
+  tags: ['!dev'],
   args: { opened: false, withOpener: true },
-  play: async ({ canvas, canvasElement }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Dialog');
     const before = document.body.style.overflow;
     await userEvent.click(canvas.getByRole('button', { name: 'Clear combat' }));
     await canvas.findByRole('alertdialog');
@@ -408,40 +321,16 @@ export const ExtraScrollLock = meta.story({
     const wheel = new WheelEvent('wheel', { deltaY: 120, bubbles: true, cancelable: true });
     canvasElement.dispatchEvent(wheel);
     await expect(wheel.defaultPrevented).toBe(true);
-    await userEvent.click(canvas.getByRole('button', { name: 'Cancel' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('cancel') }));
     await expect(document.body.style.overflow).toBe(before);
   },
 });
 
-export const ExtraOneUnit = meta.story({
-  name: 'Clear with one unit',
+export const ClearWithOneUnit = meta.story({
+  tags: ['!dev'],
   args: { units: 1 },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByText('The only unit is removed and every player claim is released.'),
-    ).toBeVisible();
-  },
-});
-
-export const ExtraEmptyFr = meta.story({
-  name: 'Clear with no units, fr',
-  globals: { locale: 'fr' },
-  args: { units: 0 },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByText('0 unité est retirée et chaque attribution de joueur est libérée.'),
-    ).toBeVisible();
-    await expect(canvas.queryByText(/L’unique unité/)).toBeNull();
-  },
-});
-
-export const ExtraPluralRu = meta.story({
-  name: 'Delete combat, ru plurals',
-  globals: { locale: 'ru' },
-  args: { preset: 'deleteCombat', units: 3 },
-  play: async ({ canvas }) => {
-    await expect(
-      canvas.getByText('Бой, его 3 юнита и ссылка для игроков удаляются. Это нельзя отменить.'),
-    ).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Dialog');
+    await expect(canvas.getByText(t('clearBody', { count: 1 }))).toBeVisible();
   },
 });

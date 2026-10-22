@@ -57,7 +57,7 @@ export function ShareSheet({
         <div className={classes.qr}>
           <QRCode
             value={url}
-            size={188}
+            size={168}
             fgColor={palette.base.ink}
             bgColor={palette.base.surface}
             role="img"
@@ -66,13 +66,15 @@ export function ShareSheet({
           />
         </div>
         <div className={classes.link}>
-          <span className={classes.url} data-url="">
+          <span className={classes.url} data-url="" data-ellipsis="">
             {url}
           </span>
           <UnstyledButton
             component="button"
             type="button"
             className={classes.copy}
+            data-sheet-action=""
+            aria-label={copied ? t('copied') : t('copy')}
             data-copied={copied || undefined}
             onClick={() => {
               const result = onCopy(url);
@@ -89,7 +91,6 @@ export function ShareSheet({
             }}
           >
             <CopyIcon className={classes.copyIcon} size={20} stroke={2} aria-hidden="true" />
-            {copied ? t('copied') : t('copy')}
           </UnstyledButton>
         </div>
         <p className={classes.note}>{t('note')}</p>

@@ -1,15 +1,35 @@
 .root {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+  min-width: 0;
   font-family: var(--cp-font-ui);
-  font-size: var(--mantine-font-size-small);
-  font-weight: 400;
-  line-height: 1.25;
-  color: var(--cp-color-secondary);
   font-variant-numeric: tabular-nums;
-  overflow-wrap: normal;
+}
 
-  &[data-variant='squares'] {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
+.chip {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: baseline;
+  gap: 2px;
+  height: 22px;
+  padding: 0 4px;
+  border: 1px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-full);
+  background: var(--cp-color-surface);
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.label {
+  font-size: var(--mantine-font-size-micro);
+  font-weight: 700;
+  color: var(--cp-color-secondary);
+}
+
+.value {
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 700;
+  color: var(--cp-color-ink);
 }

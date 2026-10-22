@@ -15,6 +15,7 @@ import {
   unitIds,
 } from '../PlayerView/PlayerView.scenarios.ts';
 import { TurnOrder } from './TurnOrder.tsx';
+import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -66,57 +67,63 @@ const meta = preview.meta({
   },
 });
 
-export const SetupWaiting = meta.story({
-  name: 'Setup, waiting for the DM',
+export const SetupWaitingForDm = meta.story({
+  name: 'Setup Waiting For DM',
+  tags: ['visual'],
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup' })) },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByText('Waiting for the DM to start the combat')).toBeVisible();
-    await expect(canvas.getByRole('heading', { name: 'Setup' })).toBeVisible();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    await expect(await canvas.findByText(t('waiting'))).toBeVisible();
+    await expect(canvas.getByText(t('CombatHeader:setup'))).toBeVisible();
     await expect(canvas.getByText('影の射手ゴブリン')).toBeVisible();
   },
 });
 
-export const HiddenFields = meta.story({
-  name: 'Active, other rows hide private fields',
+export const OtherUnitsHidePrivateFields = meta.story({
+  tags: ['visual'],
   parameters: { scenario: playerScenario(ferryCombat({ active: 'orc' })) },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
     const orc = await rowOf(canvas, 'Orc Berserker');
     await expect(orc).toHaveAttribute('data-active');
     await expect(orc.textContent).not.toMatch(/AC|PD|MD|14|40/);
     const tomas = await rowOf(canvas, 'Brother Tomas of the Silver Lantern Order');
-    await expect(tomas.textContent).toMatch(/AC.*17/);
+    await expect(tomas.textContent).toMatch(new RegExp(`${escapeRegExp(t('DefenseLine:ac'))}.*17`));
     await expect(within(tomas).queryByRole('button', { name: /^24/ })).toBeNull();
     await expect(within(tomas).queryByText('Hex on Orc Berserker')).toBeNull();
     await expect(canvas.queryByText('影の射手ゴブリン')).toBeNull();
     await expect(canvas.getByText('Hex on Orc Berserker')).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: 'Menu' }));
-    await userEvent.click(await canvas.findByRole('menuitem', { name: 'Heroes' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('CombatHeader:menu') }));
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('CombatHeader:heroes') }));
     await waitFor(() => expect(canvas.queryByRole('menuitem')).toBeNull());
   },
 });
 
 export const NoUnits = meta.story({
-  name: 'No units after Clear',
   parameters: {
     scenario: playerScenario({ ...ferryCombat({ status: 'setup' }), units: [] }),
   },
-  play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('heading', { name: 'No units yet' })).toBeVisible();
-    await expect(canvas.queryByText('Waiting for the DM to start the combat')).toBeNull();
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    await expect(await canvas.findByRole('heading', { name: t('noUnitsTitle') })).toBeVisible();
+    await expect(canvas.queryByText(t('waiting'))).toBeNull();
   },
 });
 
 export const DamageOwnHero = meta.story({
-  name: 'Damage the own hero',
-  play: async ({ canvas, loaded }) => {
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
     const vashti = await rowOf(canvas, ME);
     await userEvent.click(within(vashti).getByRole('button', { name: /^20 \/36/ }));
     const sheet = await canvas.findByRole('dialog', { name: ME });
-    await expect(within(sheet).queryByRole('button', { name: 'Set Max' })).toBeNull();
-    await expect(within(sheet).getByRole('button', { name: 'Damage' })).toBeDisabled();
+    await expect(within(sheet).queryByRole('button', { name: t('NumpadSheet:setMax') })).toBeNull();
+    await expect(
+      within(sheet).getByRole('button', { name: t('HistoryRow:damage') }),
+    ).toBeDisabled();
     await userEvent.click(within(sheet).getByRole('button', { name: '5' }));
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Damage' }));
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
     await waitFor(() =>
       expect(sentBy(api)).toEqual([
         expect.objectContaining({ type: 'damage', unitId: unitIds.vashti, amount: 5 }),
@@ -130,13 +137,14 @@ export const DamageOwnHero = meta.story({
 });
 
 export const ReleaseClaim = meta.story({
-  name: 'Release claim from the own row',
-  play: async ({ canvas, loaded }) => {
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
     await expandOwn(canvas);
-    await userEvent.click(canvas.getByRole('button', { name: 'More actions' }));
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
     const items = await canvas.findAllByRole('menuitem');
-    await expect(items.map((item) => item.textContent)).toEqual(['Release claim']);
+    await expect(items.map((item) => item.textContent)).toEqual([t('Menu:releaseClaim')]);
     await userEvent.click(items[0]!);
     await waitFor(() =>
       expect(sentBy(api)).toEqual([
@@ -147,23 +155,25 @@ export const ReleaseClaim = meta.story({
   },
 });
 
-export const EditOwnHero = meta.story({
-  name: 'Edit the own hero, type locked',
-  play: async ({ canvas, loaded }) => {
+export const EditOwnHeroTypeLocked = meta.story({
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
     await expandOwn(canvas);
-    await userEvent.click(canvas.getByRole('button', { name: 'Edit' }));
-    const form = await canvas.findByRole('dialog', { name: 'Edit unit' });
-    await expect(within(form).getByRole('radio', { name: 'Hero' })).toHaveAttribute(
+    await userEvent.click(canvas.getByRole('button', { name: t('CardActions:edit') }));
+    const form = await canvas.findByRole('dialog', { name: t('UnitForm:editTitle') });
+    await expect(within(form).getByRole('radio', { name: t('UnitForm:hero') })).toHaveAttribute(
       'aria-checked',
       'true',
     );
     await expect(within(form).getByRole('radiogroup')).toHaveAttribute('aria-disabled', 'true');
-    await expect(within(form).getByRole('spinbutton', { name: 'Max HP' })).toBeDisabled();
-    const name = within(form).getByRole('textbox', { name: 'Name' });
+    await expect(
+      within(form).getByRole('spinbutton', { name: t('NumberField:maxHp') }),
+    ).toBeDisabled();
+    const name = within(form).getByRole('textbox', { name: t('UnitForm:name') });
     await userEvent.clear(name);
     await userEvent.type(name, 'Vashti the Bold');
-    await userEvent.click(within(form).getByRole('button', { name: 'Save changes' }));
+    await userEvent.click(within(form).getByRole('button', { name: t('UnitForm:saveChanges') }));
     await waitFor(() =>
       expect(sentBy(api)).toEqual([
         expect.objectContaining({
@@ -179,19 +189,18 @@ export const EditOwnHero = meta.story({
   },
 });
 
-export const ExtraFailedDamageNoFlash = meta.story({
-  name: 'A rejected Damage does not flash the row',
-  play: async ({ canvas, loaded }) => {
+export const FailedDamageNoFlash = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
     const vashti = await rowOf(canvas, ME);
     await userEvent.click(within(vashti).getByRole('button', { name: /^20 \/36/ }));
     const sheet = await canvas.findByRole('dialog', { name: ME });
     await userEvent.click(within(sheet).getByRole('button', { name: '5' }));
     api.failNext('version');
-    await userEvent.click(within(sheet).getByRole('button', { name: 'Damage' }));
-    await expect(await canvas.findByRole('status')).toHaveTextContent(
-      'The combat changed. Try again.',
-    );
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:combatChanged'));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     const after = await rowOf(canvas, ME);
     await expect(after).not.toHaveAttribute('data-flash');
@@ -199,13 +208,39 @@ export const ExtraFailedDamageNoFlash = meta.story({
   },
 });
 
-export const ExtraInitiativeBonus = meta.story({
-  name: 'The initiative popover shows the hero bonus',
+export const InitiativeBonus = meta.story({
+  tags: ['!dev'],
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup' })) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const vashti = await rowOf(canvas, ME);
+    await userEvent.click(
+      within(vashti).getByRole('button', {
+        name: (label: string) => label.endsWith(t('RoleBlock:you')),
+      }),
+    );
+    const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
+    await expect(
+      within(popover).getByRole('button', {
+        name: (label: string) => label.startsWith(t('InitiativePopover:roll', { bonus: '+2' })),
+      }),
+    ).toBeVisible();
+  },
+});
+
+export const OwnTurn = meta.story({
   play: async ({ canvas }) => {
     const vashti = await rowOf(canvas, ME);
-    await userEvent.click(within(vashti).getByRole('button', { name: /You$/ }));
-    const popover = await canvas.findByRole('dialog', { name: 'Initiative' });
-    await expect(within(popover).getByRole('button', { name: /^Roll d20 \+2/ })).toBeVisible();
+    await expect(vashti).toHaveAttribute('data-active');
+    await expect(within(vashti).getByRole('button', { name: /^20 \/36/ })).toBeVisible();
+  },
+});
+
+export const OwnRowExpanded = meta.story({
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    await expandOwn(canvas);
+    await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    await expect(canvas.getByText('Hex on Orc Berserker')).toBeVisible();
   },
 });

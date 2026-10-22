@@ -17,16 +17,13 @@ from the repository root.
 - `pnpm install --frozen-lockfile`
 - `pnpm dev`: web on http://localhost:5173 (`/api` proxied) and server on http://localhost:3000.
 - `pnpm check`: `vp check` (Oxfmt format check, Oxlint, type check), `tsc -b`, then
-  `scripts/check-{stories,i18n,screenshots,comments}.mjs`.
+  `scripts/check-{stories,i18n,comments}.mjs`.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
-- `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story with its `play`, headless
-  Chromium).
+- `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story once with its `play`,
+  headless Chromium, locale `ru`, the `narrow` frame and viewport, 320×568).
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
-- `pnpm exec vp test --project visual`: compares every story against
-  `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844.
-- `pnpm screenshots:update`: regenerates those baselines with the local Chromium.
-- `pnpm e2e`: Playwright against the real server and a temporary database; port from `E2E_PORT`,
-  default 3000.
+- `pnpm e2e`: Playwright at 320×568 against the real server and a temporary database; port from
+  `E2E_PORT`, default 3000. `e2e/layout.spec.ts` runs at 440×956.
 - `pnpm build`: the web bundle into `apps/web/dist`.
 - `pnpm storybook` (port 6006), `pnpm storybook:build`.
 - `node scripts/test/run.mjs`: proves each check script fails on its fixtures in `scripts/test/`.
@@ -57,6 +54,12 @@ from the repository root.
     `geometry.ts`.
 - `apps/web`: the SPA. `router.tsx` (React Router data mode, session loaders, DM language
   follower), `providers.tsx`, `pages.tsx`.
+  - `root.css` makes `#root` the phone column: at most 440×956, centered on `--cp-color-soft`,
+    the size container `screen` and, like `.phone` in Storybook, the containing block of the
+    fixed overlays; screen roots stay direct children of `#root`. A window wider than 440 shows
+    the column as a white phone frame (`box-shadow` rings, height `min(100dvh - 64px, 956px)`) on
+    a dotted `--cp-color-soft` field; from 1180 wide `main.tsx` portals `DesktopAside` into
+    `#aside`, left of the column.
 - `apps/server`: Node entry. It loads `.env`, creates or reads `secrets.json` next to the
   database, serves the API under `/api` and the built web app. It runs TypeScript through Node type
   stripping, with no build step.
@@ -77,21 +80,55 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `meta.story({...})`. A `play` asserts with `expect` from `storybook/test`. `check-stories` fails
   on `.only`, `.skip`, `tags: ['!test']`, `expect(true)`, a sole `toBeDefined()`, or a `play`
   without `expect(`.
+- A story is visible only when it differs to the eye from the component's other visible stories
+  (default, variant, size, disabled, empty, long content, error, loading, open). A `play` checks only
+  the component's own behaviour; a child's pressed, focus, keyboard or close behaviour is asserted in
+  the child's stories. A necessary `play` on a state already visible gets `tags: ['!dev']`: hidden
+  from the sidebar, still run by `pnpm test`. Near-duplicates are deleted. No story exists for a
+  locale: locale is the toolbar global.
+- Story names: export names are PascalCase words; the display name (Storybook's start case of the
+  export, or `name`, set only where start case garbles an abbreviation such as "HP") is at most 40
+  characters. No `Extra` prefix, no codes (`CSF83`), no locale words (`Ru`, `German`), no run of 4+
+  digits. A hidden story is named after the checked behaviour (`EscapeCloses`); the main story is
+  `Default` unless a state name says more. A visible story sets no `globals.locale`,
+  `globals.frame` or `globals.viewport`, which would lock the toolbar; a hidden story may set
+  `globals.locale` when its assertion depends on it. Enforced by `check-stories`.
+- Atoms and molecules whose stories multiply variant × state show one visible `AllStates` story
+  built with `packages/ui/src/storybook/StateGrid.tsx`: rows are variants and sizes, columns are
+  states, each cell is labelled `<Row> · <Column>` and cells wrap. States are set statically through
+  the attributes the CSS reads (`data-pressed`, `data-focus`, `data-tap`, `data-open`,
+  `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag (inert, see below).
+- `FakeApiClient.failNext(code)` rejects the next call; `holdNext()` leaves it pending, for loading
+  states.
 - Visual states come from real pseudo-classes and `data-*` attributes (`&:active, &[data-pressed]`),
   never from a `state` prop.
 - Screen stories seed state through `FakeApiClient` scenarios and play only their own interaction.
   `UiProvider` takes `motion: 'off'` in Storybook.
 - Geometry invariants run after every story (`packages/ui/.storybook/preview.tsx` → `expectGeometry`):
   no horizontal overflow, tap targets at least `layout.tapTarget` (44 px), content inside the phone
-  frame, no unintended truncation, overlays aligned with the frame. A story opts out per check
-  through `parameters.geometry`, with a reason string or `{ reason, except: '<selector>' }`. The
-  selector must match an element.
+  frame, no unintended truncation (an element whose one-line or clamped ellipsis is designed carries
+  `data-ellipsis` and is skipped), overlays aligned with the frame, no Latin or Cyrillic word split
+  across lines (`wordBreaks`), every `[data-sheet-action]` of an open sheet visible without scrolling
+  (`actionsVisible`), a drawer scrim strip at least `layout.tapTarget` wide (`scrimTarget`). A story
+  opts out per check through `parameters.geometry`, with a reason string or
+  `{ reason, except: '<selector>' }`. The selector must match an element.
+- Screen sizes, in `packages/ui/src/layout.ts`: `viewports` holds the frames `narrow` 320×568
+  (base width, Storybook default, every test), `phone` 384×832, `large` 440×956 (widest phone, size
+  of the wide-window column, `column`) and `desktop` 1280×844. `ranges`: width compact 320–383,
+  regular 384–440 (`regularMinWidth`); height short below 700, tall from 700 (`tallMinHeight`).
+- CSS reads a range only through the size container `screen`: `@container screen (width >= 384px)`
+  / `(width < 384px)`, `@container screen (height >= 700px)` / `(height < 700px)`. No `@media` for
+  ranges: in Storybook it reads the iframe, not the frame. `.phone` in `PhoneFrame.module.css` is
+  the container `screen`.
+- Storybook and the storybook project open in `ru` at the frame `narrow` (320×568); the toolbar
+  switches locale and frame (`phone`, `large`, `desktop`). No story exists per size.
 - Tap areas smaller than their control use the `::after` pattern
   `inset: min(0px, (100% - var(--cp-tap-target)) / 2)` on a positioned control.
-- Screenshot baselines change only together with a change in the component they show. Run
-  `pnpm screenshots:update`, then check each changed PNG. `check-screenshots` requires one baseline
-  per story and 390-wide screen baselines. Byte-identical PNGs in one folder must be listed in
-  `<Name>.same.txt`.
+- Screenshot testing is removed: no screenshot project, no baselines. The `visual` tag stays,
+  inert, marking stories for future baselines: each component's main or anatomy story, `AllStates`
+  and each state that differs in layout, and each screen's main states. A new story that changes
+  layout gets the tag; a story that only differs by interaction outcome stays untagged and is
+  covered by its `play` and the geometry checks.
 - Format: Oxfmt, `singleQuote`, `printWidth: 100`.
 - Commits: Conventional Commits whose subject states the user-visible result, e.g.
   `fix(ui): the ru restart label fits its button`. Types `feat`, `fix`, `perf`, `revert` show in
@@ -104,8 +141,8 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `npm:@voidzero-dev/vite-plus-core@1.3.0` and `vitest` to 5.0.5 in `pnpm-workspace.yaml`. Test
   code imports from `vite-plus/test` and `vite-plus/test/browser`.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
-  `viewport` global, so the 390×844 test viewport is set in `preview.tsx` (`initialGlobals`), not in
-  `vite.config.ts`.
+  `viewport` global, so the test viewport is set in `preview.tsx` (`initialGlobals` `locale: 'ru'`,
+  `frame: 'narrow'`, `viewport: 'narrow'`), not in `vite.config.ts`.
 - Playwright 1.64.1 exact.
 - React Router 7 data mode.
 - Mantine 9; `postcss-preset-mantine` runs from `postcss.config.cjs`.

@@ -6,13 +6,16 @@
   "setEscalation": "Set escalation die, escalation {{value}}",
   "escalationTitle": "Escalation die",
   "escalationFace": "Escalation {{value}}",
+  "escalationCaption": "Escalation",
   "escalationHint": "Next turn raises it by 1 each round, up to {{max}}",
   "roundHint": "{{min}}–{{max}}. Changing the round doesn’t move the turn.",
   "menu": "Menu",
   "menuLabel": "Combat menu",
+  "playerMenuLabel": "Player menu",
   "addUnit": "Add unit",
   "undo": "Undo",
   "share": "Share",
   "restart": "Restart combat",
-  "clear": "Clear combat"
+  "clear": "Clear combat",
+  "heroes": "Heroes"
 }

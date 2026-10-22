@@ -1,2 +1,0 @@
-ExtraCloseWithoutChange ExtraKeyboard
-ExtraEnterOnFocusedAction ExtraSpaceOnAction

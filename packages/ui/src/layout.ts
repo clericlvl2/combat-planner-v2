@@ -1,14 +1,17 @@
-const viewports = { narrow: 320, phone: 390, desktop: 1280 } as const;
+const viewports = {
+  narrow: { width: 320, height: 568 },
+  phone: { width: 384, height: 832 },
+  large: { width: 440, height: 956 },
+  desktop: { width: 1280, height: 844 },
+} as const;
 
 export type Viewport = keyof typeof viewports;
 
 export const layout = {
-  phone: { width: viewports.phone, height: 844 },
   viewports,
+  ranges: { regularMinWidth: 384, tallMinHeight: 700 },
+  column: { width: 440, height: 956 },
   statusBar: 44,
-  combatHeader: 126,
-  playerHeader: { statusBar: 44, minBody: 82 },
-  pageHeader: { height: 168, statusBar: 44, nav: 48, search: 48, bottom: 12 },
   contentEdge: 12,
   listGap: 8,
   bottomBar: {

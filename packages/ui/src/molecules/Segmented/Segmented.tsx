@@ -87,7 +87,10 @@ export function Segmented<T extends string>({
       role="radiogroup"
       aria-disabled={disabled || undefined}
       className={className ? `${classes.root} ${className}` : classes.root}
-      style={{ ...style, gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
+      style={{
+        ...style,
+        gridTemplateColumns: `repeat(${options.length}, minmax(max-content, 1fr))`,
+      }}
       data-size={size}
     >
       {options.map((option, index) => {

@@ -1,6 +1,6 @@
 import type { PlayerUnit } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
-import { IconChevronDown, IconChevronUp, IconUser } from '@tabler/icons-react';
+import { IconChevronDown, IconChevronUp } from '@tabler/icons-react';
 import { useId } from 'react';
 import type { HTMLAttributes, MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -81,6 +81,7 @@ export function PlayerRow({
       : null;
   const claimName = friendly && unit.claimedBy ? claimedByName : undefined;
   const note = mine ? (unit.note ?? '') : '';
+  const collapsedNote = mine && !expanded && note !== '';
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     onClick?.(event);
@@ -116,32 +117,17 @@ export function PlayerRow({
         onClick={mine ? onInitiative : undefined}
       />
       <div className={classes.main}>
-        {mine ? (
-          <UnstyledButton
-            component="button"
-            type="button"
-            className={classes.name}
-            aria-expanded={expanded}
-            aria-controls={expanded ? detailsId : undefined}
-            onClick={() => onToggle()}
-          >
+        <span className={classes.nameLine}>
+          <span className={classes.name} data-part="name">
             {unit.name}
-          </UnstyledButton>
-        ) : (
-          <span className={classes.name}>{unit.name}</span>
-        )}
-        {claimName ? (
-          <span className={classes.claim}>
-            <IconUser
-              className={classes.claimIcon}
-              size={16}
-              stroke={2}
-              role="img"
-              aria-label={t('claimedBy')}
-            />
-            <span className={classes.claimName}>{claimName}</span>
           </span>
-        ) : null}
+          {claimName ? (
+            <>
+              {' '}
+              <span className={classes.claimer}>@{claimName}</span>
+            </>
+          ) : null}
+        </span>
         {defenses ? <DefenseLine ac={defenses.ac} pd={defenses.pd} md={defenses.md} /> : null}
         {conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
@@ -152,10 +138,19 @@ export function PlayerRow({
             ))}
           </span>
         ) : null}
-        {mine && !expanded && note ? (
-          <NoteField value={note} onChange={onNoteChange} collapsed />
-        ) : null}
+        {collapsedNote ? <NoteField value={note} onChange={onNoteChange} collapsed /> : null}
       </div>
+      {mine ? (
+        <UnstyledButton
+          component="button"
+          type="button"
+          className={classes.toggle}
+          aria-label={unit.name}
+          aria-expanded={expanded}
+          aria-controls={expanded ? detailsId : undefined}
+          onClick={() => onToggle()}
+        />
+      ) : null}
       <div className={classes.hp}>
         {numbers ? (
           <HpBox
