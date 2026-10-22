@@ -59,11 +59,16 @@ function PageHeaderCell({
   const placeholder = searchPlaceholder ?? (searchKey ? t(searchKey) : undefined);
   const toolOf: Record<ToolSpec, PageHeaderTool> = {
     sort: { id: 'sort', icon: IconSortDescending, 'aria-label': t('sort') },
-    sortActive: { id: 'sort', icon: IconSortDescending, label: t('lastPlayed'), active: true },
+    sortActive: {
+      id: 'sort',
+      icon: IconSortDescending,
+      'aria-label': t('lastPlayed'),
+      active: true,
+    },
     tags: {
       id: 'tags',
       icon: IconTags,
-      label: tagsLabel ?? t('tags'),
+      'aria-label': tagsLabel ?? t('tags'),
       count: tagCount,
       active: true,
     },
@@ -128,9 +133,12 @@ export const LibraryFiltered = meta.story({
     const t = storyT(globals, 'PageHeader');
     await expect(canvas.getByRole('heading', { level: 1, name: t('library') })).toBeVisible();
     await expect(canvas.getByRole('searchbox', { name: t('searchPresets') })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: `${t('tags')} 1` })).toHaveAttribute(
-      'data-active',
-    );
+    const tags = canvas.getByRole('button', { name: t('tags') });
+    await expect(tags).toHaveAttribute('data-active');
+    await expect(tags).toHaveTextContent('1');
+    const sort = canvas.getByRole('button', { name: t('sort') });
+    await expect([sort, tags].map((tool) => tool.getBoundingClientRect().width)).toEqual([48, 48]);
+    await expect(tags.getBoundingClientRect().top).toBe(sort.getBoundingClientRect().top);
     await expect(
       canvas.getByRole('button', { name: t('removeFilter', { name: t('orcs') }) }),
     ).toBeVisible();
@@ -143,6 +151,12 @@ export const CombatsWithSort = meta.story({
 
 export const SortActive = meta.story({
   args: { ...combats, toolSpecs: ['sortActive'] },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    const sort = canvas.getByRole('button', { name: t('lastPlayed') });
+    await expect(sort).toHaveAttribute('data-active');
+    await expect(sort.getBoundingClientRect().width).toBe(48);
+  },
 });
 
 export const NestedScreen = meta.story({
@@ -168,7 +182,7 @@ export const ManyLongFilters = meta.story({
   },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PageHeader');
-    await expect(canvas.getByRole('button', { name: 'Теги 12' })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: 'Теги' })).toHaveTextContent('12');
     const [before = '', after = ''] = t('removeFilter', { name: '\n' }).split('\n');
     const removeFilter = (label: string) => label.startsWith(before) && label.endsWith(after);
     await expect(canvas.getAllByRole('button', { name: removeFilter })).toHaveLength(3);
@@ -182,7 +196,7 @@ export const ToolsDisabled = meta.story({
     const sort = canvas.getByRole('button', { name: t('sort') });
     await expect(sort).toBeDisabled();
     await userEvent.click(sort, { pointerEventsCheck: 0 });
-    await userEvent.click(canvas.getByRole('button', { name: `${t('tags')} 1` }), {
+    await userEvent.click(canvas.getByRole('button', { name: t('tags') }), {
       pointerEventsCheck: 0,
     });
     await expect(args.onTool).not.toHaveBeenCalled();
@@ -260,7 +274,7 @@ export const ToolsCallOnTool = meta.story({
     await userEvent.click(canvas.getByRole('button', { name: t('sort') }));
     await expect(args.onTool).toHaveBeenCalledOnce();
     await expect(args.onTool).toHaveBeenLastCalledWith('sort');
-    await userEvent.click(canvas.getByRole('button', { name: `${t('tags')} 1` }));
+    await userEvent.click(canvas.getByRole('button', { name: t('tags') }));
     await expect(args.onTool).toHaveBeenCalledTimes(2);
     await expect(args.onTool).toHaveBeenLastCalledWith('tags');
   },
