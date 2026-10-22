@@ -26,7 +26,7 @@ export default defineConfig({
   use: {
     ...devices['Desktop Chrome'],
     baseURL,
-    viewport: { width: 390, height: 844 },
+    viewport: { width: 320, height: 568 },
     locale: 'ru-RU',
     trace: 'retain-on-failure',
     actionTimeout: 10_000,

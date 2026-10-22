@@ -48,7 +48,7 @@ test('a DM runs a combat and a player follows the turn order', async ({
   );
 
   const playerContext = await browser.newContext({
-    viewport: { width: 390, height: 844 },
+    viewport: { width: 320, height: 568 },
     locale: 'ru-RU',
   });
   try {

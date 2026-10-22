@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { signUp } from './helpers.ts';
 import { t } from './t.ts';
 
-const VIEWPORT = { width: 430, height: 932 };
+const VIEWPORT = { width: 440, height: 956 };
 
 const screens = [
   { path: '/combats', heading: t('CombatList:title') },

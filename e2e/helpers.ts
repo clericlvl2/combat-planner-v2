@@ -37,7 +37,7 @@ export async function signIn(page: Page, email: string, password: string): Promi
 }
 
 export async function newPlayerContext(browser: Browser): Promise<BrowserContext> {
-  return browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'ru-RU' });
+  return browser.newContext({ viewport: { width: 320, height: 568 }, locale: 'ru-RU' });
 }
 
 export type UnitType = 'hero' | 'enemy' | 'ally';
