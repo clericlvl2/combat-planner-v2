@@ -119,7 +119,11 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    cd /opt/combat-planner/deploy
    cp .env.example .env
    chmod 600 .env
+   nano .env
    ```
+
+   In `nano`, set `APP_IMAGE` to the tag of the latest release on
+   https://github.com/clericlvl2/combat-planner-v2/releases, without the `v`.
 
 6. **Registry check.** As `deploy`, in `/opt/combat-planner/deploy`:
 
@@ -131,16 +135,14 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 
    ```sh
    # on the operator's machine
-   docker pull ghcr.io/clericlvl2/combat-planner-v2:0.1.1
-   docker save ghcr.io/clericlvl2/combat-planner-v2:0.1.1 | gzip > combat-planner.tar.gz
+   docker pull ghcr.io/clericlvl2/combat-planner-v2:<tag>
+   docker save ghcr.io/clericlvl2/combat-planner-v2:<tag> | gzip > combat-planner.tar.gz
    scp combat-planner.tar.gz deploy@195.2.67.81:
    # on the server
    docker load < ~/combat-planner.tar.gz && rm ~/combat-planner.tar.gz
    ```
 
 7. **Secrets.** As `deploy`, run `openssl rand -hex 32` twice, then `nano .env` and fill in:
-   - `APP_IMAGE`: the tag of the latest release on
-     https://github.com/clericlvl2/combat-planner-v2/releases, without the `v`;
    - `DOMAIN`: the bare domain, e.g. `planner.example.com`;
    - `BETTER_AUTH_SECRET` and `LINK_SECRET`: the two generated values;
    - `LITESTREAM_BUCKET`, e.g. `combat-planner-backup-ttrpg74`, `LITESTREAM_ACCESS_KEY_ID` and
@@ -222,8 +224,10 @@ Record each passed drill here, through a commit to the repository, not on the se
 Rebuilds production from the bucket, e.g. on a new server, or rolls the database back to a
 moment before damage.
 
-The bucket holds every change of the last 24 h (Litestream's default snapshot retention), so
-`restore` can return the state at any moment in that window. Without `-timestamp` it returns the
+The bucket holds the changes of the last 24 h (Litestream's default snapshot retention). With
+`-timestamp`, `restore` returns the last replicated state strictly before that moment; for a
+moment older than a few minutes, compaction leaves coarser points, so the state may be up to a
+few minutes earlier than requested, never later. Without `-timestamp` it returns the
 latest replicated state, which already contains any damage done more than 10 s ago: after a bad
 action, migration or deletion, pick a moment before it and pass it as
 `-timestamp <RFC 3339, UTC>` (exclusive), e.g. `-timestamp 2026-10-22T10:00:00Z`. Pick the
