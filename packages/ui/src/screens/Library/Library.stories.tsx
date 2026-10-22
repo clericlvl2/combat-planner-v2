@@ -64,7 +64,7 @@ function HoldFirstCall({ children }: { children: ReactNode }) {
 const namesOf = (canvas: Canvas): string[] =>
   canvas
     .queryAllByRole('article')
-    .map((card: HTMLElement) => card.querySelector('button[aria-expanded]')?.textContent ?? '');
+    .map((card: HTMLElement) => card.querySelector('[data-part="name"]')?.textContent ?? '');
 
 const showPresets = (t: TFunction) => (label: string) =>
   anyValue(t, 'TagSheet:showPresets', 'count').test(label);

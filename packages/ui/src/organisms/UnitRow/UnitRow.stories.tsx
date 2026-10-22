@@ -312,6 +312,8 @@ export const ClaimedByPlayer = meta.story({
     const claimer = canvas.getByText('@Mika');
     await expect(claimer).toBeVisible();
     await expect(claimer.parentElement).toHaveTextContent('Vashti the Hexer @Mika');
+    const lines = [...canvas.getByText('Vashti the Hexer').getClientRects()];
+    await expect(lines.at(-1)?.top).toBe(claimer.getBoundingClientRect().top);
   },
 });
 

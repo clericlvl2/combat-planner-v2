@@ -179,6 +179,6 @@ export async function presetNames(page: Page): Promise<string[]> {
   return page
     .locator('article')
     .evaluateAll((cards) =>
-      cards.map((card) => card.querySelector('button[aria-expanded]')?.textContent ?? ''),
+      cards.map((card) => card.querySelector('[data-part="name"]')?.textContent ?? ''),
     );
 }

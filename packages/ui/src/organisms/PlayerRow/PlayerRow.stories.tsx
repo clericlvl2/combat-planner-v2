@@ -255,6 +255,8 @@ export const OwnHero = meta.story({
     await expect(claimer).toBeVisible();
     await expect(name.contains(claimer)).toBe(false);
     await expect(claimer.parentElement).toHaveTextContent('Vashti the Hexer @Mika');
+    const lines = [...canvas.getByText('Vashti the Hexer').getClientRects()];
+    await expect(lines.at(-1)?.top).toBe(claimer.getBoundingClientRect().top);
     await expect(
       canvas.getByRole('group', {
         name: (name: string) =>

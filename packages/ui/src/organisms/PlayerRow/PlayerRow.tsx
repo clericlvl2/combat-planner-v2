@@ -118,20 +118,9 @@ export function PlayerRow({
       />
       <div className={classes.main}>
         <span className={classes.nameLine}>
-          {mine ? (
-            <UnstyledButton
-              component="button"
-              type="button"
-              className={classes.name}
-              aria-expanded={expanded}
-              aria-controls={expanded ? detailsId : undefined}
-              onClick={() => onToggle()}
-            >
-              {unit.name}
-            </UnstyledButton>
-          ) : (
-            <span className={classes.name}>{unit.name}</span>
-          )}
+          <span className={classes.name} data-part="name">
+            {unit.name}
+          </span>
           {claimName ? (
             <>
               {' '}
@@ -151,6 +140,17 @@ export function PlayerRow({
         ) : null}
         {collapsedNote ? <NoteField value={note} onChange={onNoteChange} collapsed /> : null}
       </div>
+      {mine ? (
+        <UnstyledButton
+          component="button"
+          type="button"
+          className={classes.toggle}
+          aria-label={unit.name}
+          aria-expanded={expanded}
+          aria-controls={expanded ? detailsId : undefined}
+          onClick={() => onToggle()}
+        />
+      ) : null}
       <div className={classes.hp}>
         {numbers ? (
           <HpBox

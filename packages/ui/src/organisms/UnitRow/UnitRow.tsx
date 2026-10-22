@@ -230,23 +230,9 @@ export function UnitRow({
       </div>
       <div className={classes.main}>
         <span className={classes.nameLine}>
-          {readOnly ? (
-            <span className={classes.name} data-part="name">
-              {unit.name}
-            </span>
-          ) : (
-            <UnstyledButton
-              component="button"
-              type="button"
-              className={classes.name}
-              data-part="name"
-              aria-expanded={expanded}
-              aria-controls={expanded ? detailsId : undefined}
-              onClick={() => onToggle?.()}
-            >
-              {unit.name}
-            </UnstyledButton>
-          )}
+          <span className={classes.name} data-part="name">
+            {unit.name}
+          </span>
           {claimName ? (
             <>
               {' '}
@@ -268,6 +254,17 @@ export function UnitRow({
           <NoteField value={unit.note} onChange={onNoteChange ?? noop} collapsed />
         ) : null}
       </div>
+      {readOnly ? null : (
+        <UnstyledButton
+          component="button"
+          type="button"
+          className={classes.toggle}
+          aria-label={unit.name}
+          aria-expanded={expanded}
+          aria-controls={expanded ? detailsId : undefined}
+          onClick={() => onToggle?.()}
+        />
+      )}
       <div className={classes.hp}>
         <HpBox
           viewer="dm"

@@ -77,16 +77,9 @@ export function PresetCard({
     >
       <RoleBlock className={classes.role} fill unitRole={preset.role} top={{ kind: 'none' }} />
       <div className={classes.main}>
-        <UnstyledButton
-          component="button"
-          type="button"
-          className={classes.name}
-          aria-expanded={expanded}
-          aria-controls={expanded ? actionsId : undefined}
-          onClick={() => onToggle()}
-        >
+        <span className={classes.name} data-part="name">
           {preset.name}
-        </UnstyledButton>
+        </span>
         <DefenseLine ac={preset.ac} pd={preset.pd} md={preset.md} />
         <span
           className={classes.tags}
@@ -97,6 +90,15 @@ export function PresetCard({
           {tags.length > 0 ? tags.join(TAG_SEPARATOR) : t('noTags')}
         </span>
       </div>
+      <UnstyledButton
+        component="button"
+        type="button"
+        className={classes.toggle}
+        aria-label={preset.name}
+        aria-expanded={expanded}
+        aria-controls={expanded ? actionsId : undefined}
+        onClick={() => onToggle()}
+      />
       <div className={classes.hp}>
         <HpBox viewer="dm" preset maxHp={preset.maxHp} />
       </div>
