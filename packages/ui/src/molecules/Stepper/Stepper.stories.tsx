@@ -19,7 +19,8 @@ interface StepperCellProps extends Omit<StepperProps, 'label' | 'min' | 'max'> {
 }
 
 const stage = {
-  boxSizing: 'content-box',
+  boxSizing: 'border-box',
+  maxWidth: '100%',
   display: 'flex',
   padding: 16,
   borderRadius: 12,
@@ -32,7 +33,7 @@ function StepperCell({
   range = LIMITS.maxHp,
   labelKey,
   label,
-  width = 300,
+  width = 296,
   ...props
 }: StepperCellProps) {
   const { t } = useTranslation('Stepper');

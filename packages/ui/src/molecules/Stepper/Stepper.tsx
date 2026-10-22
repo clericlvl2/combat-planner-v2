@@ -90,17 +90,41 @@ export function Stepper({
     commit(base + (event.key === 'ArrowUp' ? step : -step));
   };
 
+  const field = (
+    <input
+      id={inputId}
+      className={classes.field}
+      type="text"
+      role="spinbutton"
+      inputMode={min < 0 ? 'text' : 'numeric'}
+      autoComplete="off"
+      aria-label={label ? undefined : t('value')}
+      aria-valuemin={min}
+      aria-valuemax={max}
+      aria-valuenow={value ?? undefined}
+      value={draft ?? format(value, signed)}
+      disabled={disabled}
+      onChange={(event) => handleText(event.currentTarget.value)}
+      onBlur={handleBlur}
+      onKeyDown={handleKeyDown}
+    />
+  );
+
   return (
     <div
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-size={size}
       data-disabled={disabled || undefined}
+      data-labelled={label ? '' : undefined}
     >
       {label ? (
-        <label className={classes.label} htmlFor={inputId}>
-          {label}
-        </label>
+        <div className={classes.column}>
+          <label className={classes.label} htmlFor={inputId}>
+            {label}
+          </label>
+          {field}
+        </div>
       ) : null}
       <UnstyledButton
         component="button"
@@ -113,23 +137,7 @@ export function Stepper({
       >
         <IconMinus size={20} stroke={2} aria-hidden="true" />
       </UnstyledButton>
-      <input
-        id={inputId}
-        className={classes.field}
-        type="text"
-        role="spinbutton"
-        inputMode={min < 0 ? 'text' : 'numeric'}
-        autoComplete="off"
-        aria-label={label ? undefined : t('value')}
-        aria-valuemin={min}
-        aria-valuemax={max}
-        aria-valuenow={value ?? undefined}
-        value={draft ?? format(value, signed)}
-        disabled={disabled}
-        onChange={(event) => handleText(event.currentTarget.value)}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-      />
+      {label ? null : field}
       <UnstyledButton
         component="button"
         type="button"

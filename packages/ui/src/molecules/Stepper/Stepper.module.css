@@ -26,12 +26,19 @@
   }
 }
 
-.label {
+.column {
+  display: flex;
   flex: 1;
+  flex-direction: column;
   min-width: 0;
-  font-size: var(--mantine-font-size-body);
+}
+
+.label {
+  padding-bottom: 2px;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-meta);
   font-weight: 600;
-  line-height: 1.25;
+  line-height: var(--mantine-line-height-snug);
   overflow-wrap: anywhere;
 }
 
@@ -110,5 +117,22 @@
     color: var(--cp-color-muted);
     opacity: 1;
     cursor: not-allowed;
+  }
+}
+
+.root[data-labelled] .field {
+  width: 100%;
+  height: 28px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  font-size: var(--mantine-font-size-heading);
+  line-height: 1.1;
+  text-align: left;
+
+  &:focus,
+  .root[data-focus] & {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
   }
 }
