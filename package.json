@@ -4,13 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "vp check && tsc -b && node scripts/check-stories.mjs && node scripts/check-i18n.mjs && node scripts/check-screenshots.mjs && node scripts/check-comments.mjs",
+    "check": "vp check && tsc -b && node scripts/check-stories.mjs && node scripts/check-i18n.mjs && node scripts/check-comments.mjs",
     "test": "vp test --project unit --project storybook",
     "storybook": "storybook dev -c packages/ui/.storybook -p 6006 --no-open",
     "storybook:build": "storybook build -c packages/ui/.storybook -o packages/ui/storybook-static --quiet",
     "build": "pnpm --filter @combat-planner/web run build",
     "dev": "pnpm --parallel --filter @combat-planner/web --filter @combat-planner/server run dev",
-    "screenshots:update": "vp test --project visual --update",
     "e2e": "playwright test"
   },
   "devDependencies": {

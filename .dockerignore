@@ -19,7 +19,6 @@
 **/data
 **/*.db
 **/*.db-*
-packages/ui/__screenshots__
 Dockerfile
 .dockerignore
 docker-compose.yml

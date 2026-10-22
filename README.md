@@ -59,9 +59,6 @@ stories run on `FakeApiClient` scenarios and need no server.
   checks.
 - `pnpm test`: unit tests and every story with its `play` in headless Chromium.
 - `pnpm e2e`: Playwright end-to-end tests against the real server and database.
-- `pnpm exec vp test --project visual`: compares every story with its baseline in
-  `packages/ui/__screenshots__/`.
-- `pnpm screenshots:update`: regenerates the visual baselines with the local Chromium.
 
 ## Production
 
