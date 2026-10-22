@@ -1,10 +1,7 @@
-import { UnstyledButton } from '@mantine/core';
-import { IconDots, IconSwitchHorizontal } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EscalationDie } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
-import { Menu } from '../Menu/Menu.tsx';
 import classes from './PlayerHeader.module.css';
 
 export interface PlayerHeaderProps extends Omit<
@@ -14,25 +11,9 @@ export interface PlayerHeaderProps extends Omit<
   title: string;
   round: number | null;
   escalation: EscalationValue;
-  onMenu?: () => void;
-  menuOpened?: boolean;
-  onMenuClose?: () => void;
-  onHeroes?: () => void;
 }
 
-const MENU_WIDTH = 240;
-
-export function PlayerHeader({
-  title,
-  round,
-  escalation,
-  onMenu,
-  menuOpened = false,
-  onMenuClose,
-  onHeroes,
-  className,
-  ...rest
-}: PlayerHeaderProps) {
+export function PlayerHeader({ title, round, escalation, className, ...rest }: PlayerHeaderProps) {
   const { t } = useTranslation('PlayerHeader');
   const setup = round === null;
   return (
@@ -44,31 +25,6 @@ export function PlayerHeader({
           <h1 className={classes.main}>{setup ? t('setup') : t('round', { round })}</h1>
         </div>
         {setup ? null : <EscalationDie value={escalation} readOnly />}
-        {onMenu ? (
-          <Menu
-            opened={menuOpened}
-            width={MENU_WIDTH}
-            aria-label={t('menuLabel')}
-            items={[{ id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') }]}
-            onSelect={() => onHeroes?.()}
-            onClose={() => onMenuClose?.()}
-            target={
-              <UnstyledButton
-                component="button"
-                type="button"
-                className={classes.menu}
-                aria-haspopup="menu"
-                aria-expanded={menuOpened}
-                onClick={() => onMenu()}
-              >
-                <span className={classes.tile} aria-hidden="true">
-                  <IconDots size={24} stroke={2} />
-                </span>
-                <span className={classes.caption}>{t('menu')}</span>
-              </UnstyledButton>
-            }
-          />
-        ) : null}
       </div>
     </header>
   );

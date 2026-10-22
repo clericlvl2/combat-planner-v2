@@ -44,7 +44,7 @@ test('a player claims a hero and sees the turn order after Start', async ({ page
   const link = await prepareCombat(page, 'Goblin ambush');
   await joinAsPlayer(player, link, 'Pat', 'Aria');
   await expect(
-    player.getByRole('heading', { level: 1, name: t('PlayerHeader:setup') }),
+    player.getByRole('banner').getByText(t('CombatHeader:setup'), { exact: true }),
   ).toBeVisible();
   await expect(player.getByText(t('TurnOrder:waiting'))).toBeVisible();
   await expect(unitRows(player).filter({ hasText: 'Aria' })).toContainText(t('RoleBlock:you'));
@@ -63,7 +63,7 @@ test('a player claims a hero and sees the turn order after Start', async ({ page
   ).toBeVisible();
 
   await expect(
-    player.getByRole('heading', { level: 1, name: t('PlayerHeader:round', { round: 1 }) }),
+    player.getByRole('banner').getByText(`${t('CombatHeader:round')} 1`, { exact: true }),
   ).toBeVisible();
   await expect(player.getByText(t('TurnOrder:waiting'))).toBeHidden();
   await expect(unitRows(player)).toHaveCount(3);
@@ -94,7 +94,7 @@ test('a player damages their own hero and the DM sees it without a reload', asyn
     .click();
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
   await expect(
-    player.getByRole('heading', { level: 1, name: t('PlayerHeader:round', { round: 1 }) }),
+    player.getByRole('banner').getByText(`${t('CombatHeader:round')} 1`, { exact: true }),
   ).toBeVisible();
   await expect(unitRow(page, 'Aria').getByRole('button', { name: '10 /10' })).toBeVisible();
   await page.evaluate(() => Reflect.set(window, 'e2eNoReload', true));
@@ -182,7 +182,7 @@ test('a DM restart shows the player a toast and the setup', async ({ page }) => 
   await closeShare(page);
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
   await expect(
-    player.getByRole('heading', { level: 1, name: t('PlayerHeader:round', { round: 1 }) }),
+    player.getByRole('banner').getByText(`${t('CombatHeader:round')} 1`, { exact: true }),
   ).toBeVisible();
 
   await openCombatMenu(page, t('CombatHeader:restart'));
@@ -191,7 +191,7 @@ test('a DM restart shows the player a toast and the setup', async ({ page }) => 
 
   await expect(player.getByText(t('Toast:dmRestarted'))).toBeVisible();
   await expect(
-    player.getByRole('heading', { level: 1, name: t('PlayerHeader:setup') }),
+    player.getByRole('banner').getByText(t('CombatHeader:setup'), { exact: true }),
   ).toBeVisible();
 });
 

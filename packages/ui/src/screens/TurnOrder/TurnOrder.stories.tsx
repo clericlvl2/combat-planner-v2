@@ -74,7 +74,7 @@ export const SetupWaitingForDm = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnOrder');
     await expect(await canvas.findByText(t('waiting'))).toBeVisible();
-    await expect(canvas.getByRole('heading', { name: t('Chip:setup') })).toBeVisible();
+    await expect(canvas.getByText(t('CombatHeader:setup'))).toBeVisible();
     await expect(canvas.getByText('影の射手ゴブリン')).toBeVisible();
   },
 });
@@ -93,8 +93,8 @@ export const OtherUnitsHidePrivateFields = meta.story({
     await expect(within(tomas).queryByText('Hex on Orc Berserker')).toBeNull();
     await expect(canvas.queryByText('影の射手ゴブリン')).toBeNull();
     await expect(canvas.getByText('Hex on Orc Berserker')).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: t('PlayerHeader:menu') }));
-    await userEvent.click(await canvas.findByRole('menuitem', { name: t('Menu:heroes') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('CombatHeader:menu') }));
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('CombatHeader:heroes') }));
     await waitFor(() => expect(canvas.queryByRole('menuitem')).toBeNull());
   },
 });

@@ -1,7 +1,4 @@
 {
   "round": "Runde {{round}}",
-  "setup": "Vorbereitung",
-  "menu": "Menü",
-  "menuLabel": "Spielermenü",
-  "heroes": "Helden"
+  "setup": "Vorbereitung"
 }

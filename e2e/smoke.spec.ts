@@ -36,9 +36,13 @@ test('a DM runs a combat and a player follows the turn order', async ({
   await expect(page.getByText('Aria')).toBeVisible();
 
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
-  await expect(page.getByText(`${t('CombatHeader:round')} 1`)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
+  ).toBeVisible();
   await page.getByRole('button', { name: containsT('TurnBar:nextTurn') }).click();
-  await expect(page.getByText(`${t('CombatHeader:round')} 2`)).toBeVisible();
+  await expect(
+    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 2 }) }),
+  ).toBeVisible();
 
   await page.getByRole('button', { name: t('CombatHeader:menu'), exact: true }).click();
   await page.getByRole('menuitem', { name: t('CombatHeader:share') }).click();
@@ -58,7 +62,9 @@ test('a DM runs a combat and a player follows the turn order', async ({
     await player.getByLabel(t('Heroes:nameLabel')).fill('Pat');
     await player.getByRole('checkbox', { name: 'Aria' }).check();
     await player.getByRole('button', { name: t('Heroes:join') }).click();
-    await expect(player.getByText(t('PlayerHeader:round', { round: 2 }))).toBeVisible();
+    await expect(
+      player.getByRole('banner').getByText(`${t('CombatHeader:round')} 2`, { exact: true }),
+    ).toBeVisible();
     await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeHidden();
     await expect(player.getByText('Aria')).toBeVisible();
     await expect(player.getByText(t('RoleBlock:you'), { exact: true })).toBeVisible();

@@ -67,7 +67,7 @@ export const FirstVisit = meta.story({
     await expect(canvas.getByRole('checkbox', { name: 'Ser Aldric' })).toBeDisabled();
     await expect(canvas.getByText(t('playing', { name: 'Jonas' }))).toBeVisible();
     await expect(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' })).toBeEnabled();
-    await expect(canvas.queryByRole('button', { name: t('PlayerHeader:menu') })).toBeNull();
+    await expect(canvas.queryByRole('button', { name: t('CombatHeader:menu') })).toBeNull();
   },
 });
 

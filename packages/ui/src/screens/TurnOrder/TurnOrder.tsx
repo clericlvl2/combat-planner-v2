@@ -15,11 +15,11 @@ import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.ts
 import type { DispatchResult } from '../../hooks/combat.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
+import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
 import { Menu } from '../../organisms/Menu/Menu.tsx';
 import { NumpadSheet, useHpFlash } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
-import { PlayerHeader } from '../../organisms/PlayerHeader/PlayerHeader.tsx';
 import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
@@ -120,13 +120,14 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
 
   return (
     <div className={classes.root}>
-      <PlayerHeader
+      <CombatHeader
+        viewer="player"
         title={combat.title}
         round={setup ? null : combat.round}
         escalation={combat.escalation as EscalationValue}
-        menuOpened={menuOpen}
+        open={menuOpen ? 'menu' : null}
         onMenu={() => setMenuOpen((value) => !value)}
-        onMenuClose={() => setMenuOpen(false)}
+        onClose={() => setMenuOpen(false)}
         onHeroes={() => {
           setMenuOpen(false);
           onHeroes();

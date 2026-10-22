@@ -296,9 +296,9 @@ export const MenuOpen = meta.story({
   parameters: { scenario: orcTurn },
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
-    await userEvent.click(await canvas.findByRole('button', { name: t('PlayerHeader:menu') }));
+    await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
     const items = await canvas.findAllByRole('menuitem');
-    await expect(items.map((item) => item.textContent)).toEqual([t('Menu:heroes')]);
+    await expect(items.map((item) => item.textContent)).toEqual([t('CombatHeader:heroes')]);
   },
 });
 
@@ -307,8 +307,8 @@ export const MenuOpensHeroPicker = meta.story({
   parameters: { scenario: playerScenario(ferryCombat({ active: 'orc', ilse: true })) },
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
-    await userEvent.click(await canvas.findByRole('button', { name: t('PlayerHeader:menu') }));
-    await userEvent.click(await canvas.findByRole('menuitem', { name: t('Menu:heroes') }));
+    await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('CombatHeader:heroes') }));
     await userEvent.click(await canvas.findByRole('checkbox', { name: ME }));
     await waitFor(() => expect(canvas.getByRole('checkbox', { name: ME })).not.toBeChecked());
     await userEvent.click(canvas.getByRole('checkbox', { name: 'Ilse the Bold' }));
@@ -455,9 +455,7 @@ export const CantReachServer = meta.story({
     await expect(
       canvas.getByRole('heading', { name: t('MessageScreen:offlineTitle') }),
     ).toBeVisible();
-    await expect(
-      canvas.queryByRole('heading', { name: t('PlayerHeader:round', { round: 3 }) }),
-    ).toBeNull();
+    await expect(canvas.queryByRole('heading', { level: 1, name: COMBAT_TITLE })).toBeNull();
   },
 });
 
@@ -477,13 +475,11 @@ export const DeletedOnFirstLoad = meta.story({
 export const CantReachServerRetry = meta.story({
   tags: ['!dev'],
   loaders: [offlineLoader],
-  play: async ({ canvas, globals, loaded, parameters }) => {
+  play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'PlayerView');
     await userEvent.click(await canvas.findByRole('button', { name: t('MessageScreen:tryAgain') }));
     await expect(
-      await canvas.findByRole('heading', {
-        name: playerT(parameters)('PlayerHeader:round', { round: 3 }),
-      }),
+      await canvas.findByRole('heading', { level: 1, name: COMBAT_TITLE }),
     ).toBeVisible();
     await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.get')).toHaveLength(
       2,
@@ -498,7 +494,7 @@ export const DmLanguage = meta.story({
     scenario: playerScenario(ferryCombat({ status: 'setup' }), { settings: { language: 'de' } }),
   },
   play: async ({ canvas }) => {
-    await expect(await canvas.findByRole('heading', { name: 'Vorbereitung' })).toBeVisible();
+    await expect(await canvas.findByText('Vorbereitung')).toBeVisible();
     await expect(canvas.getByText('Warte, bis die Spielleitung den Kampf startet')).toBeVisible();
   },
 });

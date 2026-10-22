@@ -15,7 +15,6 @@ SignIn.passwordPlaceholder
 SignUp.emailPlaceholder
 About.rulesValue
 About.sourceValue
-PlayerHeader.menu
 PresetFormSheet.namePlaceholder
 CheckList.goblins
 Chip.goblins
