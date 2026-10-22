@@ -35,3 +35,4 @@ Drawer.combats
 CombatList.title
 InitiativePopover.title
 DefenseLine.ac
+DesktopAside.title

@@ -1,0 +1,36 @@
+.root {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: 340px;
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+}
+
+.logo {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: var(--mantine-radius-card);
+  background: var(--cp-color-ink);
+  color: var(--cp-color-accent);
+}
+
+.title {
+  margin: 24px 0 12px;
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-title);
+  font-weight: 700;
+  line-height: var(--mantine-line-height-snug);
+}
+
+.tagline {
+  margin: 0;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-body);
+  line-height: var(--mantine-line-height-body);
+}

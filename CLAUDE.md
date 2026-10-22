@@ -56,7 +56,10 @@ from the repository root.
   follower), `providers.tsx`, `pages.tsx`.
   - `root.css` makes `#root` the phone column: at most 440×956, centered on `--cp-color-soft`,
     the size container `screen` and, like `.phone` in Storybook, the containing block of the
-    fixed overlays; screen roots stay direct children of `#root`.
+    fixed overlays; screen roots stay direct children of `#root`. A window wider than 440 shows
+    the column as a white phone frame (`box-shadow` rings, height `min(100dvh - 64px, 956px)`) on
+    a dotted `--cp-color-soft` field; from 1180 wide `main.tsx` portals `DesktopAside` into
+    `#aside`, left of the column.
 - `apps/server`: Node entry. It loads `.env`, creates or reads `secrets.json` next to the
   database, serves the API under `/api` and the built web app. It runs TypeScript through Node type
   stripping, with no build step.

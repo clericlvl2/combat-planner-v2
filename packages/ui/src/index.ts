@@ -56,6 +56,7 @@ export { BottomBar } from './organisms/BottomBar/BottomBar.tsx';
 export { CombatCard } from './organisms/CombatCard/CombatCard.tsx';
 export { CombatHeader } from './organisms/CombatHeader/CombatHeader.tsx';
 export { ConditionPicker } from './organisms/ConditionPicker/ConditionPicker.tsx';
+export { DesktopAside } from './organisms/DesktopAside/DesktopAside.tsx';
 export { Dialog } from './organisms/Dialog/Dialog.tsx';
 export { Drawer } from './organisms/Drawer/Drawer.tsx';
 export { HpHistory } from './organisms/HpHistory/HpHistory.tsx';
