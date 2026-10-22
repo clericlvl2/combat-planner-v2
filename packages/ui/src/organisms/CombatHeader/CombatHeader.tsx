@@ -59,8 +59,6 @@ const MENU_WIDTH = 240;
 
 const ROUND_WIDTH = 240;
 
-const ESCALATION_WIDTH = 240;
-
 const POPOVER_OFFSET = 8;
 
 const FOCUS_FRAMES = 30;
@@ -396,7 +394,7 @@ export function CombatHeader({
         </UnstyledButton>
       }
     >
-      <PopoverFrame title={t('escalationTitle')} width={ESCALATION_WIDTH}>
+      <PopoverFrame title={t('escalationTitle')} className={classes.escalationPanel}>
         <FacePicker
           value={escalation}
           onPick={(value) => {

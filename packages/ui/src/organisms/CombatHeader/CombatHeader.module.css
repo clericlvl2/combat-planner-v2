@@ -202,6 +202,11 @@
   line-height: var(--mantine-line-height-snug);
 }
 
+.escalationPanel {
+  width: max-content;
+  max-width: calc(100cqw - 24px);
+}
+
 .faces {
   display: flex;
   flex-wrap: wrap;
