@@ -1,9 +1,8 @@
 .root {
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) max-content;
-  container-type: inline-size;
-  min-height: 72px;
+  grid-template-columns: 48px minmax(0, 1fr) 84px;
+  min-height: 64px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
@@ -32,50 +31,40 @@
   }
 }
 
-.root[data-note] > :is(.role, .hp) {
-  grid-row: 1 / span 2;
-}
+.role {
+  border-radius: calc(var(--mantine-radius-card) - 2px) 0 0 calc(var(--mantine-radius-card) - 2px);
 
-.root[data-expanded] > .role {
-  border-bottom-left-radius: 0;
+  .root[data-expanded] > & {
+    border-bottom-left-radius: 0;
+  }
 }
 
 .main {
   display: flex;
-  grid-row: 1;
-  grid-column: 2;
   flex-direction: column;
   justify-content: center;
   gap: 4px;
   min-width: 0;
-  padding: 12px 4px 12px 12px;
-
-  .root[data-note] > & {
-    padding-bottom: 0;
-  }
+  padding: 8px 4px 8px 10px;
 }
 
-.note {
-  grid-row: 2;
-  grid-column: 2;
-  min-width: 0;
-  padding: 4px 4px 12px 12px;
+.nameLine {
+  color: var(--cp-color-ink);
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
 }
 
 .name {
-  display: block;
   margin: 0;
   padding: 0;
   border: none;
   background: none;
-  color: var(--cp-color-ink);
-  font-family: inherit;
-  font-size: var(--mantine-font-size-body);
-  font-weight: 600;
-  line-height: var(--mantine-line-height-snug);
+  color: inherit;
+  font: inherit;
   text-align: left;
-  overflow-wrap: anywhere;
-  text-wrap: pretty;
 
   .root[data-dead] & {
     color: var(--cp-color-secondary);
@@ -83,8 +72,9 @@
   }
 
   &:is(button) {
-    cursor: pointer;
     position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 
     &::after {
       content: '';
@@ -100,26 +90,10 @@
   }
 }
 
-.claim {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
+.claimer {
+  display: inline-block;
+  max-width: 100%;
   color: var(--cp-role-hero);
-  font-size: var(--mantine-font-size-small);
-  font-weight: 600;
-  line-height: var(--mantine-line-height-snug);
-}
-
-.claimIcon {
-  flex: none;
-  width: 16px;
-  height: 16px;
-}
-
-.claimName {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 .conditions {
@@ -130,11 +104,13 @@
 
 .hp {
   display: flex;
-  grid-row: 1;
-  grid-column: 3;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 6px 0 2px;
+  padding-right: 4px;
+
+  .root[data-active] & > * {
+    background: var(--cp-color-surface);
+  }
 }
 
 .details {
@@ -160,10 +136,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
   min-height: 48px;
-  padding: 4px 12px;
+  padding: 4px 8px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-surface);
@@ -205,33 +181,4 @@
   line-height: var(--mantine-line-height-snug);
   text-align: left;
   text-wrap: balance;
-}
-
-@container (width < 300px) {
-  .main {
-    padding-left: 8px;
-  }
-
-  .note {
-    grid-column: 2 / -1;
-    padding-left: 8px;
-  }
-
-  .hp {
-    padding-left: 0;
-    padding-right: 2px;
-  }
-
-  .root[data-note] > .hp {
-    grid-row: 1;
-  }
-
-  .details {
-    padding: 12px 8px;
-  }
-
-  .trigger {
-    gap: 4px;
-    padding: 4px 8px;
-  }
 }

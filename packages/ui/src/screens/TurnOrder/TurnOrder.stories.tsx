@@ -57,6 +57,13 @@ const expandOwn = async (canvas: Canvas) => {
   await expect(canvas.getByRole('button', { name: ME })).toHaveAttribute('aria-expanded', 'true');
 };
 
+const noteEllipsis = {
+  truncation: {
+    reason: 'the collapsed note is one line with an ellipsis by design',
+    except: '[data-note-line]',
+  },
+};
+
 const meta = preview.meta({
   title: 'Screens/TurnOrder',
   component: TurnOrderScreen,
@@ -81,7 +88,7 @@ export const SetupWaitingForDm = meta.story({
 
 export const OtherUnitsHidePrivateFields = meta.story({
   tags: ['visual'],
-  parameters: { scenario: playerScenario(ferryCombat({ active: 'orc' })) },
+  parameters: { scenario: playerScenario(ferryCombat({ active: 'orc' })), geometry: noteEllipsis },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnOrder');
     const orc = await rowOf(canvas, 'Orc Berserker');
@@ -112,6 +119,7 @@ export const NoUnits = meta.story({
 
 export const DamageOwnHero = meta.story({
   tags: ['!dev'],
+  parameters: { geometry: noteEllipsis },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
@@ -191,6 +199,7 @@ export const EditOwnHeroTypeLocked = meta.story({
 
 export const FailedDamageNoFlash = meta.story({
   tags: ['!dev'],
+  parameters: { geometry: noteEllipsis },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
@@ -229,6 +238,7 @@ export const InitiativeBonus = meta.story({
 });
 
 export const OwnTurn = meta.story({
+  parameters: { geometry: noteEllipsis },
   play: async ({ canvas }) => {
     const vashti = await rowOf(canvas, ME);
     await expect(vashti).toHaveAttribute('data-active');

@@ -98,6 +98,13 @@ const refocus = () => {
   focusManager.setFocused(undefined);
 };
 
+const noteEllipsis = {
+  truncation: {
+    reason: 'the collapsed note is one line with an ellipsis by design',
+    except: '[data-note-line]',
+  },
+};
+
 const meta = preview.meta({
   title: 'Screens/PlayerView',
   component: PlayerView,
@@ -210,6 +217,7 @@ export const RollDispatched = meta.story({
 
 export const OwnTurn = meta.story({
   tags: ['visual'],
+  parameters: { geometry: noteEllipsis },
   play: async ({ canvas }) => {
     const vashti = await rowOf(canvas, ME);
     await expect(vashti).toHaveAttribute('data-active');
@@ -230,6 +238,7 @@ export const DamageNumpad = meta.story({
 
 export const DamageDispatched = meta.story({
   tags: ['!dev'],
+  parameters: { geometry: noteEllipsis },
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const sheet = await openNumpad(canvas);
@@ -293,7 +302,7 @@ export const EditingNote = meta.story({
 });
 
 export const MenuOpen = meta.story({
-  parameters: { scenario: orcTurn },
+  parameters: { scenario: orcTurn, geometry: noteEllipsis },
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
     await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
@@ -327,6 +336,7 @@ export const MenuOpensHeroPicker = meta.story({
 });
 
 export const RequestFailed = meta.story({
+  parameters: { geometry: noteEllipsis },
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const api = fakeApiOf(loaded);
@@ -474,6 +484,7 @@ export const DeletedOnFirstLoad = meta.story({
 
 export const CantReachServerRetry = meta.story({
   tags: ['!dev'],
+  parameters: { geometry: noteEllipsis },
   loaders: [offlineLoader],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'PlayerView');
