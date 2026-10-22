@@ -57,6 +57,9 @@ from the repository root.
     `geometry.ts`.
 - `apps/web`: the SPA. `router.tsx` (React Router data mode, session loaders, DM language
   follower), `providers.tsx`, `pages.tsx`.
+  - `root.css` makes `#root` the phone column: at most 440×956, centered on `--cp-color-soft`,
+    the size container `screen` and, like `.phone` in Storybook, the containing block of the
+    fixed overlays; screen roots stay direct children of `#root`.
 - `apps/server`: Node entry. It loads `.env`, creates or reads `secrets.json` next to the
   database, serves the API under `/api` and the built web app. It runs TypeScript through Node type
   stripping, with no build step.

@@ -1,21 +1,33 @@
 :root {
   --cp-layout-status-bar: env(safe-area-inset-top, 0px);
+  --cp-layout-viewport-width: min(100vw, 440px);
 }
 
 html,
-body,
-#root {
+body {
   height: 100vh;
   height: 100dvh;
 }
 
 body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin: 0;
-  background: var(--cp-color-background);
+  background: var(--cp-color-soft);
   touch-action: pan-y pinch-zoom;
 }
 
 #root {
+  position: relative;
   display: flex;
+  flex: none;
   flex-direction: column;
+  width: var(--cp-layout-viewport-width);
+  height: min(100vh, 956px);
+  height: min(100dvh, 956px);
+  overflow: hidden;
+  contain: layout;
+  container: screen / size;
+  background: var(--cp-color-background);
 }
