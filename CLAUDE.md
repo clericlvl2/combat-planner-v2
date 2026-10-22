@@ -17,16 +17,13 @@ from the repository root.
 - `pnpm install --frozen-lockfile`
 - `pnpm dev`: web on http://localhost:5173 (`/api` proxied) and server on http://localhost:3000.
 - `pnpm check`: `vp check` (Oxfmt format check, Oxlint, type check), `tsc -b`, then
-  `scripts/check-{stories,i18n,screenshots,comments}.mjs`.
+  `scripts/check-{stories,i18n,comments}.mjs`.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
 - `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story once with its `play`,
-  headless Chromium, locale `ru`, the `phone` frame and viewport, 390×844).
+  headless Chromium, locale `ru`, the `narrow` frame and viewport, 320×568).
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
-- `pnpm exec vp test --project visual`: compares every story tagged `visual` against
-  `packages/ui/__screenshots__/<Name>/<ExportName>.png` at 390×844 in `ru`.
-- `pnpm screenshots:update`: regenerates those baselines with the local Chromium.
-- `pnpm e2e`: Playwright against the real server and a temporary database; port from `E2E_PORT`,
-  default 3000.
+- `pnpm e2e`: Playwright at 320×568 against the real server and a temporary database; port from
+  `E2E_PORT`, default 3000. `e2e/layout.spec.ts` runs at 440×956.
 - `pnpm build`: the web bundle into `apps/web/dist`.
 - `pnpm storybook` (port 6006), `pnpm storybook:build`.
 - `node scripts/test/run.mjs`: proves each check script fails on its fixtures in `scripts/test/`.
@@ -97,7 +94,7 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   built with `packages/ui/src/storybook/StateGrid.tsx`: rows are variants and sizes, columns are
   states, each cell is labelled `<Row> · <Column>` and cells wrap. States are set statically through
   the attributes the CSS reads (`data-pressed`, `data-focus`, `data-tap`, `data-open`,
-  `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag.
+  `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag (inert, see below).
 - `FakeApiClient.failNext(code)` rejects the next call; `holdNext()` leaves it pending, for loading
   states.
 - Visual states come from real pseudo-classes and `data-*` attributes (`&:active, &[data-pressed]`),
@@ -111,19 +108,23 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   (`actionsVisible`), a drawer scrim strip at least `layout.tapTarget` wide (`scrimTarget`). A story
   opts out per check through `parameters.geometry`, with a reason string or
   `{ reason, except: '<selector>' }`. The selector must match an element.
-- Storybook and the storybook project open in `ru` at the test frame `phone` (390×844); the
-  toolbar switches locale and frame, including `narrow` (320×568).
+- Screen sizes, in `packages/ui/src/layout.ts`: `viewports` holds the frames `narrow` 320×568
+  (base width, Storybook default, every test), `phone` 384×832, `large` 440×956 (widest phone, size
+  of the wide-window column, `column`) and `desktop` 1280×844. `ranges`: width compact 320–383,
+  regular 384–440 (`regularMinWidth`); height short below 700, tall from 700 (`tallMinHeight`).
+- CSS reads a range only through the size container `screen`: `@container screen (width >= 384px)`
+  / `(width < 384px)`, `@container screen (height >= 700px)` / `(height < 700px)`. No `@media` for
+  ranges: in Storybook it reads the iframe, not the frame. `.phone` in `PhoneFrame.module.css` is
+  the container `screen`.
+- Storybook and the storybook project open in `ru` at the frame `narrow` (320×568); the toolbar
+  switches locale and frame (`phone`, `large`, `desktop`). No story exists per size.
 - Tap areas smaller than their control use the `::after` pattern
   `inset: min(0px, (100% - var(--cp-tap-target)) / 2)` on a positioned control.
-- Only stories with `tags: ['visual']` have screenshot baselines, rendered in `ru` unless the story
-  sets its own `globals.locale`: each component's main or anatomy story, `AllStates` and each state
-  that differs in layout, and each screen's main states. A new story that changes layout gets the tag and a baseline; a story that
-  only differs by interaction outcome stays untagged and is covered by its `play` and the geometry
-  checks.
-- Screenshot baselines change only together with a change in the component they show. Run
-  `pnpm screenshots:update`, then check each changed PNG. `check-screenshots` requires exactly one
-  baseline per `visual` story, none for other stories, and 390-wide screen baselines.
-  Byte-identical PNGs in one folder must be listed in `<Name>.same.txt`.
+- Screenshot testing is removed: no screenshot project, no baselines. The `visual` tag stays,
+  inert, marking stories for future baselines: each component's main or anatomy story, `AllStates`
+  and each state that differs in layout, and each screen's main states. A new story that changes
+  layout gets the tag; a story that only differs by interaction outcome stays untagged and is
+  covered by its `play` and the geometry checks.
 - Format: Oxfmt, `singleQuote`, `printWidth: 100`.
 - Commits: Conventional Commits whose subject states the user-visible result, e.g.
   `fix(ui): the ru restart label fits its button`. Types `feat`, `fix`, `perf`, `revert` show in
@@ -137,9 +138,7 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   code imports from `vite-plus/test` and `vite-plus/test/browser`.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
   `viewport` global, so the test viewport is set in `preview.tsx` (`initialGlobals` `locale: 'ru'`,
-  `frame: 'phone'`, `viewport: 'phone'`), not in `vite.config.ts`. The `visual` project stays at
-  390×844: `vite.config.ts` sets its viewport and `test/visual.test.tsx` runs each `visual` story
-  with `locale: 'ru'` and the `phone` frame and viewport globals.
+  `frame: 'narrow'`, `viewport: 'narrow'`), not in `vite.config.ts`.
 - Playwright 1.64.1 exact.
 - React Router 7 data mode.
 - Mantine 9; `postcss-preset-mantine` runs from `postcss.config.cjs`.
