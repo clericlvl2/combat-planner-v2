@@ -50,7 +50,7 @@ body {
   #root {
     height: min(100vh - 64px, 956px);
     height: min(100dvh - 64px, 956px);
-    border-radius: 44px;
+    border-radius: 28px;
     box-shadow:
       0 0 0 2px var(--cp-color-border),
       0 0 0 10px var(--cp-color-surface),
