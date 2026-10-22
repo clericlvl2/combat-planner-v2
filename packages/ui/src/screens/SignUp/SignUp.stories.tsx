@@ -51,7 +51,14 @@ export const Default = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'SignUp');
-    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    const title = canvas.getByRole('heading', { level: 1, name: t('title') });
+    await expect(title).toBeVisible();
+    const logo = title.previousElementSibling?.getBoundingClientRect();
+    const heading = title.getBoundingClientRect();
+    await expect(logo?.width).toBe(44);
+    await expect(logo === undefined ? 0 : logo.right).toBeLessThanOrEqual(heading.left);
+    await expect(logo === undefined ? 0 : logo.bottom).toBeGreaterThan(heading.top);
+    await expect(canvas.getByRole('textbox', { name: t('displayName') })).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('submit') })).toBeDisabled();
     await expect(canvas.getByRole('link', { name: t('signIn') })).toHaveAttribute(
       'href',

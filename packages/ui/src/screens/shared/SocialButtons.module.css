@@ -1,14 +1,14 @@
 .or {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   color: var(--cp-color-secondary);
-  font-size: var(--mantine-font-size-small);
+  font-size: var(--mantine-font-size-meta);
 }
 
 .rule {
   flex: 1;
-  height: 2px;
+  height: 1px;
   background: var(--cp-color-border);
 }
 
