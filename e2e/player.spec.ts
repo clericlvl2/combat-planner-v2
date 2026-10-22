@@ -56,7 +56,7 @@ test('a player claims a hero and sees the turn order after Start', async ({ page
     .getByRole('dialog', { name: t('ShareSheet:title') })
     .getByRole('button', { name: t('Sheet:close') })
     .click();
-  await expect(unitRow(page, 'Aria').getByText('Pat', { exact: true })).toBeVisible();
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
   await expect(
     page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
@@ -119,7 +119,7 @@ test('a reissued link expires the old one and releases the claim', async ({ page
   const link = await prepareCombat(page, 'Crypt');
   await joinAsPlayer(player, link, 'Pat', 'Aria');
   const sheet = page.getByRole('dialog', { name: t('ShareSheet:title') });
-  await expect(unitRow(page, 'Aria').getByText('Pat', { exact: true })).toHaveCount(1);
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toHaveCount(1);
 
   await sheet.getByRole('button', { name: t('ShareSheet:reissue') }).click();
   const confirm = page.getByRole('alertdialog', { name: t('Dialog:revokeTitle') });
@@ -139,7 +139,7 @@ test('a reissued link expires the old one and releases the claim', async ({ page
   ).toBeVisible();
 
   await sheet.getByRole('button', { name: t('Sheet:close') }).click();
-  await expect(unitRow(page, 'Aria').getByText('Pat', { exact: true })).toHaveCount(0);
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toHaveCount(0);
 
   await player.goto(newLink);
   await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
