@@ -130,9 +130,13 @@
   line-height: 1.1;
   text-align: left;
 
-  &:focus,
-  .root[data-focus] & {
+  &:focus {
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
   }
+}
+
+.root[data-labelled][data-focus] .field {
+  outline: 2px solid var(--cp-state-focus);
+  outline-offset: 2px;
 }

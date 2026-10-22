@@ -97,6 +97,11 @@ export const AllStates = meta.story({
     },
   },
   render: () => <StateGrid rows={gridRows} columns={columns} />,
+  play: async ({ canvasElement }) => {
+    const field = canvasElement.querySelector('[data-labelled][data-focus] input');
+    await expect(field).not.toBeNull();
+    await expect(getComputedStyle(field as Element).outlineStyle).toBe('solid');
+  },
 });
 
 export const MinDisablesDecrease = meta.story({
