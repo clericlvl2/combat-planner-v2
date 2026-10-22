@@ -6,9 +6,10 @@ HTTPS on a domain and a continuous SQLite backup to Yandex Object Storage.
 `compose.yml` runs three services:
 
 - `app`: the release image `ghcr.io/clericlvl2/combat-planner-v2:<tag>`, pulled anonymously.
-  No port is published; only Caddy reaches it.
-- `caddy`: `caddy:2` on ports 80 and 443, with an automatic Let's Encrypt certificate for
-  `DOMAIN`, proxying to `app:3000` (`Caddyfile`).
+  No port is published; only Caddy reaches it. It receives only `BETTER_AUTH_URL`,
+  `BETTER_AUTH_SECRET` and `LINK_SECRET`, never the bucket key.
+- `caddy`: `caddy:2` on ports 80/tcp and 443/tcp+udp (HTTP/3), with an automatic Let's Encrypt
+  certificate for `DOMAIN`, proxying to `app:3000` (`Caddyfile`).
 - `litestream`: `litestream/litestream:0.5`, replicating `/data/combat-planner.db` to the bucket
   every 10 s (`litestream.yml`). It runs as uid 1000, like `app`, because it writes beside the
   database. It starts once `app` is healthy, so `app` creates the `data` volume with the right
@@ -81,10 +82,12 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    ```sh
    ufw allow OpenSSH
    ufw allow 80,443/tcp
+   ufw allow 443/udp
    ufw enable
    ```
 
-   Ports published by Docker bypass ufw; `compose.yml` publishes only Caddy's 80 and 443.
+   Ports published by Docker bypass ufw; `compose.yml` publishes only Caddy's 80/tcp and
+   443/tcp+udp.
 
 4. **Docker.** Docker Engine with the compose plugin from Docker's apt repository:
 
@@ -136,6 +139,8 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    ```
 
 7. **Secrets.** As `deploy`, run `openssl rand -hex 32` twice, then `nano .env` and fill in:
+   - `APP_IMAGE`: the tag of the latest release on
+     https://github.com/clericlvl2/combat-planner-v2/releases, without the `v`;
    - `DOMAIN`: the bare domain, e.g. `planner.example.com`;
    - `BETTER_AUTH_SECRET` and `LINK_SECRET`: the two generated values;
    - `LITESTREAM_BUCKET`, e.g. `combat-planner-backup-ttrpg74`, `LITESTREAM_ACCESS_KEY_ID` and
@@ -155,7 +160,9 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    ```
 
    - `docker compose ps` shows `app` healthy, `caddy` and `litestream` running.
-   - `curl` prints `{"status":"ok"}`.
+   - `curl` prints `{"status":"ok"}`. Caddy needs up to a minute for the first certificate; a TLS
+     error before that is expected, so repeat `curl` after a minute, then read
+     `docker compose logs caddy`.
    - The Litestream log shows replication of `/data/combat-planner.db` and no errors; the bucket
      lists `combat-planner.db/` in the Yandex console.
 
@@ -170,10 +177,11 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 As `deploy`, in `/opt/combat-planner/deploy`:
 
 1. `nano .env`: set the new tag in `APP_IMAGE`, e.g. `ghcr.io/clericlvl2/combat-planner-v2:0.1.2`.
-2. Pull and restart the app, then drop the old image:
+2. Pull and restart the app, then drop every image no container uses, the previous release
+   included: the 10 GB disk holds only a few images.
 
    ```sh
-   docker compose pull app && docker compose up -d app && docker image prune -f
+   docker compose pull app && docker compose up -d app && docker image prune -af
    ```
 
 3. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
@@ -182,7 +190,10 @@ As `deploy`, in `/opt/combat-planner/deploy`:
 When a release changes files in `deploy/`, run `git pull` first and `docker compose up -d`
 instead of `docker compose up -d app`.
 
-Rollback is the same procedure with the previous tag.
+Rollback is the same procedure with the previous tag, which is pulled again. When the release
+being rolled back added a database migration, the old code may not run on the new schema:
+restore the database to a moment before the update instead ([Restore](#restore), with
+`-timestamp`), then start the previous tag.
 
 ## Restore drill
 
@@ -208,7 +219,15 @@ Record each passed drill here, through a commit to the repository, not on the se
 
 ## Restore
 
-Rebuilds production from the bucket, e.g. on a new server.
+Rebuilds production from the bucket, e.g. on a new server, or rolls the database back to a
+moment before damage.
+
+The bucket holds every change of the last 24 h (Litestream's default snapshot retention), so
+`restore` can return the state at any moment in that window. Without `-timestamp` it returns the
+latest replicated state, which already contains any damage done more than 10 s ago: after a bad
+action, migration or deletion, pick a moment before it and pass it as
+`-timestamp <RFC 3339, UTC>` (exclusive), e.g. `-timestamp 2026-10-22T10:00:00Z`. Pick the
+moment before deleting anything; a damaged state replicated for 24 h is the only state left.
 
 1. Runbook steps 1–6.
 2. Step 7, with `BETTER_AUTH_SECRET` and `LINK_SECRET` from the password manager instead of new
@@ -219,6 +238,9 @@ Rebuilds production from the bucket, e.g. on a new server.
    docker compose run --rm --no-deps --entrypoint true app
    docker compose run --rm --no-deps litestream restore /data/combat-planner.db
    ```
+
+   For a moment before damage:
+   `docker compose run --rm --no-deps litestream restore -timestamp 2026-10-22T10:00:00Z /data/combat-planner.db`.
 
    `restore` refuses to overwrite an existing database. To restore on a server whose database
    is damaged, first `docker compose down`, then `docker volume rm combat-planner_data`, then

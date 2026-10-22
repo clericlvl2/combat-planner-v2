@@ -3,7 +3,10 @@ name: combat-planner
 services:
   app:
     image: ${APP_IMAGE:?set APP_IMAGE in deploy/.env}
-    env_file: .env
+    environment:
+      BETTER_AUTH_URL: ${BETTER_AUTH_URL:?set BETTER_AUTH_URL in deploy/.env}
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in deploy/.env}
+      LINK_SECRET: ${LINK_SECRET:?set LINK_SECRET in deploy/.env}
     volumes:
       - data:/data
     restart: unless-stopped
@@ -13,6 +16,7 @@ services:
     ports:
       - '80:80'
       - '443:443'
+      - '443:443/udp'
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in deploy/.env}
     volumes:
