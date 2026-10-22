@@ -2,8 +2,8 @@
   position: relative;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 100px 40px;
-  min-height: 72px;
+  grid-template-columns: 48px minmax(0, 1fr) 84px;
+  min-height: 64px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
@@ -33,18 +33,23 @@
 }
 
 .roleCell {
+  position: relative;
   display: flex;
   align-items: stretch;
   min-height: 0;
+}
 
-  .root[data-expanded] > & > .role {
+.role {
+  border-radius: calc(var(--mantine-radius-card) - 2px) 0 0 calc(var(--mantine-radius-card) - 2px);
+
+  .root[data-expanded] & {
     border-bottom-left-radius: 0;
   }
 }
 
 .initiative {
   position: absolute;
-  top: 76px;
+  top: calc(100% + 4px);
   left: 0;
   z-index: 4;
   cursor: default;
@@ -56,16 +61,26 @@
   justify-content: center;
   gap: 4px;
   min-width: 0;
-  padding: 12px 4px 12px 12px;
+  padding: 8px 4px 8px 10px;
 }
 
-.name {
+.nameLine {
   color: var(--cp-color-ink);
   font-size: var(--mantine-font-size-body);
   font-weight: 600;
   line-height: var(--mantine-line-height-snug);
   overflow-wrap: anywhere;
   text-wrap: pretty;
+}
+
+.name {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
 
   .root[data-dead] &,
   .root[data-disabled] & {
@@ -75,28 +90,30 @@
   .root[data-dead] & {
     text-decoration: line-through;
   }
+
+  &:is(button) {
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: min(0px, (100% - var(--cp-tap-target)) / 2);
+    }
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
 }
 
-.claim {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  min-width: 0;
+.claimer {
+  display: inline-block;
+  max-width: 100%;
   color: var(--cp-role-hero);
-  font-size: var(--mantine-font-size-small);
-  font-weight: 600;
-  line-height: var(--mantine-line-height-snug);
-}
-
-.claimIcon {
-  flex: none;
-  width: 16px;
-  height: 16px;
-}
-
-.claimName {
-  min-width: 0;
-  overflow-wrap: anywhere;
 }
 
 .conditions {
@@ -109,53 +126,10 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-}
+  padding-right: 4px;
 
-.chevronCell {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  border: none;
-  border-radius: 0 14px 14px 0;
-  background: transparent;
-  color: var(--cp-color-ink);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-
-  .root[data-dead] &,
-  .root[data-disabled] & {
-    color: var(--cp-color-secondary);
-  }
-
-  .root[data-readonly] & {
-    cursor: default;
-  }
-
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: -2px;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: min(0px, (100% - var(--cp-tap-target)) / 2);
-  }
-}
-
-.chevron {
-  box-sizing: content-box;
-  width: 8px;
-  height: 8px;
-  border-right: 2px solid currentColor;
-  border-bottom: 2px solid currentColor;
-  transform: rotate(45deg) translate(-2px, -2px);
-
-  .root[data-expanded] & {
-    transform: rotate(-135deg) translate(-2px, -2px);
+  .root[data-active] & > * {
+    background: var(--cp-color-surface);
   }
 }
 
@@ -182,10 +156,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
   min-width: 0;
-  height: 48px;
-  padding: 0 12px;
+  min-height: 48px;
+  padding: 4px 8px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-surface);
@@ -224,7 +198,7 @@
 
 .triggerLabel {
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: var(--mantine-line-height-snug);
+  text-align: left;
+  text-wrap: balance;
 }

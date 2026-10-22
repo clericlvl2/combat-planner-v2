@@ -80,24 +80,24 @@
 
 .line {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 4px;
   min-width: 0;
   color: var(--cp-color-secondary);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
-  line-height: var(--mantine-line-height-body);
+  line-height: var(--mantine-line-height-snug);
 }
 
 .lineIcon {
   flex: none;
   width: 16px;
   height: 16px;
-  margin-top: 2px;
 }
 
 .lineText {
   min-width: 0;
-  overflow-wrap: anywhere;
-  text-wrap: pretty;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

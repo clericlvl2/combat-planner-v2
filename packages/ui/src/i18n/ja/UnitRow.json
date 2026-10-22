@@ -1,8 +1,6 @@
 {
-  "claimedBy": "プレイヤー",
   "conditions": "状態",
   "hpHistory": "HP履歴",
-  "details": "ユニットの詳細",
   "charmed": "魅了",
   "confused": "混乱",
   "dazed": "眩暈",

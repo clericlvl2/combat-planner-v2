@@ -84,7 +84,7 @@ export async function addUnit(page: Page, name: string, type: UnitType): Promise
 
 export async function openUnitMenu(page: Page, name: string, item: string): Promise<void> {
   const row = unitRow(page, name);
-  const details = row.getByRole('button', { name: t('UnitRow:details') });
+  const details = row.getByRole('button', { name, exact: true });
   if ((await details.getAttribute('aria-expanded')) !== 'true') await details.click();
   await row.getByRole('button', { name: t('CardActions:more') }).click();
   await page
@@ -95,7 +95,7 @@ export async function openUnitMenu(page: Page, name: string, item: string): Prom
 
 export async function unitNames(page: Page): Promise<string[]> {
   return unitRows(page).evaluateAll((rows) =>
-    rows.map((row) => row.querySelector('div > span')?.textContent ?? ''),
+    rows.map((row) => row.querySelector('[data-part="name"]')?.textContent ?? ''),
   );
 }
 

@@ -87,13 +87,10 @@ const typeNote = async (row: HTMLElement, text: string, t: TFunction) => {
   await userEvent.type(within(row).getByRole('textbox', { name: t('NoteField:label') }), text);
 };
 
-const expand = async (canvasElement: HTMLElement, name: string, t: TFunction) => {
+const expand = async (canvasElement: HTMLElement, name: string) => {
   const row = await rowOf(canvasElement, name);
-  await userEvent.click(within(row).getByRole('button', { name: t('UnitRow:details') }));
-  await expect(within(row).getByRole('button', { name: t('UnitRow:details') })).toHaveAttribute(
-    'aria-expanded',
-    'true',
-  );
+  await userEvent.click(within(row).getByRole('button', { name }));
+  await expect(within(row).getByRole('button', { name })).toHaveAttribute('aria-expanded', 'true');
   return row;
 };
 
@@ -103,7 +100,7 @@ const openRowMenu = async (
   name: string,
   t: TFunction,
 ) => {
-  const row = await expand(canvasElement, name, t);
+  const row = await expand(canvasElement, name);
   await userEvent.click(within(row).getByRole('button', { name: t('CardActions:more') }));
   return canvas.findByRole('menu', { name: t('UnitRow:menuLabel', { name }) });
 };
@@ -468,7 +465,7 @@ export const UnitExpanded = meta.story({
   tags: ['visual'],
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
-    await expand(canvasElement, names.vashti, t);
+    await expand(canvasElement, names.vashti);
     await expect(canvas.getByRole('button', { name: t('PlayerRow:conditions') })).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('UnitRow:hpHistory') })).toBeVisible();
   },
@@ -478,7 +475,7 @@ export const ConditionList = meta.story({
   tags: ['visual'],
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
-    await expand(canvasElement, names.vashti, t);
+    await expand(canvasElement, names.vashti);
     await userEvent.click(canvas.getByRole('button', { name: t('PlayerRow:conditions') }));
     const sheet = await canvas.findByRole('dialog', { name: t('PlayerRow:conditions') });
     await expect(within(sheet).getByRole('checkbox', { name: t('Chip:dazed') })).toBeChecked();
@@ -492,7 +489,7 @@ export const ConditionAndNoteSaved = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
-    const row = await expand(canvasElement, names.vashti, t);
+    const row = await expand(canvasElement, names.vashti);
     await userEvent.click(canvas.getByRole('button', { name: t('PlayerRow:conditions') }));
     const sheet = await canvas.findByRole('dialog', { name: t('PlayerRow:conditions') });
     await userEvent.click(within(sheet).getByRole('checkbox', { name: t('Chip:weakened') }));
@@ -512,15 +509,21 @@ export const ConditionAndNoteSaved = meta.story({
 
 export const RowWithConditionsAndNote = meta.story({
   parameters: {
+    geometry: {
+      truncation: {
+        reason: 'the collapsed note is one line with an ellipsis by design',
+        except: '[data-note-line]',
+      },
+    },
     scenario: runningScenario({
       units: rosterUnits({ vashti: { conditions: ['dazed', 'weakened'] } }),
     }),
   },
   play: async ({ canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
-    const row = await expand(canvasElement, names.vashti, t);
+    const row = await expand(canvasElement, names.vashti);
     await typeNote(row, 'Hex on Orc Berserker', t);
-    await userEvent.click(within(row).getByRole('button', { name: t('UnitRow:details') }));
+    await userEvent.click(within(row).getByRole('button', { name: names.vashti }));
     await waitFor(() =>
       expect(dispatched(fakeApiOf(loaded))).toEqual([
         expect.objectContaining({
@@ -541,7 +544,7 @@ export const HpHistoryFromRow = meta.story({
   name: 'HP History From Row',
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
-    await expand(canvasElement, names.vashti, t);
+    await expand(canvasElement, names.vashti);
     await userEvent.click(canvas.getByRole('button', { name: t('UnitRow:hpHistory') }));
     const sheet = await canvas.findByRole('dialog', {
       name: (label: string) => label.includes(t('HpHistory:title')),
@@ -704,9 +707,7 @@ export const DisabledUnit = meta.story({
       expect.objectContaining({ type: 'setDisabled', unitId: unitIds.orc, disabled: true }),
     ]);
     await expect(
-      within(await rowOf(canvasElement, names.orc)).getByRole('button', {
-        name: t('UnitRow:details'),
-      }),
+      within(await rowOf(canvasElement, names.orc)).getByRole('button', { name: names.orc }),
     ).toHaveAttribute('aria-expanded', 'false');
   },
 });
@@ -1036,7 +1037,7 @@ export const EditSavesUnit = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
-    const row = await expand(canvasElement, names.orc, t);
+    const row = await expand(canvasElement, names.orc);
     await userEvent.click(within(row).getByRole('button', { name: t('CardActions:edit') }));
     const form = await canvas.findByRole('dialog', { name: t('UnitForm:editTitle') });
     const name = within(form).getByRole('textbox', { name: t('UnitForm:name') });
@@ -1245,7 +1246,7 @@ export const RapidTapsUseNewestVersion = meta.story({
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
     api.deferBroadcasts();
-    const row = await expand(canvasElement, names.orc, t);
+    const row = await expand(canvasElement, names.orc);
     await userEvent.click(within(row).getByRole('button', { name: t('PlayerRow:conditions') }));
     const sheet = await canvas.findByRole('dialog', { name: t('PlayerRow:conditions') });
     within(sheet)
