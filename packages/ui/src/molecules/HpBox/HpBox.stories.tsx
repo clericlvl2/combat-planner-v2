@@ -1,12 +1,13 @@
-import { healthSegments, healthStatus } from '@combat-planner/domain';
+import { healthStatus } from '@combat-planner/domain';
+import type { HealthStatus } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
 import type { TFunction } from 'i18next';
 import { expect, fn, userEvent } from 'storybook/test';
 import { base, health, healthTints, hpActions } from '../../theme.ts';
 import { HpBox } from './HpBox.tsx';
-import type { HpBoxProps } from './HpBox.tsx';
+import type { HpBoxProps, HpBoxViewer } from './HpBox.tsx';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
-import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { storyT } from '../../storybook/storyT.ts';
 
 function HpBoxCell(props: HpBoxProps) {
   return (
@@ -35,24 +36,34 @@ const boxOf = (canvasElement: HTMLElement) => {
 
 const minus = (value: number) => (value < 0 ? `−${Math.abs(value)}` : String(value));
 
-const dmBoxFacts = (box: HTMLElement) => ({
+const pipsOf: Record<HealthStatus, number> = { full: 2, wounded: 1, staggered: 1, dead: 0 };
+
+const boxFacts = (box: HTMLElement) => ({
   numbers: box.querySelector('[data-part="numbers"]')?.textContent ?? null,
-  segments: box.querySelectorAll('[data-segment][data-filled]').length,
+  pips: box.querySelectorAll('[data-pip]').length,
+  filled: box.querySelectorAll('[data-pip][data-filled]').length,
   status: box.querySelector('[data-part="status"]')?.textContent ?? null,
 });
 
-const dmBoxExpected = (t: TFunction, hp: number, maxHp: number) => {
+const boxExpected = (t: TFunction, hp: number, maxHp: number, viewer: HpBoxViewer = 'dm') => {
   const status = healthStatus(hp, maxHp);
   return {
     numbers: `${minus(hp)}/${maxHp}`,
-    segments: healthSegments(status, hp, maxHp),
-    status: status === 'full' ? null : t(status),
+    pips: 2,
+    filled: pipsOf[status],
+    status: viewer === 'dm' && status === 'full' ? null : t(status),
   };
+};
+
+const isVisuallyHidden = (element: Element | null) => {
+  if (!element) return false;
+  const box = element.getBoundingClientRect();
+  return box.width <= 1 && box.height <= 1;
 };
 
 function HpBoxList({ boxes }: { boxes: readonly HpBoxProps[] }) {
   return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 12 }}>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: 12 }}>
       {boxes.map((box, index) => (
         <div key={index} data-case={index}>
           <HpBox {...box} />
@@ -76,7 +87,6 @@ const gridRows = [
   { label: 'Full', hp: 40 },
   { label: 'Wounded', hp: 24 },
   { label: 'Staggered', hp: 14 },
-  { label: 'Staggered low', hp: 6 },
   { label: 'Dead', hp: -3 },
 ].map(({ label, hp }) => ({
   label,
@@ -89,6 +99,7 @@ const gridRows = [
         maxHp={40}
         disabled={state === 'DM disabled'}
         mine={state === 'Own hero'}
+        onClick={state === 'DM' || state === 'DM disabled' ? fn() : undefined}
       />
     );
   },
@@ -97,11 +108,11 @@ const gridRows = [
 const withTempHp: readonly HpBoxProps[] = [
   { viewer: 'dm', hp: 30, maxHp: 30, tempHp: 5 },
   { viewer: 'player', hp: 20, maxHp: 36, tempHp: 5, mine: true },
-  { viewer: 'player', hp: 187, maxHp: 240, tempHp: 120 },
+  { viewer: 'dm', hp: 999, maxHp: 999, tempHp: 999 },
 ];
 
 const threeDigits: readonly HpBoxProps[] = [
-  { viewer: 'dm', hp: 287, maxHp: 320 },
+  { viewer: 'dm', hp: 287, maxHp: 320, onClick: fn() },
   { viewer: 'dm', hp: 112, maxHp: 320, tempHp: 120 },
   { viewer: 'dm', hp: -999, maxHp: 999 },
   { viewer: 'dm', hp: 999, maxHp: 999 },
@@ -128,21 +139,27 @@ export const AllStates = meta.story({
 });
 
 export const WithTempHp = meta.story({
+  tags: ['visual'],
   render: () => <HpBoxList boxes={withTempHp} />,
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
-    const tempOf = (index: number) => {
-      const temp = [...caseAt(canvasElement, index).querySelectorAll('span')].find(
-        (span) => span.textContent === t('temp', { amount: index === 2 ? 120 : 5 }),
-      );
-      if (!temp) throw new Error(`temp of case ${index} not rendered`);
-      return temp;
-    };
-    await expect(dmBoxFacts(caseAt(canvasElement, 0))).toEqual(dmBoxExpected(t, 30, 30));
-    await expect(getComputedStyle(tempOf(0)).color).toBe(rgb(base.ink));
-    await expect(getComputedStyle(tempOf(1)).color).toBe(rgb(hpActions.setTemp));
-    await expect(caseAt(canvasElement, 2)).toHaveTextContent(t('wounded'));
-    await expect(tempOf(2)).toBeVisible();
+    for (const [index, amount] of [5, 5, 999].entries()) {
+      const box = caseAt(canvasElement, index);
+      const badge = box.querySelector<HTMLElement>('[data-part="temp-badge"]');
+      if (!badge) throw new Error(`badge of case ${index} not rendered`);
+      await expect(badge).toHaveTextContent(new RegExp(`^\\+${amount}$`));
+      await expect(badge).toHaveAttribute('aria-hidden', 'true');
+      await expect(badge).toBeVisible();
+      await expect(getComputedStyle(badge).backgroundColor).toBe(rgb(hpActions.setTemp));
+      await expect(getComputedStyle(badge).borderTopColor).toBe(rgb(base.surface));
+      await expect(badge.getBoundingClientRect().height).toBe(18);
+      await expect(badge.getBoundingClientRect().top - box.getBoundingClientRect().top).toBe(-8);
+      await expect(box.getBoundingClientRect().right - badge.getBoundingClientRect().right).toBe(6);
+      const temp = box.querySelector('[data-part="temp"]');
+      await expect(temp).toHaveTextContent(t('temp', { amount }));
+      await expect(isVisuallyHidden(temp)).toBe(true);
+    }
+    await expect(boxFacts(caseAt(canvasElement, 0))).toEqual(boxExpected(t, 30, 30));
   },
 });
 
@@ -152,14 +169,35 @@ export const ThreeDigits = meta.story({
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
     for (const [index, box] of threeDigits.entries()) {
-      if (box.hp === undefined) continue;
-      await expect(dmBoxFacts(caseAt(canvasElement, index))).toEqual(
-        dmBoxExpected(t, box.hp, box.maxHp),
-      );
+      if (box.hp === undefined || box.preset) continue;
+      const element = caseAt(canvasElement, index);
+      await expect(boxFacts(element)).toEqual(boxExpected(t, box.hp, box.maxHp));
+      const numbers = element.querySelector<HTMLElement>('[data-part="numbers"]');
+      await expect(numbers?.getBoundingClientRect().width).toBeLessThanOrEqual(80);
     }
-    await expect(canvas.getByText(t('temp', { amount: 120 }))).toBeVisible();
     await expect(canvas.getByText('−999')).toBeVisible();
     await expect(canvas.getByText('−105')).toBeVisible();
+  },
+});
+
+export const Preset = meta.story({
+  tags: ['visual'],
+  render: () => (
+    <HpBoxList
+      boxes={[
+        { viewer: 'dm', preset: true, maxHp: 40 },
+        { viewer: 'dm', preset: true, maxHp: 999 },
+      ]}
+    />
+  ),
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    const box = caseAt(canvasElement, 0);
+    await expect(box).toHaveTextContent(`40${t('hp')}`);
+    await expect(box.querySelectorAll('[data-pip]')).toHaveLength(0);
+    await expect(box.querySelector('[data-part="status"]')).toBeNull();
+    await expect(getComputedStyle(box).backgroundColor).toBe(rgb(base.soft));
+    await expect(caseAt(canvasElement, 1)).toHaveTextContent(`999${t('hp')}`);
   },
 });
 
@@ -169,18 +207,24 @@ export const DmFacts = meta.story({
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
     const staggered = caseAt(canvasElement, 0);
-    await expect(dmBoxFacts(staggered)).toEqual(dmBoxExpected(t, 14, 40));
-    await expect(staggered).toHaveTextContent(t('temp', { amount: 5 }));
-    await expect(staggered.getBoundingClientRect().width).toBe(96);
-    await expect(getComputedStyle(staggered).borderTopColor).toBe(rgb(base.border));
-    const status = staggered.querySelector<HTMLElement>('[data-part="status"]');
-    await expect(status && getComputedStyle(status).color).toBe(rgb(health.staggered));
+    await expect(boxFacts(staggered)).toEqual(boxExpected(t, 14, 40));
+    await expect(staggered.getBoundingClientRect().width).toBe(80);
+    await expect(staggered.getBoundingClientRect().height).toBeGreaterThanOrEqual(44);
+    await expect(getComputedStyle(staggered).borderTopWidth).toBe('0px');
+    await expect(getComputedStyle(staggered).backgroundColor).toBe(rgb(healthTints.staggered));
+    await expect(isVisuallyHidden(staggered.querySelector('[data-part="status"]'))).toBe(true);
+    const filled = staggered.querySelector<HTMLElement>('[data-pip][data-filled]');
+    await expect(filled && getComputedStyle(filled).backgroundColor).toBe(rgb(health.staggered));
+    await expect(filled?.getBoundingClientRect().width).toBe(24);
+    await expect(filled?.getBoundingClientRect().height).toBe(5);
+    const empty = staggered.querySelector<HTMLElement>('[data-pip]:not([data-filled])');
+    await expect(empty && getComputedStyle(empty).backgroundColor).toBe(rgb(health.empty));
     const dead = caseAt(canvasElement, 1);
-    await expect(dmBoxFacts(dead)).toEqual(dmBoxExpected(t, -3, 18));
+    await expect(boxFacts(dead)).toEqual(boxExpected(t, -3, 18));
     await expect(getComputedStyle(dead).backgroundColor).toBe('rgba(0, 0, 0, 0)');
     const disabled = caseAt(canvasElement, 2);
-    await expect(dmBoxFacts(disabled)).toEqual(dmBoxExpected(t, 18, 18));
-    await expect(getComputedStyle(disabled).borderTopColor).toBe('rgba(0, 0, 0, 0)');
+    await expect(boxFacts(disabled)).toEqual(boxExpected(t, 18, 18));
+    await expect(getComputedStyle(disabled).backgroundColor).toBe('rgba(0, 0, 0, 0)');
     const numbers = disabled.querySelector<HTMLElement>('[data-part="numbers"]');
     const hp =
       numbers && [...numbers.querySelectorAll('span')].find((span) => span.textContent === '18');
@@ -194,21 +238,30 @@ export const PlayerTints = meta.story({
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
     const full = caseAt(canvasElement, 0);
-    await expect(full).toHaveTextContent(t('full'));
-    await expect(full.querySelectorAll('[data-segment]')).toHaveLength(0);
+    await expect(boxFacts(full)).toEqual(boxExpected(t, 52, 52, 'player'));
     await expect(getComputedStyle(full).backgroundColor).toBe(rgb(healthTints.full));
-    await expect(getComputedStyle(caseAt(canvasElement, 1)).backgroundColor).toBe(
-      rgb(healthTints.wounded),
-    );
+    const wounded = caseAt(canvasElement, 1);
+    await expect(boxFacts(wounded)).toEqual(boxExpected(t, 24, 40, 'player'));
+    await expect(getComputedStyle(wounded).backgroundColor).toBe(rgb(healthTints.wounded));
     const own = caseAt(canvasElement, 2);
-    const ownNumbers = own.firstElementChild;
+    const ownNumbers = own.querySelector('[data-part="numbers"]');
     await expect(ownNumbers && getComputedStyle(ownNumbers).borderBottomStyle).toBe('dashed');
     await expect(getComputedStyle(own).backgroundColor).toBe(rgb(healthTints.staggered));
-    await expect(caseAt(canvasElement, 3)).toHaveTextContent(
-      new RegExp(`^${escapeRegExp(t('staggered'))}$`),
-    );
+    const enemy = caseAt(canvasElement, 3);
+    await expect(boxFacts(enemy)).toEqual({
+      numbers: null,
+      pips: 2,
+      filled: 1,
+      status: t('staggered'),
+    });
+    await expect(getComputedStyle(enemy).backgroundColor).toBe(rgb(healthTints.staggered));
     const enemyDead = caseAt(canvasElement, 4);
-    await expect(enemyDead).toHaveTextContent(new RegExp(`^${escapeRegExp(t('dead'))}$`));
+    await expect(boxFacts(enemyDead)).toEqual({
+      numbers: null,
+      pips: 2,
+      filled: 0,
+      status: t('dead'),
+    });
     await expect(getComputedStyle(enemyDead).backgroundColor).toBe(rgb(base.soft));
   },
 });
@@ -227,19 +280,47 @@ export const DamageSteps = meta.story({
   ),
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
+    const tints: Record<HealthStatus, string> = {
+      full: rgb(healthTints.full),
+      wounded: rgb(healthTints.wounded),
+      staggered: rgb(healthTints.staggered),
+      dead: 'rgba(0, 0, 0, 0)',
+    };
     for (const hp of [40, 24, 14, 6, -3]) {
       const step = canvasElement.querySelector<HTMLElement>(`[data-step="${hp}"]`);
       if (!step) throw new Error(`step ${hp} not rendered`);
-      await expect(dmBoxFacts(boxOf(step))).toEqual(dmBoxExpected(t, hp, 40));
+      await expect(boxFacts(boxOf(step))).toEqual(boxExpected(t, hp, 40));
+      await expect(getComputedStyle(boxOf(step)).backgroundColor).toBe(tints[healthStatus(hp, 40)]);
     }
+  },
+});
+
+export const EditableIsUnderlined = meta.story({
+  tags: ['!dev'],
+  render: () => (
+    <HpBoxList
+      boxes={[
+        { viewer: 'dm', hp: 287, maxHp: 320, onClick: fn() },
+        { viewer: 'dm', hp: 287, maxHp: 320 },
+      ]}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const underlineOf = (index: number) => {
+      const numbers = caseAt(canvasElement, index).querySelector('[data-part="numbers"]');
+      return numbers && getComputedStyle(numbers).borderBottomStyle;
+    };
+    await expect(underlineOf(0)).toBe('dashed');
+    await expect(underlineOf(1)).toBe('none');
   },
 });
 
 export const ClickOpensCalculator = meta.story({
   tags: ['!dev'],
   args: { viewer: 'dm', hp: 14, maxHp: 40, onClick: fn() },
-  play: async ({ args, canvas }) => {
-    await userEvent.click(canvas.getByRole('button'));
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    await userEvent.click(canvas.getByRole('button', { name: `14 /40 ${t('staggered')}` }));
     await expect(args.onClick).toHaveBeenCalledOnce();
   },
 });
@@ -252,7 +333,7 @@ export const EnemyIsReadOnly = meta.story({
     await expect(canvas.queryByRole('button')).toBeNull();
     await userEvent.click(boxOf(canvasElement));
     await expect(args.onClick).not.toHaveBeenCalled();
-    await expect(canvas.getByText(t('wounded'))).toBeVisible();
+    await expect(canvas.getByText(t('wounded'))).toBeInTheDocument();
   },
 });
 

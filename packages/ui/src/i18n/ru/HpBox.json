@@ -3,5 +3,6 @@
   "wounded": "Ранен",
   "staggered": "Шатается",
   "dead": "Мёртв",
-  "temp": "+{{amount}} врем."
+  "temp": "+{{amount}} врем.",
+  "hp": "ОЗ"
 }

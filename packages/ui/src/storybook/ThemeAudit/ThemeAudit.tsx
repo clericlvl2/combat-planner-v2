@@ -57,7 +57,7 @@ const tokenGroups: TokenGroup[] = [
       token('highlight', base.highlight, 'Highlight: selected row'),
       token('accent', base.accent, 'Accent: active turn, tap marker'),
       token('border', base.border, 'Border and divider'),
-      token('disabled', base.disabled, 'Disabled fill, empty HP segment'),
+      token('disabled', base.disabled, 'Disabled fill, empty HP pip'),
       token('ink', base.ink, 'Ink: text, primary button, active border', 'Aa', onDark),
       token('inkPressed', base.inkPressed, 'Ink pressed', 'Aa', onDark),
       token('secondary', base.secondary, 'Secondary text, dead role block', 'Aa', onDark),
@@ -83,11 +83,11 @@ const tokenGroups: TokenGroup[] = [
   {
     title: 'Health',
     items: [
-      token('full', health.full, 'Full: 4 segments'),
-      token('wounded', health.wounded, 'Wounded, 50% and up: 3 segments'),
-      token('staggered', health.staggered, 'Staggered, below 50%: 2 or 1'),
-      token('dead', health.dead, 'Dead, 0 or below: 0 segments, name struck'),
-      token('empty', health.empty, 'Empty segment'),
+      token('full', health.full, 'Full: 2 pips'),
+      token('wounded', health.wounded, 'Wounded, 50% and up: 1 pip'),
+      token('staggered', health.staggered, 'Staggered, below 50%: 1 pip'),
+      token('dead', health.dead, 'Dead, 0 or below: 0 pips, name struck'),
+      token('empty', health.empty, 'Empty pip'),
     ],
   },
   {

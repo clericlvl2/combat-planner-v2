@@ -3,5 +3,6 @@
   "wounded": "Blessé",
   "staggered": "Chancelant",
   "dead": "Mort",
-  "temp": "+{{amount}} temp."
+  "temp": "+{{amount}} temp.",
+  "hp": "PV"
 }
