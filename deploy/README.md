@@ -131,14 +131,18 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    docker pull "$(sed -n 's/^APP_IMAGE=//p' .env)"
    ```
 
-   If ghcr.io does not answer from the server, move the image by hand and note it here:
+   When ghcr.io does not answer from the server, the image moves by hand. On the operator's
+   machine:
 
    ```sh
-   # on the operator's machine
    docker pull ghcr.io/clericlvl2/combat-planner-v2:<tag>
    docker save ghcr.io/clericlvl2/combat-planner-v2:<tag> | gzip > combat-planner.tar.gz
    scp combat-planner.tar.gz deploy@195.2.67.81:
-   # on the server
+   ```
+
+   On the server, as `deploy`:
+
+   ```sh
    docker load < ~/combat-planner.tar.gz && rm ~/combat-planner.tar.gz
    ```
 
@@ -178,7 +182,7 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 
 As `deploy`, in `/opt/combat-planner/deploy`:
 
-1. `nano .env`: set the new tag in `APP_IMAGE`, e.g. `ghcr.io/clericlvl2/combat-planner-v2:0.1.2`.
+1. `nano .env`: set the release tag in `APP_IMAGE`.
 2. Pull and restart the app, then drop every image no container uses, the previous release
    included: the 10 GB disk holds only a few images.
 
@@ -189,13 +193,12 @@ As `deploy`, in `/opt/combat-planner/deploy`:
 3. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
    `{"status":"ok"}`.
 
-When a release changes files in `deploy/`, run `git pull` first and `docker compose up -d`
-instead of `docker compose up -d app`.
+A release that changes files in `deploy/` takes `git pull` before step 2 and `docker compose up -d`
+for all services in step 2.
 
-Rollback is the same procedure with the previous tag, which is pulled again. When the release
-being rolled back added a database migration, the old code may not run on the new schema:
-restore the database to a moment before the update instead ([Restore](#restore), with
-`-timestamp`), then start the previous tag.
+Rollback is the same procedure with the previous tag, which is pulled again. Old code may not run
+on a schema migrated by a newer release: such a rollback first restores the database to a moment
+before the update ([Restore](#restore), with `-timestamp`), then starts the previous tag.
 
 ## Restore drill
 
@@ -215,27 +218,21 @@ docker compose exec app rm -f /data/restore-test.db /data/restore-test.db-wal /d
 `restore` reads the bucket, endpoint and key from `litestream.yml` for the database path given;
 `curl` prints `{"status":"ok"}`.
 
-Record each passed drill here, through a commit to the repository, not on the server checkout:
-
-- Last passed drill: none yet.
-
 ## Restore
 
 Rebuilds production from the bucket, e.g. on a new server, or rolls the database back to a
 moment before damage.
 
-The bucket holds the changes of the last 24 h (Litestream's default snapshot retention). With
-`-timestamp`, `restore` returns the last replicated state strictly before that moment; for a
-moment older than a few minutes, compaction leaves coarser points, so the state may be up to a
-few minutes earlier than requested, never later. Without `-timestamp` it returns the
-latest replicated state, which already contains any damage done more than 10 s ago: after a bad
-action, migration or deletion, pick a moment before it and pass it as
-`-timestamp <RFC 3339, UTC>` (exclusive), e.g. `-timestamp 2026-10-22T10:00:00Z`. Pick the
-moment before deleting anything; a damaged state replicated for 24 h is the only state left.
+The bucket holds the changes of the last 24 h (Litestream's default snapshot retention).
+Without `-timestamp`, `restore` returns the latest replicated state, which contains any damage
+older than 10 s. With `-timestamp <RFC 3339, UTC>` it returns the last replicated state strictly
+before that moment; for a moment older than a few minutes the state may be up to a few minutes
+earlier, never later. The moment before a bad action, migration or deletion is chosen before
+anything is deleted: after 24 h the damaged state is the only one left.
 
 1. Runbook steps 1–6.
-2. Step 7, with `BETTER_AUTH_SECRET` and `LINK_SECRET` from the password manager instead of new
-   values, and the same `DOMAIN`. Other values sign every user out and break every player link.
+2. Step 7 with `BETTER_AUTH_SECRET` and `LINK_SECRET` from the password manager and the same
+   `DOMAIN`. Other values sign every user out and break every player link.
 3. Create the `data` volume through `app`, so it belongs to uid 1000, then restore into it:
 
    ```sh
@@ -244,7 +241,8 @@ moment before deleting anything; a damaged state replicated for 24 h is the only
    ```
 
    For a moment before damage:
-   `docker compose run --rm --no-deps litestream restore -timestamp 2026-10-22T10:00:00Z /data/combat-planner.db`.
+   `docker compose run --rm --no-deps litestream restore -timestamp <RFC 3339, UTC> /data/combat-planner.db`,
+   e.g. `-timestamp 2026-10-22T10:00:00Z`.
 
    `restore` refuses to overwrite an existing database. To restore on a server whose database
    is damaged, first `docker compose down`, then `docker volume rm combat-planner_data`, then
