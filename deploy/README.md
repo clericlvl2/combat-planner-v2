@@ -1,0 +1,228 @@
+# Deploy
+
+Combat Planner in production on one Ubuntu 24.04 VPS (`linux/amd64`, 1 GB RAM, 10 GB disk):
+HTTPS on a domain and a continuous SQLite backup to Yandex Object Storage.
+
+`compose.yml` runs three services:
+
+- `app`: the release image `ghcr.io/clericlvl2/combat-planner-v2:<tag>`, pulled anonymously.
+  No port is published; only Caddy reaches it.
+- `caddy`: `caddy:2` on ports 80 and 443, with an automatic Let's Encrypt certificate for
+  `DOMAIN`, proxying to `app:3000` (`Caddyfile`).
+- `litestream`: `litestream/litestream:0.5`, replicating `/data/combat-planner.db` to the bucket
+  every 10 s (`litestream.yml`). It runs as uid 1000, like `app`, because it writes beside the
+  database. It starts once `app` is healthy, so `app` creates the `data` volume with the right
+  owner.
+
+Every setting lives in `deploy/.env` on the server only; `.env.example` lists the variables and
+where each value comes from. Litestream copies only the database, not `secrets.json`, so
+`BETTER_AUTH_SECRET` and `LINK_SECRET` are set in `.env` and kept in the password manager: a
+database restored without them signs every user out and breaks every player link. Sessions and
+player links are bound to `DOMAIN` as well: changing it signs everyone out and breaks shared
+player links; accounts and combats stay.
+
+The examples use the server `195.2.67.81` and the bucket `combat-planner-backup-ttrpg74`.
+
+## Runbook
+
+Prerequisites:
+
+- SSH access as `root` by key, e.g. `ssh -i ~/.ssh/combat_planner_vdsina root@195.2.67.81`.
+- A domain whose `A` record points to the server.
+- A Yandex Object Storage bucket (standard class, public access off, versioning off: Litestream
+  deletes its own old files, and versioning would keep them) and a service account with the
+  folder role `storage.editor` and a static access key.
+
+Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards logged in as
+`deploy` and switched to root with `sudo -i`. Commands marked "As `deploy`" run without `sudo`.
+
+1. **Base system.**
+   - `lsb_release -d` shows Ubuntu 24.04. On another release, stop until Docker's apt repository
+     is confirmed for it.
+   - `apt update && apt upgrade -y`
+   - Create the user `deploy` with sudo and root's keys. Choose its password at the prompt and
+     keep it in the password manager; `sudo` asks for it.
+
+     ```sh
+     adduser --gecos '' deploy
+     usermod -aG sudo deploy
+     install -d -m 700 -o deploy -g deploy /home/deploy/.ssh
+     install -m 600 -o deploy -g deploy /root/.ssh/authorized_keys /home/deploy/.ssh/authorized_keys
+     ```
+
+   - Refuse root and password logins. A file in `/etc/ssh/sshd_config.d/` is read before the
+     cloud-init drop-ins, and the first value of a setting wins:
+
+     ```sh
+     printf 'PasswordAuthentication no\nPermitRootLogin no\n' > /etc/ssh/sshd_config.d/00-hardening.conf
+     sshd -T | grep -E '^(passwordauthentication|permitrootlogin) '
+     ```
+
+     Both lines read `no`. Restart SSH only after `ssh -i ~/.ssh/combat_planner_vdsina
+     deploy@195.2.67.81` and `sudo -i` work from a second terminal: `systemctl restart ssh`.
+
+2. **Swap.**
+
+   ```sh
+   fallocate -l 1G /swapfile
+   chmod 600 /swapfile
+   mkswap /swapfile
+   swapon /swapfile
+   echo '/swapfile none swap sw 0 0' >> /etc/fstab
+   echo 'vm.swappiness=10' > /etc/sysctl.d/99-swap.conf
+   sysctl -p /etc/sysctl.d/99-swap.conf
+   free -h
+   ```
+
+   `free -h` shows 1 GB swap.
+
+3. **Firewall.**
+
+   ```sh
+   ufw allow OpenSSH
+   ufw allow 80,443/tcp
+   ufw enable
+   ```
+
+   Ports published by Docker bypass ufw; `compose.yml` publishes only Caddy's 80 and 443.
+
+4. **Docker.** Docker Engine with the compose plugin from Docker's apt repository:
+
+   ```sh
+   apt-get install -y ca-certificates curl git
+   install -m 0755 -d /etc/apt/keyrings
+   curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+   chmod a+r /etc/apt/keyrings/docker.asc
+   echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" > /etc/apt/sources.list.d/docker.list
+   apt-get update
+   apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+   echo '{"log-driver": "local", "log-opts": {"max-size": "10m", "max-file": "3"}}' > /etc/docker/daemon.json
+   systemctl restart docker
+   usermod -aG docker deploy
+   ```
+
+   `docker compose version` prints a version. Log in again as `deploy` for the group to apply.
+
+5. **Files.** The checkout is read-only on the server; only `deploy/.env` is added.
+
+   ```sh
+   git clone https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
+   chown -R deploy:deploy /opt/combat-planner
+   ```
+
+   As `deploy`:
+
+   ```sh
+   cd /opt/combat-planner/deploy
+   cp .env.example .env
+   chmod 600 .env
+   ```
+
+6. **Registry check.** As `deploy`, in `/opt/combat-planner/deploy`:
+
+   ```sh
+   docker pull "$(sed -n 's/^APP_IMAGE=//p' .env)"
+   ```
+
+   If ghcr.io does not answer from the server, move the image by hand and note it here:
+
+   ```sh
+   # on the operator's machine
+   docker pull ghcr.io/clericlvl2/combat-planner-v2:0.1.1
+   docker save ghcr.io/clericlvl2/combat-planner-v2:0.1.1 | gzip > combat-planner.tar.gz
+   scp combat-planner.tar.gz deploy@195.2.67.81:
+   # on the server
+   docker load < ~/combat-planner.tar.gz && rm ~/combat-planner.tar.gz
+   ```
+
+7. **Secrets.** As `deploy`, run `openssl rand -hex 32` twice, then `nano .env` and fill in:
+   - `DOMAIN`: the bare domain, e.g. `planner.example.com`;
+   - `BETTER_AUTH_SECRET` and `LINK_SECRET`: the two generated values;
+   - `LITESTREAM_BUCKET`, e.g. `combat-planner-backup-ttrpg74`, `LITESTREAM_ACCESS_KEY_ID` and
+     `LITESTREAM_SECRET_ACCESS_KEY` from the Yandex console.
+
+   Copy the two secrets into the password manager, then `clear`. Values typed in `nano` stay out
+   of the shell history; never pass them as command arguments.
+
+8. **Start.** The domain's `A` record resolves to the server (`dig +short <domain>`); otherwise
+   Caddy cannot obtain the certificate.
+
+   ```sh
+   docker compose up -d
+   docker compose ps
+   curl -fsS https://<domain>/api/health
+   docker compose logs litestream
+   ```
+
+   - `docker compose ps` shows `app` healthy, `caddy` and `litestream` running.
+   - `curl` prints `{"status":"ok"}`.
+   - The Litestream log shows replication of `/data/combat-planner.db` and no errors; the bucket
+     lists `combat-planner.db/` in the Yandex console.
+
+9. **Smoke.**
+   - From a phone: sign up, create a combat, add a unit, share the player link.
+   - Open the link on a second device; a change by the DM appears there within a second.
+
+10. **Restore drill.** Run the [restore drill](#restore-drill) once.
+
+## Update
+
+As `deploy`, in `/opt/combat-planner/deploy`:
+
+1. `nano .env`: set the new tag in `APP_IMAGE`, e.g. `ghcr.io/clericlvl2/combat-planner-v2:0.1.2`.
+2. Pull and restart the app, then drop the old image:
+
+   ```sh
+   docker compose pull app && docker compose up -d app && docker image prune -f
+   ```
+
+3. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
+   `{"status":"ok"}`.
+
+When a release changes files in `deploy/`, run `git pull` first and `docker compose up -d`
+instead of `docker compose up -d app`.
+
+Rollback is the same procedure with the previous tag.
+
+## Restore drill
+
+Restores the replica into a side file and starts a throwaway app on it; production keeps running.
+As `deploy`, in `/opt/combat-planner/deploy`:
+
+```sh
+docker compose run --rm litestream restore -o /data/restore-test.db /data/combat-planner.db
+docker compose run -d --rm --no-deps --name combat-planner-restore-test \
+  -p 127.0.0.1:3001:3000 -e DATABASE_PATH=/data/restore-test.db app
+sleep 10
+curl -fsS http://127.0.0.1:3001/api/health
+docker stop combat-planner-restore-test
+docker compose exec app rm -f /data/restore-test.db /data/restore-test.db-wal /data/restore-test.db-shm
+```
+
+`restore` reads the bucket, endpoint and key from `litestream.yml` for the database path given;
+`curl` prints `{"status":"ok"}`.
+
+Record each passed drill here, through a commit to the repository, not on the server checkout:
+
+- Last passed drill: none yet.
+
+## Restore
+
+Rebuilds production from the bucket, e.g. on a new server.
+
+1. Runbook steps 1–6.
+2. Step 7, with `BETTER_AUTH_SECRET` and `LINK_SECRET` from the password manager instead of new
+   values, and the same `DOMAIN`. Other values sign every user out and break every player link.
+3. Create the `data` volume through `app`, so it belongs to uid 1000, then restore into it:
+
+   ```sh
+   docker compose run --rm --no-deps --entrypoint true app
+   docker compose run --rm --no-deps litestream restore /data/combat-planner.db
+   ```
+
+   `restore` refuses to overwrite an existing database. To restore on a server whose database
+   is damaged, first `docker compose down`, then `docker volume rm combat-planner_data`, then
+   step 3.
+
+4. Runbook step 8 onwards. Accounts, sessions, combats and player links work as before the
+   loss, up to the last replicated 10 s.

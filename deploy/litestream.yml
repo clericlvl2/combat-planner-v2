@@ -1,0 +1,12 @@
+dbs:
+  - path: /data/combat-planner.db
+    replica:
+      type: s3
+      bucket: ${LITESTREAM_BUCKET}
+      path: combat-planner.db
+      endpoint: https://storage.yandexcloud.net
+      region: ru-central1
+      access-key-id: ${LITESTREAM_ACCESS_KEY_ID}
+      secret-access-key: ${LITESTREAM_SECRET_ACCESS_KEY}
+      sync-interval: 10s
+      retention: 24h

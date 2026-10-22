@@ -62,6 +62,8 @@ stories run on `FakeApiClient` scenarios and need no server.
 
 ## Production
 
+A VPS with HTTPS and a continuous database backup: [deploy/README.md](deploy/README.md).
+
 The image runs with `NODE_ENV=production`. Every setting below is optional and goes
 into `.env`, which compose reads when it exists. The server refuses to start on a
 wrong value and names the variable, readable with `docker compose logs app`.
