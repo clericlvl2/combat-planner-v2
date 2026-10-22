@@ -18,6 +18,15 @@ function TurnBarCell({ reasonKey, ...props }: TurnBarCellProps) {
   return <TurnBar {...props} reason={reason} />;
 }
 
+const reasonCut = {
+  geometry: {
+    truncation: {
+      reason: 'the reason line ends with an ellipsis by design',
+      except: '[data-mode] > span + span',
+    },
+  },
+};
+
 const meta = preview.meta({
   title: 'Organisms/TurnBar',
   component: TurnBarCell,
@@ -32,6 +41,7 @@ export const NextTurn = meta.story({
 
 export const SetupStartCombat = meta.story({
   tags: ['visual'],
+  parameters: reasonCut,
   args: { mode: 'start' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -44,6 +54,7 @@ export const SetupStartCombat = meta.story({
 });
 
 export const BlockedAllUnitsDisabled = meta.story({
+  parameters: reasonCut,
   args: { mode: 'next', disabled: true, reasonKey: 'everyUnitDisabled', onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -60,6 +71,7 @@ export const BlockedAllUnitsDisabled = meta.story({
 
 export const BlockedLastRound = meta.story({
   tags: ['visual'],
+  parameters: reasonCut,
   args: { mode: 'next', disabled: true, reasonKey: 'lastRound' },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');
@@ -98,6 +110,7 @@ export const LongNextName = meta.story({
 });
 
 export const BlockedNoUnits = meta.story({
+  parameters: reasonCut,
   args: { mode: 'start', disabled: true, reasonKey: 'addUnitFirst', onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'TurnBar');

@@ -57,12 +57,6 @@
   text-wrap: balance;
 }
 
-.secondary:not([data-hint]) {
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-
 .title {
   font-family: var(--cp-font-display);
   font-size: var(--mantine-font-size-number);
@@ -74,6 +68,9 @@
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   font-weight: 500;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 
   .button:disabled &,
   .button[data-disabled] & {

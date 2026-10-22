@@ -41,11 +41,7 @@ export function TurnBar({
         onClick={onClick}
       >
         <span className={classes.title}>{title}</span>
-        {secondary ? (
-          <span className={classes.secondary} data-hint={hint === null ? undefined : ''}>
-            {secondary}
-          </span>
-        ) : null}
+        {secondary ? <span className={classes.secondary}>{secondary}</span> : null}
       </UnstyledButton>
     </div>
   );
