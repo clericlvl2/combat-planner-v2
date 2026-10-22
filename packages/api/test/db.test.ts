@@ -70,6 +70,10 @@ describe('openDatabase', () => {
     expect(opened.db.$client.pragma('journal_mode', { simple: true })).toBe('wal');
     expect(opened.db.$client.pragma('foreign_keys', { simple: true })).toBe(1);
   });
+
+  it('waits up to 5 s for a lock', () => {
+    expect(opened.db.$client.pragma('busy_timeout', { simple: true })).toBe(5000);
+  });
 });
 
 describe('migrated tables', () => {

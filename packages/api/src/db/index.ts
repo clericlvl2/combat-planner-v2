@@ -13,6 +13,7 @@ export interface OpenedDatabase {
 export function openDatabase(path: string): OpenedDatabase {
   const sqlite = new Database(path);
   sqlite.pragma('journal_mode = WAL');
+  sqlite.pragma('busy_timeout = 5000');
   sqlite.pragma('foreign_keys = ON');
   const db = drizzle(sqlite, { schema });
   return {
