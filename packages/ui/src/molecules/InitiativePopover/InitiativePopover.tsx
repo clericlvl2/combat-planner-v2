@@ -119,7 +119,14 @@ export function InitiativePopover({
   if (inline) return open ? panel : null;
 
   return (
-    <Popover opened={open} onDismiss={onClose} position="bottom-start" offset={8} withRoles={false}>
+    <Popover
+      opened={open}
+      onDismiss={onClose}
+      position="bottom-start"
+      offset={8}
+      withRoles={false}
+      withinPortal={false}
+    >
       <Popover.Target>
         <span className={classes.anchor}>{anchor}</span>
       </Popover.Target>
