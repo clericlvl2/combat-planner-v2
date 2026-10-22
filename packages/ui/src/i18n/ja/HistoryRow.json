@@ -3,8 +3,7 @@
   "start": "開始",
   "damage": "ダメージ",
   "heal": "回復",
-  "temp": "一時",
-  "max": "最大",
-  "tempAmount": "+{{amount}}一時",
+  "temp": "一時HP",
+  "max": "最大HP",
   "absorbed": "({{amount}}一時)"
 }

@@ -1,14 +1,21 @@
 import type { HpHistoryEntry } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
-import { base, conditions, historyTemp, hpActions } from '../../theme.ts';
+import { base, historyTemp, hpActions } from '../../theme.ts';
 import { HistoryRow } from './HistoryRow.tsx';
 import type { HistoryRowProps } from './HistoryRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 function HistoryRowCell(props: HistoryRowProps) {
   return (
-    <div style={{ width: 334, padding: '0 12px', background: base.surface }}>
+    <div
+      style={{
+        boxSizing: 'border-box',
+        width: '100%',
+        padding: '0 12px',
+        background: base.surface,
+      }}
+    >
       <HistoryRow {...props} />
     </div>
   );
@@ -42,15 +49,8 @@ const part = (canvasElement: HTMLElement, name: string) => {
   return element;
 };
 
-const colorsOf = (canvasElement: HTMLElement) => {
-  const chip = part(canvasElement, 'kind');
-  const kind = getComputedStyle(chip);
-  return {
-    fill: kind.backgroundColor,
-    text: kind.color,
-    amount: getComputedStyle(part(canvasElement, 'amount')).color,
-  };
-};
+const amountColor = (canvasElement: HTMLElement) =>
+  getComputedStyle(part(canvasElement, 'amount')).color;
 
 const rowsOf = (canvasElement: HTMLElement) =>
   canvasElement.querySelectorAll<HTMLElement>('[data-history-row]');
@@ -107,18 +107,19 @@ export const DamageThroughTempHp = meta.story({
     entry: entry({ kind: 'damage', amount: 8, absorbed: 5, previous: 26, result: 23, round: 2 }),
     maxHp: 40,
   },
-  play: async ({ canvas, canvasElement, globals }) => {
+  play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'HistoryRow');
-    await expect(canvas.getByText(t('round', { round: 2 }))).toBeVisible();
     await expect(part(canvasElement, 'kind')).toHaveTextContent(t('damage'));
-    await expect(part(canvasElement, 'kind').tagName).toBe('SPAN');
-    await expect(part(canvasElement, 'kind')).not.toHaveAttribute('data-condition');
-    await expect(part(canvasElement, 'amount').textContent).toBe(
-      `−8 ${t('absorbed', { amount: 5 })}`,
+    await expect(part(canvasElement, 'when').textContent).toBe(
+      `${t('round', { round: 2 })} ${t('absorbed', { amount: 5 })}`,
     );
+    await expect(part(canvasElement, 'amount').textContent).toBe('−8');
     await expect(part(canvasElement, 'result').textContent).toBe('23/40');
+    const kind = part(canvasElement, 'kind').getBoundingClientRect();
+    const when = part(canvasElement, 'when').getBoundingClientRect();
+    await expect(when.top).toBeGreaterThanOrEqual(kind.bottom);
     const row = canvasElement.querySelector<HTMLElement>('[data-kind]');
-    await expect(row?.getBoundingClientRect().height).toBe(40);
+    await expect(row?.getBoundingClientRect().height).toBe(52);
   },
 });
 
@@ -135,8 +136,9 @@ export const LargeValues = meta.story({
     const t = storyT(globals, 'HistoryRow');
     const throughTemp = rowAt(canvasElement, 0);
     const belowZero = rowAt(canvasElement, 1);
-    await expect(part(throughTemp, 'amount').textContent).toBe(
-      `−120 ${t('absorbed', { amount: 40 })}`,
+    await expect(part(throughTemp, 'amount').textContent).toBe('−120');
+    await expect(part(throughTemp, 'absorbed').textContent).toBe(
+      ` ${t('absorbed', { amount: 40 })}`,
     );
     await expect(part(throughTemp, 'result').textContent).toBe('167/320');
     await expect(part(belowZero, 'amount').textContent).toBe('−400');
@@ -157,34 +159,22 @@ export const KindFacts = meta.story({
     const start = rowAt(canvasElement, 5);
     const lastRound = rowAt(canvasElement, 6);
     await expect(part(damage, 'amount').textContent).toBe('−12');
+    await expect(part(damage, 'kind').textContent).toBe(t('damage'));
     await expect(part(damage, 'result').textContent).toBe('14/40');
-    await expect(colorsOf(damage)).toEqual({
-      fill: rgb(conditions.vulnerable.fill),
-      text: rgb(conditions.vulnerable.text),
-      amount: rgb(hpActions.damage),
-    });
+    await expect(amountColor(damage)).toBe(rgb(hpActions.damage));
     await expect(part(heal, 'amount').textContent).toBe('+3');
+    await expect(part(heal, 'kind').textContent).toBe(t('heal'));
     await expect(part(heal, 'result').textContent).toBe('26/40');
-    await expect(colorsOf(heal)).toEqual({
-      fill: rgb(conditions.confused.fill),
-      text: rgb(conditions.confused.text),
-      amount: rgb(hpActions.heal),
-    });
-    await expect(part(temp, 'amount').textContent).toBe(t('tempAmount', { amount: 5 }));
+    await expect(amountColor(heal)).toBe(rgb(hpActions.heal));
+    await expect(part(temp, 'amount').textContent).toBe('+5');
+    await expect(part(temp, 'kind').textContent).toBe(t('temp'));
     await expect(part(temp, 'result').textContent).toBe('26/40');
-    await expect(colorsOf(temp)).toEqual({
-      fill: rgb(historyTemp.fill),
-      text: rgb(historyTemp.text),
-      amount: rgb(historyTemp.text),
-    });
-    await expect(part(maxLowered, 'amount').textContent).toBe('45 → 40');
+    await expect(amountColor(temp)).toBe(rgb(historyTemp.text));
+    await expect(part(maxLowered, 'amount').textContent).toBe('40');
+    await expect(part(maxLowered, 'kind').textContent).toBe(t('max'));
     await expect(part(maxLowered, 'result').textContent).toBe('40/40');
-    await expect(colorsOf(maxLowered)).toEqual({
-      fill: rgb(conditions.fear.fill),
-      text: rgb(conditions.fear.text),
-      amount: rgb(base.ink),
-    });
-    await expect(part(maxRaised, 'amount').textContent).toBe('40 → 50');
+    await expect(amountColor(maxLowered)).toBe(rgb(hpActions.setMax));
+    await expect(part(maxRaised, 'amount').textContent).toBe('50');
     await expect(part(maxRaised, 'result').textContent).toBe('40/50');
     await expect(start).toHaveTextContent(t('start'));
     await expect(start.querySelector('[data-part="kind"]')).toBeNull();

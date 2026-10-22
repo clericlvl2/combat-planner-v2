@@ -3,8 +3,7 @@
   "start": "Début",
   "damage": "Dégâts",
   "heal": "Soin",
-  "temp": "Temp.",
-  "max": "Max.",
-  "tempAmount": "+{{amount}} temp.",
+  "temp": "PV temp.",
+  "max": "Fixer max",
   "absorbed": "({{amount}} temp.)"
 }

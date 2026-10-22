@@ -2,6 +2,7 @@ import preview from '#.storybook/preview';
 import type { HpHistoryEntry, HpHistoryKind } from '@combat-planner/domain';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
+import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { HpHistory } from './HpHistory.tsx';
@@ -132,6 +133,19 @@ const rowTexts = (root: HTMLElement) =>
     [...row.children].map((part) => part.textContent).join(' '),
   );
 
+const rowText = (
+  t: TFunction,
+  amount: string,
+  kind: HpHistoryKind,
+  round: number,
+  result: string,
+  absorbed?: number,
+) => {
+  const when = t('HistoryRow:round', { round });
+  const extra = absorbed ? ` ${t('HistoryRow:absorbed', { amount: absorbed })}` : '';
+  return `${amount} ${t(`HistoryRow:${kind}`)}${when}${extra} ${result}`;
+};
+
 const collapseShowsCount = async (
   canvasElement: HTMLElement,
   title: string,
@@ -161,12 +175,12 @@ export const Expanded = meta.story({
       'true',
     );
     await expect(rowTexts(canvasElement)).toEqual([
-      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:damage')}−12 14/40`,
-      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:heal')}+3 26/40`,
-      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:damage')}−8 ${t('HistoryRow:absorbed', { amount: 5 })} 23/40`,
-      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:temp')}${t('HistoryRow:tempAmount', { amount: 5 })} 26/40`,
-      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:damage')}−14 26/40`,
-      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:max')}45 → 40 40/40`,
+      rowText(t, '−12', 'damage', 3, '14/40'),
+      rowText(t, '+3', 'heal', 3, '26/40'),
+      rowText(t, '−8', 'damage', 2, '23/40', 5),
+      rowText(t, '+5', 'temp', 2, '26/40'),
+      rowText(t, '−14', 'damage', 1, '26/40'),
+      rowText(t, '40', 'max', 1, '40/40'),
     ]);
   },
 });
@@ -219,10 +233,10 @@ export const ThreeDigitValues = meta.story({
   play: async ({ args, canvasElement, globals }) => {
     const t = storyT(globals, 'HpHistory');
     await expect(rowTexts(canvasElement)).toEqual([
-      `${t('HistoryRow:round', { round: 4 })} ${t('HistoryRow:damage')}−120 ${t('HistoryRow:absorbed', { amount: 40 })} 167/320`,
-      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:heal')}+105 287/320`,
-      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:max')}320 → 999 999/999`,
-      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:damage')}−400 −113/320`,
+      rowText(t, '−120', 'damage', 4, '167/320', 40),
+      rowText(t, '+105', 'heal', 3, '287/320'),
+      rowText(t, '999', 'max', 2, '999/999'),
+      rowText(t, '−400', 'damage', 1, '−113/320'),
     ]);
     await expect(
       within(canvasElement).queryByText(`Orc Berserker · ${t('count', { count: 4 })}`),
@@ -319,9 +333,9 @@ export const RowsInGivenOrder = meta.story({
   play: async ({ canvasElement, globals }) => {
     const t = storyT(globals, 'HpHistory');
     await expect(rowTexts(canvasElement)).toEqual([
-      `${t('HistoryRow:round', { round: 1 })} ${t('HistoryRow:max')}32 → 36 36/36`,
-      `${t('HistoryRow:round', { round: 2 })} ${t('HistoryRow:damage')}−9 27/36`,
-      `${t('HistoryRow:round', { round: 3 })} ${t('HistoryRow:damage')}−7 20/36`,
+      rowText(t, '36', 'max', 1, '36/36'),
+      rowText(t, '−9', 'damage', 2, '27/36'),
+      rowText(t, '−7', 'damage', 3, '20/36'),
     ]);
   },
 });
