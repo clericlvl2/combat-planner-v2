@@ -133,7 +133,8 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
 - Commits: Conventional Commits whose subject states the user-visible result, e.g.
   `fix(ui): the ru restart label fits its button`. Types `feat`, `fix`, `perf`, `revert` show in
   the changelog; `docs`, `chore`, `test`, `refactor`, `ci`, `build` do not.
-- Branches: work on `dev`; `main` receives release merges only.
+- Branches: short-lived branches from `main`, merged into `main` through a pull request; a release
+  is the merge of the release-please pull request.
 
 ## Versions
 
