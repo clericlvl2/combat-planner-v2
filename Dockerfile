@@ -12,6 +12,7 @@ FROM base AS build
 COPY . .
 RUN pnpm install --frozen-lockfile
 ARG VITE_SOURCE_URL
+ARG VITE_APP_VERSION
 RUN pnpm build
 
 FROM base AS prod-deps
