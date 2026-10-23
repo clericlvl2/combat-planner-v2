@@ -1,6 +1,6 @@
 import type { Tag, TagId } from '@combat-planner/domain';
 import { normalizeTag } from '@combat-planner/domain';
-import { and, asc, eq, ne } from 'drizzle-orm';
+import { and, asc, count, eq, ne } from 'drizzle-orm';
 import type { Executor } from '../combats/store.ts';
 import { presetTags, tags } from '../db/schema.ts';
 
@@ -32,6 +32,9 @@ export const listOwnTags = (db: Executor, ownerId: string): Tag[] =>
     .where(eq(tags.ownerId, ownerId))
     .orderBy(asc(tags.nameLower), asc(tags.id))
     .all();
+
+export const countOwnTags = (db: Executor, ownerId: string): number =>
+  db.select({ total: count() }).from(tags).where(eq(tags.ownerId, ownerId)).get()?.total ?? 0;
 
 export const isNameTaken = (db: Executor, ownerId: string, name: string, exceptId?: TagId) =>
   db

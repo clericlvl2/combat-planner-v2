@@ -21,7 +21,6 @@ export interface PlayerRowProps extends Omit<
   unit: PlayerUnit;
   mine?: boolean;
   expanded?: boolean;
-  claimedByName?: string;
   active?: boolean;
   setup?: boolean;
   conditionsOpen?: boolean;
@@ -44,7 +43,6 @@ export function PlayerRow({
   unit,
   mine: mineProp = false,
   expanded: expandedProp = false,
-  claimedByName,
   active = false,
   setup = false,
   conditionsOpen = false,
@@ -79,7 +77,7 @@ export function PlayerRow({
     friendly && unit.ac !== undefined && unit.pd !== undefined && unit.md !== undefined
       ? { ac: unit.ac, pd: unit.pd, md: unit.md }
       : null;
-  const claimName = friendly && unit.claimedBy ? claimedByName : undefined;
+  const claimName = friendly ? (unit.claimedByName ?? undefined) : undefined;
   const note = mine ? (unit.note ?? '') : '';
   const collapsedNote = mine && !expanded && note !== '';
 

@@ -1,7 +1,7 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import type { CombatId } from '@combat-planner/domain';
+import type { CombatId, PlayerId } from '@combat-planner/domain';
 import { ulidSchema } from '@combat-planner/domain';
-import type { LinkToken } from '../client.ts';
+import type { LinkToken, PlayerKey } from '../client.ts';
 
 export interface LinkClaims {
   combatId: CombatId;
@@ -33,4 +33,20 @@ export function verifyLink(
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) return null;
   if (current && (current.combatId !== combatId || current.generation !== generation)) return null;
   return { combatId, generation };
+}
+
+export interface PlayerKeyClaims extends LinkClaims {
+  playerId: PlayerId;
+}
+
+const playerKeyOf = ({ combatId, generation, playerId }: PlayerKeyClaims, secret: string): string =>
+  createHmac('sha256', secret).update(`${combatId}:${generation}:${playerId}`).digest('base64url');
+
+export const signPlayerKey = (claims: PlayerKeyClaims, secret: string): PlayerKey =>
+  playerKeyOf(claims, secret);
+
+export function verifyPlayerKey(key: PlayerKey, claims: PlayerKeyClaims, secret: string): boolean {
+  const expected = Buffer.from(playerKeyOf(claims, secret));
+  const actual = Buffer.from(key);
+  return actual.length === expected.length && timingSafeEqual(actual, expected);
 }

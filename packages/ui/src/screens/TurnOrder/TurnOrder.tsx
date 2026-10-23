@@ -3,7 +3,6 @@ import type {
   Condition,
   HpHistoryKind,
   PlayerCombat,
-  PlayerId,
   PlayerUnit,
   UnitId,
 } from '@combat-planner/domain';
@@ -28,7 +27,6 @@ import classes from './TurnOrder.module.css';
 
 export interface TurnOrderProps {
   combat: PlayerCombat;
-  playerId: PlayerId;
   dispatch: (action: Action) => Promise<DispatchResult>;
   onHeroes: () => void;
   random?: () => number;
@@ -52,7 +50,7 @@ const toggledCondition = (
   after.find((condition) => !before.includes(condition)) ??
   before.find((condition) => !after.includes(condition));
 
-export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: TurnOrderProps) {
+export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps) {
   const { t } = useTranslation('TurnOrder');
   const { t: tMenu } = useTranslation('Menu');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -62,7 +60,7 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
   const { flashing, flash } = useHpFlash();
 
   const setup = combat.status === 'setup';
-  const own = (unit: PlayerUnit) => unit.role !== 'enemy' && unit.claimedBy === playerId;
+  const own = (unit: PlayerUnit) => unit.role !== 'enemy' && unit.mine === true;
   const openUnit = combat.units.find((unit) => unit.id === open?.unitId && own(unit));
   const panelOf = (panel: Panel): PlayerUnit | undefined =>
     open?.panel === panel ? openUnit : undefined;
@@ -142,7 +140,6 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
         ) : null}
         {combat.units.map((unit) => {
           const mine = own(unit);
-          const claimer = unit.claimedBy ?? null;
           return (
             <div key={unit.id} className={classes.slot}>
               <PlayerRow
@@ -151,7 +148,6 @@ export function TurnOrder({ combat, playerId, dispatch, onHeroes, random }: Turn
                 unit={unit}
                 mine={mine}
                 expanded={mine && expandedId === unit.id}
-                claimedByName={claimer === null ? undefined : combat.players[claimer]}
                 active={combat.activeUnitId === unit.id}
                 setup={setup}
                 conditionsOpen={isOpen('conditions', unit)}

@@ -21,7 +21,7 @@ import type {
   Combat,
   CombatId,
   DomainErrorCode,
-  LogEntry,
+  UndoableEntry,
   PlayerId,
   Preset,
   Tag,
@@ -34,6 +34,7 @@ import {
   authorize,
   copyCombat,
   duplicateName,
+  nextStack,
   normalizeTag,
   project,
   undoSummary,
@@ -53,7 +54,7 @@ export interface FakeCall {
 
 interface StoredCombat {
   combat: Combat;
-  log: LogEntry[];
+  log: UndoableEntry[];
 }
 
 interface DmSubscriber {
@@ -83,6 +84,7 @@ export const FAKE_ERROR_STATUS: Record<ApiErrorCode, number> = {
   network: 0,
   linkRevoked: 410,
   limit: 422,
+  rateLimited: 429,
   emailTaken: 422,
 };
 
@@ -139,6 +141,7 @@ const scenarioSession = (session: ScenarioSession | null): Session | null =>
 
 export class FakeApiClient implements ApiClient {
   readonly calls: FakeCall[] = [];
+  readonly play: ApiClient['play'];
 
   private readonly delay: number;
   private session: Session | null;
@@ -159,6 +162,7 @@ export class FakeApiClient implements ApiClient {
 
   constructor({ scenario, delay = 0 }: FakeApiClientOptions) {
     this.delay = delay;
+    this.play = this.playAs(scenario.playerId);
     this.session = scenarioSession(scenario.session);
     this.accounts = scenario.accounts.map((account) => ({ ...account }));
     for (const combat of scenario.combats) {
@@ -191,6 +195,10 @@ export class FakeApiClient implements ApiClient {
     const ended = [...this.dmSubscribers.values()].flatMap((subscribers) => [...subscribers]);
     this.dmSubscribers.clear();
     for (const subscriber of ended) subscriber.onEnd({ type: 'unauthorized' });
+  }
+
+  dropPlayers(combatId: CombatId): void {
+    this.endSubscribers(combatId, { type: 'dropped' }, 'player');
   }
 
   failNext(code: ApiErrorCode): void {
@@ -290,8 +298,6 @@ export class FakeApiClient implements ApiClient {
   }
 
   private dispatchAs(stored: StoredCombat, viewer: Viewer, action: Action): VersionResult {
-    const known = stored.log.find((entry) => entry.action.id === action.id);
-    if (known) return { version: known.action.version + 1 };
     const combat = stored.combat;
     if (action.version !== combat.version) {
       throw fail(
@@ -304,12 +310,7 @@ export class FakeApiClient implements ApiClient {
     const now = nowIso();
     const result = apply(combat, action, viewer, now, stored.log);
     if (result instanceof DomainError) throw fromDomain(result);
-    stored.log.push({ action, author: viewer, at: now, patch: result.patch, undoneBy: null });
-    if ('undone' in result) {
-      stored.log = stored.log.map((entry) =>
-        entry.action.id === result.undone ? { ...entry, undoneBy: action.id } : entry,
-      );
-    }
+    stored.log = nextStack(stored.log, { action, author: viewer, at: now, patch: result.patch });
     this.save(stored, result.combat);
     return { version: result.combat.version };
   }
@@ -424,6 +425,7 @@ export class FakeApiClient implements ApiClient {
       this.run('auth.signOut', [], () => {
         this.session = null;
       }),
+    signOutOtherDevices: () => this.run('auth.signOutOtherDevices', [], () => {}),
     session: () => this.run('auth.session', [], () => this.session),
     providers: () => this.run('auth.providers', [], () => [...this.providerList]),
     socialSignIn: (provider, callbackUrl) =>
@@ -545,7 +547,7 @@ export class FakeApiClient implements ApiClient {
           };
           const result = apply(combat, action, DM, now);
           if (result instanceof DomainError) throw fromDomain(result);
-          stored.log.push({ action, author: DM, at: now, patch: result.patch, undoneBy: null });
+          stored.log = nextStack(stored.log, { action, author: DM, at: now, patch: result.patch });
           combat = result.combat;
         }
         const next: Combat = {
@@ -561,42 +563,45 @@ export class FakeApiClient implements ApiClient {
       }),
   };
 
-  readonly play: ApiClient['play'] = {
-    get: (token, playerId) =>
-      this.run('play.get', [token, playerId], () => {
-        const { combat } = this.resolveLink(token);
-        return {
-          combatId: combat.id,
-          playerId,
-          language: this.settingsValue.language,
-          combat: project(combat, { kind: 'player', playerId }),
+  playAs(playerId: PlayerId): ApiClient['play'] {
+    const viewer = { kind: 'player', playerId } as const;
+    return {
+      get: (token) =>
+        this.run('play.get', [token, playerId], () => {
+          const { combat } = this.resolveLink(token);
+          return {
+            combatId: combat.id,
+            playerId,
+            language: this.settingsValue.language,
+            combat: project(combat, viewer),
+          };
+        }),
+      dispatch: (token, action) =>
+        this.run('play.dispatch', [token, playerId, action], () =>
+          this.dispatchAs(this.resolveLink(token), viewer, action),
+        ),
+      subscribe: (token, onDocument, onEnd) => {
+        this.calls.push({ method: 'play.subscribe', args: [token, playerId] });
+        let stored: StoredCombat;
+        try {
+          stored = this.resolveLink(token);
+        } catch (error) {
+          const revoked = error instanceof ApiError && error.code === 'linkRevoked';
+          onEnd(revoked ? { type: 'linkRevoked' } : { type: 'deleted', title: '' });
+          return () => {};
+        }
+        const combatId = stored.combat.id;
+        const subscriber: PlayerSubscriber = { playerId, onDocument, onEnd, version: -1 };
+        const subscribers = this.playerSubscribers.get(combatId) ?? new Set<PlayerSubscriber>();
+        subscribers.add(subscriber);
+        this.playerSubscribers.set(combatId, subscribers);
+        if (this.connectionState === 'connected') this.deliverToPlayer(subscriber, stored.combat);
+        return () => {
+          this.playerSubscribers.get(combatId)?.delete(subscriber);
         };
-      }),
-    dispatch: (token, playerId, action) =>
-      this.run('play.dispatch', [token, playerId, action], () =>
-        this.dispatchAs(this.resolveLink(token), { kind: 'player', playerId }, action),
-      ),
-    subscribe: (token, playerId, onDocument, onEnd) => {
-      this.calls.push({ method: 'play.subscribe', args: [token, playerId] });
-      let stored: StoredCombat;
-      try {
-        stored = this.resolveLink(token);
-      } catch (error) {
-        const revoked = error instanceof ApiError && error.code === 'linkRevoked';
-        onEnd(revoked ? { type: 'linkRevoked' } : { type: 'deleted', title: '' });
-        return () => {};
-      }
-      const combatId = stored.combat.id;
-      const subscriber: PlayerSubscriber = { playerId, onDocument, onEnd, version: -1 };
-      const subscribers = this.playerSubscribers.get(combatId) ?? new Set<PlayerSubscriber>();
-      subscribers.add(subscriber);
-      this.playerSubscribers.set(combatId, subscribers);
-      if (this.connectionState === 'connected') this.deliverToPlayer(subscriber, stored.combat);
-      return () => {
-        this.playerSubscribers.get(combatId)?.delete(subscriber);
-      };
-    },
-  };
+      },
+    };
+  }
 
   readonly presets: ApiClient['presets'] = {
     list: () =>
@@ -658,6 +663,9 @@ export class FakeApiClient implements ApiClient {
         if (existing) return existing;
         const tag: Tag = { id: input.id, name: input.name.trim() };
         this.checkTagName(tag.name);
+        if (this.tagList.length >= LIMITS.tagsPerDm) {
+          throw fail('limit', `A DM keeps at most ${LIMITS.tagsPerDm} tags`);
+        }
         this.tagList = [...this.tagList, tag];
         return tag;
       }),

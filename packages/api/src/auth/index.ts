@@ -11,6 +11,7 @@ import type { SocialProvider } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import * as schema from '../db/schema.ts';
 import type { ApiEnv } from '../env.ts';
+import { closeEndedDmStreams } from '../sharing/streams.ts';
 import { signInMethodOf } from './method.ts';
 
 export const AUTH_BASE_PATH = '/api/auth';
@@ -29,7 +30,6 @@ const DISABLED_AUTH_PATHS = [
   '/refresh-token',
   '/request-password-reset',
   '/reset-password',
-  '/revoke-other-sessions',
   '/revoke-session',
   '/revoke-sessions',
   '/send-verification-email',
@@ -41,7 +41,14 @@ const DISABLED_AUTH_PATHS = [
 ];
 
 const EMAIL_SIGN_UP = '/sign-up/email';
+const EMAIL_SIGN_IN = '/sign-in/email';
 const GET_SESSION = '/get-session';
+const SESSION_ENDING_PATHS: ReadonlySet<string> = new Set(['/sign-out', '/revoke-other-sessions']);
+
+const AUTH_RATE_LIMITS = {
+  [EMAIL_SIGN_IN]: { window: 60, max: 5 },
+  [EMAIL_SIGN_UP]: { window: 60, max: 3 },
+};
 
 const EMAIL_TAKEN = {
   code: 'emailTaken',
@@ -96,7 +103,9 @@ export function createAuth({ db, env, originCheck }: CreateAuthOptions) {
     basePath: AUTH_BASE_PATH,
     trustedOrigins: env.trustedOrigins,
     disabledPaths: DISABLED_AUTH_PATHS,
+    rateLimit: { enabled: true, storage: 'memory', customRules: AUTH_RATE_LIMITS },
     advanced: {
+      ipAddress: { ipAddressHeaders: ['x-forwarded-for'] },
       disableOriginCheck: originCheck === undefined ? undefined : !originCheck,
       useSecureCookies: env.betterAuthUrl?.startsWith('https:') === true,
     },
@@ -161,6 +170,7 @@ export type AuthRoutes = {
   '/sign-in/email': { $post: AuthEndpoint<AuthApi['signInEmail']> };
   '/sign-in/social': { $post: AuthEndpoint<AuthApi['signInSocial']> };
   '/sign-out': { $post: AuthEndpoint<AuthApi['signOut']> };
+  '/revoke-other-sessions': { $post: AuthEndpoint<AuthApi['revokeOtherSessions']> };
   '/get-session': { $get: AuthEndpoint<AuthApi['getSession']> };
 };
 
@@ -210,6 +220,7 @@ export function createAuthApp(auth: AuthInstance) {
     const path = new URL(request.url).pathname.slice(AUTH_BASE_PATH.length);
     if (path === EMAIL_SIGN_UP && !response.ok) return withEmailTaken(response);
     if (path === GET_SESSION && response.ok) return withMethod(auth, response);
+    if (SESSION_ENDING_PATHS.has(path) && response.ok) closeEndedDmStreams(c.get('db'));
     return response;
   });
 }

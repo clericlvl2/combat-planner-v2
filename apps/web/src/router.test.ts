@@ -1,4 +1,3 @@
-import type { PlayerId } from '@combat-planner/domain';
 import {
   About,
   Account,
@@ -22,7 +21,6 @@ import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pag
 import { AppProviders } from './providers.tsx';
 import { createRoutes } from './router.tsx';
 
-const PLAYER_ID: PlayerId = '01JA0000000000000000000000';
 const COMBAT_ID = '01JA0000000000000000000001';
 const about = {
   version: '2.0.0',
@@ -55,7 +53,6 @@ async function open(
     {
       api,
       queryClient: createQueryClient(),
-      playerId: () => PLAYER_ID,
       about,
       language: Promise.resolve(createI18n('en')),
     },
@@ -168,7 +165,7 @@ describe('router', () => {
   );
 
   it.each([true, false])(
-    'opens the player view with the token and the playerId, signed in: %s',
+    'opens the player view with the token, signed in: %s',
     async (signedIn) => {
       const router = await open(`/combats/${COMBAT_ID}/play?t=token-1`, signedIn);
       expect(router.state.location.pathname).toBe(`/combats/${COMBAT_ID}/play`);
@@ -177,7 +174,6 @@ describe('router', () => {
       expect(router.state.loaderData.play).toEqual({
         combatId: COMBAT_ID,
         token: 'token-1',
-        playerId: PLAYER_ID,
       });
     },
   );

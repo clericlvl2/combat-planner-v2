@@ -27,7 +27,8 @@ const damage = (version: number, unitId = ENEMY_ID, id = ACTION_ID): Action => (
   amount: 7,
 });
 
-const seeded = () => new FakeApiClient({ scenario: scenario({ combats: [combat()] }) });
+const seeded = () =>
+  new FakeApiClient({ scenario: scenario({ combats: [combat()], playerId: PLAYER_ID }) });
 
 const watchDm = (client: ApiClient) => {
   const documents: DmCombat[] = [];
@@ -40,12 +41,11 @@ const watchDm = (client: ApiClient) => {
   return { documents, ended };
 };
 
-const watchPlayer = (client: ApiClient, token = TOKEN, playerId = PLAYER_ID) => {
+const watchPlayer = (client: FakeApiClient, token = TOKEN, playerId = PLAYER_ID) => {
   const documents: PlayerCombat[] = [];
   const ended: ApiEndEvent[] = [];
-  client.play.subscribe(
+  client.playAs(playerId).subscribe(
     token,
-    playerId,
     (document) => documents.push(document),
     (event) => ended.push(event),
   );
@@ -71,17 +71,19 @@ describe('FakeApiClient dispatch', () => {
   it('accepts a player action on an own hero through play.dispatch', async () => {
     const client = seeded();
     const dm = watchDm(client);
-    await expect(client.play.dispatch(TOKEN, PLAYER_ID, damage(1, HERO_ID))).resolves.toEqual({
+    await expect(client.play.dispatch(TOKEN, damage(1, HERO_ID))).resolves.toEqual({
       version: 2,
     });
     expect(dm.documents.at(-1)?.units.find((unit) => unit.id === HERO_ID)?.hp).toBe(23);
   });
 
-  it('answers a repeated action id with the earlier version and applies it once', async () => {
+  it('refuses a retried action with version and applies it once', async () => {
     const client = seeded();
     const dm = watchDm(client);
     await client.combats.dispatch(COMBAT_ID, damage(1));
-    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).resolves.toEqual({ version: 2 });
+    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).rejects.toMatchObject({
+      code: 'version',
+    });
     expect(dm.documents).toHaveLength(2);
   });
 
@@ -98,7 +100,7 @@ describe('FakeApiClient dispatch', () => {
   ] as const)('rejects %s', async (_label, action, playerId, code, status) => {
     const client = seeded();
     const player = watchPlayer(client);
-    const failure = client.play.dispatch(TOKEN, playerId, action());
+    const failure = client.playAs(playerId).dispatch(TOKEN, action());
     await expect(failure).rejects.toBeInstanceOf(ApiError);
     await expect(failure).rejects.toMatchObject({ code, status });
     expect(player.documents).toHaveLength(1);
@@ -113,7 +115,7 @@ describe('FakeApiClient dispatch', () => {
       status: 404,
     });
     await client.link.reissue(COMBAT_ID);
-    await expect(client.play.dispatch(TOKEN, PLAYER_ID, damage(2, HERO_ID))).rejects.toMatchObject({
+    await expect(client.play.dispatch(TOKEN, damage(2, HERO_ID))).rejects.toMatchObject({
       code: 'linkRevoked',
       status: 410,
     });
@@ -147,7 +149,7 @@ describe('FakeApiClient undo', () => {
 
   it('reflects a player action and gives a reopened stream the same undo', async () => {
     const client = seeded();
-    await client.play.dispatch(TOKEN, PLAYER_ID, damage(1, HERO_ID));
+    await client.play.dispatch(TOKEN, damage(1, HERO_ID));
     const reopened = watchDm(client);
     expect(reopened.documents[0]?.undo).toEqual({
       action: damage(1, HERO_ID),
@@ -155,7 +157,7 @@ describe('FakeApiClient undo', () => {
     });
   });
 
-  it('is null after a release and after everything is undone, and never reaches a player', async () => {
+  it('is null after everything is undone, kept by a release, and never reaches a player', async () => {
     const client = seeded();
     const dm = watchDm(client);
     const player = watchPlayer(client);
@@ -164,14 +166,24 @@ describe('FakeApiClient undo', () => {
     expect(dm.documents.at(-1)?.undo).toBeNull();
     await client.combats.dispatch(COMBAT_ID, damage(3, ENEMY_ID, ACTION_3));
     expect(dm.documents.at(-1)?.undo?.action.type).toBe('damage');
-    await client.play.dispatch(TOKEN, PLAYER_ID, {
+    await client.play.dispatch(TOKEN, {
       id: '01ARZ3NDEKTSV4RRFFQ69G5FC3',
       version: 4,
       type: 'releaseUnit',
       unitId: HERO_ID,
     });
-    expect(dm.documents.at(-1)?.undo).toBeNull();
+    expect(dm.documents.at(-1)?.undo?.action).toEqual(damage(3, ENEMY_ID, ACTION_3));
     expect(player.documents.every((document) => !('undo' in document))).toBe(true);
+  });
+
+  it('a link reissue keeps the undo', async () => {
+    const client = seeded();
+    const dm = watchDm(client);
+    await client.combats.dispatch(COMBAT_ID, damage(1));
+    await client.link.reissue(COMBAT_ID);
+    const latest = dm.documents.at(-1);
+    expect(latest?.units.every((unit) => unit.claimedBy === null)).toBe(true);
+    expect(latest?.undo?.action).toEqual(damage(1));
   });
 
   it('deferBroadcasts delivers the document after the dispatch resolves', async () => {
@@ -191,7 +203,7 @@ describe('FakeApiClient projection', () => {
     const client = seeded();
     const player = watchPlayer(client);
     await client.combats.dispatch(COMBAT_ID, damage(1));
-    const view = await client.play.get(TOKEN, PLAYER_ID);
+    const view = await client.play.get(TOKEN);
     for (const document of [...player.documents, view.combat]) {
       const serialized = JSON.stringify(document);
       expect(serialized).not.toContain('enemy secret plan');
@@ -239,8 +251,8 @@ describe('FakeApiClient final events', () => {
     expect(latest?.linkGeneration).toBe(1);
     expect(latest?.units.every((unit) => unit.claimedBy === null)).toBe(true);
     expect(token).not.toBe(TOKEN);
-    await expect(client.play.get(TOKEN, PLAYER_ID)).rejects.toMatchObject({ code: 'linkRevoked' });
-    await expect(client.play.get(token, PLAYER_ID)).resolves.toMatchObject({ combatId: COMBAT_ID });
+    await expect(client.play.get(TOKEN)).rejects.toMatchObject({ code: 'linkRevoked' });
+    await expect(client.play.get(token)).resolves.toMatchObject({ combatId: COMBAT_ID });
     expect(watchPlayer(client).ended).toEqual([{ type: 'linkRevoked' }]);
   });
 });
@@ -435,6 +447,22 @@ describe('FakeApiClient REST groups', () => {
     ).rejects.toMatchObject({ code: 'emailTaken', status: 422 });
     client.failNext('limit');
     await expect(client.auth.providers()).rejects.toMatchObject({ code: 'limit', status: 422 });
+  });
+
+  it('answers the tag cap with limit and keeps a known tag id', async () => {
+    const tags = Array.from({ length: LIMITS.tagsPerDm }, (_, index) => ({
+      id: `01ARZ3NDEKTSV4RRFFQ69T${String(index).padStart(4, '0')}`,
+      name: `Tag ${index}`,
+    }));
+    const full = new FakeApiClient({ scenario: scenario({ tags }) });
+    await expect(
+      full.tags.create({ id: '01ARZ3NDEKTSV4RRFFQ69T9999', name: 'One more' }),
+    ).rejects.toMatchObject({
+      code: 'limit',
+      status: 422,
+      message: `A DM keeps at most ${LIMITS.tagsPerDm} tags`,
+    });
+    await expect(full.tags.create(tags[0]!)).resolves.toEqual(tags[0]);
   });
 
   it('answers the combat, preset and unit caps with limit', async () => {

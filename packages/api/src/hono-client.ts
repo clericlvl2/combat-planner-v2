@@ -1,4 +1,4 @@
-import type { CombatId, PlayerCombat, PlayerId, PresetId, TagId } from '@combat-planner/domain';
+import type { CombatId, PlayerCombat, PresetId, TagId } from '@combat-planner/domain';
 import {
   combatSchema,
   combatTitleSchema,
@@ -16,6 +16,7 @@ import {
   combatSummarySchema,
   dmCombatSchema,
   linkReissueResultSchema,
+  playerCredentialsSchema,
   playerLinkSchema,
   localeSchema,
   playViewSchema,
@@ -35,6 +36,8 @@ import type {
   EndListener,
   LinkToken,
   Locale,
+  PlayerCredentials,
+  PlayerKeyStore,
   Session,
   SignInInput,
   SignInMethod,
@@ -68,6 +71,17 @@ export interface HonoApiClientOptions {
   baseUrl: string;
   fetch?: typeof fetch;
   eventSource?: EventSourceConstructor;
+  playerKeys?: PlayerKeyStore;
+}
+
+export function memoryPlayerKeys(): PlayerKeyStore {
+  const stored = new Map<CombatId, PlayerCredentials>();
+  return {
+    get: (combatId) => stored.get(combatId) ?? null,
+    set: (combatId, credentials) => {
+      stored.set(combatId, credentials);
+    },
+  };
 }
 
 const authUserSchema = z.object({
@@ -97,7 +111,9 @@ const ERROR_CODES: Record<number, ApiErrorCode> = {
   404: 'notFound',
   409: 'version',
   410: 'linkRevoked',
+  413: 'limit',
   422: 'invalid',
+  429: 'rateLimited',
 };
 
 const errorBodySchema = z.object({ code: z.string().optional(), message: z.string().optional() });
@@ -181,6 +197,7 @@ const streamEventSchema = <Document>(document: z.ZodType<Document>) =>
     }),
     z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
     z.object({ type: z.literal('linkRevoked') }),
+    z.object({ type: z.literal('dropped') }),
   ]);
 
 type StreamStatus = 'connecting' | 'open' | 'error' | 'reconnecting';
@@ -248,13 +265,16 @@ export function createHonoApiClient({
   baseUrl,
   fetch: customFetch,
   eventSource = (globalThis as { EventSource?: EventSourceConstructor }).EventSource,
+  playerKeys = memoryPlayerKeys(),
 }: HonoApiClientOptions): ApiClient {
   const client = hc<AppType>(baseUrl, customFetch ? { fetch: customFetch } : {});
   const connection = createConnection();
-  const playerHeaders = (playerId: PlayerId) => ({ headers: { 'X-Player-Id': playerId } });
+  const playerHeaders = ({ playerId, playerKey }: PlayerCredentials) => ({
+    headers: { 'X-Player-Id': playerId, 'X-Player-Key': playerKey },
+  });
 
   function openStream<Document extends DmCombat | PlayerCombat>(
-    url: string,
+    url: () => string,
     documentSchema: z.ZodType<Document>,
     refetch: (signal?: AbortSignal) => Promise<Delivery<Document>>,
     onDocument: (document: Document, language?: Locale) => void,
@@ -410,7 +430,7 @@ export function createHonoApiClient({
     };
 
     const connect = (): EventSourceLike => {
-      const next = new EventSourceImpl(url, { withCredentials: true });
+      const next = new EventSourceImpl(url(), { withCredentials: true });
       const current = () => !closed && source === next;
       const handleEvent = (event: MessageEventLike) => {
         if (!current() || typeof event.data !== 'string') return;
@@ -448,7 +468,7 @@ export function createHonoApiClient({
         }, RECONNECTING_AFTER_MS);
         probe();
       });
-      for (const type of ['message', 'document', 'deleted', 'linkRevoked']) {
+      for (const type of ['message', 'document', 'deleted', 'linkRevoked', 'dropped']) {
         next.addEventListener(type, handleEvent);
       }
       return next;
@@ -462,15 +482,68 @@ export function createHonoApiClient({
   const getCombat = (id: CombatId, signal?: AbortSignal) =>
     json(() => client.combats[':id'].$get({ param: { id } }, { init: { signal } }), dmCombatSchema);
 
-  const getPlay = (token: LinkToken, playerId: PlayerId, signal?: AbortSignal) =>
-    json(
-      () =>
-        client.play[':id'].$get(
-          { param: { id: combatIdOf(token) }, query: { t: token } },
-          { ...playerHeaders(playerId), init: { signal } },
-        ),
-      playViewSchema,
+  const joins = new Map<CombatId, Promise<PlayerCredentials>>();
+
+  const join = (combatId: CombatId, token: LinkToken): Promise<PlayerCredentials> => {
+    const pending = joins.get(combatId);
+    if (pending) return pending;
+    const joining = json(
+      () => client.play[':id'].join.$post({ param: { id: combatId }, query: { t: token } }),
+      playerCredentialsSchema,
+    )
+      .then((credentials) => {
+        playerKeys.set(combatId, credentials);
+        return credentials;
+      })
+      .finally(() => joins.delete(combatId));
+    joins.set(combatId, joining);
+    return joining;
+  };
+
+  const credentialsOf = (combatId: CombatId, token: LinkToken): Promise<PlayerCredentials> => {
+    const stored = playerKeys.get(combatId);
+    return stored ? Promise.resolve(stored) : join(combatId, token);
+  };
+
+  const asPlayer = async <T>(
+    token: LinkToken,
+    call: (credentials: PlayerCredentials) => Promise<T>,
+  ): Promise<T> => {
+    const combatId = combatIdOf(token);
+    const used = await credentialsOf(combatId, token);
+    try {
+      return await call(used);
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.status !== 401) throw error;
+    }
+    const current = playerKeys.get(combatId);
+    const fresh =
+      current && current.playerId !== used.playerId ? current : await join(combatId, token);
+    return call(fresh);
+  };
+
+  const getPlay = (token: LinkToken, signal?: AbortSignal) =>
+    asPlayer(token, (credentials) =>
+      json(
+        () =>
+          client.play[':id'].$get(
+            { param: { id: combatIdOf(token) }, query: { t: token } },
+            { ...playerHeaders(credentials), init: { signal } },
+          ),
+        playViewSchema,
+      ),
     );
+
+  const playEventsUrl = (token: LinkToken): string => {
+    const combatId = combatIdOf(token);
+    const query = new URLSearchParams({ t: token });
+    const credentials = playerKeys.get(combatId);
+    if (credentials) {
+      query.set('playerId', credentials.playerId);
+      query.set('playerKey', credentials.playerKey);
+    }
+    return `${baseUrl}/play/${combatId}/events?${query.toString()}`;
+  };
 
   const combats: ApiClient['combats'] = {
     list: () => json(() => client.combats.$get(), combatSummarySchema.array()),
@@ -492,7 +565,7 @@ export function createHonoApiClient({
       ),
     subscribe: (id, onDocument, onEnd) =>
       openStream(
-        `${baseUrl}/combats/${id}/events`,
+        () => `${baseUrl}/combats/${id}/events`,
         dmCombatSchema,
         async (signal) => ({ document: await getCombat(id, signal) }),
         onDocument,
@@ -501,28 +574,42 @@ export function createHonoApiClient({
   };
 
   const play: ApiClient['play'] = {
-    get: (token, playerId) => getPlay(token, playerId),
-    dispatch: (token, playerId, action) =>
-      json(
-        () =>
-          client.play[':id'].actions.$post(
-            { param: { id: combatIdOf(token) }, query: { t: token }, json: action },
-            playerHeaders(playerId),
-          ),
-        versionResultSchema,
+    get: (token) => getPlay(token),
+    dispatch: (token, action) =>
+      asPlayer(token, (credentials) =>
+        json(
+          () =>
+            client.play[':id'].actions.$post(
+              { param: { id: combatIdOf(token) }, query: { t: token }, json: action },
+              playerHeaders(credentials),
+            ),
+          versionResultSchema,
+        ),
       ),
-    subscribe: (token, playerId, onDocument, onEnd) => {
-      const query = new URLSearchParams({ t: token, playerId });
-      return openStream(
-        `${baseUrl}/play/${combatIdOf(token)}/events?${query.toString()}`,
-        playerCombatSchema,
-        async (signal) => {
-          const view = await getPlay(token, playerId, signal);
-          return { document: view.combat, language: view.language };
-        },
-        onDocument,
-        onEnd,
-      );
+    subscribe: (token, onDocument, onEnd) => {
+      const combatId = combatIdOf(token);
+      const open = () =>
+        openStream(
+          () => playEventsUrl(token),
+          playerCombatSchema,
+          async (signal) => {
+            const view = await getPlay(token, signal);
+            return { document: view.combat, language: view.language };
+          },
+          onDocument,
+          onEnd,
+        );
+      if (playerKeys.get(combatId)) return open();
+      let cancelled = false;
+      let close: Unsubscribe | undefined;
+      const openUnlessCancelled = () => {
+        if (!cancelled) close = open();
+      };
+      join(combatId, token).then(openUnlessCancelled, openUnlessCancelled);
+      return () => {
+        cancelled = true;
+        close?.();
+      };
     },
   };
 
@@ -544,6 +631,8 @@ export function createHonoApiClient({
           'email',
         ),
       signOut: () => none(() => client.auth['sign-out'].$post({}, EMPTY_JSON_BODY)),
+      signOutOtherDevices: () =>
+        none(() => client.auth['revoke-other-sessions'].$post({}, EMPTY_JSON_BODY)),
       session: async () => {
         const found = await json(() => client.auth['get-session'].$get(), authSessionSchema);
         return found === null ? null : sessionOf(found, found.method);

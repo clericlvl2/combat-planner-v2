@@ -16,7 +16,9 @@ import { errorToast } from './toasts.ts';
 import type { ToastInput, Translate } from './toasts.ts';
 
 export type DmViewer = Extract<Viewer, { kind: 'dm' }>;
-export type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
+export interface PlayerViewer {
+  kind: 'player';
+}
 export type CombatDocument = DmCombat | PlayerCombat;
 
 export type DispatchResult = { applied: true; version: number } | { applied: false };
@@ -36,10 +38,11 @@ export interface CombatSource<Document extends CombatDocument = CombatDocument> 
   send: (action: Action) => Promise<VersionResult>;
 }
 
-export const combatKey = (id: CombatId, viewer: Viewer): QueryKey =>
-  viewer.kind === 'dm'
-    ? [...queryKeys.combat, id, 'dm']
-    : [...queryKeys.combat, id, 'player', viewer.playerId];
+export const combatKey = (id: CombatId, viewer: DmViewer | PlayerViewer): QueryKey => [
+  ...queryKeys.combat,
+  id,
+  viewer.kind,
+];
 
 export function dmSource(api: ApiClient, id: CombatId): CombatSource<DmCombat> {
   return {
@@ -50,20 +53,16 @@ export function dmSource(api: ApiClient, id: CombatId): CombatSource<DmCombat> {
   };
 }
 
-export function playerSource(
-  api: ApiClient,
-  viewer: PlayerViewer,
-  token: LinkToken,
-): CombatSource<PlayerCombat> {
+export function playerSource(api: ApiClient, token: LinkToken): CombatSource<PlayerCombat> {
   const load = async () => {
-    const view = await api.play.get(token, viewer.playerId);
+    const view = await api.play.get(token);
     return { document: view.combat, language: view.language };
   };
   return {
     load,
     reload: load,
-    subscribe: (onDocument, onEnd) => api.play.subscribe(token, viewer.playerId, onDocument, onEnd),
-    send: (action) => api.play.dispatch(token, viewer.playerId, action),
+    subscribe: (onDocument, onEnd) => api.play.subscribe(token, onDocument, onEnd),
+    send: (action) => api.play.dispatch(token, action),
   };
 }
 

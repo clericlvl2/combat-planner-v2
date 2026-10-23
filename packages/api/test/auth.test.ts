@@ -1,6 +1,15 @@
 import { LIMITS } from '@combat-planner/domain';
 import { Hono } from 'hono';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vite-plus/test';
 import { createAuth, createAuthApp } from '../src/auth/index.ts';
 import { sessionSchema } from '../src/client.ts';
 import type { ApiEnv } from '../src/env.ts';
@@ -23,7 +32,16 @@ afterAll(() => {
   opened.close();
 });
 
+let rateLimitWindow = Date.now();
+
+beforeEach(() => {
+  rateLimitWindow += 61_000;
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(rateLimitWindow);
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -32,6 +50,7 @@ const CONTRACT_PATHS = [
   '/sign-in/email',
   '/sign-in/social',
   '/sign-out',
+  '/revoke-other-sessions',
   '/get-session',
   '/callback/:id',
   '/error',
@@ -555,5 +574,53 @@ describe('auth client over a Node HTTP transport', () => {
     } finally {
       configured.close();
     }
+  });
+});
+
+describe('auth rate limit', () => {
+  const fromIp = (ip: string, route: string, body: unknown) =>
+    opened.app.request(route, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': ip },
+      body: JSON.stringify(body),
+    });
+
+  it('refuses the 6th email sign-in in a minute from one IP with 429', async () => {
+    const attempt = { email: 'nobody@example.com', password: PASSWORD };
+    for (let index = 0; index < 5; index += 1) {
+      expect((await fromIp('203.0.113.7', '/auth/sign-in/email', attempt)).status).toBe(401);
+    }
+    expect((await fromIp('203.0.113.7', '/auth/sign-in/email', attempt)).status).toBe(429);
+    expect((await fromIp('203.0.113.8', '/auth/sign-in/email', attempt)).status).toBe(401);
+  });
+
+  it('refuses the 4th email sign-up in a minute from one IP with 429', async () => {
+    const attempt = (index: number) => ({
+      name: 'Dana',
+      email: `burst-${index}@example.com`,
+      password: PASSWORD,
+    });
+    for (let index = 0; index < 3; index += 1) {
+      expect((await fromIp('203.0.113.9', '/auth/sign-up/email', attempt(index))).status).toBe(200);
+    }
+    expect((await fromIp('203.0.113.9', '/auth/sign-up/email', attempt(3))).status).toBe(429);
+  });
+});
+
+describe('POST /auth/revoke-other-sessions', () => {
+  it('ends every other session of the user and keeps the current one', async () => {
+    const phone = createBrowser(opened.app);
+    const laptop = createBrowser(opened.app);
+    const credentials = { email: 'devices@example.com', password: PASSWORD };
+    expect((await signUp(phone, credentials.email, 'Dana')).status).toBe(200);
+    expect((await browse(laptop, 'POST', '/auth/sign-in/email', credentials)).status).toBe(200);
+    const client = createHonoApiClient({
+      baseUrl: 'http://localhost',
+      fetch: ((input, init) =>
+        phone.request(input instanceof Request ? input.url : String(input), init)) as typeof fetch,
+    });
+    await expect(client.auth.signOutOtherDevices()).resolves.toBeUndefined();
+    expect((await browse(phone, 'GET', '/combats')).status).toBe(200);
+    expect((await browse(laptop, 'GET', '/combats')).status).toBe(401);
   });
 });

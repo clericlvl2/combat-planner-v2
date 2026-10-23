@@ -37,7 +37,7 @@ const relocatedMain = (root: string): string => {
   mkdirSync(source, { recursive: true });
   for (const name of ['package.json', 'node_modules'])
     symlinkSync(path.join(serverDirectory, name), path.join(root, 'apps', 'server', name));
-  for (const name of ['main.ts', 'app.ts'])
+  for (const name of ['main.ts', 'app.ts', 'sweeper.ts', 'timers.ts'])
     copyFileSync(path.join(import.meta.dirname, name), path.join(source, name));
   return path.join(source, 'main.ts');
 };
@@ -382,6 +382,21 @@ describe('server start', { concurrent: true, timeout: 30_000 }, () => {
     }
     expect(existsSync(secretsOf(databasePath))).toBe(false);
   });
+
+  it.for([
+    ['development', true],
+    ['production', false],
+  ] as const)(
+    'with COMBAT_PLANNER_TEST_TIMERS=1 in %s, logs the shortened timers: %s',
+    async ([mode, shortened], { expect }) => {
+      const result = await run({
+        ...(mode === 'production' ? productionSecrets() : { NODE_ENV: mode }),
+        COMBAT_PLANNER_TEST_TIMERS: '1',
+      });
+      expect(result.stdout).toMatch(LISTENING);
+      expect(result.stdout.includes('sharing timers shortened for tests')).toBe(shortened);
+    },
+  );
 
   it('admits sign-up from the request origin and rejects another origin without BETTER_AUTH_URL', async ({
     expect,

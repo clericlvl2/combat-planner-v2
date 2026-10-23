@@ -24,6 +24,7 @@ export interface CheckListProps extends Omit<
   query?: string;
   onCreate?: (label: string) => void;
   createLabel?: string;
+  createDisabled?: boolean;
   emptyLabel?: string;
   size?: CheckListSize;
   disabled?: boolean;
@@ -38,6 +39,7 @@ export function CheckList({
   query = '',
   onCreate,
   createLabel,
+  createDisabled = false,
   emptyLabel,
   size = 'M',
   disabled = false,
@@ -72,7 +74,7 @@ export function CheckList({
       type="button"
       className={classes.create}
       data-active
-      disabled={disabled}
+      disabled={disabled || createDisabled}
       onClick={() => onCreate?.(query.trim())}
     >
       <span className={classes.createIcon}>

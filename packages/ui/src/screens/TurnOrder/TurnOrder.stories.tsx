@@ -19,22 +19,13 @@ import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
-interface TurnOrderScreenProps {
-  playerId: string;
-}
-
-function TurnOrderScreen({ playerId }: TurnOrderScreenProps) {
-  const { combat, dispatch } = useCombat(COMBAT_ID, { kind: 'player', playerId }, TOKEN);
+function TurnOrderScreen() {
+  const { combat, dispatch } = useCombat(COMBAT_ID, { kind: 'player' }, TOKEN);
   const [heroes, setHeroes] = useState(false);
   if (!combat) return null;
   return (
     <>
-      <TurnOrder
-        combat={combat}
-        playerId={playerId}
-        dispatch={dispatch}
-        onHeroes={() => setHeroes(true)}
-      />
+      <TurnOrder combat={combat} dispatch={dispatch} onHeroes={() => setHeroes(true)} />
       {heroes ? <span hidden data-heroes="" /> : null}
     </>
   );
@@ -60,7 +51,6 @@ const expandOwn = async (canvas: Canvas) => {
 const meta = preview.meta({
   title: 'Screens/TurnOrder',
   component: TurnOrderScreen,
-  args: { playerId: MIKA },
   parameters: {
     phoneFrame: { overlay: true },
     scenario: playerScenario(ferryCombat({ active: 'vashti' })),

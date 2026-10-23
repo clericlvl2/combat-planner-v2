@@ -1,4 +1,3 @@
-import type { PlayerId } from '@combat-planner/domain';
 import {
   DM_ACCOUNT,
   FakeApiClient,
@@ -13,7 +12,6 @@ import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { createRoutes } from './router.tsx';
 import { watchRouteLocale } from './routeLocale.ts';
 
-const PLAYER_ID: PlayerId = '01JA0000000000000000000000';
 const COMBAT_ID = '01JA0000000000000000000001';
 const BROWSER_LOCALE = 'de';
 const DM_LANGUAGE = 'ru';
@@ -67,7 +65,6 @@ async function start(
     {
       api,
       queryClient,
-      playerId: () => PLAYER_ID,
       about: { version: '2.0.0', sourceUrl: 'https://s.example' },
       language: Promise.resolve(i18n),
     },

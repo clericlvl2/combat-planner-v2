@@ -1,5 +1,5 @@
 import type { Tag } from '@combat-planner/domain';
-import { tagNameSchema } from '@combat-planner/domain';
+import { LIMITS, tagNameSchema } from '@combat-planner/domain';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
 import { z } from 'zod';
@@ -9,6 +9,7 @@ import { tagCreateInputSchema } from '../client.ts';
 import type { Transaction } from '../combats/store.ts';
 import {
   TAG_NOT_FOUND,
+  countOwnTags,
   deleteTag,
   findOwnTag,
   findTagRow,
@@ -20,6 +21,11 @@ import {
 
 const NAME_TAKEN = { code: 'invalid', message: 'A tag with this name already exists' } as const;
 
+const LIMIT_REACHED = {
+  code: 'limit',
+  message: `A DM keeps at most ${LIMITS.tagsPerDm} tags`,
+} as const;
+
 const ID_IN_USE = { code: 'invalid', message: 'This id belongs to another tag' } as const;
 
 const tagNameInputSchema = z.string().trim().pipe(tagNameSchema);
@@ -28,7 +34,10 @@ const tagInputSchema = tagCreateInputSchema.extend({ name: tagNameInputSchema })
 
 const renameBodySchema = z.object({ name: tagNameInputSchema });
 
-type Stored = { tag: Tag } | { taken: typeof NAME_TAKEN } | { rejected: typeof ID_IN_USE };
+type Stored =
+  | { tag: Tag }
+  | { taken: typeof NAME_TAKEN }
+  | { rejected: typeof ID_IN_USE | typeof LIMIT_REACHED };
 
 const store = (tx: Transaction, ownerId: string, tag: Tag): Stored => {
   const existing = findTagRow(tx, tag.id);
@@ -36,6 +45,7 @@ const store = (tx: Transaction, ownerId: string, tag: Tag): Stored => {
     return existing.ownerId === ownerId ? { tag: existing.tag } : { rejected: ID_IN_USE };
   }
   if (isNameTaken(tx, ownerId, tag.name)) return { taken: NAME_TAKEN };
+  if (countOwnTags(tx, ownerId) >= LIMITS.tagsPerDm) return { rejected: LIMIT_REACHED };
   insertTag(tx, ownerId, tag);
   return { tag };
 };

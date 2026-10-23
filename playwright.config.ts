@@ -5,6 +5,9 @@ import { CREATED_DIR } from './e2e/teardown.ts';
 
 const PORT = Number(process.env.E2E_PORT) || 3000;
 const baseURL = `http://localhost:${PORT}`;
+const SHARING_PORT = PORT + 1;
+const sharingURL = `http://localhost:${SHARING_PORT}`;
+const SHARING_SPEC = /sharing\.spec\.ts$/;
 
 const createDataDir = (): string => {
   const dir = path.join(os.tmpdir(), `combat-planner-e2e-${Date.now().toString(36)}`);
@@ -31,19 +34,39 @@ export default defineConfig({
     trace: 'retain-on-failure',
     actionTimeout: 10_000,
   },
-  projects: [{ name: 'chromium' }],
-  webServer: {
-    command: 'pnpm build && node apps/server/src/main.ts',
-    url: `${baseURL}/api/health`,
-    reuseExistingServer: false,
-    timeout: 180_000,
-    stdout: 'pipe',
-    gracefulShutdown: { signal: 'SIGTERM', timeout: 5_000 },
-    env: {
-      PORT: String(PORT),
-      DATABASE_PATH: path.join(dataDir, 'e2e.db'),
-      STATIC_ROOT: path.resolve('apps/web/dist'),
-      BETTER_AUTH_URL: baseURL,
+  projects: [
+    { name: 'chromium', testIgnore: SHARING_SPEC },
+    { name: 'sharing', testMatch: SHARING_SPEC, use: { baseURL: sharingURL } },
+  ],
+  webServer: [
+    {
+      command: 'pnpm build && node apps/server/src/main.ts',
+      url: `${baseURL}/api/health`,
+      reuseExistingServer: false,
+      timeout: 180_000,
+      stdout: 'pipe',
+      gracefulShutdown: { signal: 'SIGTERM', timeout: 5_000 },
+      env: {
+        PORT: String(PORT),
+        DATABASE_PATH: path.join(dataDir, 'e2e.db'),
+        STATIC_ROOT: path.resolve('apps/web/dist'),
+        BETTER_AUTH_URL: baseURL,
+      },
     },
-  },
+    {
+      command: 'node apps/server/src/main.ts',
+      url: `${sharingURL}/api/health`,
+      reuseExistingServer: false,
+      timeout: 180_000,
+      stdout: 'pipe',
+      gracefulShutdown: { signal: 'SIGTERM', timeout: 5_000 },
+      env: {
+        PORT: String(SHARING_PORT),
+        DATABASE_PATH: path.join(dataDir, 'sharing', 'e2e.db'),
+        STATIC_ROOT: path.resolve('apps/web/dist'),
+        BETTER_AUTH_URL: sharingURL,
+        COMBAT_PLANNER_TEST_TIMERS: '1',
+      },
+    },
+  ],
 });

@@ -5,6 +5,7 @@ import type { AuthInstance } from '../auth/index.ts';
 import { requireUser } from '../auth/require-user.ts';
 import { accountPatchSchema } from '../client.ts';
 import { broadcast } from '../live/registry.ts';
+import { closeEndedDmStreams } from '../sharing/streams.ts';
 import { USER_NOT_FOUND, deleteUser, findSession, renameUser } from './store.ts';
 
 export function createAccountApp(auth: AuthInstance) {
@@ -33,6 +34,7 @@ export function createAccountApp(auth: AuthInstance) {
       for (const cookie of signedOut.headers.getSetCookie()) {
         c.header('set-cookie', cookie, { append: true });
       }
+      closeEndedDmStreams(c.get('db'));
       return c.body(null, 204);
     });
 }

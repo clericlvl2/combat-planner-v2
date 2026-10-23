@@ -62,6 +62,8 @@ stories run on `FakeApiClient` scenarios and need no server.
 
 ## Production
 
+A VPS with HTTPS and a continuous database backup: [deploy/README.md](deploy/README.md).
+
 The image runs with `NODE_ENV=production`. Every setting below is optional and goes
 into `.env`, which compose reads when it exists. The server refuses to start on a
 wrong value and names the variable, readable with `docker compose logs app`.
@@ -93,16 +95,13 @@ wrong value and names the variable, readable with `docker compose logs app`.
 
 Versions follow SemVer; commit messages follow Conventional Commits.
 
-1. Work happens on `dev`; CI runs on every push.
-2. A pull request `dev → main` runs CI and the end-to-end tests. It is merged with a
+1. Work happens on a short-lived branch from `main`.
+2. A pull request to `main` runs CI and the end-to-end tests. It is merged with a
    merge commit.
 3. release-please opens or updates the pull request «chore(main): release X.Y.Z»
    with `CHANGELOG.md` and the version in `package.json`.
 4. Merging that pull request is the release: it creates the tag, the GitHub Release
-   and the Docker image `ghcr.io/clericlvl2/combat-planner-v2:X.Y.Z`, then merges
-   `main` back into `dev`.
-5. A hotfix branches from `main` as `hotfix/<name>`, lands as a `fix:` commit through
-   a pull request to `main`, and follows steps 3–4.
+   and the Docker image `ghcr.io/clericlvl2/combat-planner-v2:X.Y.Z`.
 
 ## Legal
 

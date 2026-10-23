@@ -59,6 +59,7 @@ export const errorToast = (
   if (error.code === 'version') return { message: t('combatChanged'), kind: 'warning' };
   if (error.code === 'limit')
     return { message: limitMessage ?? t('limitReached'), kind: 'warning' };
+  if (error.code === 'rateLimited') return { message: t('tooManyRequests'), kind: 'warning' };
   return null;
 };
 

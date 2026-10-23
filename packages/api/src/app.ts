@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { authProvidersApp, createAuth, createAuthApp } from './auth/index.ts';
 import { requireUser } from './auth/require-user.ts';
 import type { SessionResolver } from './auth/require-user.ts';
@@ -14,15 +15,21 @@ import { settingsApp } from './settings/routes.ts';
 import { createAccountApp } from './account/routes.ts';
 import { linkApp } from './link/routes.ts';
 import { playApp } from './play/routes.ts';
+import { createRateLimiter } from './rate-limit.ts';
 
 export interface ApiAppDeps {
   db: AppDatabase;
   env: ApiEnv;
   auth?: SessionResolver;
+  rateLimit?: boolean;
 }
 
-export type ApiAppEnv = { Variables: ApiAppDeps & { userId?: string } };
-export type UserAppEnv = { Variables: ApiAppDeps & { userId: string } };
+export const BODY_LIMIT_BYTES = 64 * 1024;
+
+const BODY_TOO_LARGE = { code: 'limit', message: 'Request body exceeds 64 KB' } as const;
+
+export type ApiAppEnv = { Variables: ApiAppDeps & { userId?: string; sessionId?: string } };
+export type UserAppEnv = { Variables: ApiAppDeps & { userId: string; sessionId?: string } };
 
 const userCombatsApp = new Hono<ApiAppEnv>()
   .use(requireUser)
@@ -31,9 +38,16 @@ const userCombatsApp = new Hono<ApiAppEnv>()
   .route('/', eventsApp)
   .route('/', linkApp);
 
-export function createApiApp({ db, env, auth }: ApiAppDeps) {
+export function createApiApp({ db, env, auth, rateLimit = true }: ApiAppDeps) {
   const instance = createAuth({ db, env });
   return new Hono<ApiAppEnv>()
+    .use(rateLimit ? createRateLimiter() : (_c, next) => next())
+    .use(
+      bodyLimit({
+        maxSize: BODY_LIMIT_BYTES,
+        onError: (c) => c.json(BODY_TOO_LARGE, 413),
+      }),
+    )
     .use(async (c, next) => {
       c.set('db', db);
       c.set('env', env);

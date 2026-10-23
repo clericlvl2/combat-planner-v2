@@ -12,7 +12,12 @@ type DmViewer = Extract<Viewer, { kind: 'dm' }>;
 type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
 
 export type StreamRequest =
-  | { combatId: CombatId; viewer: DmViewer; load: () => DmCombat | undefined }
+  | {
+      combatId: CombatId;
+      viewer: DmViewer;
+      load: () => DmCombat | undefined;
+      sessionId?: string;
+    }
   | {
       combatId: CombatId;
       viewer: PlayerViewer;
@@ -29,6 +34,7 @@ const toMessage = (event: ApiEvent) => ({
 export const streamCombatEvents = (c: Context, request: StreamRequest): Response => {
   const { combatId, viewer, load } = request;
   const language = 'language' in request ? request.language : undefined;
+  const sessionId = 'sessionId' in request ? request.sessionId : undefined;
   const lastEventId = c.req.header(LAST_EVENT_ID);
   const signal = c.req.raw.signal;
   return streamSSE(
@@ -56,10 +62,13 @@ export const streamCombatEvents = (c: Context, request: StreamRequest): Response
           stop();
           void stream.writeSSE(toMessage(event)).then(finish);
         };
-        const unsubscribe = subscribe(
-          combatId,
-          language === undefined ? { viewer, send } : { viewer, send, language },
-        );
+        const unsubscribe = subscribe(combatId, {
+          viewer,
+          send,
+          close: finish,
+          ...(language === undefined ? {} : { language }),
+          ...(sessionId === undefined ? {} : { sessionId }),
+        });
         const heartbeat = setInterval(() => {
           void stream.write(':\n\n');
         }, HEARTBEAT_MS);

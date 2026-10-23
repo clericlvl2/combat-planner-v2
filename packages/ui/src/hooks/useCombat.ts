@@ -50,19 +50,13 @@ export function useCombat(
   const api = useApi();
   const queryClient = useQueryClient();
   const { show, t } = useToasts();
-  const playerId = viewer.kind === 'player' ? viewer.playerId : null;
+  const { kind } = viewer;
 
   const source = useMemo<CombatSource>(
-    () =>
-      playerId === null
-        ? dmSource(api, id)
-        : playerSource(api, { kind: 'player', playerId }, token ?? ''),
-    [api, id, playerId, token],
+    () => (kind === 'dm' ? dmSource(api, id) : playerSource(api, token ?? '')),
+    [api, id, kind, token],
   );
-  const key = useMemo(
-    () => combatKey(id, playerId === null ? { kind: 'dm' } : { kind: 'player', playerId }),
-    [id, playerId],
-  );
+  const key = useMemo(() => combatKey(id, { kind }), [id, kind]);
 
   const fetchEntry = useMemo(
     () => entryFetcher(queryClient, key, source),
@@ -70,10 +64,11 @@ export function useCombat(
   );
   const query = useQuery({ queryKey: key, queryFn: fetchEntry });
   const [ended, setEnded] = useState<SourceEnd | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(
     () => subscribeEntry(queryClient, key, source, (event) => setEnded({ source, event })),
-    [queryClient, key, source],
+    [queryClient, key, source, attempt],
   );
 
   const dispatch = useMemo(
@@ -90,9 +85,13 @@ export function useCombat(
   );
 
   const { refetch } = query;
+  const dropped = endOf(ended, source)?.type === 'dropped';
   const reload = useCallback(async () => {
     await refetch();
-  }, [refetch]);
+    if (!dropped) return;
+    setEnded(null);
+    setAttempt((count) => count + 1);
+  }, [refetch, dropped]);
 
   const entry = visibleEntry(query.data, query.error);
   return {

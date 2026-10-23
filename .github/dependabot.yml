@@ -2,9 +2,24 @@ version: 2
 updates:
   - package-ecosystem: github-actions
     directory: /
-    target-branch: dev
     schedule:
       interval: monthly
     groups:
       github-actions:
         patterns: ['*']
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm-minor-patch:
+        patterns: ['*']
+        update-types: [minor, patch]
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: monthly
+  - package-ecosystem: docker-compose
+    directory: /deploy
+    schedule:
+      interval: monthly

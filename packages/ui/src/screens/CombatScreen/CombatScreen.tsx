@@ -99,7 +99,7 @@ type Confirm =
 
 const DM = { kind: 'dm' } as const;
 
-const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit']);
+const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit', 'rateLimited']);
 
 const hpActionTypes = {
   damage: 'damage',

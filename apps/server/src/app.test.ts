@@ -40,7 +40,7 @@ describe('server app', () => {
     const response = await app.request('/api/health');
     expect(response.status).toBe(200);
     close();
-    expect(appliedMigrations()).toBe(2);
+    expect(appliedMigrations()).toBe(4);
   });
 
   it('starts again on the same database without re-applying migrations', async () => {
@@ -48,7 +48,7 @@ describe('server app', () => {
     const response = await app.request('/api/health');
     expect(response.status).toBe(200);
     close();
-    expect(appliedMigrations()).toBe(2);
+    expect(appliedMigrations()).toBe(4);
   });
 
   it('serves index.html for client routes', async () => {
@@ -56,6 +56,25 @@ describe('server app', () => {
     const response = await app.request('/combats/01J');
     expect(response.status).toBe(200);
     expect(await response.text()).toContain('<title>Combat Planner</title>');
+    close();
+  });
+});
+
+describe('security headers', () => {
+  it.each(['/api/health', '/combats/01J'])('come with %s', async (route) => {
+    const { app, close } = start();
+    const response = await app.request(route);
+    expect(response.status).toBe(200);
+    expect(Object.fromEntries(response.headers)).toMatchObject({
+      'strict-transport-security': 'max-age=31536000; includeSubDomains',
+      'x-content-type-options': 'nosniff',
+      'referrer-policy': 'no-referrer',
+      'x-frame-options': 'DENY',
+      'content-security-policy':
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+        "font-src 'self' data:; img-src 'self' data:; connect-src 'self'; " +
+        "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+    });
     close();
   });
 });

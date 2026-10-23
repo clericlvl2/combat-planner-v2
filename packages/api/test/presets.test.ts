@@ -1,8 +1,9 @@
 import type { Preset } from '@combat-planner/domain';
-import { presetSchema } from '@combat-planner/domain';
+import { LIMITS, presetSchema } from '@combat-planner/domain';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 import { presetTags, presets, tags } from '../src/db/schema.ts';
+import { insertPreset } from '../src/presets/store.ts';
 import type { TestApp } from './helpers.ts';
 import {
   COMBAT_ID,
@@ -249,6 +250,45 @@ describe('preset limit', () => {
       expect(copy.status).toBe(422);
       expect(await copy.json()).toMatchObject({ code: 'limit' });
       expect(await list(owner)).toHaveLength(1000);
+    } finally {
+      limited.close();
+    }
+  });
+});
+
+describe('preset tag limit', () => {
+  it('returns a stored preset with 30 tags and refuses 26 tags on create and patch', async () => {
+    const limited = createTestApp();
+    const owner = withUser(limited.app, DM);
+    try {
+      const tagIds = Array.from({ length: 30 }, (_, index) => ulidAt(index));
+      limited.db
+        .insert(tags)
+        .values(
+          tagIds.map((id, index) => ({
+            id,
+            ownerId: DM,
+            name: `Tag ${index}`,
+            nameLower: `tag ${index}`,
+          })),
+        )
+        .run();
+      const now = '2026-10-16T12:00:00.000Z';
+      insertPreset(limited.db, DM, {
+        ...presetInput(PRESET_ID, tagIds),
+        createdAt: now,
+        updatedAt: now,
+      });
+      expect((await list(owner))[0]?.tags).toEqual(tagIds);
+      const over = tagIds.slice(0, LIMITS.tagsPerDm + 1);
+      const created = await call(owner, 'POST', '/presets', presetInput(SECOND_ID, over));
+      expect(created.status).toBe(400);
+      const patched = await call(owner, 'PATCH', `/presets/${PRESET_ID}`, { tags: over });
+      expect(patched.status).toBe(400);
+      const atLimit = tagIds.slice(0, LIMITS.tagsPerDm);
+      expect((await call(owner, 'PATCH', `/presets/${PRESET_ID}`, { tags: atLimit })).status).toBe(
+        200,
+      );
     } finally {
       limited.close();
     }

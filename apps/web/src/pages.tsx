@@ -1,5 +1,5 @@
 import type { LinkToken } from '@combat-planner/api/client';
-import type { CombatId, PlayerId } from '@combat-planner/domain';
+import type { CombatId } from '@combat-planner/domain';
 import {
   CombatScreen,
   Drawer,
@@ -22,7 +22,6 @@ export interface CombatRouteData {
 export interface PlayerRouteData {
   combatId: CombatId;
   token: LinkToken | null;
-  playerId: PlayerId;
 }
 
 export function CombatPage() {
@@ -31,16 +30,9 @@ export function CombatPage() {
 }
 
 export function PlayerPage() {
-  const { combatId, token, playerId } = useLoaderData<PlayerRouteData>();
+  const { combatId, token } = useLoaderData<PlayerRouteData>();
   if (token === null) return <LinkExpired />;
-  return (
-    <PlayerView
-      key={`${combatId}:${token}`}
-      combatId={combatId}
-      token={token}
-      playerId={playerId}
-    />
-  );
+  return <PlayerView key={`${combatId}:${token}`} combatId={combatId} token={token} />;
 }
 
 function SwipeDrawer() {

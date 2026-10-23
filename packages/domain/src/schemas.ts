@@ -5,6 +5,7 @@ export const LIMITS = {
   combatsPerDm: 100,
   unitsPerCombat: 99,
   presetsPerDm: 1000,
+  tagsPerDm: 25,
   unitName: 40,
   combatTitle: 80,
   combatDescription: 500,
@@ -23,6 +24,11 @@ export const LIMITS = {
   roll: { min: 1, max: 20 },
   amount: { min: 0, max: 999 },
   undoDepth: 10,
+  orphanedLinkMinutes: 15,
+  watchingMinutes: 15,
+  idleStreamHours: 2,
+  playersPerCombat: 12,
+  hpHistory: 100,
 } as const;
 
 export interface IntRange {
@@ -154,7 +160,8 @@ export const playerUnitSchema = z.object({
   position: z.number().int().positive(),
   initiative: initiativeSchema.nullable(),
   initiativeBonus: initiativeBonusSchema.optional(),
-  claimedBy: ulidSchema.nullable().optional(),
+  claimedByName: displayNameSchema.nullable().optional(),
+  mine: z.boolean().optional(),
   hp: hpSchema.optional(),
   tempHp: tempHpSchema.optional(),
   maxHp: maxHpSchema.optional(),
@@ -166,5 +173,9 @@ export const playerUnitSchema = z.object({
 });
 
 export const playerCombatSchema = z
-  .object({ ...combatFields, units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat) })
-  .omit({ linkGeneration: true });
+  .object({
+    ...combatFields,
+    myName: displayNameSchema.nullable(),
+    units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat),
+  })
+  .omit({ linkGeneration: true, players: true });

@@ -99,6 +99,8 @@ export const combats = sqliteTable(
     lastPlayedAt: text('lastPlayedAt'),
     createdAt: text('createdAt').notNull(),
     updatedAt: text('updatedAt').notNull(),
+    linkShared: integer('linkShared', { mode: 'boolean' }).default(false).notNull(),
+    orphanedAt: text('orphanedAt'),
   },
   (table) => [index('combats_ownerId_idx').on(table.ownerId)],
 );
@@ -131,6 +133,7 @@ export const players = sqliteTable(
       .references(() => combats.id, { onDelete: 'cascade' }),
     playerId: text('playerId').notNull(),
     displayName: text('displayName').notNull(),
+    watchingSince: text('watchingSince'),
   },
   (table) => [primaryKey({ columns: [table.combatId, table.playerId] })],
 );

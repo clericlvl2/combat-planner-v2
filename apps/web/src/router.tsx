@@ -1,5 +1,4 @@
 import type { ApiClient, Session } from '@combat-planner/api/client';
-import type { PlayerId } from '@combat-planner/domain';
 import { About, Account, CombatList, Library, Settings, SignIn, SignUp } from '@combat-planner/ui';
 import type { QueryClient } from '@tanstack/react-query';
 import { createBrowserRouter, redirect } from 'react-router';
@@ -22,7 +21,6 @@ export interface AboutLinks {
 export interface AppRouteOptions {
   api: ApiClient;
   queryClient: QueryClient;
-  playerId: () => PlayerId;
   about: AboutLinks;
   language: Promise<LanguageSwitch>;
 }
@@ -32,7 +30,7 @@ export type RouterStateGetter = () => { state: LocaleRouterState };
 const unreachable = (): undefined => undefined;
 
 export function createRoutes(
-  { api, queryClient, playerId, about, language }: AppRouteOptions,
+  { api, queryClient, about, language }: AppRouteOptions,
   router: RouterStateGetter,
 ): RouteObject[] {
   const cachedSession = (): Promise<Session | null | undefined> =>
@@ -102,7 +100,6 @@ export function createRoutes(
     return {
       combatId: params.id ?? '',
       token: new URL(request.url).searchParams.get('t') || null,
-      playerId: playerId(),
     };
   };
 

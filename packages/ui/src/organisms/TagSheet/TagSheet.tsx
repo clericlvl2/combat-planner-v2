@@ -24,6 +24,7 @@ interface TagSheetBaseProps {
   onClose: () => void;
   presetName?: string;
   maxLength?: number;
+  createHint?: string;
 }
 
 export type TagSheetProps = TagSheetBaseProps &
@@ -43,6 +44,7 @@ export function TagSheet({
   presetName,
   presetCount,
   maxLength = LIMITS.tagName,
+  createHint,
 }: TagSheetProps) {
   const { t } = useTranslation('TagSheet');
   const [query, setQuery] = useState('');
@@ -111,6 +113,8 @@ export function TagSheet({
         onChange={onChange}
         query={query}
         onCreate={create}
+        createLabel={createHint}
+        createDisabled={createHint !== undefined}
       />
     </Sheet>
   );

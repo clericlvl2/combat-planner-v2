@@ -14,14 +14,33 @@ export type {
 } from './combats/dispatch.ts';
 export { playApp } from './play/routes.ts';
 export { dmLanguage, recordPlayer } from './play/store.ts';
-export { signLink, verifyLink } from './link/token.ts';
+export { signLink, signPlayerKey, verifyLink, verifyPlayerKey } from './link/token.ts';
 export { presetsApp } from './presets/routes.ts';
 export { tagsApp } from './tags/routes.ts';
 export { settingsApp } from './settings/routes.ts';
 export { createAccountApp } from './account/routes.ts';
-export type { LinkClaims } from './link/token.ts';
-export { broadcast, broadcastDocument, subscribe, subscriberCount } from './live/registry.ts';
-export type { Audience, Subscriber } from './live/registry.ts';
+export type { LinkClaims, PlayerKeyClaims } from './link/token.ts';
+export {
+  broadcast,
+  broadcastDocument,
+  sendToPlayer,
+  subscribe,
+  subscriberCount,
+  subscriptions,
+} from './live/registry.ts';
+export type { Audience, Subscriber, Subscription } from './live/registry.ts';
+export { announceReissue, reissueGeneration } from './link/reissue.ts';
+export { findCombatRow } from './combats/store.ts';
+export {
+  lastActionAt,
+  listSharedCombats,
+  listWatchingPlayers,
+  removePlayer,
+  signedInUsers,
+  writeLink,
+} from './sharing/store.ts';
+export type { PlayerRow, SharedCombat } from './sharing/store.ts';
+export { closeEndedDmStreams } from './sharing/streams.ts';
 export { HEARTBEAT_MS, streamCombatEvents } from './live/sse.ts';
 export type { StreamRequest } from './live/sse.ts';
 export { openDatabase } from './db/index.ts';
@@ -55,7 +74,9 @@ export {
   localeSchema,
   passwordSchema,
   playViewSchema,
+  playerCredentialsSchema,
   playerIdentitySchema,
+  playerKeySchema,
   presetCreateInputSchema,
   presetPatchSchema,
   sessionSchema,
@@ -94,7 +115,10 @@ export type {
   Locale,
   PlayApi,
   PlayView,
+  PlayerCredentials,
   PlayerIdentity,
+  PlayerKey,
+  PlayerKeyStore,
   PresetCreateInput,
   PresetPatch,
   PresetsApi,

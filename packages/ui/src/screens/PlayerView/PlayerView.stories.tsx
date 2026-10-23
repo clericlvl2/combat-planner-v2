@@ -74,8 +74,8 @@ const heldEndLoader: Loader = ({ parameters }) => {
   const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
   const subscribe = api.play.subscribe.bind(api.play);
   const ends: Array<() => void> = [];
-  api.play.subscribe = (token, playerId, onDocument, onEnd) =>
-    subscribe(token, playerId, onDocument, (event) => {
+  api.play.subscribe = (token, onDocument, onEnd) =>
+    subscribe(token, onDocument, (event) => {
       ends.push(() => onEnd(event));
     });
   return {
@@ -101,7 +101,7 @@ const refocus = () => {
 const meta = preview.meta({
   title: 'Screens/PlayerView',
   component: PlayerView,
-  args: { combatId: COMBAT_ID, token: TOKEN, playerId: MIKA },
+  args: { combatId: COMBAT_ID, token: TOKEN },
   parameters: { phoneFrame: { overlay: true }, scenario: ownTurn },
 });
 
@@ -459,6 +459,18 @@ export const CantReachServer = meta.story({
   },
 });
 
+export const FullCombatAsksToRetry = meta.story({
+  tags: ['!dev'],
+  loaders: [firstLoadFails('limit')],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerView');
+    await expect(
+      await canvas.findByRole('heading', { name: t('MessageScreen:offlineTitle') }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toBeVisible();
+  },
+});
+
 export const DeletedOnFirstLoad = meta.story({
   tags: ['!dev'],
   loaders: [firstLoadFails('notFound')],
@@ -484,6 +496,26 @@ export const CantReachServerRetry = meta.story({
     await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.get')).toHaveLength(
       2,
     );
+  },
+});
+
+export const DroppedRetry = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, parameters, loaded }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    const calls = (method: string) => api.calls.filter((call) => call.method === method);
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: COMBAT_TITLE }),
+    ).toBeVisible();
+    await waitFor(() => expect(calls('play.subscribe')).toHaveLength(1));
+    api.dropPlayers(COMBAT_ID);
+    await userEvent.click(await canvas.findByRole('button', { name: t('MessageScreen:tryAgain') }));
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: COMBAT_TITLE }),
+    ).toBeVisible();
+    await expect(calls('play.get')).toHaveLength(2);
+    await expect(calls('play.subscribe')).toHaveLength(2);
   },
 });
 

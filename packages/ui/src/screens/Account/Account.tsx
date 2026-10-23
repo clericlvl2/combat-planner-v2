@@ -1,6 +1,6 @@
 import { ApiError } from '@combat-planner/api/client';
 import { LIMITS } from '@combat-planner/domain';
-import { IconChevronRight, IconLogout, IconUserX } from '@tabler/icons-react';
+import { IconChevronRight, IconDevicesX, IconLogout, IconUserX } from '@tabler/icons-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
@@ -13,13 +13,13 @@ import { PageSection } from '../shared/PageSection.tsx';
 import { submitOnEnter } from '../shared/submitOnEnter.ts';
 import classes from './Account.module.css';
 
-const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit']);
+const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit', 'rateLimited']);
 
 export function Account() {
   const { t } = useTranslation('Account');
   const { t: tDialog } = useTranslation('Dialog');
   const navigate = useNavigate();
-  const { session, update, signOut, remove } = useAccount();
+  const { session, update, signOut, signOutOtherDevices, remove } = useAccount();
   const { show } = useToasts();
   const [draft, setDraft] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -66,6 +66,13 @@ export function Account() {
       });
   };
 
+  const leaveOtherDevices = () => {
+    signOutOtherDevices().catch((error: unknown) => {
+      if (error instanceof ApiError && toastedCodes.has(error.code)) return;
+      show({ message: t('signOutOthersFailed'), kind: 'error' });
+    });
+  };
+
   const confirmDelete = () => {
     setConfirming(false);
     remove()
@@ -102,6 +109,11 @@ export function Account() {
           <button type="button" className={classes.row} onClick={leave}>
             <IconLogout className={classes.icon} size={20} stroke={2} aria-hidden="true" />
             <span className={classes.rowLabel}>{t('signOut')}</span>
+          </button>
+          <span className={classes.divider} aria-hidden="true" />
+          <button type="button" className={classes.row} onClick={leaveOtherDevices}>
+            <IconDevicesX className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+            <span className={classes.rowLabel}>{t('signOutOthers')}</span>
           </button>
         </div>
       </PageSection>

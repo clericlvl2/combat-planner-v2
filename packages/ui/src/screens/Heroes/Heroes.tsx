@@ -1,5 +1,5 @@
 import { LIMITS } from '@combat-planner/domain';
-import type { Action, PlayerCombat, PlayerId, PlayerUnit, UnitId } from '@combat-planner/domain';
+import type { Action, PlayerCombat, PlayerUnit, UnitId } from '@combat-planner/domain';
 import { IconLock, IconLogin2, IconShield } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
@@ -20,7 +20,6 @@ import classes from './Heroes.module.css';
 
 export interface HeroesProps {
   combat: PlayerCombat;
-  playerId: PlayerId;
   dispatch: (action: Action) => Promise<DispatchResult>;
   onDone: () => void;
 }
@@ -36,10 +35,10 @@ const validName = (value: string): string | null => {
   return trimmed.length > 0 && trimmed.length <= LIMITS.displayName ? trimmed : null;
 };
 
-export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
+export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
   const { t } = useTranslation('Heroes');
   const notify = usePlayerToasts();
-  const storedName = combat.players[playerId];
+  const storedName = combat.myName ?? undefined;
   const joined = storedName !== undefined;
   const [name, setName] = useState(storedName ?? '');
   const [nameTouched, setNameTouched] = useState(false);
@@ -48,11 +47,9 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
   const submitting = useRef(false);
 
   const heroes = combat.units.filter((unit) => unit.role === 'hero');
-  const claimerOf = (unit: PlayerUnit) => unit.claimedBy ?? null;
   const stateOf = (unit: PlayerUnit): HeroState => {
-    const claimer = claimerOf(unit);
-    if (claimer === playerId) return 'own';
-    if (claimer !== null) return 'taken';
+    if (unit.mine === true) return 'own';
+    if ((unit.claimedByName ?? null) !== null) return 'taken';
     return chosen.has(unit.id) ? 'chosen' : 'free';
   };
   const picked = heroes.filter((unit) => {
@@ -66,7 +63,7 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
     const before = previous.current;
     previous.current = combat;
     if (before === combat) return;
-    const taken = playerEvents(before, combat, playerId).filter(
+    const taken = playerEvents(before, combat).filter(
       (event): event is Extract<PlayerEvent, { kind: 'taken' }> =>
         event.kind === 'taken' && chosen.has(event.unitId),
     );
@@ -77,7 +74,7 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
       for (const event of taken) next.delete(event.unitId);
       return next;
     });
-  }, [combat, playerId, chosen, notify]);
+  }, [combat, chosen, notify]);
 
   const toggle = (unit: PlayerUnit, checked: boolean) => {
     const state = stateOf(unit);
@@ -145,10 +142,7 @@ export function Heroes({ combat, playerId, dispatch, onDone }: HeroesProps) {
 
   const subOf = (unit: PlayerUnit, state: HeroState): string => {
     if (state === 'own') return t('you');
-    if (state === 'taken') {
-      const claimer = claimerOf(unit);
-      return t('playing', { name: claimer === null ? '' : (combat.players[claimer] ?? '') });
-    }
+    if (state === 'taken') return t('playing', { name: unit.claimedByName ?? '' });
     return t('free');
   };
 

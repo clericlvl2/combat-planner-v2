@@ -3,7 +3,6 @@ import type {
   Combat,
   CombatId,
   PlayerCombat,
-  PlayerId,
   Preset,
   PresetId,
   Tag,
@@ -139,6 +138,20 @@ export const playerIdentitySchema = z.object({
 });
 export type PlayerIdentity = z.infer<typeof playerIdentitySchema>;
 
+export const playerKeySchema = z.string().min(1).max(64);
+export type PlayerKey = z.infer<typeof playerKeySchema>;
+
+export const playerCredentialsSchema = z.object({
+  playerId: ulidSchema,
+  playerKey: playerKeySchema,
+});
+export type PlayerCredentials = z.infer<typeof playerCredentialsSchema>;
+
+export interface PlayerKeyStore {
+  get(combatId: CombatId): PlayerCredentials | null;
+  set(combatId: CombatId, credentials: PlayerCredentials): void;
+}
+
 export const playViewSchema = z.object({
   combatId: ulidSchema,
   playerId: ulidSchema,
@@ -147,7 +160,9 @@ export const playViewSchema = z.object({
 });
 export type PlayView = z.infer<typeof playViewSchema>;
 
-export const presetCreateInputSchema = presetSchema.omit({ createdAt: true, updatedAt: true });
+export const presetCreateInputSchema = presetSchema
+  .omit({ createdAt: true, updatedAt: true })
+  .extend({ tags: presetSchema.shape.tags.max(LIMITS.tagsPerDm) });
 export type PresetCreateInput = z.infer<typeof presetCreateInputSchema>;
 
 export const presetPatchSchema = presetCreateInputSchema.omit({ id: true }).partial();
@@ -177,6 +192,7 @@ export const API_ERROR_CODES = [
   'network',
   'linkRevoked',
   'limit',
+  'rateLimited',
   'emailTaken',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
@@ -211,10 +227,11 @@ export const apiEventSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
   z.object({ type: z.literal('linkRevoked') }),
+  z.object({ type: z.literal('dropped') }),
 ]);
 export type ApiEvent = z.infer<typeof apiEventSchema>;
 export type ApiEndEvent =
-  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' }>
+  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' | 'dropped' }>
   | { type: 'unauthorized' };
 
 export type Unsubscribe = () => void;
@@ -234,6 +251,7 @@ export interface AuthApi {
   signUp(input: SignUpInput): Promise<Session>;
   signIn(input: SignInInput): Promise<Session>;
   signOut(): Promise<void>;
+  signOutOtherDevices(): Promise<void>;
   session(): Promise<Session | null>;
   providers(): Promise<SocialProvider[]>;
   socialSignIn(provider: SocialProvider, callbackUrl: string): Promise<{ url: string }>;
@@ -257,14 +275,9 @@ export interface LinkApi {
 }
 
 export interface PlayApi {
-  get(token: LinkToken, playerId: PlayerId): Promise<PlayView>;
-  dispatch(token: LinkToken, playerId: PlayerId, action: Action): Promise<VersionResult>;
-  subscribe(
-    token: LinkToken,
-    playerId: PlayerId,
-    onDocument: PlayerDocumentListener,
-    onEnd: EndListener,
-  ): Unsubscribe;
+  get(token: LinkToken): Promise<PlayView>;
+  dispatch(token: LinkToken, action: Action): Promise<VersionResult>;
+  subscribe(token: LinkToken, onDocument: PlayerDocumentListener, onEnd: EndListener): Unsubscribe;
 }
 
 export interface PresetsApi {

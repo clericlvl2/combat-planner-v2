@@ -184,9 +184,13 @@ export function Library() {
     tagCreates.current.set(tag.id, created);
     created.catch((reason: unknown) => {
       tagCreates.current.delete(tag.id);
-      failedTags.current.set(tag.id, tag.name);
+      const message =
+        reason instanceof ApiError && reason.code === 'limit'
+          ? t('tagLimitReached')
+          : t('tagFailed', { name: tag.name });
+      failedTags.current.set(tag.id, message);
       if (reason instanceof ApiError && reason.code === 'network') return;
-      show({ message: t('tagFailed', { name: tag.name }), kind: 'error' });
+      show({ message, kind: 'error' });
     });
     return tag;
   };
@@ -203,7 +207,7 @@ export function Library() {
     for (const tag of queryClient.getQueryData<Tag[]>(queryKeys.tags) ?? []) {
       failedTags.current.delete(tag.id);
     }
-    return ids.map((id) => failedTags.current.get(id)).find((name) => name !== undefined);
+    return ids.map((id) => failedTags.current.get(id)).find((message) => message !== undefined);
   };
 
   const submit = async (value: PresetFormValue) => {
@@ -213,7 +217,7 @@ export function Library() {
       await settleTags(value.tags);
       const failedTag = failedTagOf(value.tags);
       if (failedTag !== undefined) {
-        show({ message: t('tagFailed', { name: failedTag }), kind: 'error' });
+        show({ message: failedTag, kind: 'error' });
         return;
       }
       if (form.mode === 'create') {
@@ -373,6 +377,7 @@ export function Library() {
             submit(value).catch(() => {});
           }}
           onCreateTag={tagFor}
+          tagHint={allTags.length >= LIMITS.tagsPerDm ? t('tagLimitReached') : undefined}
           onClose={() => setForm(null)}
         />
       ) : null}

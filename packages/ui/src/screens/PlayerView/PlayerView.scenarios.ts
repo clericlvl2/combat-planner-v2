@@ -214,7 +214,7 @@ export function ferryCombat({
 }
 
 export const playerScenario = (combat: Combat, overrides: Partial<Scenario> = {}): Scenario =>
-  scenario({ combats: [combat], links: { [combat.id]: TOKEN }, ...overrides });
+  scenario({ combats: [combat], links: { [combat.id]: TOKEN }, playerId: MIKA, ...overrides });
 
 type ActionBody<A extends Action = Action> = A extends Action ? Omit<A, 'id' | 'version'> : never;
 
@@ -229,8 +229,9 @@ export async function claimAs(
   displayName: string,
   unitId: string,
 ): Promise<void> {
-  const { combat } = await api.play.get(TOKEN, playerId);
-  await api.play.dispatch(TOKEN, playerId, {
+  const play = api.playAs(playerId);
+  const { combat } = await play.get(TOKEN);
+  await play.dispatch(TOKEN, {
     id: ulid(),
     version: combat.version,
     type: 'claimUnit',

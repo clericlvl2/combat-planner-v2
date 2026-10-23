@@ -41,7 +41,6 @@ const logRows = () =>
       type: actionLog.action,
       author: actionLog.author,
       patch: actionLog.patch,
-      undoneBy: actionLog.undoneBy,
     })
     .from(actionLog)
     .where(eq(actionLog.combatId, COMBAT_ID))
@@ -97,7 +96,6 @@ describe('POST /combats/:id/actions', () => {
         seq: 1,
         actionId: action.id,
         author: { kind: 'dm' },
-        undoneBy: null,
         patch: expect.objectContaining({ actionId: action.id }),
       }),
     ]);
@@ -111,15 +109,15 @@ describe('POST /combats/:id/actions', () => {
     expect(logRows()).toHaveLength(1);
   });
 
-  it('replays a known action id with the same version and no second log entry', async () => {
+  it('refuses a retried action with 409 version and no second log entry', async () => {
     const action = addUnitAction(nextActionId(), 2, ENEMY_ID, 'Goblin', 'enemy');
     const first = await post(action);
     expect(await first.json()).toEqual({ version: 3 });
     const { events, unsubscribe } = listen({ kind: 'dm' });
-    const replay = await post({ ...action, version: 99 });
+    const retry = await post(action);
     unsubscribe();
-    expect(replay.status).toBe(200);
-    expect(await replay.json()).toEqual({ version: 3 });
+    expect(retry.status).toBe(409);
+    expect(await retry.json()).toMatchObject({ code: 'version' });
     expect(events).toEqual([]);
     expect(logRows()).toHaveLength(2);
     expect((await fetchCombat(dm)).version).toBe(3);
@@ -219,7 +217,9 @@ describe('POST /combats/:id/actions', () => {
 });
 
 describe('player actions through dispatch', () => {
-  it('claims a hero as a player, logs the claim without a patch and records the name', () => {
+  it('claims a hero as a player, keeps the undo stack and records the name', () => {
+    const stack = logRows();
+    expect(stack).toHaveLength(2);
     const action: Action = {
       id: nextActionId(),
       version: 3,
@@ -237,11 +237,7 @@ describe('player actions through dispatch', () => {
     const combat = (outcome as { combat: Combat }).combat;
     expect(combat.units.find((unit) => unit.id === HERO_ID)?.claimedBy).toBe(PLAYER_ID);
     expect(combat.players).toEqual({ [PLAYER_ID]: 'Ada' });
-    expect(logRows().at(-1)).toMatchObject({
-      actionId: action.id,
-      author: { kind: 'player', playerId: PLAYER_ID },
-      patch: null,
-    });
+    expect(logRows()).toEqual(stack);
   });
 
   it('projects the player document with hidden enemy fields removed', async () => {
@@ -261,39 +257,41 @@ describe('player actions through dispatch', () => {
     expect(enemy).not.toHaveProperty('hp');
     expect(enemy).not.toHaveProperty('note');
     const hero = event.document.units.find((unit) => unit.id === HERO_ID);
-    expect(hero).toMatchObject({ claimedBy: PLAYER_ID, hp: 20, note: '' });
+    expect(hero).toMatchObject({ mine: true, hp: 20, note: '' });
   });
 });
 
 describe('undo through the route', () => {
-  it('reverts the newest undoable entry and marks it undoneBy', async () => {
+  it('reverts the top action and deletes its row without writing one', async () => {
     const before = await fetchCombat(dm);
     const damaged = before.units.find((unit) => unit.id === ENEMY_ID);
     expect(damaged?.hp).toBe(15);
-    const damageEntry = logRows().at(-1);
-    expect(damageEntry?.undoneBy).toBeNull();
+    const stack = logRows();
+    expect(stack).toHaveLength(3);
     const undo: Action = { id: nextActionId(), version: before.version, type: 'undo' };
     const response = await post(undo);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ version: before.version + 1 });
     const after = await fetchCombat(dm);
     expect(after.units.find((unit) => unit.id === ENEMY_ID)?.hp).toBe(20);
-    const rows = logRows();
-    expect(rows.find((row) => row.actionId === damageEntry?.actionId)?.undoneBy).toBe(undo.id);
-    expect(rows.at(-1)).toMatchObject({ actionId: undo.id, patch: null, undoneBy: null });
+    expect(logRows()).toEqual(stack.slice(0, -1));
   });
 
-  it('stops at the claim entry with 422 blocked', async () => {
-    const combat = await fetchCombat(dm);
-    const response = await post({ id: nextActionId(), version: combat.version, type: 'undo' });
+  it('answers 422 blocked when the stack is empty', async () => {
+    const combatId = ulidAt(301);
+    expect((await call(dm, 'POST', '/combats', combatInput(combatId))).status).toBe(200);
+    const response = await post({ id: nextActionId(), version: 1, type: 'undo' }, combatId);
     expect(response.status).toBe(422);
-    expect(await response.json()).toMatchObject({ code: 'blocked' });
+    expect(await response.json()).toEqual({ code: 'blocked', message: 'Nothing to undo' });
   });
 });
 
 describe('undo summary in the DM document', () => {
   it('names the newest undoable entry for get and the DM stream, never for a player', async () => {
-    expect((await fetchCombat(dm)).undo).toBeNull();
+    expect((await fetchCombat(dm)).undo).toMatchObject({
+      action: { type: 'addUnit' },
+      unitName: 'Goblin',
+    });
     const dmStream = listen({ kind: 'dm' });
     const playerStream = listen({ kind: 'player', playerId: PLAYER_ID });
     const before = await fetchCombat(dm);
@@ -342,8 +340,9 @@ describe('undo summary in the DM document', () => {
     });
   });
 
-  it('is null after a claim, also on open', async () => {
+  it('is kept after a release, also on open', async () => {
     const before = await fetchCombat(dm);
+    expect(before.undo).not.toBeNull();
     const outcome = dispatch(opened.db, {
       combatId: COMBAT_ID,
       viewer: { kind: 'player', playerId: PLAYER_ID },
@@ -352,6 +351,6 @@ describe('undo summary in the DM document', () => {
     });
     expect(outcome).toMatchObject({ ok: true });
     const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/open`);
-    expect(((await response.json()) as { undo: unknown }).undo).toBeNull();
+    expect(((await response.json()) as { undo: unknown }).undo).toEqual(before.undo);
   });
 });

@@ -217,3 +217,27 @@ export const SignOutFailed = meta.story({
     await expect(canvas.getByText('dm@ferry.games')).toBeVisible();
   },
 });
+
+export const SignOutOthers = meta.story({
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
+    await canvas.findByText('dm@ferry.games');
+    await userEvent.click(canvas.getByRole('button', { name: t('signOutOthers') }));
+    await expect(await canvas.findByText(t('Toast:otherDevicesSignedOut'))).toBeVisible();
+    await expect(methodsOf(loaded)).toContain('auth.signOutOtherDevices');
+    await expect(probeOf(canvasElement).location).toBe('/account');
+  },
+});
+
+export const SignOutOthersFailed = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
+    await canvas.findByText('dm@ferry.games');
+    fakeApiOf(loaded).failNext('invalid');
+    await userEvent.click(canvas.getByRole('button', { name: t('signOutOthers') }));
+    await expect(await canvas.findByText(t('signOutOthersFailed'))).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: t('Toast:retry') })).toBeNull();
+    await expect(probeOf(canvasElement).location).toBe('/account');
+  },
+});

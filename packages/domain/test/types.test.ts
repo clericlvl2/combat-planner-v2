@@ -68,9 +68,15 @@ describe('types', () => {
       createdAt: '2026-10-16T00:00:00.000Z',
       updatedAt: '2026-10-16T00:00:00.000Z',
     };
-    const { linkGeneration: _linkGeneration, units: _units, ...playerFields } = combat;
+    const {
+      linkGeneration: _linkGeneration,
+      players: _players,
+      units: _units,
+      ...playerFields
+    } = combat;
     const projection: PlayerCombat = {
       ...playerFields,
+      myName: null,
       units: [
         {
           id: unit.id,
