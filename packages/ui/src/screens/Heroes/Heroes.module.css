@@ -25,12 +25,22 @@
   scrollbar-gutter: stable;
 }
 
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .title {
   margin: 0;
   font-family: var(--cp-font-display);
   font-size: var(--mantine-font-size-heading);
   font-weight: 700;
   line-height: 1.25;
+}
+
+.language {
+  align-self: flex-end;
 }
 
 .section {
