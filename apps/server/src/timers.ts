@@ -18,5 +18,10 @@ export const TEST_TIMERS: SharingTimers = {
   timeouts: { orphanedLinkMs: 10_000, watchingMs: 8_000, idleStreamMs: 30_000 },
 };
 
-export const sharingTimers = (testTimers: string | undefined): SharingTimers =>
-  testTimers === '1' ? TEST_TIMERS : PRODUCTION_TIMERS;
+export const TEST_TIMERS_NOTICE = `sharing timers shortened for tests by ${TEST_TIMERS_VARIABLE}=1`;
+
+export const sharingTimers = (
+  testTimers: string | undefined,
+  nodeEnv: string | undefined,
+): SharingTimers =>
+  testTimers === '1' && nodeEnv !== 'production' ? TEST_TIMERS : PRODUCTION_TIMERS;

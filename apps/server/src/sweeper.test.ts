@@ -188,15 +188,20 @@ afterAll(() => {
 
 describe('sharingTimers', () => {
   it('uses the production timers when the variable is unset or not 1', () => {
-    expect(sharingTimers(undefined)).toBe(PRODUCTION_TIMERS);
-    expect(sharingTimers('0')).toBe(PRODUCTION_TIMERS);
+    expect(sharingTimers(undefined, undefined)).toBe(PRODUCTION_TIMERS);
+    expect(sharingTimers('0', 'development')).toBe(PRODUCTION_TIMERS);
     expect(PRODUCTION_TIMERS).toEqual({ sweepIntervalMs: 60_000, timeouts: SHARING_TIMEOUTS });
   });
 
   it('shortens every timer to seconds when the variable is 1', () => {
-    expect(sharingTimers('1')).toBe(TEST_TIMERS);
+    expect(sharingTimers('1', undefined)).toBe(TEST_TIMERS);
+    expect(sharingTimers('1', 'development')).toBe(TEST_TIMERS);
     expect(TEST_TIMERS.sweepIntervalMs).toBe(1_000);
     for (const value of Object.values(TEST_TIMERS.timeouts)) expect(value).toBeLessThan(MINUTE);
+  });
+
+  it('never shortens the timers in production', () => {
+    expect(sharingTimers('1', 'production')).toBe(PRODUCTION_TIMERS);
   });
 });
 
