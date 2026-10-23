@@ -6,6 +6,7 @@
   "tooManyRequests": "Demasiadas solicitudes: espera un minuto",
   "linkCopied": "Enlace copiado",
   "serverUnreachable": "No se pudo conectar con el servidor. El cambio se ha deshecho.",
+  "serverUnreachableNothingChanged": "No se pudo conectar con el servidor. No ha cambiado nada.",
   "retry": "Reintentar",
   "undoneDamage": "Deshecho: {{amount}} de daño a {{name}}",
   "duplicated": "Se creó {{title}} (copia)",

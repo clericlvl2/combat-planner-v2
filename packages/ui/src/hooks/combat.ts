@@ -204,6 +204,7 @@ export function createDispatcher({
         const toast = errorToast(
           error,
           t,
+          'serverUnreachable',
           () => {
             retried = true;
             void dispatch(action).then(resolve);

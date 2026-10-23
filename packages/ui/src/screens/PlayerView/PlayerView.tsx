@@ -112,8 +112,8 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
         setDeparting(false);
         setLeaving(false);
         show(
-          errorToast(failure, tToast, leave) ?? {
-            message: tToast('serverUnreachable'),
+          errorToast(failure, tToast, 'serverUnreachableNothingChanged', leave) ?? {
+            message: tToast('serverUnreachableNothingChanged'),
             kind: 'error',
           },
         );

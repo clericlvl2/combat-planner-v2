@@ -6,6 +6,7 @@
   "tooManyRequests": "Слишком много запросов — подождите минуту",
   "linkCopied": "Ссылка скопирована",
   "serverUnreachable": "Не удалось связаться с сервером. Изменение отменено.",
+  "serverUnreachableNothingChanged": "Не удалось связаться с сервером. Ничего не изменилось.",
   "retry": "Повторить",
   "undoneDamage": "Отменено: {{amount}} урона по {{name}}",
   "duplicated": "Создана копия: {{title}}",

@@ -397,7 +397,7 @@ export const LeaveFailureStays = meta.story({
     const dialog = await openLeave(canvas, t);
     fakeApiOf(loaded).failNext('network');
     await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:leave') }));
-    await expect(await canvas.findByText(t('Toast:serverUnreachable'))).toBeVisible();
+    await expect(await canvas.findByText(t('Toast:serverUnreachableNothingChanged'))).toBeVisible();
     await expect(args.onHome).not.toHaveBeenCalled();
   },
 });

@@ -9,12 +9,14 @@ import {
 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, spyOn, userEvent, waitFor } from 'storybook/test';
 import { layout } from '../../layout.ts';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { Toast, toastDuration } from './Toast.tsx';
 import type { ToastProps, ToastTone } from './Toast.tsx';
+import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 type ToastKind = 'preset' | 'cap' | 'link' | 'failed' | 'undone';
@@ -24,6 +26,7 @@ interface ToastCellProps extends Omit<ToastProps, 'message' | 'icon' | 'tone' | 
   message?: string;
   name?: string;
   actionLabel?: string;
+  withoutAction?: boolean;
   onAction: () => void;
   deferred?: boolean;
 }
@@ -43,6 +46,7 @@ function ToastCell({
   message,
   name = unitName,
   actionLabel,
+  withoutAction = false,
   onAction,
   onHide,
   deferred = false,
@@ -57,7 +61,9 @@ function ToastCell({
     failed: t('serverUnreachable'),
     undone: t('undoneDamage', { amount: 12, name }),
   };
-  const label = actionLabel ?? (kind === 'failed' ? t('retry') : undefined);
+  const label = withoutAction
+    ? undefined
+    : (actionLabel ?? (kind === 'failed' ? t('retry') : undefined));
   return (
     <>
       {deferred ? (
@@ -88,33 +94,66 @@ const meta = preview.meta({
   args: { kind: 'failed' as ToastKind, onHide: fn(), onAction: fn() },
 });
 
-export const ErrorWithAction = meta.story({ tags: ['visual'] });
+const columns = ['short', 'short + action', 'long', 'long + action'] as const;
+type Column = (typeof columns)[number];
 
-export const Warning = meta.story({
-  args: { kind: 'cap' },
+const longMessage =
+  'Не удалось сохранить изменения: сервер не отвечает уже больше минуты. Изменение отменено.';
+
+const cellBox = (column: Column): CSSProperties => ({
+  position: 'relative',
+  width: layout.viewports.narrow.width - 2 * layout.contentEdge,
+  height: column.startsWith('long') ? 152 : 88,
 });
 
-export const Success = meta.story({
+function ToastGridCell({ kind, column }: { kind: ToastKind; column: Column }) {
+  const { t } = useTranslation('Toast');
+  return (
+    <div style={cellBox(column)}>
+      <ToastCell
+        kind={kind}
+        message={column.startsWith('long') ? longMessage : undefined}
+        actionLabel={column.endsWith('action') ? t('retry') : undefined}
+        withoutAction={!column.endsWith('action')}
+        aboveBottomBar={false}
+        duration={null}
+        onAction={() => {}}
+        onHide={() => {}}
+      />
+    </div>
+  );
+}
+
+const toneRows = (['failed', 'cap', 'link', 'undone'] as const).map((kind) => ({
+  label: tones[kind].tone,
+  render: (column: Column) => <ToastGridCell kind={kind} column={column} />,
+}));
+
+export const AllStates = meta.story({
   tags: ['visual'],
-  args: { kind: 'link' },
-});
-
-export const Neutral = meta.story({
-  args: { kind: 'undone' },
-});
-
-export const LongErrorWithAction = meta.story({
-  args: {
-    kind: 'failed',
-    message:
-      'Не удалось сохранить изменения: сервер не отвечает уже больше минуты. Ничего не изменилось.',
-    actionLabel: 'Повторить попытку',
+  render: () => (
+    <div style={{ minHeight: 0, overflowY: 'auto' }}>
+      <StateGrid rows={toneRows} columns={columns} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const toasts = [...canvasElement.querySelectorAll<HTMLElement>('[role="status"]')];
+    await expect(toasts).toHaveLength(16);
+    for (const toast of toasts) {
+      const style = getComputedStyle(toast);
+      await expect(toast.getBoundingClientRect().height).toBeGreaterThanOrEqual(40);
+      await expect(style.borderTopLeftRadius).toBe('20px');
+      await expect(style.backgroundColor).toBe('rgb(35, 31, 28)');
+    }
+    const long = canvasElement.querySelector<HTMLElement>(
+      '[data-state-cell="error · long"] [role="status"]',
+    );
+    await expect(long?.getBoundingClientRect().height).toBeGreaterThan(40);
+    const short = canvasElement.querySelector<HTMLElement>(
+      '[data-state-cell="success · short"] [role="status"]',
+    );
+    await expect(short?.getBoundingClientRect().height).toBe(40);
   },
-});
-
-export const LongMessage = meta.story({
-  tags: ['visual'],
-  args: { kind: 'preset', name: 'Brother Tomas of the Silver Lantern Order' },
 });
 
 export const ActionFiresOnAction = meta.story({
@@ -233,6 +272,24 @@ export const ActionToastStaysEightSeconds = meta.story({
   },
 });
 
+export const ErrorToastStaysFiveSeconds = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  args: { kind: 'failed', withoutAction: true, onHide: fn(), deferred: true },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Toast');
+    const setTimeoutSpy = spyOn(globalThis, 'setTimeout');
+    try {
+      await userEvent.click(canvas.getByRole('button', { name: t('show') }));
+      await expect(delaysOf(setTimeoutSpy)).toContain(toastDuration.error);
+      await expect(delaysOf(setTimeoutSpy)).not.toContain(toastDuration.plain);
+      await expect(canvas.queryByRole('button', { name: t('retry') })).toBeNull();
+    } finally {
+      setTimeoutSpy.mockRestore();
+    }
+  },
+});
+
 export const MotionOffKeepsToast = meta.story({
   tags: ['!dev'],
   args: { kind: 'link', onHide: fn(), deferred: true },
@@ -273,9 +330,25 @@ export const SitsAboveBottomBar = meta.story({
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
     const frameBox = frame?.getBoundingClientRect();
     const toastBox = canvas.getByRole('status').getBoundingClientRect();
+    const left = toastBox.left - (frameBox?.left ?? 0);
+    const right = (frameBox?.right ?? 0) - toastBox.right;
+    await expect(left).toBeGreaterThan(layout.toast.inset);
+    await expect(Math.abs(left - right)).toBeLessThanOrEqual(1);
+    await expect((frameBox?.bottom ?? 0) - toastBox.bottom).toBe(layout.toast.bottom);
+  },
+});
+
+export const LongMessageFitsColumn = meta.story({
+  tags: ['!dev'],
+  args: { kind: 'failed', message: longMessage },
+  play: async ({ canvas, canvasElement }) => {
+    const frameBox = canvasElement
+      .querySelector<HTMLElement>('[data-phone-frame]')
+      ?.getBoundingClientRect();
+    const toastBox = canvas.getByRole('status').getBoundingClientRect();
     await expect(toastBox.left - (frameBox?.left ?? 0)).toBe(layout.toast.inset);
     await expect((frameBox?.right ?? 0) - toastBox.right).toBe(layout.toast.inset);
-    await expect((frameBox?.bottom ?? 0) - toastBox.bottom).toBe(layout.toast.bottom);
+    await expect(toastBox.height).toBeGreaterThan(40);
   },
 });
 

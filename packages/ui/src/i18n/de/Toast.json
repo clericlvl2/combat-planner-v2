@@ -6,6 +6,7 @@
   "tooManyRequests": "Zu viele Anfragen – warte eine Minute",
   "linkCopied": "Link kopiert",
   "serverUnreachable": "Server nicht erreichbar. Die Änderung wurde zurückgenommen.",
+  "serverUnreachableNothingChanged": "Server nicht erreichbar. Nichts wurde geändert.",
   "retry": "Wiederholen",
   "undoneDamage": "Rückgängig: {{amount}} Schaden an {{name}}",
   "duplicated": "{{title}} (Kopie) erstellt",

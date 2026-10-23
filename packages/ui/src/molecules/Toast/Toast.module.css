@@ -15,10 +15,13 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 12px;
-  min-height: 56px;
-  padding: 8px 60px 8px 12px;
-  border-radius: var(--mantine-radius-card);
+  gap: 0 8px;
+  width: fit-content;
+  max-width: calc(100% - 2 * var(--toast-inset));
+  min-height: 40px;
+  margin-inline: auto;
+  padding: 4px 40px 4px 8px;
+  border-radius: 20px;
   background: var(--cp-color-ink);
   color: var(--cp-color-surface);
   font-family: var(--cp-font-ui);
@@ -43,9 +46,9 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 16px;
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
   background: var(--cp-color-soft);
   color: var(--cp-color-ink);
 
@@ -66,10 +69,12 @@
 }
 
 .message {
-  flex: 1 1 160px;
+  flex: 1 1 auto;
   min-width: 0;
-  font-size: var(--mantine-font-size-body);
-  line-height: var(--mantine-line-height-body);
+  max-width: calc(100% - 32px);
+  padding-block: 6px;
+  font-size: var(--mantine-font-size-small);
+  line-height: var(--mantine-line-height-snug);
   text-wrap: pretty;
 }
 
@@ -77,11 +82,11 @@
   position: relative;
   display: flex;
   flex: none;
-  margin-left: auto;
   align-items: center;
-  height: 40px;
-  padding: 0 12px;
-  border-radius: 20px;
+  height: 32px;
+  margin-left: auto;
+  padding: 0 10px;
+  border-radius: 16px;
   color: var(--cp-color-accent);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
@@ -110,15 +115,15 @@
 
 .close {
   position: absolute;
-  top: calc(50% - 20px);
-  right: 8px;
+  top: calc(50% - 16px);
+  right: 4px;
   display: flex;
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 20px;
+  width: 32px;
+  height: 32px;
+  border-radius: 16px;
   color: var(--cp-color-surface);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;

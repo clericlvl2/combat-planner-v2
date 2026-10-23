@@ -1,6 +1,6 @@
 import { ApiError } from '@combat-planner/api/client';
 import type { QueryClient } from '@tanstack/react-query';
-import { toastDuration } from '../molecules/Toast/Toast.tsx';
+import { defaultDuration } from '../molecules/Toast/Toast.tsx';
 import type { ToastAction, ToastTone } from '../molecules/Toast/Toast.tsx';
 import type { Motion } from '../provider.tsx';
 
@@ -26,9 +26,11 @@ export interface ToastItem {
 
 export type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-export const durationOf = ({ action, duration }: ToastInput): number | null => {
+export type UnreachableKey = 'serverUnreachable' | 'serverUnreachableNothingChanged';
+
+export const durationOf = ({ action, duration, kind = 'neutral' }: ToastInput): number | null => {
   if (duration !== undefined) return duration;
-  return action ? toastDuration.withAction : toastDuration.plain;
+  return defaultDuration(kind, action !== undefined);
 };
 
 export const startsTimer = (duration: number | null, motion: Motion): duration is number =>
@@ -45,13 +47,14 @@ export const removeToast = (stack: readonly ToastItem[], id: string): ToastItem[
 export const errorToast = (
   error: unknown,
   t: Translate,
+  unreachableKey: UnreachableKey,
   retry: () => void,
   limitMessage?: string,
 ): ToastInput | null => {
   if (!(error instanceof ApiError)) return null;
   if (error.code === 'network') {
     return {
-      message: t('serverUnreachable'),
+      message: t(unreachableKey),
       kind: 'error',
       action: { label: t('retry'), onAction: retry },
     };
