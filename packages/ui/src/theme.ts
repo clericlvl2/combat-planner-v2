@@ -36,7 +36,6 @@ export const roles = {
 
 export const health = {
   full: '#2E7A43',
-  wounded: '#855800',
   staggered: '#B33A0A',
   dead: '#57534E',
   empty: '#E6DDCC',
@@ -44,7 +43,6 @@ export const health = {
 
 export const healthTints = {
   full: '#E3F1E6',
-  wounded: '#F8ECD2',
   staggered: '#FBE3D8',
 } as const;
 

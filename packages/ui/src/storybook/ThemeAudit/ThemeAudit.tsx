@@ -83,8 +83,7 @@ const tokenGroups: TokenGroup[] = [
   {
     title: 'Health',
     items: [
-      token('full', health.full, 'Full: 2 pips'),
-      token('wounded', health.wounded, 'Wounded, 50% and up: 1 pip'),
+      token('full', health.full, 'Full and wounded, 50% and up: 2 or 1 pips'),
       token('staggered', health.staggered, 'Staggered, below 50%: 1 pip'),
       token('dead', health.dead, 'Dead, 0 or below: 0 pips, name struck'),
       token('empty', health.empty, 'Empty pip'),

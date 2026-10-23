@@ -79,10 +79,6 @@
     align-items: flex-end;
   }
 
-  &[data-status='wounded'] {
-    --numpad-health: var(--cp-health-wounded);
-  }
-
   &[data-status='staggered'] {
     --numpad-health: var(--cp-health-staggered);
   }

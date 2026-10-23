@@ -25,11 +25,6 @@
     cursor: pointer;
   }
 
-  &[data-status='wounded'] {
-    --hp-box-status: var(--cp-health-wounded);
-    --hp-box-tint: var(--cp-health-tint-wounded);
-  }
-
   &[data-status='staggered'] {
     --hp-box-status: var(--cp-health-staggered);
     --hp-box-tint: var(--cp-health-tint-staggered);
