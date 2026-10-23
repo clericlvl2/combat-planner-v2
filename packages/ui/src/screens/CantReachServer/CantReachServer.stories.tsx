@@ -4,7 +4,7 @@ import { CantReachServer } from './CantReachServer.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/CantReachServer',
+  title: 'Screens/Errors/CantReachServer',
   component: CantReachServer,
   parameters: { phoneFrame: true },
   args: { onRetry: fn(), onHome: fn() },

@@ -4,7 +4,7 @@ import { LinkExpired } from './LinkExpired.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/LinkExpired',
+  title: 'Screens/Errors/LinkExpired',
   component: LinkExpired,
   parameters: { phoneFrame: true },
   args: { onHome: fn() },

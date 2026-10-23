@@ -47,6 +47,12 @@ export default definePreview({
         ]),
       ),
     },
+    options: {
+      storySort: {
+        method: 'alphabetical',
+        order: ['Screens', 'Organisms', 'Molecules', 'Atoms', '*'],
+      },
+    },
     docs: { story: { autoplay: false } },
     layout: 'fullscreen',
     motion: 'off',

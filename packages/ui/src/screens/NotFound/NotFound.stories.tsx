@@ -4,7 +4,7 @@ import { NotFound } from './NotFound.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/NotFound',
+  title: 'Screens/Errors/NotFound',
   component: NotFound,
   parameters: { phoneFrame: true },
   args: { onHome: fn() },

@@ -4,7 +4,7 @@ import { CombatNotFound } from './CombatNotFound.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/CombatNotFound',
+  title: 'Screens/Errors/CombatNotFound',
   component: CombatNotFound,
   parameters: { phoneFrame: true },
   args: { onHome: fn() },

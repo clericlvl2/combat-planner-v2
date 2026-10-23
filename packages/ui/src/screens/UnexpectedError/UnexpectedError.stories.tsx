@@ -4,7 +4,7 @@ import { UnexpectedError } from './UnexpectedError.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/UnexpectedError',
+  title: 'Screens/Errors/UnexpectedError',
   component: UnexpectedError,
   parameters: { phoneFrame: true },
   args: { onReload: fn(), onHome: fn() },

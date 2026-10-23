@@ -4,7 +4,7 @@ import { CombatDeleted } from './CombatDeleted.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/CombatDeleted',
+  title: 'Screens/Errors/CombatDeleted',
   component: CombatDeleted,
   parameters: { phoneFrame: true },
   args: { combatTitle: 'Goblin ambush', onHome: fn() },
