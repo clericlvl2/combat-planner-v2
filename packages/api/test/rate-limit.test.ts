@@ -6,6 +6,7 @@ import {
   bucketOf,
   clientIpOf,
   createRateLimiter,
+  rateLimitKeyOf,
 } from '../src/rate-limit.ts';
 
 const START = 1_800_000_000_000;
@@ -42,6 +43,19 @@ describe('bucketOf', () => {
   });
 });
 
+describe('rateLimitKeyOf', () => {
+  it.each([
+    ['events', '/combats/01J/events', 'events|10.0.0.1|01J'],
+    ['events', '/play/01K/events', 'events|10.0.0.1|01K'],
+    ['actions', '/combats/01J/actions', 'actions|10.0.0.1|01J'],
+    ['actions', '/play/01K', 'actions|10.0.0.1|01K'],
+    ['general', '/combats/01J', 'general|10.0.0.1'],
+    ['events', '/other/events', 'events|10.0.0.1'],
+  ] as const)('keys %s %s as %s', (bucket, path, key) => {
+    expect(rateLimitKeyOf(bucket, path, '10.0.0.1')).toBe(key);
+  });
+});
+
 describe('clientIpOf', () => {
   it('reads the single X-Forwarded-For address before the socket address', () => {
     expect(clientIpOf(' 203.0.113.5 ', '10.0.0.2')).toBe('203.0.113.5');
@@ -73,21 +87,29 @@ describe('rate limiter', () => {
     expect((await hit('/presets', '198.51.100.2')).status).toBe(200);
   });
 
-  it('gives play and combat actions their own budget of 120', async () => {
+  it('gives play and combat actions of one combat a shared budget of 120', async () => {
     const { hit, burst } = limitedServer();
-    await burst('/play/token', 60);
+    await burst('/play/01J', 60);
     await burst('/combats/01J/actions', RATE_LIMIT_BUDGETS.actions - 60);
     expect((await hit('/combats/01J/actions')).status).toBe(429);
-    expect((await hit('/play/token')).status).toBe(429);
+    expect((await hit('/play/01J')).status).toBe(429);
     expect((await hit('/presets')).status).toBe(200);
   });
 
-  it('limits SSE connects to 30 outside the general budget and never limits health', async () => {
+  it('gives two combats from one IP separate action budgets', async () => {
+    const { hit, burst } = limitedServer();
+    await burst('/play/01J/actions', RATE_LIMIT_BUDGETS.actions);
+    expect((await hit('/play/01J/actions')).status).toBe(429);
+    expect((await hit('/play/01K/actions')).status).toBe(200);
+  });
+
+  it('limits SSE connects to 60 per combat outside the general budget and never limits health', async () => {
     const { hit, burst } = limitedServer();
     await burst('/presets', RATE_LIMIT_BUDGETS.general);
     await burst('/combats/01J/events', 20);
-    await burst('/play/token/events', RATE_LIMIT_BUDGETS.events - 20);
+    await burst('/play/01J/events', RATE_LIMIT_BUDGETS.events - 20);
     expect((await hit('/combats/01J/events')).status).toBe(429);
+    expect((await hit('/play/01K/events')).status).toBe(200);
     await burst('/health', RATE_LIMIT_BUDGETS.general + 10);
   });
 

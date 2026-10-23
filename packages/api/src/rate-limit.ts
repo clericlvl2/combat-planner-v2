@@ -4,7 +4,7 @@ export const RATE_LIMIT_WINDOW_MS = 60_000;
 
 export const RATE_LIMIT_BUDGETS = {
   actions: 120,
-  events: 30,
+  events: 60,
   general: 300,
 } as const;
 
@@ -13,6 +13,7 @@ export type RateLimitBucket = keyof typeof RATE_LIMIT_BUDGETS;
 export const TOO_MANY_REQUESTS = { code: 'limit', message: 'Too many requests' } as const;
 
 const ACTIONS_PATH = /^\/combats\/[^/]+\/actions$/;
+const COMBAT_PATH = /^\/(?:combats|play)\/([^/]+)/;
 const WILDCARD = '/*';
 
 export const bucketOf = (path: string): RateLimitBucket | null => {
@@ -20,6 +21,11 @@ export const bucketOf = (path: string): RateLimitBucket | null => {
   if (path.endsWith('/events')) return 'events';
   if (path.startsWith('/play/') || ACTIONS_PATH.test(path)) return 'actions';
   return 'general';
+};
+
+export const rateLimitKeyOf = (bucket: RateLimitBucket, path: string, ip: string): string => {
+  const combatId = bucket === 'general' ? undefined : COMBAT_PATH.exec(path)?.[1];
+  return combatId === undefined ? `${bucket}|${ip}` : `${bucket}|${ip}|${combatId}`;
 };
 
 interface SocketBindings {
@@ -53,7 +59,8 @@ export function createRateLimiter({ now = Date.now }: RateLimiterOptions = {}): 
   let counters = new Map<string, number>();
 
   return async (c, next) => {
-    const bucket = bucketOf(relativePath(c));
+    const path = relativePath(c);
+    const bucket = bucketOf(path);
     if (bucket === null) return next();
     const time = now();
     if (time - windowStart >= RATE_LIMIT_WINDOW_MS) {
@@ -61,7 +68,7 @@ export function createRateLimiter({ now = Date.now }: RateLimiterOptions = {}): 
       counters = new Map();
     }
     const ip = clientIpOf(c.req.header('x-forwarded-for'), socketAddressOf(c.env));
-    const key = `${bucket}|${ip}`;
+    const key = rateLimitKeyOf(bucket, path, ip);
     const count = (counters.get(key) ?? 0) + 1;
     counters.set(key, count);
     if (count <= RATE_LIMIT_BUDGETS[bucket]) return next();
