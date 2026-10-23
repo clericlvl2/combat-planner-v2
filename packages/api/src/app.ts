@@ -21,6 +21,7 @@ export interface ApiAppDeps {
   db: AppDatabase;
   env: ApiEnv;
   auth?: SessionResolver;
+  rateLimit?: boolean;
 }
 
 export const BODY_LIMIT_BYTES = 64 * 1024;
@@ -37,10 +38,10 @@ const userCombatsApp = new Hono<ApiAppEnv>()
   .route('/', eventsApp)
   .route('/', linkApp);
 
-export function createApiApp({ db, env, auth }: ApiAppDeps) {
+export function createApiApp({ db, env, auth, rateLimit = true }: ApiAppDeps) {
   const instance = createAuth({ db, env });
   return new Hono<ApiAppEnv>()
-    .use(createRateLimiter())
+    .use(rateLimit ? createRateLimiter() : (_c, next) => next())
     .use(
       bodyLimit({
         maxSize: BODY_LIMIT_BYTES,

@@ -229,7 +229,7 @@ describe('log pruning', () => {
     | ReturnType<typeof addUnitAction>;
 
   it('keeps undo identical to the full log and the row count bounded', async () => {
-    const pruned = createTestApp();
+    const pruned = createTestApp({ rateLimit: false });
     const requester = withUser(pruned.app, DM);
     expect((await call(requester, 'POST', '/combats', combatInput())).status).toBe(200);
     const { undo: _undo, ...initial } = await fetchCombat(requester);

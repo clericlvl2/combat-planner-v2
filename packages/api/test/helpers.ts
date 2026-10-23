@@ -35,9 +35,14 @@ export interface TestApp {
 export interface TestAppOptions {
   auth?: ApiAppDeps['auth'];
   env?: Partial<ApiEnv>;
+  rateLimit?: boolean;
 }
 
-export function createTestApp({ auth, env: overrides = {} }: TestAppOptions = {}): TestApp {
+export function createTestApp({
+  auth,
+  env: overrides = {},
+  rateLimit,
+}: TestAppOptions = {}): TestApp {
   const directory = mkdtempSync(path.join(tmpdir(), 'combat-planner-api-'));
   const opened = openDatabase(path.join(directory, 'test.db'));
   runMigrations(opened.db);
@@ -49,7 +54,7 @@ export function createTestApp({ auth, env: overrides = {} }: TestAppOptions = {}
       .run();
   }
   return {
-    app: createApiApp({ db: opened.db, env: { ...env, ...overrides }, auth }),
+    app: createApiApp({ db: opened.db, env: { ...env, ...overrides }, auth, rateLimit }),
     db: opened.db,
     close: () => {
       opened.close();
