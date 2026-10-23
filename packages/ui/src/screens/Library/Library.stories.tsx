@@ -15,6 +15,7 @@ import {
   emptyLibraryScenario,
   fromCombatScenario,
   fullLibraryScenario,
+  fullTagsScenario,
   libraryPresets,
   libraryScenario,
   savedFromCombat,
@@ -735,6 +736,33 @@ export const TagCreateAwaited = meta.story({
     await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
     await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
     await expect(canvas.getByRole('dialog', { name: t('BottomBar:newPreset') })).toBeVisible();
+  },
+});
+
+export const TagLimitReached = meta.story({
+  parameters: { scenario: fullTagsScenario },
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    const sheet = await openTagSheet(canvas, t);
+    await userEvent.type(within(sheet).getByRole('searchbox'), 'Elite');
+    const create = within(sheet).getByRole('button', { name: t('tagLimitReached') });
+    await expect(create).toBeDisabled();
+    await userEvent.click(create, { pointerEventsCheck: 0 });
+    await expect(callsOf(loaded, 'tags.create')).toHaveLength(0);
+  },
+});
+
+export const TagLimitRefused = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openCreate(canvas, t);
+    fakeApiOf(loaded).failNext('limit');
+    await createEliteTag(canvas, t);
+    await expect(await canvas.findByText(t('tagLimitReached'))).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
+    await expect(await canvas.findByText(t('tagLimitReached'))).toBeVisible();
+    await expect(callsOf(loaded, 'presets.create')).toHaveLength(0);
   },
 });
 

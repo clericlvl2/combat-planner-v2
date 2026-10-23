@@ -658,6 +658,9 @@ export class FakeApiClient implements ApiClient {
         if (existing) return existing;
         const tag: Tag = { id: input.id, name: input.name.trim() };
         this.checkTagName(tag.name);
+        if (this.tagList.length >= LIMITS.tagsPerDm) {
+          throw fail('limit', `A DM keeps at most ${LIMITS.tagsPerDm} tags`);
+        }
         this.tagList = [...this.tagList, tag];
         return tag;
       }),

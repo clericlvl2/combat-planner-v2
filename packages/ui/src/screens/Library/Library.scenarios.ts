@@ -155,3 +155,12 @@ export const fullLibraryScenario: Scenario = scenario({
   ),
   tags: libraryTags,
 });
+
+export const fullTagsScenario: Scenario = scenario({
+  session,
+  presets: libraryPresets,
+  tags: Array.from(
+    { length: LIMITS.tagsPerDm },
+    (_, index): Tag => libraryTags[index] ?? { id: tagId(index), name: `Tag ${index + 1}` },
+  ),
+});

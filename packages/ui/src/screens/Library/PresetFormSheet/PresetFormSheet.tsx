@@ -55,6 +55,7 @@ export interface PresetFormSheetProps {
   onCreateTag: (name: string) => TagSheetTag;
   onClose: () => void;
   pending?: boolean;
+  tagHint?: string;
 }
 
 export function PresetFormSheet({
@@ -66,6 +67,7 @@ export function PresetFormSheet({
   onCreateTag,
   onClose,
   pending = false,
+  tagHint,
 }: PresetFormSheetProps) {
   const { t } = useTranslation('PresetFormSheet');
   const [draft, setDraft] = useState<PresetFormValue>(value);
@@ -178,6 +180,7 @@ export function PresetFormSheet({
         value={picked}
         onChange={setSheetTags}
         onCreate={createTag}
+        createHint={tagHint}
         onDone={() => {
           update('tags', picked);
           setSheetTags(null);

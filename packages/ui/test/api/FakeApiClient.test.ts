@@ -437,6 +437,22 @@ describe('FakeApiClient REST groups', () => {
     await expect(client.auth.providers()).rejects.toMatchObject({ code: 'limit', status: 422 });
   });
 
+  it('answers the tag cap with limit and keeps a known tag id', async () => {
+    const tags = Array.from({ length: LIMITS.tagsPerDm }, (_, index) => ({
+      id: `01ARZ3NDEKTSV4RRFFQ69T${String(index).padStart(4, '0')}`,
+      name: `Tag ${index}`,
+    }));
+    const full = new FakeApiClient({ scenario: scenario({ tags }) });
+    await expect(
+      full.tags.create({ id: '01ARZ3NDEKTSV4RRFFQ69T9999', name: 'One more' }),
+    ).rejects.toMatchObject({
+      code: 'limit',
+      status: 422,
+      message: `A DM keeps at most ${LIMITS.tagsPerDm} tags`,
+    });
+    await expect(full.tags.create(tags[0]!)).resolves.toEqual(tags[0]);
+  });
+
   it('answers the combat, preset and unit caps with limit', async () => {
     const full = new FakeApiClient({
       scenario: scenario({

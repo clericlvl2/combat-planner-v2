@@ -7,5 +7,6 @@
   "emptyBody": "ここで作成するか、戦闘のユニットをライブラリに保存してください。",
   "noResultsBody": "「{{query}}」に一致するプリセットはありません。",
   "limitReached": "プリセットの上限に達しました",
-  "tagFailed": "タグ「{{name}}」を作成できませんでした"
+  "tagFailed": "タグ「{{name}}」を作成できませんでした",
+  "tagLimitReached": "タグの上限に達しました"
 }
