@@ -20,6 +20,7 @@ import { usePresets } from '../../hooks/usePresets.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
@@ -259,6 +260,7 @@ export function Library() {
     return (
       <CantReachServer
         onRetry={() => void queryClient.refetchQueries({ queryKey: queryKeys.presets })}
+        onHome={() => void navigate('/')}
       />
     );
   }
@@ -294,7 +296,7 @@ export function Library() {
         onRemoveFilter={(id) => setFilter(activeFilter.filter((tag) => tag !== id))}
         onClearFilters={() => setFilter([])}
       />
-      <div className={classes.list}>
+      <ScrollList className={classes.list} contentClassName={classes.listContent}>
         {visible.map((preset) => (
           <PresetCard
             key={preset.id}
@@ -327,7 +329,7 @@ export function Library() {
             body={t('noResultsBody', { query: query.trim() })}
           />
         ) : null}
-      </div>
+      </ScrollList>
       <BottomBar
         label={tBar('newPreset')}
         icon={IconPlus}

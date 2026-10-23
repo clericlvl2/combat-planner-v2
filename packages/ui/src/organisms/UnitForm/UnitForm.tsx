@@ -10,6 +10,7 @@ import { SearchField } from '../../atoms/SearchField/SearchField.tsx';
 import { TextArea } from '../../atoms/TextArea/TextArea.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import { ToolButton } from '../../atoms/ToolButton/ToolButton.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Segmented } from '../../molecules/Segmented/Segmented.tsx';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
@@ -32,7 +33,6 @@ export interface UnitFormProps {
   onSubmit: (draft: UnitDraft) => void;
   onCancel: () => void;
   lockRole?: boolean;
-  lockMaxHp?: boolean;
   presets?: readonly Preset[];
   tags?: readonly TagSheetTag[];
   combatTitle?: string;
@@ -94,7 +94,6 @@ export function UnitForm({
   onSubmit,
   onCancel,
   lockRole = false,
-  lockMaxHp = false,
   presets,
   tags = [],
   combatTitle,
@@ -156,7 +155,7 @@ export function UnitForm({
     ...current,
     name: preset.name,
     role: lockRole ? current.role : preset.role,
-    maxHp: lockMaxHp ? current.maxHp : preset.maxHp,
+    maxHp: preset.maxHp,
     ac: preset.ac,
     pd: preset.pd,
     md: preset.md,
@@ -282,7 +281,12 @@ export function UnitForm({
             ) : null}
             <div className={classes.library}>
               {listed.length > 0 ? (
-                <div className={classes.list} role="group" aria-label={t('presets')}>
+                <ScrollList
+                  className={classes.list}
+                  contentClassName={classes.listContent}
+                  role="group"
+                  aria-label={t('presets')}
+                >
                   {listed.map((preset) => {
                     const on = preset.id === picked;
                     return (
@@ -320,14 +324,13 @@ export function UnitForm({
                       </UnstyledButton>
                     );
                   })}
-                </div>
+                </ScrollList>
               ) : (
                 <div className={classes.empty} role="status">
                   <span className={classes.emptyTitle}>{t('nothingFound')}</span>
                   <span className={classes.emptyBody}>{emptyText}</span>
                 </div>
               )}
-              {listed.length > 4 ? <span className={classes.fade} aria-hidden="true" /> : null}
             </div>
           </>
         ) : (
@@ -364,7 +367,6 @@ export function UnitForm({
                   min={field.range.min}
                   max={field.range.max}
                   value={draft[field.key]}
-                  disabled={lockMaxHp && field.key === 'maxHp'}
                   onChange={(next) => updateNumber(field.key, next)}
                 />
               ))}

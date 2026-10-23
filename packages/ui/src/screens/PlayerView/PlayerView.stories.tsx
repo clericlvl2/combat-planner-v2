@@ -4,7 +4,7 @@ import type { ApiErrorCode } from '@combat-planner/api/client';
 import type { Action } from '@combat-planner/domain';
 import type { Loader } from '@storybook/react-vite';
 import { focusManager } from '@tanstack/react-query';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
@@ -20,6 +20,8 @@ import {
   unitIds,
 } from './PlayerView.scenarios.ts';
 import { PlayerView } from './PlayerView.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
+import { storyLocale } from '../../storybook/withLocale.tsx';
 import { anyValue, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
@@ -98,10 +100,16 @@ const refocus = () => {
   focusManager.setFocused(undefined);
 };
 
+const openLeave = async (canvas: Canvas, t: TFunction) => {
+  await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
+  await userEvent.click(await canvas.findByRole('menuitem', { name: t('CombatHeader:leave') }));
+  return canvas.findByRole('alertdialog', { name: t('Dialog:leaveTitle') });
+};
+
 const meta = preview.meta({
   title: 'Screens/PlayerView',
   component: PlayerView,
-  args: { combatId: COMBAT_ID, token: TOKEN },
+  args: { combatId: COMBAT_ID, token: TOKEN, onHome: fn() },
   parameters: { phoneFrame: { overlay: true }, scenario: ownTurn },
 });
 
@@ -221,7 +229,9 @@ export const DamageNumpad = meta.story({
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const sheet = await openNumpad(canvas);
-    await expect(within(sheet).queryByRole('button', { name: t('NumpadSheet:setMax') })).toBeNull();
+    await expect(
+      within(sheet).getByRole('button', { name: t('NumpadSheet:setMax') }),
+    ).toBeDisabled();
     await userEvent.click(within(sheet).getByRole('button', { name: '7' }));
     await expect(within(sheet).getByRole('button', { name: t('HistoryRow:damage') })).toBeEnabled();
     await expect(sentBy(fakeApiOf(loaded))).toEqual([]);
@@ -298,7 +308,79 @@ export const MenuOpen = meta.story({
     const t = playerT(parameters);
     await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
     const items = await canvas.findAllByRole('menuitem');
-    await expect(items.map((item) => item.textContent)).toEqual([t('CombatHeader:heroes')]);
+    await expect(items.map((item) => item.textContent)).toEqual([
+      t('CombatHeader:heroes'),
+      `${t('CombatHeader:language')}${localeNames[storyLocale({ locale: parameters.scenario?.settings.language })]}`,
+      t('CombatHeader:leave'),
+    ]);
+  },
+});
+
+export const MenuSwitchesLanguage = meta.story({
+  tags: ['!dev'],
+  parameters: {
+    scenario: playerScenario(ferryCombat({ status: 'setup' }), { settings: { language: 'de' } }),
+  },
+  play: async ({ canvas }) => {
+    const de = storyT({ locale: 'de' }, 'CombatHeader');
+    const en = storyT({ locale: 'en' }, 'CombatHeader');
+    await expect(await canvas.findByText(de('setup'))).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: de('menu') }));
+    await userEvent.click(
+      await canvas.findByRole('menuitem', { name: new RegExp(de('language')) }),
+    );
+    await userEvent.click(await canvas.findByRole('radio', { name: localeNames.en }));
+    await expect(await canvas.findByText(en('setup'))).toBeVisible();
+    await expect(canvas.queryByText(de('setup'))).toBeNull();
+  },
+});
+
+export const LeaveConfirmation = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: orcTurn },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    await expect(within(dialog).getByText(t('Dialog:leaveBody'))).toBeVisible();
+    await expect(within(dialog).getByRole('button', { name: t('Dialog:leave') })).toBeVisible();
+    await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.leave')).toEqual(
+      [],
+    );
+  },
+});
+
+export const LeaveGoesHome = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ args, canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:leave') }));
+    await waitFor(() => expect(args.onHome).toHaveBeenCalledOnce());
+    await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.leave')).toEqual([
+      { method: 'play.leave', args: [COMBAT_ID, MIKA] },
+    ]);
+    await expect(
+      fakeApiOf(loaded).play.dispatch(TOKEN, {
+        id: '01ARZ3NDEKTSV4RRFFQ69G5FAZ',
+        version: 0,
+        type: 'releaseUnit',
+        unitId: unitIds.vashti,
+      }),
+    ).rejects.toMatchObject({ code: 'unauthorized' });
+  },
+});
+
+export const LeaveFailureStays = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ args, canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    fakeApiOf(loaded).failNext('network');
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:leave') }));
+    await expect(await canvas.findByText(t('Toast:serverUnreachable'))).toBeVisible();
+    await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
 
@@ -474,13 +556,14 @@ export const FullCombatAsksToRetry = meta.story({
 export const DeletedOnFirstLoad = meta.story({
   tags: ['!dev'],
   loaders: [firstLoadFails('notFound')],
-  play: async ({ canvas, globals }) => {
+  play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerView');
     await expect(
       await canvas.findByRole('heading', { level: 1, name: t('MessageScreen:combatDeletedTitle') }),
     ).toBeVisible();
     await expect(canvas.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
+    await userEvent.click(canvas.getByRole('button', { name: t('MessageScreen:home') }));
+    await expect(args.onHome).toHaveBeenCalledOnce();
   },
 });
 

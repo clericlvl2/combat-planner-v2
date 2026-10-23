@@ -17,5 +17,8 @@
   "share": "Teilen",
   "restart": "Kampf neu starten",
   "clear": "Kampf leeren",
-  "heroes": "Helden"
+  "heroes": "Helden",
+  "language": "Sprache",
+  "leave": "Kampf verlassen",
+  "export": "In Datei exportieren"
 }

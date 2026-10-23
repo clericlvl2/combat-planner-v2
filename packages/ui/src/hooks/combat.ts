@@ -5,6 +5,7 @@ import type {
   DmCombat,
   LinkToken,
   Locale,
+  PresenceListener,
   Unsubscribe,
   VersionResult,
 } from '@combat-planner/api/client';
@@ -34,6 +35,7 @@ export interface CombatSource<Document extends CombatDocument = CombatDocument> 
   subscribe: (
     onDocument: (document: Document, language?: Locale) => void,
     onEnd: (event: ApiEndEvent) => void,
+    onPresence?: PresenceListener,
   ) => Unsubscribe;
   send: (action: Action) => Promise<VersionResult>;
 }
@@ -48,7 +50,8 @@ export function dmSource(api: ApiClient, id: CombatId): CombatSource<DmCombat> {
   return {
     load: async () => ({ document: await api.combats.open(id), language: null }),
     reload: async () => ({ document: await api.combats.get(id), language: null }),
-    subscribe: (onDocument, onEnd) => api.combats.subscribe(id, onDocument, onEnd),
+    subscribe: (onDocument, onEnd, onPresence) =>
+      api.combats.subscribe(id, onDocument, onEnd, onPresence),
     send: (action) => api.combats.dispatch(id, action),
   };
 }
@@ -136,12 +139,17 @@ export const subscribeEntry = <Document extends CombatDocument>(
   key: QueryKey,
   source: CombatSource<Document>,
   onEnd: (event: ApiEndEvent) => void,
+  onPresence?: PresenceListener,
 ): Unsubscribe =>
-  source.subscribe((document, language) => {
-    queryClient.setQueryData<CombatEntry<Document>>(key, (current) =>
-      writeDocument(current, document, language),
-    );
-  }, onEnd);
+  source.subscribe(
+    (document, language) => {
+      queryClient.setQueryData<CombatEntry<Document>>(key, (current) =>
+        writeDocument(current, document, language),
+      );
+    },
+    onEnd,
+    onPresence,
+  );
 
 export interface DispatcherOptions {
   send: (action: Action) => Promise<VersionResult>;

@@ -20,5 +20,6 @@
   "details": "Подробнее о «{{title}}»",
   "menuLabel": "Действия с «{{title}}»",
   "duplicate": "Дублировать",
-  "delete": "Удалить"
+  "delete": "Удалить",
+  "export": "Экспорт в файл"
 }

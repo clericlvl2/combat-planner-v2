@@ -5,5 +5,6 @@
   "combatDeletedBody": "Le MJ l’a supprimé. Demandez-lui un nouveau lien.",
   "offlineTitle": "Impossible de joindre le serveur",
   "offlineBody": "Vérifiez votre connexion et réessayez.",
-  "tryAgain": "Réessayer"
+  "tryAgain": "Réessayer",
+  "home": "Retour à l’accueil"
 }

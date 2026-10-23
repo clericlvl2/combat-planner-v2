@@ -14,7 +14,6 @@ interface UnitFormCellProps {
   mode?: UnitFormMode;
   value?: Partial<UnitDraft>;
   lockRole?: boolean;
-  lockMaxHp?: boolean;
   library?: boolean;
   unitNames?: readonly string[];
   hint?: UnitFormHint;
@@ -117,7 +116,6 @@ function UnitFormCell({
   mode = 'add',
   value,
   lockRole,
-  lockMaxHp,
   library = true,
   unitNames,
   hint,
@@ -131,7 +129,6 @@ function UnitFormCell({
         mode={mode}
         value={value}
         lockRole={lockRole}
-        lockMaxHp={lockMaxHp}
         presets={library ? presets : undefined}
         tags={tags}
         combatTitle="Ambush at the Ferry"
@@ -326,28 +323,6 @@ export const RoleLocked = meta.story({
     await expect(hero).toBeChecked();
     await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
     await expect(args.onSubmit).toHaveBeenCalledWith(vashti);
-  },
-});
-
-export const MaxHpLocked = meta.story({
-  name: 'Max HP Locked',
-  args: { mode: 'edit', value: vashti, lockMaxHp: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnitForm');
-    const maxHp = canvas.getByRole('spinbutton', { name: t('maxHp') });
-    await expect(maxHp).toBeDisabled();
-    await expect(
-      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('maxHp') }) }),
-    ).toBeDisabled();
-    await expect(
-      canvas.getByRole('button', { name: t('Stepper:decreaseField', { label: t('maxHp') }) }),
-    ).toBeDisabled();
-    await expect(canvas.getByRole('spinbutton', { name: t('ac') })).toBeEnabled();
-    await userEvent.click(
-      canvas.getByRole('button', { name: t('Stepper:increaseField', { label: t('ac') }) }),
-    );
-    await userEvent.click(canvas.getByRole('button', { name: t('saveChanges') }));
-    await expect(args.onSubmit).toHaveBeenCalledWith({ ...vashti, ac: vashti.ac + 1 });
   },
 });
 

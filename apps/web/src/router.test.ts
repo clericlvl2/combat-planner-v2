@@ -1,8 +1,8 @@
 import {
-  About,
   Account,
   CombatList,
   FakeApiClient,
+  Landing,
   Library,
   Settings,
   SignIn,
@@ -17,7 +17,7 @@ import { renderToString } from 'react-dom/server';
 import { RouterProvider, createMemoryRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
-import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
+import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import { AppProviders } from './providers.tsx';
 import { createRoutes } from './router.tsx';
 
@@ -110,7 +110,6 @@ describe('router', () => {
     ['/library', 'library', Library],
     ['/settings', 'settings', Settings],
     ['/account', 'account', Account],
-    ['/about', 'about', About],
   ])('renders the DM page %s behind the session guard', async (path, id, screen) => {
     const router = await open(path, true);
     expect(router.state.location.pathname).toBe(path);
@@ -119,8 +118,23 @@ describe('router', () => {
     expect(router.state.matches[1]?.route.element).toMatchObject({ type: DmPages });
   });
 
-  it('passes the build values to About', async () => {
-    const router = await open('/about', true);
+  it('renders the landing on / without a session', async () => {
+    const router = await open('/', false);
+    expect(router.state.location.pathname).toBe('/');
+    expect(routeIds(router)).toEqual(['root', 'home']);
+    expect(leafElement(router).type).toBe(Landing);
+    expect(leafElement(router).props).toEqual({ sourceUrl: about.sourceUrl });
+    const html = render(router);
+    expect(html).toContain('A combat tracker for 13th Age');
+    expect(html).toContain('href="/auth/sign-up"');
+    expect(html).toContain('href="/auth/sign-in"');
+  });
+
+  it.each([true, false])('renders About with the build values, signed in: %s', async (signedIn) => {
+    const router = await open('/about', signedIn);
+    expect(router.state.location.pathname).toBe('/about');
+    expect(routeIds(router)).toEqual(['root', 'about']);
+    expect(leafElement(router).type).toBe(AboutPage);
     expect(leafElement(router).props).toEqual(about);
   });
 
@@ -131,19 +145,14 @@ describe('router', () => {
     expect(router.state.loaderData.combat).toEqual({ combatId: COMBAT_ID });
   });
 
-  it.each([
-    '/',
-    '/combats',
-    `/combats/${COMBAT_ID}`,
-    '/library',
-    '/settings',
-    '/account',
-    '/about',
-  ])('sends %s to sign-in without a session', async (path) => {
-    const router = await open(path, false);
-    expect(router.state.location.pathname).toBe('/auth/sign-in');
-    expect(leafElement(router).type).toBe(SignIn);
-  });
+  it.each(['/combats', `/combats/${COMBAT_ID}`, '/library', '/settings', '/account'])(
+    'sends %s to sign-in without a session',
+    async (path) => {
+      const router = await open(path, false);
+      expect(router.state.location.pathname).toBe('/auth/sign-in');
+      expect(leafElement(router).type).toBe(SignIn);
+    },
+  );
 
   it.each([
     ['/auth/sign-in', 'sign-in', SignIn],
@@ -193,6 +202,13 @@ describe('router', () => {
     },
   );
 
+  it('renders NotFound with Go home as its only button', async () => {
+    const html = render(await open('/missing', false));
+    expect(html).toContain('Page not found');
+    expect(html.match(/<button/g)).toHaveLength(1);
+    expect(html).toContain('>Go home<');
+  });
+
   it('renders RouteError as UnexpectedError when a route throws', async () => {
     const router = await open('/throwing', true, [throwing]);
     expect(router.state.errors).toEqual({ root: new Error('route failed') });
@@ -201,6 +217,7 @@ describe('router', () => {
     expect(html).toContain('Something went wrong');
     expect(html).toContain('Reload the page. Your last saved changes are safe.');
     expect(html).toContain('>Reload<');
+    expect(html).toContain('>Go home<');
   });
 
   it('shows RouteError as the root error page and hands it a callback for when it is shown', async () => {

@@ -23,6 +23,7 @@ export type { LinkClaims, PlayerKeyClaims } from './link/token.ts';
 export {
   broadcast,
   broadcastDocument,
+  closePlayer,
   sendToPlayer,
   subscribe,
   subscriberCount,
@@ -32,6 +33,7 @@ export type { Audience, Subscriber, Subscription } from './live/registry.ts';
 export { announceReissue, reissueGeneration } from './link/reissue.ts';
 export { findCombatRow } from './combats/store.ts';
 export {
+  announceRemoval,
   lastActionAt,
   listSharedCombats,
   listWatchingPlayers,
@@ -39,7 +41,7 @@ export {
   signedInUsers,
   writeLink,
 } from './sharing/store.ts';
-export type { PlayerRow, SharedCombat } from './sharing/store.ts';
+export type { PlayerRow, RemovedPlayer, SharedCombat } from './sharing/store.ts';
 export { closeEndedDmStreams } from './sharing/streams.ts';
 export { HEARTBEAT_MS, streamCombatEvents } from './live/sse.ts';
 export type { StreamRequest } from './live/sse.ts';
@@ -67,6 +69,7 @@ export {
   combatSummarySchema,
   dmCombatSchema,
   emailSchema,
+  isPresenceEvent,
   linkGenerationSchema,
   linkReissueResultSchema,
   playerLinkSchema,
@@ -108,6 +111,8 @@ export type {
   DocumentListener,
   PlayerDocumentListener,
   EndListener,
+  PresenceEvent,
+  PresenceListener,
   PlayerLink,
   LinkApi,
   LinkReissueResult,

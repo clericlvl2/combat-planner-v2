@@ -1,6 +1,7 @@
 import type {
   Action,
   Combat,
+  CombatFile,
   CombatId,
   PlayerCombat,
   Preset,
@@ -45,6 +46,8 @@ export const acceptLanguages = (header: string | null): string[] =>
     .map((part) => part.split(';')[0]?.trim() ?? '')
     .filter((language) => language !== '');
 
+export const BODY_LIMIT_BYTES = 64 * 1024;
+
 export const versionSchema = z.number().int().nonnegative();
 export const versionResultSchema = z.object({ version: versionSchema });
 export type VersionResult = z.infer<typeof versionResultSchema>;
@@ -72,6 +75,7 @@ export const signUpInputSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   displayName: displayNameSchema,
+  language: localeSchema.optional(),
 });
 export type SignUpInput = z.infer<typeof signUpInputSchema>;
 
@@ -150,6 +154,7 @@ export type PlayerCredentials = z.infer<typeof playerCredentialsSchema>;
 export interface PlayerKeyStore {
   get(combatId: CombatId): PlayerCredentials | null;
   set(combatId: CombatId, credentials: PlayerCredentials): void;
+  delete(combatId: CombatId): void;
 }
 
 export const playViewSchema = z.object({
@@ -228,11 +233,18 @@ export const apiEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
   z.object({ type: z.literal('linkRevoked') }),
   z.object({ type: z.literal('dropped') }),
+  z.object({ type: z.literal('left') }),
+  z.object({ type: z.literal('playerJoined') }),
+  z.object({ type: z.literal('playerLeft'), name: displayNameSchema }),
 ]);
 export type ApiEvent = z.infer<typeof apiEventSchema>;
 export type ApiEndEvent =
-  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' | 'dropped' }>
+  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' | 'dropped' | 'left' }>
   | { type: 'unauthorized' };
+export type PresenceEvent = Extract<ApiEvent, { type: 'playerJoined' | 'playerLeft' }>;
+
+export const isPresenceEvent = (event: ApiEvent): event is PresenceEvent =>
+  event.type === 'playerJoined' || event.type === 'playerLeft';
 
 export type Unsubscribe = () => void;
 export type DocumentListener<Document extends DmCombat | PlayerCombat> = (
@@ -240,6 +252,7 @@ export type DocumentListener<Document extends DmCombat | PlayerCombat> = (
 ) => void;
 export type PlayerDocumentListener = (document: PlayerCombat, language?: Locale) => void;
 export type EndListener = (event: ApiEndEvent) => void;
+export type PresenceListener = (event: PresenceEvent) => void;
 export type ConnectionListener = (state: ConnectionState) => void;
 
 export interface ConnectionApi {
@@ -263,21 +276,29 @@ export interface CombatsApi {
   update(id: CombatId, patch: CombatPatch): Promise<VersionResult>;
   remove(id: CombatId): Promise<void>;
   duplicate(id: CombatId, newId: CombatId): Promise<Combat>;
+  importCombat(file: CombatFile): Promise<Combat>;
   open(id: CombatId): Promise<DmCombat>;
   get(id: CombatId): Promise<DmCombat>;
   dispatch(id: CombatId, action: Action): Promise<VersionResult>;
-  subscribe(id: CombatId, onDocument: DocumentListener<DmCombat>, onEnd: EndListener): Unsubscribe;
+  subscribe(
+    id: CombatId,
+    onDocument: DocumentListener<DmCombat>,
+    onEnd: EndListener,
+    onPresence?: PresenceListener,
+  ): Unsubscribe;
 }
 
 export interface LinkApi {
   get(id: CombatId): Promise<PlayerLink>;
   reissue(id: CombatId): Promise<LinkReissueResult>;
+  stopSharing(id: CombatId): Promise<void>;
 }
 
 export interface PlayApi {
   get(token: LinkToken): Promise<PlayView>;
   dispatch(token: LinkToken, action: Action): Promise<VersionResult>;
   subscribe(token: LinkToken, onDocument: PlayerDocumentListener, onEnd: EndListener): Unsubscribe;
+  leave(combatId: CombatId): Promise<void>;
 }
 
 export interface PresetsApi {

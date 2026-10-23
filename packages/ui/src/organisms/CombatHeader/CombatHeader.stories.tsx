@@ -37,6 +37,7 @@ function CombatHeaderCell({
   onEscalationChange,
   onMenuSelect,
   onHeroes,
+  onLeave,
   ...props
 }: CombatHeaderCellProps) {
   const [open, setOpen] = useState<CombatHeaderPopover | null>(initialOpen);
@@ -86,6 +87,7 @@ function CombatHeaderCell({
       }}
       onMenuSelect={(action) => onMenuSelect?.(action)}
       onHeroes={() => onHeroes?.()}
+      onLeave={() => onLeave?.()}
     />
   );
 }
@@ -104,6 +106,7 @@ const meta = preview.meta({
     onEscalationChange: fn(),
     onMenuSelect: fn(),
     onHeroes: fn(),
+    onLeave: fn(),
   },
 });
 
@@ -139,7 +142,14 @@ export const MenuOpen = meta.story({
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
     await expect(await canvas.findByRole('menu', { name: t('menuLabel') })).toBeVisible();
     const items = canvas.getAllByRole('menuitem').map((item) => item.textContent);
-    await expect(items).toEqual([t('addUnit'), t('undo'), t('share'), t('restart'), t('clear')]);
+    await expect(items).toEqual([
+      t('addUnit'),
+      t('undo'),
+      t('share'),
+      t('export'),
+      t('restart'),
+      t('clear'),
+    ]);
   },
 });
 
@@ -202,7 +212,7 @@ export const SetupMenuOpen = meta.story({
     await expect(canvas.getByRole('button', { name: t('menu') })).toHaveAttribute('data-open');
     await canvas.findByRole('menu', { name: t('menuLabel') });
     const items = canvas.getAllByRole('menuitem').map((item) => item.textContent);
-    await expect(items).toEqual([t('addUnit'), t('undo'), t('share'), t('clear')]);
+    await expect(items).toEqual([t('addUnit'), t('undo'), t('share'), t('export'), t('clear')]);
   },
 });
 
@@ -243,11 +253,25 @@ export const PlayerMenuOffersHeroes = meta.story({
     await userEvent.click(canvas.getByRole('button', { name: t('menu') }));
     await expect(await canvas.findByRole('menu', { name: t('playerMenuLabel') })).toBeVisible();
     const items = canvas.getAllByRole('menuitem').map((item) => item.textContent);
-    await expect(items).toEqual([t('heroes')]);
+    await expect(items).toEqual([t('heroes'), t('leave')]);
     await userEvent.click(canvas.getByRole('menuitem', { name: t('heroes') }));
     await expect(args.onHeroes).toHaveBeenCalledOnce();
+    await expect(args.onLeave).not.toHaveBeenCalled();
     await expect(args.onMenuSelect).not.toHaveBeenCalled();
     await waitFor(() => expect(canvas.queryByRole('menu')).toBeNull());
+  },
+});
+
+export const PlayerMenuOffersLeave = meta.story({
+  tags: ['!dev'],
+  args: { viewer: 'player' },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'CombatHeader');
+    await userEvent.click(canvas.getByRole('button', { name: t('menu') }));
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('leave') }));
+    await expect(args.onLeave).toHaveBeenCalledOnce();
+    await expect(args.onHeroes).not.toHaveBeenCalled();
+    await expect(args.onMenuSelect).not.toHaveBeenCalled();
   },
 });
 

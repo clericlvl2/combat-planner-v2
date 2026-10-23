@@ -12,8 +12,10 @@ import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
+import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
@@ -23,12 +25,15 @@ import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
 import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
+import { LanguageSheet } from '../shared/LanguageSheet.tsx';
 import classes from './TurnOrder.module.css';
 
 export interface TurnOrderProps {
   combat: PlayerCombat;
   dispatch: (action: Action) => Promise<DispatchResult>;
   onHeroes: () => void;
+  onLeave?: () => void;
   random?: () => number;
 }
 
@@ -41,6 +46,13 @@ interface Open {
 
 const RELEASE_CLAIM = 'releaseClaim';
 
+const hpActionTypes = {
+  damage: 'damage',
+  heal: 'heal',
+  temp: 'setTempHp',
+  max: 'setMaxHp',
+} as const satisfies Record<HpHistoryKind, Action['type']>;
+
 const noop = () => {};
 
 const toggledCondition = (
@@ -50,10 +62,12 @@ const toggledCondition = (
   after.find((condition) => !before.includes(condition)) ??
   before.find((condition) => !after.includes(condition));
 
-export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps) {
+export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnOrderProps) {
   const { t } = useTranslation('TurnOrder');
   const { t: tMenu } = useTranslation('Menu');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const { locale } = useLocaleChoice();
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Open | null>(null);
   const [flashId, setFlashId] = useState<UnitId | null>(null);
@@ -79,16 +93,9 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
     void dispatch(action);
   };
 
-  const hpAction = (unit: PlayerUnit, kind: Exclude<HpHistoryKind, 'max'>, amount: number) => {
-    if (kind === 'damage') return { ...target(unit), type: 'damage' as const, amount };
-    if (kind === 'heal') return { ...target(unit), type: 'heal' as const, amount };
-    return { ...target(unit), type: 'setTempHp' as const, amount };
-  };
-
   const applyHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number) => {
-    if (kind === 'max') return;
     close();
-    void dispatch(hpAction(unit, kind, amount)).then((result) => {
+    void dispatch({ ...target(unit), type: hpActionTypes[kind], amount }).then((result) => {
       if (!result.applied) return;
       setFlashId(unit.id);
       flash();
@@ -130,8 +137,17 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
           setMenuOpen(false);
           onHeroes();
         }}
+        languageName={localeNames[locale]}
+        onLanguage={() => {
+          setMenuOpen(false);
+          setLanguageOpen(true);
+        }}
+        onLeave={() => {
+          setMenuOpen(false);
+          onLeave?.();
+        }}
       />
-      <div className={classes.list}>
+      <ScrollList className={classes.list} contentClassName={classes.listContent}>
         {setup && combat.units.length > 0 ? (
           <div className={classes.waiting} role="status">
             <IconHourglass size={20} stroke={2} aria-hidden="true" />
@@ -198,11 +214,10 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
         {combat.units.length === 0 ? (
           <EmptyState icon={IconUsers} title={t('noUnitsTitle')} body={t('noUnitsBody')} />
         ) : null}
-      </div>
+      </ScrollList>
       {numpadUnit ? (
         <NumpadSheet
           opened
-          viewer="player"
           name={numpadUnit.name}
           role={numpadUnit.role}
           initiative={numpadUnit.initiative}
@@ -238,7 +253,6 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
           opened
           mode="edit"
           lockRole
-          lockMaxHp
           value={{
             name: editUnit.name,
             role: 'hero',
@@ -253,6 +267,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
           onCancel={close}
         />
       ) : null}
+      <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
       <PlayerToast aboveBottomBar={false} />
     </div>
   );

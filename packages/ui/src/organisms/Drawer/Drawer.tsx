@@ -10,6 +10,7 @@ import type { Icon } from '@tabler/icons-react';
 import { useEffect, useId, useLayoutEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import classes from './Drawer.module.css';
 
 export type DrawerSection = 'combats' | 'library' | 'settings' | 'account' | 'about';
@@ -92,13 +93,14 @@ export function Drawer(props: DrawerProps) {
       <div className={classes.root}>
         <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onClose} />
         <FocusTrap active={trapFocus} innerRef={panelRef}>
-          <div
+          <ScrollList
             role="dialog"
             data-drawer=""
             aria-modal="true"
             aria-labelledby={titleId}
             tabIndex={-1}
             className={classes.panel}
+            contentClassName={classes.content}
             onKeyDown={handleKeyDown}
           >
             <FocusTrapInitialFocus />
@@ -126,7 +128,7 @@ export function Drawer(props: DrawerProps) {
               })}
             </nav>
             <span className={classes.email}>{email}</span>
-          </div>
+          </ScrollList>
         </FocusTrap>
       </div>
     </RemoveScroll>

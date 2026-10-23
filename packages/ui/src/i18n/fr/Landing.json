@@ -1,0 +1,12 @@
+{
+  "name": "Combat Planner",
+  "title": "Un suivi de combat pour 13th Age",
+  "tagline": "Le MJ mène l’affrontement depuis son téléphone, les joueurs le suivent grâce à un lien.",
+  "signUp": "Créer un compte",
+  "signIn": "Se connecter",
+  "players": "Les joueurs n’ont pas besoin de compte : le MJ partage un lien vers le combat.",
+  "about": "À propos",
+  "source": "Code source",
+  "dm": "MJ",
+  "player": "Joueur"
+}

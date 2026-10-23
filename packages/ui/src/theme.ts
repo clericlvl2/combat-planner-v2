@@ -36,16 +36,16 @@ export const roles = {
 
 export const health = {
   full: '#2E7A43',
-  wounded: '#855800',
   staggered: '#B33A0A',
+  unconscious: '#5B4B9E',
   dead: '#57534E',
   empty: '#E6DDCC',
 } as const;
 
 export const healthTints = {
   full: '#E3F1E6',
-  wounded: '#F8ECD2',
   staggered: '#FBE3D8',
+  unconscious: '#ECE8F7',
 } as const;
 
 export const hpActions = {
@@ -157,6 +157,8 @@ export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as co
 
 export const tapMarker = { width: 3, color: interaction.tapMarker, offset: 2 } as const;
 
+const scrollShadow = { color: base.ink, alpha: 12 } as const;
+
 const px = (value: number) => `${value}px`;
 
 function kebab(name: string): string {
@@ -192,7 +194,14 @@ export function paletteVariables(): Record<string, string> {
 }
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
-  variables: { ...paletteVariables(), '--cp-tap-target': `${layout.tapTarget}px` },
+  variables: {
+    ...paletteVariables(),
+    '--cp-tap-target': `${layout.tapTarget}px`,
+    '--cp-scroll-shadow': `${layout.scrollShadow}px`,
+    '--cp-scroll-shadow-color': `color-mix(in srgb, ${scrollShadow.color} ${scrollShadow.alpha}%, transparent)`,
+    '--cp-list-inset-top': `${layout.listInset.top}px`,
+    '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
+  },
   light: {},
   dark: {},
 });

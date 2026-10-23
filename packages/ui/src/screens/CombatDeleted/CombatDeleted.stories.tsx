@@ -1,13 +1,13 @@
 import preview from '#.storybook/preview';
-import { expect } from 'storybook/test';
+import { expect, fn } from 'storybook/test';
 import { CombatDeleted } from './CombatDeleted.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/CombatDeleted',
+  title: 'Screens/Errors/CombatDeleted',
   component: CombatDeleted,
   parameters: { phoneFrame: true },
-  args: { combatTitle: 'Goblin ambush' },
+  args: { combatTitle: 'Goblin ambush', onHome: fn() },
 });
 
 export const Default = meta.story({
@@ -18,7 +18,8 @@ export const Default = meta.story({
       canvas.getByRole('heading', { level: 1, name: t('title', { title: 'Goblin ambush' }) }),
     ).toBeVisible();
     await expect(canvas.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
+    await expect(canvas.getAllByRole('button')).toHaveLength(1);
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:home') })).toBeVisible();
   },
 });
 
@@ -34,7 +35,8 @@ export const LongTitle = meta.story({
     await expect(heading).toBeVisible();
     await expect(heading.getBoundingClientRect().height).toBeGreaterThan(30);
     await expect(heading.scrollWidth).toBeLessThanOrEqual(heading.clientWidth);
-    await expect(canvas.queryByRole('button')).toBeNull();
+    await expect(canvas.getAllByRole('button')).toHaveLength(1);
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:home') })).toBeVisible();
   },
 });
 
@@ -46,6 +48,7 @@ export const TitleUnknown = meta.story({
       canvas.getByRole('heading', { level: 1, name: t('MessageScreen:combatDeletedTitle') }),
     ).toBeVisible();
     await expect(canvas.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
+    await expect(canvas.getAllByRole('button')).toHaveLength(1);
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:home') })).toBeVisible();
   },
 });

@@ -102,7 +102,7 @@ test('a player damages their own hero and the DM sees it without a reload', asyn
   const ownRow = unitRows(player).filter({ hasText: 'Aria' });
   await ownRow.getByRole('button', { name: /^10 \/10/ }).click();
   const numpad = player.getByRole('dialog', { name: 'Aria' });
-  await expect(numpad.getByRole('button', { name: t('NumpadSheet:setMax') })).toHaveCount(0);
+  await expect(numpad.getByRole('button', { name: t('NumpadSheet:setMax') })).toBeDisabled();
   await numpad
     .getByRole('group', { name: t('NumpadSheet:keypad') })
     .getByRole('button', { name: '3' })
@@ -147,6 +147,35 @@ test('a reissued link expires the old one and releases the claim', async ({ page
   await expect(player.getByRole('checkbox', { name: 'Aria' })).toBeEnabled();
 });
 
+test('a DM who stops sharing expires the link and releases the claim', async ({ page }) => {
+  const link = await prepareCombat(page, 'Watchtower');
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+  const sheet = page.getByRole('dialog', { name: t('ShareSheet:title') });
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toHaveCount(1);
+
+  await sheet.getByRole('button', { name: t('ShareSheet:stop') }).click();
+  const confirm = page.getByRole('alertdialog', { name: t('Dialog:stopTitle') });
+  await expect(confirm.getByText(t('Dialog:stopBody'))).toBeVisible();
+  await confirm.getByRole('button', { name: t('Dialog:stop') }).click();
+  await expect(confirm).toBeHidden();
+  await expect(sheet).toBeHidden();
+
+  await expect(
+    player.getByRole('heading', { name: t('MessageScreen:linkRevokedTitle') }),
+  ).toBeVisible();
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toHaveCount(0);
+  await player.goto(link);
+  await expect(
+    player.getByRole('heading', { name: t('MessageScreen:linkRevokedTitle') }),
+  ).toBeVisible();
+
+  const newLink = await shareLink(page);
+  expect(newLink).not.toBe(link);
+  await player.goto(newLink);
+  await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
+  await expect(player.getByRole('checkbox', { name: 'Aria' })).not.toBeChecked();
+});
+
 test('a player sees Combat deleted when the DM deletes the combat', async ({ page }) => {
   const link = await prepareCombat(page, 'Old keep');
   await joinAsPlayer(player, link, 'Pat', 'Aria');
@@ -168,6 +197,9 @@ test('a player sees Combat deleted when the DM deletes the combat', async ({ pag
     player.getByRole('heading', { name: t('CombatDeleted:title', { title: 'Old keep' }) }),
   ).toBeVisible();
   await expect(player.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
+  await player.getByRole('button', { name: t('MessageScreen:home') }).click();
+  await expect(player).toHaveURL(/\/$/);
+  await expect(player.getByRole('heading', { level: 1, name: t('Landing:title') })).toBeVisible();
 });
 
 async function closeShare(page: Page): Promise<void> {
@@ -218,6 +250,18 @@ test('a DM release sends the player back to Heroes with a toast', async ({ page 
   await expect(player.getByText(t('Toast:dmReleased', { hero: 'Aria' }))).toBeVisible();
   await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
   await expect(player.getByRole('checkbox', { name: 'Aria' })).not.toBeChecked();
+});
+
+test('the DM sees a toast when a player takes a hero', async ({ page }) => {
+  const link = await prepareCombat(page, 'Watchtower');
+  await closeShare(page);
+
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toBeVisible();
+  await expect(page.getByText(t('Toast:playerClaimed', { name: 'Pat', hero: 'Aria' }))).toBeVisible(
+    { timeout: 10_000 },
+  );
 });
 
 test('a DM removal of the hero sends the player back to Heroes with a toast', async ({ page }) => {

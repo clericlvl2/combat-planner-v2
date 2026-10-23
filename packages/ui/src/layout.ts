@@ -14,6 +14,7 @@ export const layout = {
   statusBar: 44,
   contentEdge: 12,
   listGap: 8,
+  listInset: { top: 16, bottom: 44 },
   bottomBar: {
     height: 98,
     padding: { top: 10, right: 28, bottom: 28, left: 28 },
@@ -25,4 +26,6 @@ export const layout = {
   toast: { inset: 12, aboveBar: 12, withoutBar: 24, bottom: 110 },
   drawer: { width: 300, padding: { top: 56, right: 12, bottom: 28, left: 12 } },
   tapTarget: 44,
+  scrollShadow: 12,
+  scrollbar: 6,
 } as const;

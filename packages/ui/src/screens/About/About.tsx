@@ -46,7 +46,7 @@ function NoteRow({ label, note }: NoteRowProps) {
 export function About({ version, sourceUrl }: AboutProps) {
   const { t } = useTranslation('About');
   return (
-    <PageScreen title={t('title')} section="about">
+    <PageScreen title={t('title')} section="about" openToGuests>
       <div className={classes.card}>
         <ValueRow label={t('version')} value={version} />
         <ValueRow label={t('rules')} value={t('rulesValue')} />

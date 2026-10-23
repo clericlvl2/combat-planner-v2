@@ -16,6 +16,7 @@ const browserOptimizeDeps = {
     'react-router',
     'storybook-addon-remix-react-router',
     'ulid',
+    'vite-plus/test/browser',
   ],
 };
 
@@ -59,6 +60,7 @@ export default defineConfig({
         optimizeDeps: browserOptimizeDeps,
         test: {
           name: 'storybook',
+          setupFiles: [path.join(uiDir, '.storybook/vitest.setup.ts')],
           browser: {
             enabled: true,
             headless: true,

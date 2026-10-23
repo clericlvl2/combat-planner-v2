@@ -16,6 +16,7 @@ interface MessageScreenCellProps {
   actionVariant?: 'primary' | 'secondary';
   withAction?: boolean;
   onAction: () => void;
+  onHome?: () => void;
 }
 
 const icons: Record<MessageScreenKind, Icon> = {
@@ -32,6 +33,7 @@ function MessageScreenCell({
   actionVariant,
   withAction = kind !== 'combatDeleted',
   onAction,
+  onHome,
 }: MessageScreenCellProps) {
   const { t } = useTranslation('MessageScreen');
   return (
@@ -42,6 +44,7 @@ function MessageScreenCell({
       actionLabel={withAction ? (actionLabel ?? t('tryAgain')) : undefined}
       actionVariant={actionVariant}
       onAction={onAction}
+      onHome={onHome}
     />
   );
 }
@@ -50,7 +53,7 @@ const meta = preview.meta({
   title: 'Organisms/MessageScreen',
   component: MessageScreenCell,
   parameters: { phoneFrame: true },
-  args: { kind: 'linkRevoked' as MessageScreenKind, onAction: fn() },
+  args: { kind: 'linkRevoked' as MessageScreenKind, onAction: fn(), onHome: fn() },
 });
 
 export const LinkRevoked = meta.story({
@@ -68,11 +71,17 @@ export const LinkRevoked = meta.story({
     await expect(button).toHaveAttribute('data-variant', 'secondary');
     await expect(button).not.toHaveFocus();
     await expect(button.scrollWidth).toBeLessThanOrEqual(button.clientWidth);
+    const home = canvas.getByRole('button', { name: t('home') });
+    await expect(home).toHaveAttribute('data-variant', 'secondary');
+    await expect(home.getBoundingClientRect().top).toBeGreaterThan(
+      button.getBoundingClientRect().bottom,
+    );
     await expect(args.onAction).not.toHaveBeenCalled();
+    await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
 
-export const CombatDeletedNoAction = meta.story({
+export const CombatDeletedHomeOnly = meta.story({
   args: { kind: 'combatDeleted' },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'MessageScreen');
@@ -80,9 +89,12 @@ export const CombatDeletedNoAction = meta.story({
       canvas.getByRole('heading', { level: 1, name: t('combatDeletedTitle') }),
     ).toBeVisible();
     await expect(canvas.getByText(t('combatDeletedBody'))).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
+    const buttons = canvas.getAllByRole('button');
+    await expect(buttons).toHaveLength(1);
+    await expect(buttons[0]).toHaveAccessibleName(t('home'));
     await userEvent.click(canvas.getByRole('heading', { level: 1 }));
     await expect(args.onAction).not.toHaveBeenCalled();
+    await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
 
@@ -124,6 +136,18 @@ export const TapCallsOnAction = meta.story({
     await userEvent.click(canvas.getByRole('button', { name: t('tryAgain') }));
     await expect(args.onAction).toHaveBeenCalledOnce();
     await expect(args.onAction).toHaveBeenCalledWith();
+  },
+});
+
+export const TapHomeCallsOnHome = meta.story({
+  tags: ['!dev'],
+  args: { kind: 'offline' },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'MessageScreen');
+    await userEvent.click(canvas.getByRole('button', { name: t('home') }));
+    await expect(args.onHome).toHaveBeenCalledOnce();
+    await expect(args.onHome).toHaveBeenCalledWith();
+    await expect(args.onAction).not.toHaveBeenCalled();
   },
 });
 

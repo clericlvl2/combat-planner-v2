@@ -16,6 +16,7 @@ interface ShareSheetCellProps {
   copyResult?: boolean;
   onCopy?: (url: string) => void;
   onReissue?: () => void;
+  onStop?: () => void;
   onClose?: () => void;
 }
 
@@ -35,6 +36,7 @@ function ShareSheetCell({
   copyResult,
   onCopy,
   onReissue,
+  onStop,
   onClose,
 }: ShareSheetCellProps) {
   const [url, setUrl] = useState(initialUrl);
@@ -58,6 +60,7 @@ function ShareSheetCell({
           setUrl(reissuedUrl);
           onReissue?.();
         }}
+        onStop={() => onStop?.()}
         onClose={() => {
           setOpened(false);
           onClose?.();
@@ -71,7 +74,7 @@ const meta = preview.meta({
   title: 'Organisms/ShareSheet',
   component: ShareSheetCell,
   parameters: { phoneFrame: { overlay: true } },
-  args: { onCopy: fn(), onReissue: fn(), onClose: fn() },
+  args: { onCopy: fn(), onReissue: fn(), onStop: fn(), onClose: fn() },
 });
 
 const qrPaths = (svg: Element | null) =>
@@ -111,9 +114,11 @@ export const Default = meta.story({
     await expect(canvas.getByText('Ambush at the Ferry')).toBeVisible();
     await expect(canvas.getByRole('img', { name: t('qr') })).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('copy') })).toBeVisible();
-    const reissue = canvas.getByRole('button', { name: t('reissue') });
-    await expectNotTruncated(reissue);
-    await expectNoHorizontalOverflow(reissue);
+    for (const name of [t('reissue'), t('stop')]) {
+      const action = canvas.getByRole('button', { name });
+      await expectNotTruncated(action);
+      await expectNoHorizontalOverflow(action);
+    }
   },
 });
 
@@ -224,5 +229,18 @@ export const ReopenResetsCopied = meta.story({
       'data-copied',
     );
     await expect(args.onCopy).toHaveBeenCalledOnce();
+  },
+});
+
+export const StopSharingAsks = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'ShareSheet');
+    await userEvent.click(canvas.getByRole('button', { name: t('stop') }));
+    await expect(args.onStop).toHaveBeenCalledOnce();
+    await expect(args.onStop).toHaveBeenCalledWith();
+    await expect(args.onReissue).not.toHaveBeenCalled();
+    await expect(args.onCopy).not.toHaveBeenCalled();
+    await expect(canvas.getByText(linkG3)).toBeVisible();
   },
 });

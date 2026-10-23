@@ -3,19 +3,19 @@ import { useTranslation } from 'react-i18next';
 import { MessageScreen } from '../../organisms/MessageScreen/MessageScreen.tsx';
 
 export interface CombatNotFoundProps {
-  onGoToCombats: () => void;
+  onHome: () => void;
 }
 
-export function CombatNotFound({ onGoToCombats }: CombatNotFoundProps) {
-  const { t } = useTranslation('CombatNotFound');
+export function CombatNotFound({ onHome }: CombatNotFoundProps) {
+  const { t } = useTranslation(['CombatNotFound', 'MessageScreen']);
   return (
     <MessageScreen
       icon={IconSwords}
-      title={t('title')}
-      body={t('body')}
-      actionLabel={t('goToCombats')}
+      title={t('title', { ns: 'CombatNotFound' })}
+      body={t('body', { ns: 'CombatNotFound' })}
+      actionLabel={t('home', { ns: 'MessageScreen' })}
       actionVariant="primary"
-      onAction={onGoToCombats}
+      onAction={onHome}
     />
   );
 }

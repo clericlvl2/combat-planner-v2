@@ -22,5 +22,11 @@
   "heroTaken": "{{hero}}は他のプレイヤーが選択しました",
   "presetAdded": "{{name}}をライブラリに追加しました",
   "unitRemoved": "{{name}}を削除しました",
-  "undo": "元に戻す"
+  "undo": "元に戻す",
+  "playerClaimed": "{{name}}さんが{{hero}}を選びました",
+  "playerReleased": "{{name}}さんが{{hero}}の担当を解除しました",
+  "playerLeft": "{{name}}さんが戦闘から抜けました",
+  "playerJoined": "新しいプレイヤーがリンクを開きました",
+  "invalidFile": "このファイルは使えません",
+  "imported": "{{title}}をインポートしました"
 }

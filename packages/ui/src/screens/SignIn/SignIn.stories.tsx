@@ -5,12 +5,14 @@ import { useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
-import { expect, fn, userEvent, waitFor } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { scenario } from '../../api/scenarios.ts';
 import type { FakeAccount } from '../../api/scenarios.ts';
 import { queryKeys } from '../../hooks/queryKeys.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
+import { storyLocale } from '../../storybook/withLocale.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
 import { SignIn } from './SignIn.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
@@ -245,5 +247,37 @@ export const TooManyRequests = meta.story({
     await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:tooManyRequests'));
     await expect(canvas.queryByText(t('wrongCredentials'))).toBeNull();
     await expect(locationOf(canvasElement)).toBe('/auth/sign-in');
+  },
+});
+
+export const LanguageOpen = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'LanguageSheet');
+    const name = localeNames[storyLocale(globals)];
+    await userEvent.click(canvas.getByRole('button', { name: t('current', { name }) }));
+    const list = await canvas.findByRole('radiogroup', { name: t('title') });
+    await expect(within(list).getAllByRole('radio')).toHaveLength(6);
+    await expect(within(list).getByRole('radio', { name })).toBeChecked();
+  },
+});
+
+export const SwitchesLanguage = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'LanguageSheet');
+    const target = storyLocale(globals) === 'en' ? 'de' : 'en';
+    const targetT = storyT({ locale: target }, 'SignIn');
+    const name = localeNames[storyLocale(globals)];
+    await userEvent.click(canvas.getByRole('button', { name: t('current', { name }) }));
+    await userEvent.click(await canvas.findByRole('radio', { name: localeNames[target] }));
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: targetT('title') }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: targetT('submit') })).toBeVisible();
+    await waitFor(() => expect(canvas.queryByRole('radiogroup')).toBeNull());
+    await expect(
+      canvas.getByRole('button', { name: new RegExp(localeNames[target]) }),
+    ).toBeVisible();
   },
 });

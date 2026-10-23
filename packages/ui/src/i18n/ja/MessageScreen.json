@@ -5,5 +5,6 @@
   "combatDeletedBody": "DMが削除しました。新しいリンクを頼んでください。",
   "offlineTitle": "サーバーに接続できません",
   "offlineBody": "接続を確認して、もう一度お試しください。",
-  "tryAgain": "再試行"
+  "tryAgain": "再試行",
+  "home": "ホームへ"
 }

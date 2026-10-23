@@ -11,8 +11,15 @@ import { linkTokenSchema } from '../client.ts';
 import { dispatch } from '../combats/dispatch.ts';
 import { NOT_FOUND, findCombatRow, nowIso } from '../combats/store.ts';
 import { signPlayerKey, verifyLink, verifyPlayerKey } from '../link/token.ts';
+import { broadcast, closePlayer, sendToPlayer } from '../live/registry.ts';
 import { streamCombatEvents } from '../live/sse.ts';
-import { insertPlayer, playerCount, playerExists } from '../sharing/store.ts';
+import {
+  announceRemoval,
+  insertPlayer,
+  playerCount,
+  playerExists,
+  removePlayer,
+} from '../sharing/store.ts';
 import { dmLanguage, recordPlayer } from './store.ts';
 
 const PLAYER_ID_HEADER = 'X-Player-Id';
@@ -68,13 +75,11 @@ const resolveLink = (c: Context<ApiAppEnv>, token: LinkToken): Resolved | Refusa
   return { combat: row.document, ownerId: row.ownerId };
 };
 
-const resolvePlayer = (
+const resolveMember = (
   c: Context<ApiAppEnv>,
-  token: LinkToken,
+  resolved: Resolved,
   given: GivenCredentials,
 ): ResolvedPlayer | Refusal => {
-  const resolved = resolveLink(c, token);
-  if ('status' in resolved) return resolved;
   const playerId = ulidSchema.safeParse(given.playerId);
   if (!playerId.success || given.playerKey === undefined) {
     return { status: 401, body: UNAUTHORIZED };
@@ -91,6 +96,16 @@ const resolvePlayer = (
     return { status: 401, body: UNAUTHORIZED };
   }
   return { ...resolved, viewer: { kind: 'player', playerId: playerId.data } };
+};
+
+const resolvePlayer = (
+  c: Context<ApiAppEnv>,
+  token: LinkToken,
+  given: GivenCredentials,
+): ResolvedPlayer | Refusal => {
+  const resolved = resolveLink(c, token);
+  if ('status' in resolved) return resolved;
+  return resolveMember(c, resolved, given);
 };
 
 const headerCredentials = (c: Context<ApiAppEnv>): GivenCredentials => ({
@@ -118,12 +133,30 @@ export const playApp = new Hono<ApiAppEnv>()
         return true;
       });
       if (!admitted) return c.json(PLAYERS_FULL, 422);
+      broadcast(combatId, { type: 'playerJoined' }, 'dm');
     }
     const credentials: PlayerCredentials = {
       playerId,
       playerKey: signPlayerKey({ combatId, generation, playerId }, c.get('env').linkSecret),
     };
     return c.json(credentials);
+  })
+  .post('/:id/leave', (c) => {
+    const row = findCombatRow(c.get('db'), c.req.param('id'));
+    if (!row) return c.json(NOT_FOUND, 404);
+    const player = resolveMember(
+      c,
+      { combat: row.document, ownerId: row.ownerId },
+      headerCredentials(c),
+    );
+    if ('status' in player) return c.json(player.body, player.status);
+    const combatId = player.combat.id;
+    const { playerId } = player.viewer;
+    const removed = c.get('db').transaction((tx) => removePlayer(tx, combatId, playerId));
+    sendToPlayer(combatId, playerId, { type: 'left' });
+    closePlayer(combatId, playerId);
+    announceRemoval(combatId, removed);
+    return c.body(null, 204);
   })
   .get('/:id', zValidator('query', tokenQuerySchema), (c) => {
     const player = resolvePlayer(c, c.req.valid('query').t, headerCredentials(c));

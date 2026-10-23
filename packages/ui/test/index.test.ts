@@ -87,6 +87,7 @@ const names = [
   'useMotion',
   'createI18n',
   'locales',
+  'guestLocale',
   'theme',
   'palette',
   'combatColors',

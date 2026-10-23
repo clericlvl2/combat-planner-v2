@@ -5,6 +5,8 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { scenario } from '../../api/scenarios.ts';
 import type { FakeAccount } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
+import { storyLocale } from '../../storybook/withLocale.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
 import { SignUp } from './SignUp.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
@@ -142,5 +144,27 @@ export const GitHubSignUp = meta.story({
     await userEvent.click(await canvas.findByRole('button', { name: t('SignIn:github') }));
     await waitFor(() => expect(args.onRedirect).toHaveBeenCalledOnce());
     await expect(canvas.queryByRole('button', { name: t('SignIn:google') })).toBeNull();
+  },
+});
+
+export const SendsChosenLanguage = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const language = storyT(globals, 'LanguageSheet');
+    const target = storyLocale(globals) === 'en' ? 'de' : 'en';
+    const t = storyT({ locale: target }, 'SignUp');
+    const name = localeNames[storyLocale(globals)];
+    await userEvent.click(canvas.getByRole('button', { name: language('current', { name }) }));
+    await userEvent.click(await canvas.findByRole('radio', { name: localeNames[target] }));
+    await expect(await canvas.findByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    await fill(canvas, 'Nova', 'nova@ferry.games', 'ferry-crossing', t);
+    await userEvent.click(canvas.getByRole('button', { name: t('submit') }));
+    await waitFor(() =>
+      expect(
+        fakeApiOf(loaded)
+          .calls.filter((call) => call.method === 'auth.signUp')
+          .map((call) => call.args[0]),
+      ).toEqual([expect.objectContaining({ email: 'nova@ferry.games', language: target })]),
+    );
   },
 });

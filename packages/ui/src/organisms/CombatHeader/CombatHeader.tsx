@@ -4,6 +4,9 @@ import {
   IconArrowBackUp,
   IconChevronLeft,
   IconDots,
+  IconFileExport,
+  IconLanguage,
+  IconLogout,
   IconRefresh,
   IconShare,
   IconSwitchHorizontal,
@@ -30,7 +33,7 @@ import classes from './CombatHeader.module.css';
 
 export type CombatHeaderPopover = 'round' | 'escalation' | 'menu';
 
-export type CombatMenuAction = 'addUnit' | 'undo' | 'share' | 'restart' | 'clear';
+export type CombatMenuAction = 'addUnit' | 'undo' | 'share' | 'export' | 'restart' | 'clear';
 
 export type CombatHeaderViewer = 'dm' | 'player';
 
@@ -52,6 +55,9 @@ export interface CombatHeaderProps extends Omit<
   onEscalationChange?: (value: EscalationValue) => void;
   onMenuSelect?: (action: CombatMenuAction) => void;
   onHeroes?: () => void;
+  onLanguage?: () => void;
+  languageName?: string;
+  onLeave?: () => void;
   undoDisabled?: boolean;
 }
 
@@ -265,6 +271,9 @@ export function CombatHeader({
   onEscalationChange,
   onMenuSelect,
   onHeroes,
+  onLanguage,
+  languageName,
+  onLeave,
   undoDisabled = false,
   className,
   ...rest
@@ -282,11 +291,18 @@ export function CombatHeader({
   const menuOpen = open === 'menu';
 
   const items: MenuItem[] = player
-    ? [{ id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') }]
+    ? [
+        { id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') },
+        ...(onLanguage
+          ? [{ id: 'language', icon: IconLanguage, label: t('language'), hint: languageName }]
+          : []),
+        { id: 'leave', icon: IconLogout, label: t('leave'), tone: 'danger', divider: true },
+      ]
     : [
         { id: 'addUnit', icon: IconUserPlus, label: t('addUnit') },
         { id: 'undo', icon: IconArrowBackUp, label: t('undo'), disabled: undoDisabled },
         { id: 'share', icon: IconShare, label: t('share') },
+        { id: 'export', icon: IconFileExport, label: t('export') },
         ...(setup
           ? []
           : [{ id: 'restart', icon: IconRefresh, label: t('restart'), divider: true }]),
@@ -294,7 +310,9 @@ export function CombatHeader({
       ];
 
   const selectItem = (id: string) => {
-    if (player) onHeroes?.();
+    if (player && id === 'leave') onLeave?.();
+    else if (player && id === 'language') onLanguage?.();
+    else if (player) onHeroes?.();
     else onMenuSelect?.(id as CombatMenuAction);
   };
 

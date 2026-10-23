@@ -6,11 +6,14 @@ import type { Loader } from '@storybook/react-vite';
 import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
+import { ulid } from 'ulid';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import {
   COMBAT_ID,
+  JONAS,
+  MIKA,
   MISSING_COMBAT_ID,
   STORY_ORIGIN,
   libraryPresets,
@@ -160,7 +163,7 @@ const openShare = async (canvas: Canvas, t: TFunction) => {
 
 const scrollList = async (canvasElement: HTMLElement) => {
   const first = await rowOf(canvasElement, 'Flussbrückenwächterin Adelheid von Stein');
-  const list = first.parentElement;
+  const list = first.closest<HTMLElement>('[data-scrollarea-viewport]');
   if (!list) throw new Error('The unit list is missing');
   list.scrollTop = 38;
   await waitFor(() => expect(list.scrollTop).toBe(38));
@@ -231,6 +234,25 @@ const heldDocumentsOf = (loaded: Record<string, unknown>) => {
     throw new Error('heldDocumentsLoader is missing');
   }
   return { hold: hold as () => void, release: release as () => void };
+};
+
+type PlayerAction =
+  | { type: 'releaseUnit'; unitId: string }
+  | {
+      type: 'claimUnit';
+      unitId: string;
+      displayName: string;
+    };
+
+const actAsPlayer = async (api: FakeApiClient, playerId: string, body: PlayerAction) => {
+  const { token } = await api.link.get(COMBAT_ID);
+  const play = api.playAs(playerId);
+  const { combat } = await play.get(token);
+  await play.dispatch(token, { ...body, id: ulid(), version: combat.version });
+};
+
+const dismissToast = async (canvas: Canvas, t: TFunction) => {
+  await userEvent.click(canvas.getByRole('button', { name: t('Toast:dismiss') }));
 };
 
 const setupRolls = [19, 17, 12, 12, 7];
@@ -1029,6 +1051,31 @@ export const EditSavesUnit = meta.story({
   },
 });
 
+export const RoleChangeShowsNoToast = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const row = await expand(canvasElement, names.vashti);
+    await userEvent.click(within(row).getByRole('button', { name: t('CardActions:edit') }));
+    const form = await canvas.findByRole('dialog', { name: t('UnitForm:editTitle') });
+    await userEvent.click(within(form).getByRole('radio', { name: t('UnitForm:ally') }));
+    await userEvent.click(within(form).getByRole('button', { name: t('UnitForm:saveChanges') }));
+    await waitFor(async () =>
+      expect(within(await rowOf(canvasElement, names.vashti)).queryByText('@Mika')).toBeNull(),
+    );
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeNull();
+    await pickMenu(canvas, t('Toast:undo'), t);
+    await waitFor(async () =>
+      expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-unit-role', 'hero'),
+    );
+    await expect(
+      canvas.queryByText(t('Toast:playerClaimed', { name: 'Mika', hero: names.vashti })),
+    ).toBeNull();
+  },
+});
+
 export const UndoRestoresRemovedUnit = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
@@ -1105,6 +1152,40 @@ export const RevokeReissuesLink = meta.story({
   },
 });
 
+export const StopSharingClosesSheet = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const api = fakeApiOf(loaded);
+    const sheet = await openShare(canvas, t);
+    await userEvent.click(within(sheet).getByRole('button', { name: t('ShareSheet:stop') }));
+    const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:stopTitle') });
+    await expect(within(dialog).getByText(t('Dialog:stopBody'))).toBeVisible();
+    await expect(callsOf(api, 'link.stopSharing')).toHaveLength(0);
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:stop') }));
+    await waitFor(() =>
+      expect(canvas.queryByRole('dialog', { name: t('ShareSheet:title') })).toBeNull(),
+    );
+    await waitFor(() => expect(callsOf(api, 'link.stopSharing')).toHaveLength(1));
+    await waitFor(async () =>
+      expect(within(await rowOf(canvasElement, names.vashti)).queryByText('@Mika')).toBeNull(),
+    );
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeNull();
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Jonas', hero: names.aldric })),
+    ).toBeNull();
+    const reopened = await openShare(canvas, t);
+    await expect(
+      await within(reopened).findByText(
+        `${STORY_ORIGIN}/combats/${COMBAT_ID}/play?t=${COMBAT_ID}.1.fake`,
+      ),
+    ).toBeVisible();
+    await expect(callsOf(api, 'link.get')).toHaveLength(2);
+  },
+});
+
 export const MenuNothingToUndo = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -1114,7 +1195,7 @@ export const MenuNothingToUndo = meta.story({
   },
 });
 
-export const NotFoundGoesToCombats = meta.story({
+export const NotFoundGoesHome = meta.story({
   tags: ['!dev'],
   args: { combatId: MISSING_COMBAT_ID },
   play: async ({ canvas, canvasElement, globals }) => {
@@ -1122,8 +1203,8 @@ export const NotFoundGoesToCombats = meta.story({
     await expect(
       await canvas.findByRole('heading', { name: t('CombatNotFound:title') }),
     ).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: t('CombatNotFound:goToCombats') }));
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
+    await userEvent.click(canvas.getByRole('button', { name: t('MessageScreen:home') }));
+    await waitFor(() => expect(locationOf(canvasElement)).toBe('/'));
   },
 });
 
@@ -1382,5 +1463,93 @@ export const ShareLinkFailureToast = meta.story({
     await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:share') }));
     await expect(await canvas.findByRole('status')).toHaveTextContent(t('linkFailed'));
     await expect(canvas.queryByRole('dialog', { name: t('ShareSheet:title') })).toBeNull();
+  },
+});
+
+export const PlayerTookHeroToast = meta.story({
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const api = fakeApiOf(loaded);
+    await rowOf(canvasElement, names.vashti);
+    await actAsPlayer(api, MIKA, { type: 'releaseUnit', unitId: unitIds.vashti });
+    await expect(
+      await canvas.findByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeVisible();
+    await dismissToast(canvas, t);
+    await actAsPlayer(api, MIKA, {
+      type: 'claimUnit',
+      unitId: unitIds.vashti,
+      displayName: 'Mika',
+    });
+    await expect(
+      await canvas.findByText(t('Toast:playerClaimed', { name: 'Mika', hero: names.vashti })),
+    ).toBeVisible();
+  },
+});
+
+export const PresenceToastsInOrder = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const api = fakeApiOf(loaded);
+    await rowOf(canvasElement, names.aldric);
+    api.announce(COMBAT_ID, { type: 'playerJoined' });
+    await api.playAs(JONAS).leave(COMBAT_ID);
+    await expect(await canvas.findByText(t('Toast:playerJoined'))).toBeVisible();
+    await dismissToast(canvas, t);
+    await expect(await canvas.findByText(t('Toast:playerLeft', { name: 'Jonas' }))).toBeVisible();
+    await dismissToast(canvas, t);
+    await waitFor(() =>
+      expect(canvas.queryByText(t('Toast:playerLeft', { name: 'Jonas' }))).toBeNull(),
+    );
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Jonas', hero: names.aldric })),
+    ).toBeNull();
+  },
+});
+
+export const SeveralReleasesOneToastEach = meta.story({
+  tags: ['!dev'],
+  loaders: [heldDocumentsLoader],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const api = fakeApiOf(loaded);
+    const { hold, release } = heldDocumentsOf(loaded);
+    await rowOf(canvasElement, names.aldric);
+    hold();
+    await actAsPlayer(api, JONAS, { type: 'releaseUnit', unitId: unitIds.aldric });
+    await actAsPlayer(api, MIKA, { type: 'releaseUnit', unitId: unitIds.vashti });
+    release();
+    await expect(
+      await canvas.findByText(t('Toast:playerReleased', { name: 'Jonas', hero: names.aldric })),
+    ).toBeVisible();
+    await dismissToast(canvas, t);
+    await expect(
+      await canvas.findByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeVisible();
+  },
+});
+
+export const DmReleaseShowsNoToast = meta.story({
+  name: 'DM Release Shows No Toast',
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const menu = await openRowMenu(canvas, canvasElement, names.vashti, t);
+    await userEvent.click(within(menu).getByRole('menuitem', { name: t('UnitRow:releaseClaim') }));
+    await waitFor(async () =>
+      expect(within(await rowOf(canvasElement, names.vashti)).queryByText('@Mika')).toBeNull(),
+    );
+    await expect(dispatched(fakeApiOf(loaded))).toEqual([
+      expect.objectContaining({ type: 'releaseUnit', unitId: unitIds.vashti }),
+    ]);
+    await actAsPlayer(fakeApiOf(loaded), JONAS, { type: 'releaseUnit', unitId: unitIds.aldric });
+    await expect(
+      await canvas.findByText(t('Toast:playerReleased', { name: 'Jonas', hero: names.aldric })),
+    ).toBeVisible();
+    await dismissToast(canvas, t);
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeNull();
   },
 });

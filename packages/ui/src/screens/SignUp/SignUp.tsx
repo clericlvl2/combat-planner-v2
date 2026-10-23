@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
+import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { AuthScreen } from '../shared/AuthScreen.tsx';
 import { hasCode } from '../shared/hasCode.ts';
 import { SocialButtons, assignLocation } from '../shared/SocialButtons.tsx';
@@ -22,6 +23,7 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
   const { t } = useTranslation('SignUp');
   const navigate = useNavigate();
   const { signUp } = useAccount();
+  const { locale } = useLocaleChoice();
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -59,7 +61,7 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
   const submit = () => {
     if (!ready) return;
     setSending(true);
-    signUp({ displayName: name, email: address, password })
+    signUp({ displayName: name, email: address, password, language: locale })
       .then(() => navigate('/combats'))
       .catch((error: unknown) => {
         setSending(false);

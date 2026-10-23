@@ -22,14 +22,9 @@
 
 .dialog {
   box-sizing: border-box;
-  display: flex;
   flex: 1 1 auto;
-  flex-direction: column;
-  gap: 16px;
   min-width: 0;
   max-height: 100%;
-  padding: 16px;
-  overflow-y: auto;
   border: 2px solid var(--cp-color-ink);
   border-radius: var(--mantine-radius-sheet);
   background: var(--cp-color-surface);
@@ -39,6 +34,13 @@
   &:focus {
     outline: none;
   }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
 }
 
 .icon {

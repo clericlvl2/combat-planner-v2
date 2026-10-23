@@ -5,6 +5,7 @@ import { expect, userEvent, waitFor } from 'storybook/test';
 import type { FakeApiClient } from '../../api/FakeApiClient.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
+import { storyLocale } from '../../storybook/withLocale.tsx';
 import {
   ALEX,
   COMBAT_ID,
@@ -17,6 +18,7 @@ import {
   playerScenario,
   unitIds,
 } from '../PlayerView/PlayerView.scenarios.ts';
+import { localeNames } from '../Settings/localeNames.ts';
 import { Heroes } from './Heroes.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
@@ -58,6 +60,31 @@ export const FirstVisit = meta.story({
     await expect(canvas.getByText(t('playing', { name: 'Jonas' }))).toBeVisible();
     await expect(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' })).toBeEnabled();
     await expect(canvas.queryByRole('button', { name: t('CombatHeader:menu') })).toBeNull();
+    const name = localeNames[storyLocale(globals)];
+    const language = canvas.getByRole('button', { name: t('LanguageSheet:current', { name }) });
+    await expect(language).toBeVisible();
+    await expect(language).toHaveTextContent(name);
+  },
+});
+
+export const SwitchesLanguage = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'LanguageSheet');
+    const target = storyLocale(globals) === 'en' ? 'de' : 'en';
+    const targetT = storyT({ locale: target }, 'Heroes');
+    const name = localeNames[storyLocale(globals)];
+    await userEvent.click(await canvas.findByRole('button', { name: t('current', { name }) }));
+    await userEvent.click(await canvas.findByRole('radio', { name: localeNames[target] }));
+    await expect(
+      await canvas.findByRole('heading', { level: 2, name: targetT('title') }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('textbox', { name: targetT('nameLabel') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: targetT('join') })).toBeVisible();
+    await waitFor(() => expect(canvas.queryByRole('radiogroup')).toBeNull());
+    await expect(
+      canvas.getByRole('button', { name: new RegExp(localeNames[target]) }),
+    ).toBeVisible();
   },
 });
 

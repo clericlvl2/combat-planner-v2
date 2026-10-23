@@ -79,12 +79,12 @@
     align-items: flex-end;
   }
 
-  &[data-status='wounded'] {
-    --numpad-health: var(--cp-health-wounded);
-  }
-
   &[data-status='staggered'] {
     --numpad-health: var(--cp-health-staggered);
+  }
+
+  &[data-status='unconscious'] {
+    --numpad-health: var(--cp-health-unconscious);
   }
 
   &[data-status='dead'] {
@@ -257,15 +257,13 @@
   margin: 0 -14px;
   padding: 12px 14px 0;
   border-top: 2px solid var(--cp-color-border);
-
-  &[data-viewer='player'] {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
 }
 
 .actions > .action[data-kind] {
   min-width: 0;
   border-radius: var(--mantine-radius-field);
+  font-family: var(--cp-font-ui);
+  font-weight: 600;
 
   &[data-kind='damage'] {
     grid-column: 1 / -1;

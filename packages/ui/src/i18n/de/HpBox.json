@@ -2,6 +2,7 @@
   "full": "Unverletzt",
   "wounded": "Verwundet",
   "staggered": "Taumelnd",
+  "unconscious": "Bewusstlos",
   "dead": "Tot",
   "temp": "+{{amount}} temp",
   "hp": "TP"

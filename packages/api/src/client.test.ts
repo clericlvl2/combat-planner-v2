@@ -1,4 +1,5 @@
 import type { Action, Combat, Preset, Tag } from '@combat-planner/domain';
+import { fromCombatFile } from '@combat-planner/domain';
 import { describe, expect, it } from 'vite-plus/test';
 import { ApiError, acceptLanguages, apiEventSchema, browserLocale } from './client.ts';
 import type {
@@ -92,6 +93,19 @@ function createMemoryClient() {
       combats.set(newId, copy);
       return copy;
     },
+    importCombat: async (file) => {
+      let unit = 0;
+      const imported = fromCombatFile(
+        file,
+        {
+          combatId: `01ARZ3NDEKTSV4RRFFQ69G5X${combats.size.toString().padStart(2, '0')}`,
+          unitId: () => `01ARZ3NDEKTSV4RRFFQ69G5Y${(unit++).toString().padStart(2, '0')}`,
+        },
+        now,
+      );
+      combats.set(imported.id, imported);
+      return imported;
+    },
     open: async (id) => {
       const opened = { ...combat(id), lastPlayedAt: now };
       combats.set(id, opened);
@@ -147,6 +161,13 @@ function createMemoryClient() {
         combats.set(id, reissued);
         return { token: `${id}:${reissued.linkGeneration}`, generation: reissued.linkGeneration };
       },
+      stopSharing: async (id) => {
+        combats.set(id, {
+          ...combat(id),
+          linkGeneration: combat(id).linkGeneration + 1,
+          version: combat(id).version + 1,
+        });
+      },
     },
     play: {
       get: async (token) => {
@@ -164,6 +185,7 @@ function createMemoryClient() {
         return combatsApi.dispatch(combatId, action);
       },
       subscribe: () => () => {},
+      leave: async () => {},
     },
     presets: {
       list: async () => [...presets.values()],

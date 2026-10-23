@@ -183,7 +183,9 @@ test('a closed Sort sheet leaves nothing over the combat list', async ({ page })
   await expect(sheet).toBeVisible();
   await sheet.getByLabel(t('CombatFormSheet:title')).fill('After sort');
   await sheet.getByRole('button', { name: t('CombatFormSheet:create'), exact: true }).click();
-  await expect(page.getByRole('heading', { level: 1, name: 'After sort' })).toBeVisible();
+  await expect(sheet).toBeHidden();
+  await expect(page).toHaveURL(/\/combats$/);
+  await expect(page.getByText('After sort')).toBeVisible();
 });
 
 test('the header Back on a combat returns to the combat list', async ({ page }) => {

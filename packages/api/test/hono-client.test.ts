@@ -299,6 +299,66 @@ describe('createHonoApiClient player key', () => {
     expect(url.searchParams.get('playerKey')).toBe(joined.playerKey);
   });
 
+  it('joins no more after leave, even when a stream probe meets a 401', async () => {
+    const seen: string[] = [];
+    let answerLeave: (response: Response) => void = () => {};
+    const fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      const request = new Request(input, init);
+      const { pathname } = new URL(request.url);
+      seen.push(`${request.method} ${pathname}`);
+      if (pathname.endsWith('/join')) return Response.json(joined);
+      if (pathname.endsWith('/leave')) {
+        return new Promise<Response>((resolve) => {
+          answerLeave = resolve;
+        });
+      }
+      return Response.json({ code: 'unauthorized', message: 'no key' }, { status: 401 });
+    }) as typeof globalThis.fetch;
+    const client = createHonoApiClient({
+      baseUrl,
+      fetch,
+      playerKeys: seededKeys(),
+      eventSource: StubEventSource,
+    });
+    const ended = vi.fn();
+    client.play.subscribe(token, () => {}, ended);
+    const source = StubEventSource.instances[0]!;
+    source.open();
+    const leaving = client.play.leave(combatId);
+    source.refuse();
+    await vi.waitFor(() => expect(ended).toHaveBeenCalledWith({ type: 'unauthorized' }));
+    answerLeave(new Response(null, { status: 204 }));
+    await leaving;
+    await expect(client.play.dispatch(token, action)).rejects.toMatchObject({
+      code: 'unauthorized',
+    });
+    expect(seen).toEqual([`POST /api/play/${combatId}/leave`, `GET /api/play/${combatId}`]);
+    expect(StubEventSource.instances).toHaveLength(1);
+  });
+
+  it('closes the player stream on leave and joins again when the link is opened anew', async () => {
+    const { fetch, seen } = playServer();
+    const client = createHonoApiClient({
+      baseUrl,
+      fetch,
+      playerKeys: seededKeys(),
+      eventSource: StubEventSource,
+    });
+    const ended = vi.fn();
+    client.play.subscribe(token, () => {}, ended);
+    const source = StubEventSource.instances[0]!;
+    source.open();
+    await client.play.leave(combatId);
+    expect(source.closed).toBe(true);
+    expect(ended).not.toHaveBeenCalled();
+    await expect(client.play.get(token)).resolves.toEqual(view);
+    expect(seen.map((request) => request.url.pathname)).toEqual([
+      `/api/play/${combatId}/leave`,
+      `/api/play/${combatId}/join`,
+      `/api/play/${combatId}`,
+    ]);
+  });
+
   it('opens no stream when unsubscribed while joining', async () => {
     const { fetch } = playServer();
     const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
@@ -333,6 +393,34 @@ describe('createHonoApiClient requests', () => {
     expect(seen[0]?.url.searchParams.get('t')).toBe(token);
     expect(seen[0]?.headers.get('X-Player-Id')).toBe(playerId);
     expect(seen[0]?.headers.get('X-Player-Key')).toBe(playerKey);
+  });
+
+  it('play.leave posts the player id and key, then forgets them', async () => {
+    const { fetch, seen } = stubFetch(204, null);
+    const playerKeys = seededKeys();
+    const client = createHonoApiClient({ baseUrl, playerKeys, fetch });
+    await expect(client.play.leave(combatId)).resolves.toBeUndefined();
+    expect(seen[0]?.method).toBe('POST');
+    expect(seen[0]?.url.pathname).toBe(`/api/play/${combatId}/leave`);
+    expect(seen[0]?.headers.get('X-Player-Id')).toBe(playerId);
+    expect(seen[0]?.headers.get('X-Player-Key')).toBe(playerKey);
+    expect(playerKeys.get(combatId)).toBeNull();
+  });
+
+  it('play.leave forgets a key the server no longer knows and keeps it when unreachable', async () => {
+    const refused = seededKeys();
+    const { fetch } = stubFetch(401, { code: 'unauthorized', message: 'no key' });
+    await expect(
+      createHonoApiClient({ baseUrl, playerKeys: refused, fetch }).play.leave(combatId),
+    ).resolves.toBeUndefined();
+    expect(refused.get(combatId)).toBeNull();
+    const offline = seededKeys();
+    await expect(
+      createHonoApiClient({ baseUrl, playerKeys: offline, fetch: failingFetch }).play.leave(
+        combatId,
+      ),
+    ).rejects.toMatchObject({ code: 'network' });
+    expect(offline.get(combatId)).toEqual(credentials);
   });
 
   it('rejects a token without a leading combat id', async () => {
@@ -378,6 +466,22 @@ describe('createHonoApiClient requests', () => {
     await expect(
       client.auth.signUp({ email: 'dm@example.com', password: 'password', displayName: 'DM' }),
     ).resolves.toMatchObject({ method: 'email' });
+  });
+
+  it('auth.signUp sends the chosen language as Accept-Language', async () => {
+    const { fetch, seen } = stubFetch(200, {
+      token: 'token',
+      user: { id: 'user-1', email: 'dm@example.com', name: 'DM', language: 'en' },
+    });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
+    await client.auth.signUp({
+      email: 'dm@example.com',
+      password: 'password',
+      displayName: 'DM',
+      language: 'en',
+    });
+    expect(seen[0]?.headers.get('accept-language')).toBe('en');
+    expect(seen[0]?.body).toEqual({ email: 'dm@example.com', password: 'password', name: 'DM' });
   });
 
   it('rejects a response that does not match the schema', async () => {
@@ -735,6 +839,36 @@ describe('createHonoApiClient connection', () => {
     expect(client.connection.state()).toBe('offline');
   });
 
+  it('hands presence events to the DM and keeps the stream open', () => {
+    const { fetch } = stubFetch(200, combatAt(1));
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
+    const ended = vi.fn();
+    const presence = vi.fn();
+    const documents = vi.fn();
+    client.combats.subscribe(combatId, documents, ended, presence);
+    const source = StubEventSource.instances[0]!;
+    source.open();
+    source.emit('playerJoined', JSON.stringify({ type: 'playerJoined' }));
+    source.emit('playerLeft', JSON.stringify({ type: 'playerLeft', name: 'Mika' }));
+    source.emit(
+      'document',
+      JSON.stringify({ type: 'document', version: 2, document: combatAt(2) }),
+    );
+    expect(presence.mock.calls).toEqual([
+      [{ type: 'playerJoined' }],
+      [{ type: 'playerLeft', name: 'Mika' }],
+    ]);
+    expect(documents).toHaveBeenCalledWith(combatAt(2), undefined);
+    expect(ended).not.toHaveBeenCalled();
+    expect(source.closed).toBe(false);
+    expect(client.connection.state()).toBe('connected');
+  });
+
   it('ends a player stream on dropped and opens no new stream by itself', async () => {
     const { fetch } = stubFetch(200, null);
     const client = createHonoApiClient({
@@ -754,6 +888,26 @@ describe('createHonoApiClient connection', () => {
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(StubEventSource.instances).toHaveLength(1);
     expect(client.connection.state()).toBe('offline');
+  });
+
+  it('ends a player stream on left without reopening it', async () => {
+    const { fetch } = stubFetch(200, null);
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
+    const ended = vi.fn();
+    client.play.subscribe(`${combatId}.2.signature`, () => {}, ended);
+    const source = StubEventSource.instances[0]!;
+    source.open();
+    source.emit('left', JSON.stringify({ type: 'left' }));
+    expect(ended).toHaveBeenCalledWith({ type: 'left' });
+    expect(source.closed).toBe(true);
+    source.emit('error');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(StubEventSource.instances).toHaveLength(1);
   });
 
   it('play.subscribe puts the token, the player id and the key into the stream URL', () => {

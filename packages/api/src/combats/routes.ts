@@ -1,7 +1,14 @@
 import type { Combat } from '@combat-planner/domain';
-import { LIMITS, copyCombat, ulidSchema } from '@combat-planner/domain';
+import {
+  LIMITS,
+  combatFileSchema,
+  copyCombat,
+  fromCombatFile,
+  ulidSchema,
+} from '@combat-planner/domain';
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
+import { ulid } from 'ulid';
 import { z } from 'zod';
 import type { UserAppEnv } from '../app.ts';
 import { combatCreateInputSchema, combatPatchSchema } from '../client.ts';
@@ -25,6 +32,13 @@ const LIMIT_REACHED = {
   code: 'limit',
   message: `A DM keeps at most ${LIMITS.combatsPerDm} combats`,
 } as const;
+
+const UNIT_LIMIT = {
+  code: 'limit',
+  message: `This combat already has ${LIMITS.unitsPerCombat} units`,
+} as const;
+
+const INVALID_FILE = { code: 'invalid', message: 'This is not a combat file' } as const;
 
 const ID_IN_USE = { code: 'invalid', message: 'This id belongs to another combat' } as const;
 
@@ -68,6 +82,20 @@ export const combatsApp = new Hono<UserAppEnv>()
     if ('rejected' in stored) return c.json(stored.rejected, 422);
     return c.json(stored.combat);
   })
+  .post(
+    '/import',
+    zValidator('json', combatFileSchema, (result, c) => {
+      if (!result.success) return c.json(INVALID_FILE, 422);
+    }),
+    (c) => {
+      const file = c.req.valid('json');
+      if (file.combat.units.length > LIMITS.unitsPerCombat) return c.json(UNIT_LIMIT, 422);
+      const combat = fromCombatFile(file, { combatId: ulid(), unitId: () => ulid() }, nowIso());
+      const stored = c.get('db').transaction((tx) => store(tx, c.get('userId'), combat));
+      if ('rejected' in stored) return c.json(stored.rejected, 422);
+      return c.json(stored.combat);
+    },
+  )
   .get('/:id', (c) => {
     const db = c.get('db');
     const combat = findOwnCombat(db, c.get('userId'), c.req.param('id'));

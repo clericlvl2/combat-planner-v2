@@ -17,5 +17,8 @@
   "share": "Partager",
   "restart": "Relancer le combat",
   "clear": "Vider le combat",
-  "heroes": "Héros"
+  "heroes": "Héros",
+  "language": "Langue",
+  "leave": "Quitter le combat",
+  "export": "Exporter dans un fichier"
 }

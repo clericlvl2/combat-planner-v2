@@ -17,5 +17,8 @@
   "share": "共有",
   "restart": "戦闘をやり直す",
   "clear": "戦闘をクリア",
-  "heroes": "ヒーロー"
+  "heroes": "ヒーロー",
+  "language": "言語",
+  "leave": "戦闘から抜ける",
+  "export": "ファイルにエクスポート"
 }

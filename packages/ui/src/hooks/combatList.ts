@@ -3,9 +3,10 @@ import type {
   CombatCreateInput,
   CombatPatch,
   CombatSummary,
+  DmCombat,
   VersionResult,
 } from '@combat-planner/api/client';
-import type { Combat, CombatId } from '@combat-planner/domain';
+import type { Combat, CombatFile, CombatId } from '@combat-planner/domain';
 import { mutation } from './mutations.ts';
 import type { MutationContext } from './mutations.ts';
 import { queryKeys } from './queryKeys.ts';
@@ -15,6 +16,8 @@ export interface CombatListActions {
   update: (id: CombatId, patch: CombatPatch) => Promise<VersionResult>;
   remove: (id: CombatId) => Promise<void>;
   duplicate: (id: CombatId, newId: CombatId) => Promise<Combat>;
+  importCombat: (file: CombatFile) => Promise<Combat>;
+  fetchDocument: (id: CombatId) => Promise<DmCombat>;
 }
 
 export const listCombats = (api: ApiClient): Promise<CombatSummary[]> => api.combats.list();
@@ -49,6 +52,18 @@ export function combatListActions(api: ApiClient, context: MutationContext): Com
     update: mutation(context, {
       send: (id: CombatId, patch: CombatPatch) => api.combats.update(id, patch),
       invalidate,
+    }),
+    importCombat: mutation(context, {
+      send: (file: CombatFile) => api.combats.importCombat(file),
+      invalidate,
+      success: (imported) => ({
+        message: t('imported', { title: imported.title }),
+        kind: 'success',
+      }),
+    }),
+    fetchDocument: mutation(context, {
+      send: (id: CombatId) => api.combats.get(id),
+      invalidate: [],
     }),
     remove: (id) => remove(id, titleOf(id)),
     duplicate: (id, newId) => duplicate(id, newId, titleOf(id)),

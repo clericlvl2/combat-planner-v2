@@ -1,6 +1,7 @@
 import type { LinkToken } from '@combat-planner/api/client';
 import type { CombatId } from '@combat-planner/domain';
 import {
+  About,
   CombatScreen,
   Drawer,
   LinkExpired,
@@ -31,8 +32,12 @@ export function CombatPage() {
 
 export function PlayerPage() {
   const { combatId, token } = useLoaderData<PlayerRouteData>();
-  if (token === null) return <LinkExpired />;
-  return <PlayerView key={`${combatId}:${token}`} combatId={combatId} token={token} />;
+  const navigate = useNavigate();
+  const goHome = () => void navigate('/');
+  if (token === null) return <LinkExpired onHome={goHome} />;
+  return (
+    <PlayerView key={`${combatId}:${token}`} combatId={combatId} token={token} onHome={goHome} />
+  );
 }
 
 function SwipeDrawer() {
@@ -71,9 +76,24 @@ export function DmPages() {
   );
 }
 
+export interface AboutPageProps {
+  version: string;
+  sourceUrl: string;
+}
+
+export function AboutPage({ version, sourceUrl }: AboutPageProps) {
+  const { session } = useAccount();
+  return (
+    <>
+      <About version={version} sourceUrl={sourceUrl} />
+      {session ? <SwipeDrawer /> : null}
+    </>
+  );
+}
+
 export function NotFoundPage() {
   const navigate = useNavigate();
-  return <NotFound onGoToCombats={() => void navigate('/combats')} />;
+  return <NotFound onHome={() => void navigate('/')} />;
 }
 
 export interface RouteErrorProps {
@@ -81,6 +101,9 @@ export interface RouteErrorProps {
 }
 
 export function RouteError({ onShow }: RouteErrorProps) {
+  const navigate = useNavigate();
   useEffect(() => onShow(), [onShow]);
-  return <UnexpectedError onReload={() => window.location.reload()} />;
+  return (
+    <UnexpectedError onReload={() => window.location.reload()} onHome={() => void navigate('/')} />
+  );
 }

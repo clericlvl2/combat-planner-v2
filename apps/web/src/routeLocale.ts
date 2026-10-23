@@ -2,7 +2,7 @@ import type { Locale } from '@combat-planner/ui';
 import { useEffect, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const OWN_LOCALE_ROUTES: readonly string[] = ['dm', 'play'];
+export const OWN_LOCALE_ROUTES: readonly string[] = ['dm', 'play', 'about'];
 
 export interface LocaleRouterState {
   matches: readonly { route: { id: string } }[];
@@ -29,11 +29,12 @@ export const showsDmPage = ({ matches, errors, navigation }: LocaleRouterState):
 export function watchRouteLocale(
   router: LocaleRouter,
   i18n: LanguageSwitch,
-  locale: Locale,
+  locale: () => Locale,
 ): () => void {
   const apply = (state: LocaleRouterState) => {
     if (state.navigation.state !== 'idle' || !usesBrowserLocale(state)) return;
-    if (i18n.language !== locale) void i18n.changeLanguage(locale);
+    const guest = locale();
+    if (i18n.language !== guest) void i18n.changeLanguage(guest);
   };
   apply(router.state);
   return router.subscribe(apply);
@@ -41,7 +42,7 @@ export function watchRouteLocale(
 
 export interface RouteLocaleProps {
   router: LocaleRouter;
-  locale: Locale;
+  locale: () => Locale;
 }
 
 export function RouteLocale({ router, locale }: RouteLocaleProps) {

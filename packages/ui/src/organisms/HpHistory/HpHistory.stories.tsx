@@ -217,14 +217,19 @@ export const ExpandedNoChanges = meta.story({
 export const ExpandedLongList = meta.story({
   tags: ['visual'],
   args: { expanded: true, entries: long },
-  play: async ({ canvas, canvasElement, globals }) => {
+  play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'HpHistory');
     const list = canvas.getByRole('list', { name: t('title') });
+    const area = list.closest('[data-scroll-list]');
     await expect(canvas.getAllByRole('listitem')).toHaveLength(10);
     await expect(list.clientHeight).toBe(320);
     await expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
     await expect(list).toHaveAttribute('tabindex', '0');
-    await expect(canvasElement.querySelector('[data-fade]')).not.toBeNull();
+    await waitFor(() => expect(area).not.toHaveAttribute('data-scroll-up'));
+    await waitFor(() => expect(area).toHaveAttribute('data-scroll-down'));
+    list.scrollTop = list.scrollHeight;
+    await waitFor(() => expect(area).toHaveAttribute('data-scroll-up'));
+    await waitFor(() => expect(area).not.toHaveAttribute('data-scroll-down'));
   },
 });
 

@@ -2,6 +2,7 @@ import type { Decorator } from '@storybook/react-vite';
 import type { CSSProperties, ReactNode } from 'react';
 import { layout } from '../layout.ts';
 import type { Viewport } from '../layout.ts';
+import { frameViewportOf } from './frameViewport.ts';
 import classes from './PhoneFrame.module.css';
 
 export interface PhoneFrameProps {
@@ -38,14 +39,6 @@ export const frameGlobalType = {
     },
   },
 };
-
-function isViewport(value: unknown): value is Viewport {
-  return viewportList.some((viewport) => viewport === value);
-}
-
-export function frameViewportOf(frame: unknown): Viewport {
-  return isViewport(frame) ? frame : 'narrow';
-}
 
 function phoneStyle(viewport: Viewport): CSSProperties {
   return {

@@ -1,6 +1,8 @@
+import { healthStatus } from './healthStatus.ts';
 import type { Unit } from './types.ts';
 
-export const skipsTurn = (unit: Unit): boolean => unit.disabled || unit.hp <= 0;
+export const skipsTurn = (unit: Unit): boolean =>
+  unit.disabled || healthStatus(unit.hp, unit.maxHp, unit.role) === 'dead';
 
 export const turnOrder = (units: readonly Unit[]): Unit[] =>
   units

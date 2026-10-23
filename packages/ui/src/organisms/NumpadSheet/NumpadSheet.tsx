@@ -17,8 +17,6 @@ import { HpHistory } from '../HpHistory/HpHistory.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import classes from './NumpadSheet.module.css';
 
-export type NumpadViewer = 'dm' | 'player';
-
 export interface NumpadHealth {
   hp: number;
   maxHp: number;
@@ -31,7 +29,6 @@ export interface NumpadSheetProps extends NumpadHealth {
   role: Role;
   initiative: number | null;
   history: readonly HpHistoryEntry[];
-  viewer?: NumpadViewer;
   onApply: (kind: HpHistoryKind, amount: number) => void;
   onClose: () => void;
   'data-tap'?: HpHistoryKind;
@@ -51,7 +48,13 @@ const actionLabels = {
   max: 'setMax',
 } as const satisfies Record<HpHistoryKind, string>;
 const pipSlots = [0, 1] as const;
-const filledPips: Record<HealthStatus, number> = { full: 2, wounded: 1, staggered: 1, dead: 0 };
+const filledPips: Record<HealthStatus, number> = {
+  full: 2,
+  wounded: 1,
+  staggered: 1,
+  unconscious: 0,
+  dead: 0,
+};
 
 function hpAction(kind: HpHistoryKind, amount: number): Action {
   const target = { id: previewId, version: 0, unitId: previewId, amount };
@@ -134,12 +137,13 @@ function formatNumber(value: number): string {
 interface HpReadingProps {
   label: string;
   health: NumpadHealth;
+  role: Role;
   side: 'now' | 'after';
 }
 
-function HpReading({ label, health, side }: HpReadingProps) {
+function HpReading({ label, health, role, side }: HpReadingProps) {
   const { t } = useTranslation('NumpadSheet');
-  const status = healthStatus(health.hp, health.maxHp);
+  const status = healthStatus(health.hp, health.maxHp, role);
   const current = formatNumber(health.hp);
   const length = `${current}/${health.maxHp}`.length;
   return (
@@ -187,7 +191,6 @@ export function NumpadSheet({
   maxHp,
   tempHp,
   history,
-  viewer = 'dm',
   onApply,
   onClose,
   'data-tap': tap,
@@ -255,7 +258,6 @@ export function NumpadSheet({
     return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, [opened, append, deleteDigit]);
 
-  const kinds = viewer === 'dm' ? actionKinds : actionKinds.filter((kind) => kind !== 'max');
   const now = { hp, maxHp, tempHp };
   const after = amount === null ? now : hpAfter(now, previewKind, amount);
   const enabled = (kind: HpHistoryKind) => amount !== null && (amount > 0 || kind === 'temp');
@@ -274,8 +276,8 @@ export function NumpadSheet({
       title={name}
       onClose={onClose}
       actions={
-        <div className={classes.actions} data-viewer={viewer}>
-          {kinds.map((kind) => (
+        <div className={classes.actions}>
+          {actionKinds.map((kind) => (
             <Button
               key={kind}
               className={classes.action}
@@ -310,7 +312,7 @@ export function NumpadSheet({
     >
       <div ref={bodyRef} className={classes.body}>
         <div className={classes.preview}>
-          <HpReading label={t('now')} health={now} side="now" />
+          <HpReading label={t('now')} health={now} role={role} side="now" />
           <IconArrowRight
             className={classes.arrow}
             data-part="arrow"
@@ -318,7 +320,7 @@ export function NumpadSheet({
             stroke={2}
             aria-hidden="true"
           />
-          <HpReading label={t('after')} health={after} side="after" />
+          <HpReading label={t('after')} health={after} role={role} side="after" />
         </div>
         <div className={classes.amount}>
           <span className={classes.amountLabel} aria-hidden="true">

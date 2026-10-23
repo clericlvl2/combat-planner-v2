@@ -271,11 +271,13 @@ describe('player sweep', () => {
     const token = await shareToken();
     const player = await join(token);
     const events = listen({ kind: 'player', playerId: player.playerId });
+    const dmEvents = listen({ kind: 'dm' });
     const since = Date.parse(watchingSince(player.playerId) ?? '');
     sweepAt(at(since, 15 * MINUTE - 1000));
     expect(events).toEqual([]);
     sweepAt(at(since, 15 * MINUTE));
     expect(events).toEqual([{ type: 'dropped' }]);
+    expect(dmEvents).toEqual([]);
     expect(watchingSince(player.playerId)).toBeUndefined();
     expect((await getPlay(token, player)).status).toBe(401);
   });
@@ -297,6 +299,7 @@ describe('player sweep', () => {
     expect(after.version).toBe(before.version + 1);
     expect(dmEvents).toEqual([
       expect.objectContaining({ type: 'document', version: after.version }),
+      { type: 'playerLeft', name: 'Ada' },
     ]);
   });
 

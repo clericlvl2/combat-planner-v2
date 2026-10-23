@@ -11,6 +11,8 @@ import type {
   EndListener,
   LinkToken,
   PlayerDocumentListener,
+  PresenceEvent,
+  PresenceListener,
   Session,
   SocialProvider,
   Unsubscribe,
@@ -32,8 +34,10 @@ import {
   LIMITS,
   apply,
   authorize,
+  combatFileSchema,
   copyCombat,
   duplicateName,
+  fromCombatFile,
   nextStack,
   normalizeTag,
   project,
@@ -60,6 +64,7 @@ interface StoredCombat {
 interface DmSubscriber {
   onDocument: DocumentListener<DmCombat>;
   onEnd: EndListener;
+  onPresence?: PresenceListener;
   version: number;
 }
 
@@ -199,6 +204,10 @@ export class FakeApiClient implements ApiClient {
 
   dropPlayers(combatId: CombatId): void {
     this.endSubscribers(combatId, { type: 'dropped' }, 'player');
+  }
+
+  announce(combatId: CombatId, event: PresenceEvent): void {
+    for (const subscriber of this.dmSubscribers.get(combatId) ?? []) subscriber.onPresence?.(event);
   }
 
   failNext(code: ApiErrorCode): void {
@@ -409,7 +418,7 @@ export class FakeApiClient implements ApiClient {
         if (this.accounts.some((account) => account.email === input.email)) {
           throw fail('emailTaken', 'User already exists');
         }
-        const account: FakeAccount = { userId: ulid(), language: 'en', ...input };
+        const account: FakeAccount = { userId: ulid(), ...input, language: input.language ?? 'en' };
         this.accounts.push(account);
         return this.signInAs(account);
       }),
@@ -486,6 +495,18 @@ export class FakeApiClient implements ApiClient {
       this.run('combats.duplicate', [id, newId], () =>
         this.storeCombat(copyCombat(this.stored(id).combat, newId, nowIso())),
       ),
+    importCombat: (file) =>
+      this.run('combats.importCombat', [file], () => {
+        this.requireSession();
+        const parsed = combatFileSchema.safeParse(file);
+        if (!parsed.success) throw fail('invalid', 'This is not a combat file');
+        if (parsed.data.combat.units.length > LIMITS.unitsPerCombat) {
+          throw fail('limit', `This combat already has ${LIMITS.unitsPerCombat} units`);
+        }
+        return this.storeCombat(
+          fromCombatFile(parsed.data, { combatId: ulid(), unitId: () => ulid() }, nowIso()),
+        );
+      }),
     open: (id) =>
       this.run('combats.open', [id], () => {
         const stored = this.stored(id);
@@ -504,9 +525,9 @@ export class FakeApiClient implements ApiClient {
       this.run('combats.dispatch', [id, action], () =>
         this.dispatchAs(this.stored(id), DM, action),
       ),
-    subscribe: (id, onDocument, onEnd) => {
+    subscribe: (id, onDocument, onEnd, onPresence) => {
       this.calls.push({ method: 'combats.subscribe', args: [id] });
-      const subscriber: DmSubscriber = { onDocument, onEnd, version: -1 };
+      const subscriber: DmSubscriber = { onDocument, onEnd, onPresence, version: -1 };
       if (!this.session) {
         onEnd({ type: 'unauthorized' });
         return () => {};
@@ -534,40 +555,56 @@ export class FakeApiClient implements ApiClient {
       }),
     reissue: (id) =>
       this.run('link.reissue', [id], () => {
-        const stored = this.stored(id);
-        const now = nowIso();
-        let combat = stored.combat;
-        for (const unit of stored.combat.units) {
-          if (unit.claimedBy === null) continue;
-          const action: Action = {
-            id: ulid(),
-            version: combat.version,
-            type: 'releaseUnit',
-            unitId: unit.id,
-          };
-          const result = apply(combat, action, DM, now);
-          if (result instanceof DomainError) throw fromDomain(result);
-          stored.log = nextStack(stored.log, { action, author: DM, at: now, patch: result.patch });
-          combat = result.combat;
-        }
-        const next: Combat = {
-          ...combat,
-          linkGeneration: combat.linkGeneration + 1,
-          version: combat.version + 1,
-          updatedAt: now,
-        };
-        stored.combat = next;
-        this.broadcast(stored, 'dm');
-        this.endSubscribers(id, { type: 'linkRevoked' }, 'player');
+        const next = this.revokeGeneration(id);
         return { token: this.currentToken(next), generation: next.linkGeneration };
+      }),
+    stopSharing: (id) =>
+      this.run('link.stopSharing', [id], () => {
+        this.revokeGeneration(id);
       }),
   };
 
+  private revokeGeneration(id: CombatId): Combat {
+    const stored = this.stored(id);
+    const now = nowIso();
+    let combat = stored.combat;
+    for (const unit of stored.combat.units) {
+      if (unit.claimedBy === null) continue;
+      const action: Action = {
+        id: ulid(),
+        version: combat.version,
+        type: 'releaseUnit',
+        unitId: unit.id,
+      };
+      const result = apply(combat, action, DM, now);
+      if (result instanceof DomainError) throw fromDomain(result);
+      stored.log = nextStack(stored.log, { action, author: DM, at: now, patch: result.patch });
+      combat = result.combat;
+    }
+    const next: Combat = {
+      ...combat,
+      players: {},
+      linkGeneration: combat.linkGeneration + 1,
+      version: combat.version + 1,
+      updatedAt: now,
+    };
+    stored.combat = next;
+    this.broadcast(stored, 'dm');
+    this.endSubscribers(id, { type: 'linkRevoked' }, 'player');
+    return next;
+  }
+
   playAs(playerId: PlayerId): ApiClient['play'] {
     const viewer = { kind: 'player', playerId } as const;
+    const departed = new Set<CombatId>();
+    const reopen = (token: LinkToken) => {
+      const link = this.links.get(token);
+      if (link) departed.delete(link.combatId);
+    };
     return {
-      get: (token) =>
-        this.run('play.get', [token, playerId], () => {
+      get: (token) => {
+        reopen(token);
+        return this.run('play.get', [token, playerId], () => {
           const { combat } = this.resolveLink(token);
           return {
             combatId: combat.id,
@@ -575,13 +612,17 @@ export class FakeApiClient implements ApiClient {
             language: this.settingsValue.language,
             combat: project(combat, viewer),
           };
-        }),
+        });
+      },
       dispatch: (token, action) =>
-        this.run('play.dispatch', [token, playerId, action], () =>
-          this.dispatchAs(this.resolveLink(token), viewer, action),
-        ),
+        this.run('play.dispatch', [token, playerId, action], () => {
+          const stored = this.resolveLink(token);
+          if (departed.has(stored.combat.id)) throw fail('unauthorized', 'This player left');
+          return this.dispatchAs(stored, viewer, action);
+        }),
       subscribe: (token, onDocument, onEnd) => {
         this.calls.push({ method: 'play.subscribe', args: [token, playerId] });
+        reopen(token);
         let stored: StoredCombat;
         try {
           stored = this.resolveLink(token);
@@ -599,6 +640,34 @@ export class FakeApiClient implements ApiClient {
         return () => {
           this.playerSubscribers.get(combatId)?.delete(subscriber);
         };
+      },
+      leave: (combatId) => {
+        departed.add(combatId);
+        const leaving = this.run('play.leave', [combatId, playerId], () => {
+          const stored = this.combatStore.get(combatId);
+          if (!stored) return;
+          const { combat } = stored;
+          const name = combat.players[playerId];
+          const holdsHero = combat.units.some((unit) => unit.claimedBy === playerId);
+          const subscribers = this.playerSubscribers.get(combatId);
+          for (const subscriber of subscribers ?? []) {
+            if (subscriber.playerId === playerId) subscribers?.delete(subscriber);
+          }
+          if (name === undefined && !holdsHero) return;
+          this.save(stored, {
+            ...combat,
+            units: combat.units.map((unit) =>
+              unit.claimedBy === playerId ? { ...unit, claimedBy: null } : unit,
+            ),
+            players: Object.fromEntries(
+              Object.entries(combat.players).filter(([id]) => id !== playerId),
+            ),
+            version: combat.version + 1,
+          });
+          if (name !== undefined) this.announce(combatId, { type: 'playerLeft', name });
+        });
+        leaving.catch(() => departed.delete(combatId));
+        return leaving;
       },
     };
   }

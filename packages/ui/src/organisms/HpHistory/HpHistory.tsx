@@ -5,6 +5,7 @@ import { useId } from 'react';
 import type { ComponentPropsWithoutRef, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { HistoryRow } from '../../molecules/HistoryRow/HistoryRow.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import classes from './HpHistory.module.css';
 
@@ -70,20 +71,22 @@ function HpHistoryList({ entries, maxHp, id, label, inset }: HpHistoryListProps)
       {entries.length === 0 ? (
         <p className={classes.empty}>{t('empty')}</p>
       ) : (
-        <div
+        <ScrollList
           className={classes.list}
-          role="list"
-          aria-label={label}
+          contentClassName={classes.listContent}
           data-long={long || undefined}
-          tabIndex={long ? 0 : undefined}
-          onKeyDown={long ? handleListKeyDown : undefined}
+          viewportProps={{
+            role: 'list',
+            'aria-label': label,
+            tabIndex: long ? 0 : undefined,
+            onKeyDown: long ? handleListKeyDown : undefined,
+          }}
         >
           {entries.map((entry, index) => (
             <HistoryRow key={`${entry.at}-${index}`} role="listitem" entry={entry} maxHp={maxHp} />
           ))}
-        </div>
+        </ScrollList>
       )}
-      {long ? <span className={classes.fade} data-fade="" aria-hidden="true" /> : null}
     </div>
   );
 }

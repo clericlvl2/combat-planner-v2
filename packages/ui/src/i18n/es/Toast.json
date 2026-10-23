@@ -22,5 +22,11 @@
   "heroTaken": "Alguien acaba de elegir a {{hero}}",
   "presetAdded": "Se añadió {{name}} a la Biblioteca",
   "unitRemoved": "Se quitó a {{name}}",
-  "undo": "Deshacer"
+  "undo": "Deshacer",
+  "playerClaimed": "{{name}} eligió a {{hero}}",
+  "playerReleased": "{{name}} liberó a {{hero}}",
+  "playerLeft": "{{name}} salió del combate",
+  "playerJoined": "Un jugador nuevo abrió el enlace",
+  "invalidFile": "Este archivo no sirve",
+  "imported": "Se importó {{title}}"
 }

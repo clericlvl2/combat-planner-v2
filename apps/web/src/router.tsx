@@ -1,9 +1,17 @@
 import type { ApiClient, Session } from '@combat-planner/api/client';
-import { About, Account, CombatList, Library, Settings, SignIn, SignUp } from '@combat-planner/ui';
+import {
+  Account,
+  CombatList,
+  Landing,
+  Library,
+  Settings,
+  SignIn,
+  SignUp,
+} from '@combat-planner/ui';
 import type { QueryClient } from '@tanstack/react-query';
 import { createBrowserRouter, redirect } from 'react-router';
 import type { DataRouter, LoaderFunctionArgs, RouteObject } from 'react-router';
-import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
+import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import type { CombatRouteData, PlayerRouteData } from './pages.tsx';
 import { showsDmPage } from './routeLocale.ts';
 import type { LanguageSwitch, LocaleRouterState } from './routeLocale.ts';
@@ -80,6 +88,16 @@ export function createRoutes(
     return null;
   };
 
+  const optionalSession = async ({ request }: LoaderFunctionArgs) => {
+    leaveDm();
+    const session = await cachedSession();
+    if (request.signal.aborted || !session) return null;
+    const i18n = await language;
+    if (request.signal.aborted) return null;
+    if (i18n.language !== session.language) await i18n.changeLanguage(session.language);
+    return null;
+  };
+
   const requireGuest = async () => {
     leaveDm();
     if (await freshSession()) throw redirect(HOME_PATH);
@@ -109,7 +127,12 @@ export function createRoutes(
       path: '/',
       errorElement: <RouteError onShow={leaveDm} />,
       children: [
-        { id: 'home', index: true, loader: () => redirect(HOME_PATH) },
+        {
+          id: 'home',
+          index: true,
+          loader: requireGuest,
+          element: <Landing sourceUrl={about.sourceUrl} />,
+        },
         {
           id: 'dm',
           loader: requireSession,
@@ -120,9 +143,9 @@ export function createRoutes(
             { id: 'library', path: 'library', element: <Library /> },
             { id: 'settings', path: 'settings', element: <Settings /> },
             { id: 'account', path: 'account', element: <Account /> },
-            { id: 'about', path: 'about', element: <About {...about} /> },
           ],
         },
+        { id: 'about', path: 'about', loader: optionalSession, element: <AboutPage {...about} /> },
         { id: 'play', path: 'combats/:id/play', loader: playerData, element: <PlayerPage /> },
         {
           id: 'auth',

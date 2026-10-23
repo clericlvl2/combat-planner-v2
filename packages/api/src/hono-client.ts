@@ -2,6 +2,7 @@ import type { CombatId, PlayerCombat, PresetId, TagId } from '@combat-planner/do
 import {
   combatSchema,
   combatTitleSchema,
+  displayNameSchema,
   playerCombatSchema,
   presetSchema,
   tagSchema,
@@ -38,6 +39,7 @@ import type {
   Locale,
   PlayerCredentials,
   PlayerKeyStore,
+  PresenceListener,
   Session,
   SignInInput,
   SignInMethod,
@@ -80,6 +82,9 @@ export function memoryPlayerKeys(): PlayerKeyStore {
     get: (combatId) => stored.get(combatId) ?? null,
     set: (combatId, credentials) => {
       stored.set(combatId, credentials);
+    },
+    delete: (combatId) => {
+      stored.delete(combatId);
     },
   };
 }
@@ -179,6 +184,8 @@ const EMPTY_JSON_BODY = {
   init: { body: JSON.stringify({}) },
 };
 
+const GONE_STATUSES: ReadonlySet<number> = new Set([401, 404]);
+
 const ULID_PREFIX = /^[0-7][0-9A-HJKMNP-TV-Z]{25}/;
 
 const combatIdOf = (token: LinkToken): CombatId => {
@@ -198,6 +205,9 @@ const streamEventSchema = <Document>(document: z.ZodType<Document>) =>
     z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
     z.object({ type: z.literal('linkRevoked') }),
     z.object({ type: z.literal('dropped') }),
+    z.object({ type: z.literal('left') }),
+    z.object({ type: z.literal('playerJoined') }),
+    z.object({ type: z.literal('playerLeft'), name: displayNameSchema }),
   ]);
 
 type StreamStatus = 'connecting' | 'open' | 'error' | 'reconnecting';
@@ -279,6 +289,7 @@ export function createHonoApiClient({
     refetch: (signal?: AbortSignal) => Promise<Delivery<Document>>,
     onDocument: (document: Document, language?: Locale) => void,
     onEnd: EndListener,
+    onPresence?: PresenceListener,
   ): Unsubscribe {
     const EventSourceImpl = eventSource;
     if (!EventSourceImpl) return () => {};
@@ -444,6 +455,10 @@ export function createHonoApiClient({
           deliver(language === undefined ? { document } : { document, language });
           return;
         }
+        if (parsed.data.type === 'playerJoined' || parsed.data.type === 'playerLeft') {
+          onPresence?.(parsed.data);
+          return;
+        }
         end(parsed.data);
       };
       next.addEventListener('open', () => {
@@ -468,7 +483,16 @@ export function createHonoApiClient({
         }, RECONNECTING_AFTER_MS);
         probe();
       });
-      for (const type of ['message', 'document', 'deleted', 'linkRevoked', 'dropped']) {
+      for (const type of [
+        'message',
+        'document',
+        'deleted',
+        'linkRevoked',
+        'dropped',
+        'left',
+        'playerJoined',
+        'playerLeft',
+      ]) {
         next.addEventListener(type, handleEvent);
       }
       return next;
@@ -483,8 +507,15 @@ export function createHonoApiClient({
     json(() => client.combats[':id'].$get({ param: { id } }, { init: { signal } }), dmCombatSchema);
 
   const joins = new Map<CombatId, Promise<PlayerCredentials>>();
+  const departed = new Set<CombatId>();
+  const playerStreams = new Map<CombatId, Set<Unsubscribe>>();
 
   const join = (combatId: CombatId, token: LinkToken): Promise<PlayerCredentials> => {
+    if (departed.has(combatId)) {
+      return Promise.reject(
+        new ApiError({ status: 401, code: 'unauthorized', message: 'This player left the combat' }),
+      );
+    }
     const pending = joins.get(combatId);
     if (pending) return pending;
     const joining = json(
@@ -556,6 +587,7 @@ export function createHonoApiClient({
         () => client.combats[':id'].duplicate.$post({ param: { id }, json: { id: newId } }),
         combatSchema,
       ),
+    importCombat: (file) => json(() => client.combats.import.$post({ json: file }), combatSchema),
     open: (id) => json(() => client.combats[':id'].open.$post({ param: { id } }), dmCombatSchema),
     get: (id) => getCombat(id),
     dispatch: (id, action) =>
@@ -563,18 +595,69 @@ export function createHonoApiClient({
         () => client.combats[':id'].actions.$post({ param: { id }, json: action }),
         versionResultSchema,
       ),
-    subscribe: (id, onDocument, onEnd) =>
+    subscribe: (id, onDocument, onEnd, onPresence) =>
       openStream(
         () => `${baseUrl}/combats/${id}/events`,
         dmCombatSchema,
         async (signal) => ({ document: await getCombat(id, signal) }),
         onDocument,
         onEnd,
+        onPresence,
       ),
   };
 
+  const trackPlayerStream = (combatId: CombatId, close: Unsubscribe): Unsubscribe => {
+    const open = playerStreams.get(combatId) ?? new Set<Unsubscribe>();
+    open.add(close);
+    playerStreams.set(combatId, open);
+    return () => {
+      open.delete(close);
+      if (open.size === 0 && playerStreams.get(combatId) === open) playerStreams.delete(combatId);
+      close();
+    };
+  };
+
+  const closePlayerStreams = (combatId: CombatId) => {
+    const open = playerStreams.get(combatId);
+    playerStreams.delete(combatId);
+    for (const close of open ?? []) close();
+  };
+
+  const subscribePlayer = (
+    combatId: CombatId,
+    token: LinkToken,
+    onDocument: (document: PlayerCombat, language?: Locale) => void,
+    onEnd: EndListener,
+  ): Unsubscribe => {
+    const open = () =>
+      openStream(
+        () => playEventsUrl(token),
+        playerCombatSchema,
+        async (signal) => {
+          const view = await getPlay(token, signal);
+          return { document: view.combat, language: view.language };
+        },
+        onDocument,
+        onEnd,
+      );
+    if (playerKeys.get(combatId)) return open();
+    let cancelled = false;
+    let close: Unsubscribe | undefined;
+    const openUnlessCancelled = () => {
+      if (!cancelled) close = open();
+    };
+    join(combatId, token).then(openUnlessCancelled, openUnlessCancelled);
+    return () => {
+      cancelled = true;
+      close?.();
+    };
+  };
+
   const play: ApiClient['play'] = {
-    get: (token) => getPlay(token),
+    get: async (token) => {
+      departed.delete(combatIdOf(token));
+      return getPlay(token);
+    },
     dispatch: (token, action) =>
       asPlayer(token, (credentials) =>
         json(
@@ -588,39 +671,40 @@ export function createHonoApiClient({
       ),
     subscribe: (token, onDocument, onEnd) => {
       const combatId = combatIdOf(token);
-      const open = () =>
-        openStream(
-          () => playEventsUrl(token),
-          playerCombatSchema,
-          async (signal) => {
-            const view = await getPlay(token, signal);
-            return { document: view.combat, language: view.language };
-          },
-          onDocument,
-          onEnd,
-        );
-      if (playerKeys.get(combatId)) return open();
-      let cancelled = false;
-      let close: Unsubscribe | undefined;
-      const openUnlessCancelled = () => {
-        if (!cancelled) close = open();
-      };
-      join(combatId, token).then(openUnlessCancelled, openUnlessCancelled);
-      return () => {
-        cancelled = true;
-        close?.();
-      };
+      departed.delete(combatId);
+      return trackPlayerStream(combatId, subscribePlayer(combatId, token, onDocument, onEnd));
+    },
+    leave: async (combatId) => {
+      departed.add(combatId);
+      const credentials = playerKeys.get(combatId);
+      if (credentials) {
+        try {
+          await none(() =>
+            client.play[':id'].leave.$post({ param: { id: combatId } }, playerHeaders(credentials)),
+          );
+        } catch (error) {
+          if (!(error instanceof ApiError) || !GONE_STATUSES.has(error.status)) {
+            departed.delete(combatId);
+            throw error;
+          }
+        }
+      }
+      closePlayerStreams(combatId);
+      playerKeys.delete(combatId);
     },
   };
 
   return {
     connection: connection.api,
     auth: {
-      signUp: async ({ email, password, displayName }: SignUpInput) =>
+      signUp: async ({ email, password, displayName, language }: SignUpInput) =>
         sessionOf(
           await json(
             () =>
-              client.auth['sign-up'].email.$post({ json: { email, password, name: displayName } }),
+              client.auth['sign-up'].email.$post(
+                { json: { email, password, name: displayName } },
+                language === undefined ? undefined : { headers: { 'accept-language': language } },
+              ),
             authResponseSchema,
           ),
           'email',
@@ -656,6 +740,7 @@ export function createHonoApiClient({
           () => client.combats[':id'].link.reissue.$post({ param: { id } }),
           linkReissueResultSchema,
         ),
+      stopSharing: (id) => none(() => client.combats[':id'].link.stop.$post({ param: { id } })),
     },
     play,
     presets: {

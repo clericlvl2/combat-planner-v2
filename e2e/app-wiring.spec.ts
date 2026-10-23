@@ -42,7 +42,7 @@ test('a swipe from the left edge opens the drawer, but not over an open sheet', 
   await expect(drawer).toBeVisible();
 });
 
-test('sign-in returns to the browser language after a DM signs out in another', async ({
+test('the landing returns to the browser language after a DM signs out in another', async ({
   page,
 }) => {
   await signUp(page);
@@ -63,8 +63,8 @@ test('sign-in returns to the browser language after a DM signs out in another', 
   await expect(page.getByRole('heading', { level: 1, name: t('Account:title', DE) })).toBeVisible();
   await page.getByRole('button', { name: t('Account:signOut', DE), exact: true }).click();
 
-  await expect(page).toHaveURL(/\/auth\/sign-in$/);
-  await expect(page.getByRole('heading', { level: 1, name: t('SignIn:title') })).toBeVisible();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { level: 1, name: t('Landing:title') })).toBeVisible();
 });
 
 test('a combat card opens the combat, and the drawer moves between Library and Combats', async ({
@@ -96,13 +96,13 @@ test('Not found and Combat not found lead back to the combat list', async ({ pag
 
   await page.goto('/nowhere');
   await expect(page.getByRole('heading', { level: 1, name: t('NotFound:title') })).toBeVisible();
-  await page.getByRole('button', { name: t('NotFound:goToCombats') }).click();
+  await page.getByRole('button', { name: t('MessageScreen:home') }).click();
   await expect(page).toHaveURL(/\/combats$/);
 
   await page.goto('/combats/01JCOMBATNOTFOUND000000000');
   await expect(
     page.getByRole('heading', { level: 1, name: t('CombatNotFound:title') }),
   ).toBeVisible();
-  await page.getByRole('button', { name: t('CombatNotFound:goToCombats') }).click();
+  await page.getByRole('button', { name: t('MessageScreen:home') }).click();
   await expect(page).toHaveURL(/\/combats$/);
 });

@@ -5,6 +5,14 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "types": ["vite-plus/client"]
   },
-  "include": ["src", "src/**/*.json", "test", ".storybook/main.ts", ".storybook/preview.tsx"],
+  "include": [
+    "src",
+    "src/**/*.json",
+    "test",
+    ".storybook/main.ts",
+    ".storybook/manager.ts",
+    ".storybook/preview.tsx",
+    ".storybook/vitest.setup.ts"
+  ],
   "references": [{ "path": "../domain" }, { "path": "../api" }]
 }

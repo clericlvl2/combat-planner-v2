@@ -9,9 +9,8 @@ import '@fontsource/noto-sans-jp/400.css';
 import '@fontsource/noto-sans-jp/500.css';
 import '@fontsource/noto-sans-jp/700.css';
 import './root.css';
-import { browserLocale } from '@combat-planner/api/client';
 import { createHonoApiClient } from '@combat-planner/api/hono-client';
-import { DesktopAside, createQueryClient } from '@combat-planner/ui';
+import { DesktopAside, createQueryClient, guestLocale } from '@combat-planner/ui';
 import { StrictMode } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -26,7 +25,8 @@ const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Element #root is missing');
 const asideElement = document.getElementById('aside');
 
-const locale = browserLocale(navigator.languages);
+const currentGuestLocale = () => guestLocale(browserStorage, navigator.languages);
+const locale = currentGuestLocale();
 const api = createHonoApiClient({ baseUrl: '/api', playerKeys: playerKeysOf(browserStorage) });
 const queryClient = createQueryClient();
 const { language, bind } = languageBridge();
@@ -39,9 +39,14 @@ const router = createAppRouter({
 
 createRoot(rootElement).render(
   <StrictMode>
-    <AppProviders api={api} queryClient={queryClient} locale={locale}>
+    <AppProviders
+      api={api}
+      queryClient={queryClient}
+      locale={locale}
+      localeStorage={browserStorage}
+    >
       <BindLanguage bind={bind} />
-      <RouteLocale router={router} locale={locale} />
+      <RouteLocale router={router} locale={currentGuestLocale} />
       <RouterProvider router={router} />
       {asideElement && createPortal(<DesktopAside />, asideElement)}
     </AppProviders>

@@ -1,0 +1,12 @@
+{
+  "name": "Combat Planner",
+  "title": "Ein Kampf-Tracker für 13th Age",
+  "tagline": "Die Spielleitung führt den Kampf vom Handy aus, die Spieler verfolgen ihn über einen Link.",
+  "signUp": "Konto erstellen",
+  "signIn": "Anmelden",
+  "players": "Spieler brauchen kein Konto: Die Spielleitung teilt einen Link zum Kampf.",
+  "about": "Info",
+  "source": "Quellcode",
+  "dm": "Spielleitung",
+  "player": "Spieler"
+}

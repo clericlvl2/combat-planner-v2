@@ -16,7 +16,7 @@ const playerUnit = (
   playerId: PlayerId,
   players: Combat['players'],
 ): PlayerUnit => {
-  const status = healthStatus(unit.hp, unit.maxHp);
+  const status = healthStatus(unit.hp, unit.maxHp, unit.role);
   const everyColumn: PlayerUnit = {
     id: unit.id,
     name: unit.name,

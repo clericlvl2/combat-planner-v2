@@ -25,14 +25,14 @@
     cursor: pointer;
   }
 
-  &[data-status='wounded'] {
-    --hp-box-status: var(--cp-health-wounded);
-    --hp-box-tint: var(--cp-health-tint-wounded);
-  }
-
   &[data-status='staggered'] {
     --hp-box-status: var(--cp-health-staggered);
     --hp-box-tint: var(--cp-health-tint-staggered);
+  }
+
+  &[data-status='unconscious'] {
+    --hp-box-status: var(--cp-health-unconscious);
+    --hp-box-tint: var(--cp-health-tint-unconscious);
   }
 
   &[data-status='dead'] {
@@ -96,6 +96,7 @@
 
 .pips {
   display: flex;
+  align-items: center;
   gap: 3px;
 }
 
@@ -112,17 +113,32 @@
 
 .badge {
   position: absolute;
-  top: -8px;
-  right: 6px;
   box-sizing: border-box;
   height: 18px;
-  padding: 0 6px;
   border: 2px solid var(--cp-color-surface);
   border-radius: var(--mantine-radius-full);
-  background: var(--cp-hp-set-temp);
   color: var(--cp-color-surface);
+}
+
+.temp {
+  top: -8px;
+  right: 6px;
+  padding: 0 6px;
+  background: var(--cp-hp-set-temp);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 14px;
   white-space: nowrap;
+}
+
+.sleep {
+  bottom: -8px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  padding: 0;
+  background: var(--cp-health-unconscious);
+  transform: translateX(-50%);
 }

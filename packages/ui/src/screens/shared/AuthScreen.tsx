@@ -1,7 +1,15 @@
-import { IconSwords } from '@tabler/icons-react';
+import { IconLanguage } from '@tabler/icons-react';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router';
+import { Button } from '../../atoms/Button/Button.tsx';
+import { Logo } from '../../atoms/Logo/Logo.tsx';
+import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
 import classes from './AuthScreen.module.css';
+import { LanguageSheet } from './LanguageSheet.tsx';
 import { ScreenToast } from './ScreenToast.tsx';
 
 export interface AuthScreenProps {
@@ -21,13 +29,18 @@ export function AuthScreen({
   switchTo,
   children,
 }: AuthScreenProps) {
+  const { t } = useTranslation('LanguageSheet');
+  const { locale } = useLocaleChoice();
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const languageName = localeNames[locale];
+
   return (
     <div className={classes.root}>
-      <div className={classes.body}>
+      <ScrollList className={classes.body} contentClassName={classes.bodyContent}>
         <div className={classes.heading}>
           <div className={classes.brand}>
             <span className={classes.logo} aria-hidden="true">
-              <IconSwords size={24} stroke={2} />
+              <Logo size={24} />
             </span>
             <h1 className={classes.title}>{title}</h1>
           </div>
@@ -40,7 +53,19 @@ export function AuthScreen({
             {switchLabel}
           </Link>
         </p>
-      </div>
+        <Button
+          className={classes.language}
+          variant="ghost"
+          size="S"
+          icon={IconLanguage}
+          aria-label={t('current', { name: languageName })}
+          aria-haspopup="dialog"
+          onClick={() => setLanguageOpen(true)}
+        >
+          {languageName}
+        </Button>
+      </ScrollList>
+      <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
       <ScreenToast />
     </div>
   );

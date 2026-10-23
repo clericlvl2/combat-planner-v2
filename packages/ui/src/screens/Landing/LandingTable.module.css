@@ -1,0 +1,164 @@
+.scene {
+  position: relative;
+  flex: none;
+  margin: 8px 8px 16px;
+  overflow-x: clip;
+  perspective: 1200px;
+  perspective-origin: 50% 35%;
+  pointer-events: none;
+  user-select: none;
+}
+
+.plane {
+  position: absolute;
+  inset: 0 14px;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(22deg + var(--landing-sy, 0) * 0.012deg + var(--landing-my, 0) * -4deg))
+    rotateY(calc(var(--landing-mx, 0) * 5deg));
+  will-change: transform;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid #4a4038;
+    border-radius: 32px;
+    background-color: #2a2420;
+    background-image: radial-gradient(circle at 1px 1px, rgb(255 231 163 / 14%) 1px, transparent 0);
+    background-size: 20px 20px;
+  }
+}
+
+.phone {
+  position: absolute;
+  top: calc(50% - 416px);
+  left: calc(50% - 192px);
+  width: 384px;
+  height: 832px;
+  transform-origin: 50% 50%;
+  transform: translate3d(
+      calc(var(--landing-x) + var(--landing-mx, 0) * var(--landing-dx) * 1px),
+      calc(
+        var(--landing-y) + var(--landing-sy, 0) * var(--landing-ds) * 1px + var(--landing-my, 0) *
+          var(--landing-dx) * 0.6px
+      ),
+      var(--landing-z)
+    )
+    rotate(var(--landing-r)) scale(var(--landing-k));
+  will-change: transform;
+}
+
+.tag {
+  position: absolute;
+  top: calc(-34px / var(--landing-k));
+  left: 50%;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: calc(6px / var(--landing-k));
+  padding: calc(4px / var(--landing-k)) calc(10px / var(--landing-k));
+  border-radius: var(--mantine-radius-full);
+  background: var(--cp-color-accent);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  font-size: calc(12px / var(--landing-k));
+  font-weight: 700;
+  line-height: 1.45;
+  white-space: nowrap;
+  transform: translateX(-50%);
+
+  & svg {
+    width: calc(14px / var(--landing-k));
+    height: calc(14px / var(--landing-k));
+  }
+
+  &[data-player] {
+    background: var(--cp-role-hero);
+    color: var(--cp-color-surface);
+  }
+}
+
+.ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  box-sizing: border-box;
+  width: var(--landing-d);
+  height: var(--landing-d);
+  margin: calc(var(--landing-d) / -2) 0 0 calc(var(--landing-d) / -2);
+  border: 3px solid var(--cp-color-accent);
+  border-radius: 50%;
+  opacity: 0;
+  translate: var(--landing-x) var(--landing-y);
+  animation: ring 900ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.line {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  height: 0;
+  transform-origin: 0 0;
+  translate: var(--landing-x) var(--landing-y);
+  rotate: var(--landing-a);
+}
+
+.dash {
+  display: block;
+  border-top: 4px dashed var(--cp-color-accent);
+  opacity: 0;
+  transform-origin: 0 0;
+  transform: translateZ(1px) scaleX(0);
+  animation: run var(--landing-t) linear forwards;
+}
+
+@keyframes ring {
+  from {
+    opacity: 0.9;
+    scale: 0.2;
+  }
+
+  to {
+    opacity: 0;
+    scale: 1.5;
+  }
+}
+
+@keyframes run {
+  from {
+    opacity: 1;
+    transform: translateZ(1px) scaleX(0);
+  }
+
+  85% {
+    opacity: 1;
+    transform: translateZ(1px) scaleX(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateZ(1px) scaleX(1);
+  }
+}
+
+@container screen (width >= 1180px) {
+  .scene {
+    margin: 24px 40px 28px 0;
+    perspective: 1400px;
+  }
+
+  .plane {
+    inset: 12px 28px;
+    transform: rotateX(calc(24deg + var(--landing-sy, 0) * 0.012deg + var(--landing-my, 0) * -4deg))
+      rotateY(calc(var(--landing-mx, 0) * 5deg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene *,
+  .scene *::before,
+  .scene *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

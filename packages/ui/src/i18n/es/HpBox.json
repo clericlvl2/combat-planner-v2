@@ -2,6 +2,7 @@
   "full": "Ileso",
   "wounded": "Herido",
   "staggered": "Tambaleante",
+  "unconscious": "Inconsciente",
   "dead": "Muerto",
   "temp": "+{{amount}} temp.",
   "hp": "PG"

@@ -15,6 +15,9 @@
   "revokeTitle": "¿Revocar el enlace?",
   "revokeBody": "El enlace actual deja de funcionar y se liberan todas las reclamaciones. Los jugadores necesitan el nuevo enlace.",
   "revoke": "Revocar",
+  "stopTitle": "¿Dejar de compartir?",
+  "stopBody": "Los jugadores pierden el acceso al combate y sus héroes quedan libres.",
+  "stop": "Detener",
   "deleteCombatTitle": "¿Eliminar {{name}}?",
   "deleteCombatBody_one": "Se eliminan el combate, su unidad y el enlace de jugadores. No se puede deshacer.",
   "deleteCombatBody_few": "Se eliminan el combate, sus {{count}} unidades y el enlace de jugadores. No se puede deshacer.",
@@ -24,5 +27,8 @@
   "deletePresetTitle": "¿Eliminar {{name}}?",
   "deletePresetBody": "La plantilla sale de la Biblioteca. Las unidades ya añadidas a combates se mantienen.",
   "deleteAccountTitle": "¿Eliminar tu cuenta?",
-  "deleteAccountBody": "Se eliminan todos los combates, plantillas y enlaces de jugadores. No se puede deshacer."
+  "deleteAccountBody": "Se eliminan todos los combates, plantillas y enlaces de jugadores. No se puede deshacer.",
+  "leaveTitle": "¿Salir del combate?",
+  "leaveBody": "Tus héroes quedan libres. Abre el enlace de nuevo para entrar como jugador nuevo.",
+  "leave": "Salir"
 }

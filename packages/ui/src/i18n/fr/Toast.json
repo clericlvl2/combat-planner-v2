@@ -22,5 +22,11 @@
   "heroTaken": "{{hero}} vient d’être pris",
   "presetAdded": "{{name}} ajouté à la Bibliothèque",
   "unitRemoved": "{{name}} retiré",
-  "undo": "Annuler"
+  "undo": "Annuler",
+  "playerClaimed": "{{name}} a pris {{hero}}",
+  "playerReleased": "{{name}} a libéré {{hero}}",
+  "playerLeft": "{{name}} a quitté le combat",
+  "playerJoined": "Un nouveau joueur a ouvert le lien",
+  "invalidFile": "Ce fichier ne convient pas",
+  "imported": "{{title}} importé"
 }

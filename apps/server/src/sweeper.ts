@@ -1,6 +1,6 @@
 import {
   announceReissue,
-  broadcastDocument,
+  announceRemoval,
   closeEndedDmStreams,
   findCombatRow,
   lastActionAt,
@@ -67,9 +67,9 @@ const dropWatchingPlayers = (db: AppDatabase, now: string, timeouts: SharingTime
   for (const { combatId, playerId, state } of listWatchingPlayers(db)) {
     if (sweepWatching(state, now, timeouts).phase !== 'dropped') continue;
     attempt(`player ${playerId} of combat ${combatId}`, () => {
-      const document = db.transaction((tx) => removePlayer(tx, combatId, playerId));
+      const removed = db.transaction((tx) => removePlayer(tx, combatId, playerId));
       sendToPlayer(combatId, playerId, { type: 'dropped' });
-      if (document) broadcastDocument(combatId, document);
+      announceRemoval(combatId, removed);
     });
   }
 };

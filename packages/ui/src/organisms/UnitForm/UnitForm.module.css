@@ -97,14 +97,16 @@
 
 .list {
   box-sizing: border-box;
-  display: grid;
   flex: 1;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-content: start;
   min-height: 0;
-  overflow-y: auto;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-field);
+}
+
+.listContent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-content: start;
 }
 
 .preset {
@@ -209,17 +211,6 @@ button.submit {
     text-align: center;
     white-space: normal;
   }
-}
-
-.fade {
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-  left: 2px;
-  height: 48px;
-  border-radius: 0 0 10px 10px;
-  background: linear-gradient(transparent, var(--cp-color-surface));
-  pointer-events: none;
 }
 
 .empty {

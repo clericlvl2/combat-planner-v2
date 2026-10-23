@@ -4,9 +4,10 @@ import { MessageScreen } from '../../organisms/MessageScreen/MessageScreen.tsx';
 
 export interface CombatDeletedProps {
   combatTitle: string | null;
+  onHome: () => void;
 }
 
-export function CombatDeleted({ combatTitle }: CombatDeletedProps) {
+export function CombatDeleted({ combatTitle, onHome }: CombatDeletedProps) {
   const { t } = useTranslation(['CombatDeleted', 'MessageScreen']);
   return (
     <MessageScreen
@@ -17,6 +18,7 @@ export function CombatDeleted({ combatTitle }: CombatDeletedProps) {
           : t('combatDeletedTitle', { ns: 'MessageScreen' })
       }
       body={t('combatDeletedBody', { ns: 'MessageScreen' })}
+      onHome={onHome}
     />
   );
 }

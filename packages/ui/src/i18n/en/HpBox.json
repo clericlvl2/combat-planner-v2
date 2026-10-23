@@ -2,6 +2,7 @@
   "full": "Full",
   "wounded": "Wounded",
   "staggered": "Staggered",
+  "unconscious": "Unconscious",
   "dead": "Dead",
   "temp": "+{{amount}} temp",
   "hp": "HP"

@@ -1,7 +1,13 @@
-import type { ApiEndEvent, DmCombat, LinkToken, Locale } from '@combat-planner/api/client';
+import type {
+  ApiEndEvent,
+  DmCombat,
+  LinkToken,
+  Locale,
+  PresenceListener,
+} from '@combat-planner/api/client';
 import type { CombatId, PlayerCombat } from '@combat-planner/domain';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useApi } from '../api/ApiProvider.tsx';
 import {
   combatKey,
@@ -36,7 +42,15 @@ export interface CombatState<Document extends CombatDocument> {
   refetch: () => Promise<void>;
 }
 
-export function useCombat(id: CombatId, viewer: DmViewer): CombatState<DmCombat>;
+export interface DmCombatOptions {
+  onPresence?: PresenceListener;
+}
+
+export function useCombat(
+  id: CombatId,
+  viewer: DmViewer,
+  options?: DmCombatOptions,
+): CombatState<DmCombat>;
 export function useCombat(
   id: CombatId,
   viewer: PlayerViewer,
@@ -45,8 +59,11 @@ export function useCombat(
 export function useCombat(
   id: CombatId,
   viewer: DmViewer | PlayerViewer,
-  token?: LinkToken,
+  extra?: LinkToken | DmCombatOptions,
 ): CombatState<CombatDocument> {
+  const token = typeof extra === 'string' ? extra : undefined;
+  const onPresence = useRef<PresenceListener | undefined>(undefined);
+  onPresence.current = typeof extra === 'object' ? extra.onPresence : undefined;
   const api = useApi();
   const queryClient = useQueryClient();
   const { show, t } = useToasts();
@@ -67,7 +84,14 @@ export function useCombat(
   const [attempt, setAttempt] = useState(0);
 
   useEffect(
-    () => subscribeEntry(queryClient, key, source, (event) => setEnded({ source, event })),
+    () =>
+      subscribeEntry(
+        queryClient,
+        key,
+        source,
+        (event) => setEnded({ source, event }),
+        (event) => onPresence.current?.(event),
+      ),
     [queryClient, key, source, attempt],
   );
 

@@ -25,6 +25,14 @@
   }
 }
 
+@container screen (height < 700px) {
+  .qr {
+    width: 144px;
+    height: 144px;
+    padding: 12px;
+  }
+}
+
 .link {
   box-sizing: border-box;
   display: flex;
@@ -110,7 +118,13 @@
   text-wrap: pretty;
 }
 
-.reissue[data-variant][data-size] {
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.destructive[data-variant][data-size] {
   color: var(--cp-role-enemy);
   font-size: var(--mantine-font-size-body);
 }

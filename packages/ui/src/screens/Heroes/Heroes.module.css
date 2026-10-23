@@ -9,14 +9,21 @@
 }
 
 .body {
-  box-sizing: border-box;
-  display: flex;
   flex: 1;
+  min-height: 0;
+}
+
+.bodyContent {
+  display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 0;
   padding: 16px;
-  overflow-y: auto;
+}
+
+.heading {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .title {
@@ -25,6 +32,10 @@
   font-size: var(--mantine-font-size-heading);
   font-weight: 700;
   line-height: 1.25;
+}
+
+.language {
+  align-self: flex-end;
 }
 
 .section {

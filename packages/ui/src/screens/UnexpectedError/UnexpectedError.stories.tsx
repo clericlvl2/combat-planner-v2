@@ -4,10 +4,10 @@ import { UnexpectedError } from './UnexpectedError.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 const meta = preview.meta({
-  title: 'Screens/UnexpectedError',
+  title: 'Screens/Errors/UnexpectedError',
   component: UnexpectedError,
   parameters: { phoneFrame: true },
-  args: { onReload: fn() },
+  args: { onReload: fn(), onHome: fn() },
 });
 
 export const Default = meta.story({
@@ -19,7 +19,12 @@ export const Default = meta.story({
       'data-variant',
       'primary',
     );
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:home') })).toHaveAttribute(
+      'data-variant',
+      'secondary',
+    );
     await expect(args.onReload).not.toHaveBeenCalled();
+    await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
 

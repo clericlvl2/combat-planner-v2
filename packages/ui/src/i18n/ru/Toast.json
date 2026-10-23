@@ -22,5 +22,11 @@
   "heroTaken": "Героя {{hero}} только что заняли",
   "presetAdded": "Добавлено в библиотеку: {{name}}",
   "unitRemoved": "Убрано из боя: {{name}}",
-  "undo": "Отменить"
+  "undo": "Отменить",
+  "playerClaimed": "{{name}} занял {{hero}}",
+  "playerReleased": "{{name}} освободил {{hero}}",
+  "playerLeft": "{{name}} покинул бой",
+  "playerJoined": "Новый игрок открыл ссылку",
+  "invalidFile": "Файл не подходит",
+  "imported": "Импортировано: {{title}}"
 }

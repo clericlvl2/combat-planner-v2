@@ -9,6 +9,7 @@ export const PLAYER_ACTION_TYPES = [
   'damage',
   'heal',
   'setTempHp',
+  'setMaxHp',
   'toggleCondition',
   'editNote',
   'claimUnit',
@@ -47,9 +48,6 @@ const authorizePlayer = (combat: Combat, action: Action, playerId: string): true
   if (unit.claimedBy !== playerId) return forbidden('A player acts only on their own heroes');
   if (action.type === 'editUnit' && action.role !== 'hero') {
     return forbidden('A player keeps the type Hero');
-  }
-  if (action.type === 'editUnit' && action.maxHp !== unit.maxHp) {
-    return forbidden('A player does not set max HP');
   }
   return true;
 };

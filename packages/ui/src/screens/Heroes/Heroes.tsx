@@ -1,21 +1,26 @@
 import { LIMITS } from '@combat-planner/domain';
 import type { Action, PlayerCombat, PlayerUnit, UnitId } from '@combat-planner/domain';
-import { IconLock, IconLogin2, IconShield } from '@tabler/icons-react';
+import { IconLanguage, IconLock, IconLogin2, IconShield } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
+import { Button } from '../../atoms/Button/Button.tsx';
 import { Checkbox } from '../../atoms/Checkbox/Checkbox.tsx';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
+import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { layout } from '../../layout.ts';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { PlayerHeader } from '../../organisms/PlayerHeader/PlayerHeader.tsx';
 import { PlayerToast, usePlayerToasts } from '../PlayerView/PlayerToast.tsx';
 import { playerEvents } from '../PlayerView/playerEvents.ts';
 import type { PlayerEvent } from '../PlayerView/playerEvents.ts';
+import { localeNames } from '../Settings/localeNames.ts';
+import { LanguageSheet } from '../shared/LanguageSheet.tsx';
 import classes from './Heroes.module.css';
 
 export interface HeroesProps {
@@ -37,6 +42,10 @@ const validName = (value: string): string | null => {
 
 export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
   const { t } = useTranslation('Heroes');
+  const { t: tLanguage } = useTranslation('LanguageSheet');
+  const { locale } = useLocaleChoice();
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const languageName = localeNames[locale];
   const notify = usePlayerToasts();
   const storedName = combat.myName ?? undefined;
   const joined = storedName !== undefined;
@@ -153,8 +162,21 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
         round={combat.status === 'active' ? combat.round : null}
         escalation={combat.escalation as EscalationValue}
       />
-      <div className={classes.body}>
-        <h2 className={classes.title}>{t('title')}</h2>
+      <ScrollList className={classes.body} contentClassName={classes.bodyContent}>
+        <div className={classes.heading}>
+          <h2 className={classes.title}>{t('title')}</h2>
+          <Button
+            className={classes.language}
+            variant="ghost"
+            size="S"
+            icon={IconLanguage}
+            aria-label={tLanguage('current', { name: languageName })}
+            aria-haspopup="dialog"
+            onClick={() => setLanguageOpen(true)}
+          >
+            {languageName}
+          </Button>
+        </div>
         <TextField
           label={t('nameLabel')}
           placeholder={t('namePlaceholder')}
@@ -214,7 +236,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
             })}
           </div>
         </div>
-      </div>
+      </ScrollList>
       <div className={classes.footer}>
         <BottomBar
           label={joined ? t('done') : t('join')}
@@ -227,6 +249,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
           <PlayerToast aboveBottomBar={false} />
         </div>
       </div>
+      <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
     </div>
   );
 }

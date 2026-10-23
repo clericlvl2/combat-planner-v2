@@ -16,12 +16,7 @@
   bottom: 0;
   left: 0;
   box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
   width: min(300px, var(--cp-layout-viewport-width, 100%) - 56px);
-  padding: 56px 12px 28px;
-  overflow-y: auto;
   border-right: 2px solid var(--cp-color-ink);
   border-radius: 0 var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0;
   background: var(--cp-color-background);
@@ -31,6 +26,13 @@
   &:focus {
     outline: none;
   }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 56px 12px 28px;
 }
 
 .title {
