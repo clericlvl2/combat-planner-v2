@@ -1,4 +1,4 @@
-import { reissueLink, shareLink } from '@combat-planner/domain';
+import { LINK_OFF, reissueLink, shareLink } from '@combat-planner/domain';
 import { Hono } from 'hono';
 import type { UserAppEnv } from '../app.ts';
 import { NOT_FOUND, findOwnCombat, nowIso } from '../combats/store.ts';
@@ -29,4 +29,13 @@ export const linkApp = new Hono<UserAppEnv>()
       c.get('env').linkSecret,
     );
     return c.json({ token, generation: combat.linkGeneration });
+  })
+  .post('/:id/link/stop', (c) => {
+    const combat = c.get('db').transaction((tx) => {
+      const found = findOwnCombat(tx, c.get('userId'), c.req.param('id'));
+      return found && reissueGeneration(tx, found, LINK_OFF, nowIso());
+    });
+    if (!combat) return c.json(NOT_FOUND, 404);
+    announceReissue(combat);
+    return c.body(null, 204);
   });

@@ -656,6 +656,7 @@ export function createHonoApiClient({
           () => client.combats[':id'].link.reissue.$post({ param: { id } }),
           linkReissueResultSchema,
         ),
+      stopSharing: (id) => none(() => client.combats[':id'].link.stop.$post({ param: { id } })),
     },
     play,
     presets: {

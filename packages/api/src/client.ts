@@ -272,6 +272,7 @@ export interface CombatsApi {
 export interface LinkApi {
   get(id: CombatId): Promise<PlayerLink>;
   reissue(id: CombatId): Promise<LinkReissueResult>;
+  stopSharing(id: CombatId): Promise<void>;
 }
 
 export interface PlayApi {

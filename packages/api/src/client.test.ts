@@ -147,6 +147,13 @@ function createMemoryClient() {
         combats.set(id, reissued);
         return { token: `${id}:${reissued.linkGeneration}`, generation: reissued.linkGeneration };
       },
+      stopSharing: async (id) => {
+        combats.set(id, {
+          ...combat(id),
+          linkGeneration: combat(id).linkGeneration + 1,
+          version: combat(id).version + 1,
+        });
+      },
     },
     play: {
       get: async (token) => {

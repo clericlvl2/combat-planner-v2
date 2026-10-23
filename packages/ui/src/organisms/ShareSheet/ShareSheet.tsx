@@ -1,5 +1,5 @@
 import { UnstyledButton } from '@mantine/core';
-import { IconCheck, IconCopy, IconRefresh } from '@tabler/icons-react';
+import { IconCheck, IconCopy, IconEyeOff, IconRefresh } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'react-qr-code';
@@ -14,6 +14,7 @@ export interface ShareSheetProps {
   url: string;
   onCopy: (url: string) => Promise<boolean> | void;
   onReissue: () => void;
+  onStop: () => void;
   onClose: () => void;
 }
 
@@ -23,6 +24,7 @@ export function ShareSheet({
   url,
   onCopy,
   onReissue,
+  onStop,
   onClose,
 }: ShareSheetProps) {
   const { t } = useTranslation('ShareSheet');
@@ -42,15 +44,26 @@ export function ShareSheet({
       subtitle={combatTitle}
       onClose={onClose}
       actions={
-        <Button
-          variant="secondary"
-          icon={IconRefresh}
-          fullWidth
-          className={classes.reissue}
-          onClick={onReissue}
-        >
-          {t('reissue')}
-        </Button>
+        <div className={classes.actions}>
+          <Button
+            variant="secondary"
+            icon={IconRefresh}
+            fullWidth
+            className={classes.destructive}
+            onClick={onReissue}
+          >
+            {t('reissue')}
+          </Button>
+          <Button
+            variant="secondary"
+            icon={IconEyeOff}
+            fullWidth
+            className={classes.destructive}
+            onClick={onStop}
+          >
+            {t('stop')}
+          </Button>
+        </div>
       }
     >
       <div className={classes.body}>

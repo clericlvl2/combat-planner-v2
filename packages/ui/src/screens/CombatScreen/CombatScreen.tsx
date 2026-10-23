@@ -17,6 +17,7 @@ import type {
   UnitId,
 } from '@combat-planner/domain';
 import {
+  IconEyeOff,
   IconLinkOff,
   IconRefresh,
   IconTrash,
@@ -95,7 +96,8 @@ type Confirm =
   | { kind: 'remove'; unitId: UnitId }
   | { kind: 'restart' }
   | { kind: 'clear' }
-  | { kind: 'revoke' };
+  | { kind: 'revoke' }
+  | { kind: 'stop' };
 
 const DM = { kind: 'dm' } as const;
 
@@ -374,6 +376,9 @@ export function CombatScreen({
       if (unit) void removeUnit(unit);
     } else if (current.kind === 'revoke') {
       reissue();
+    } else if (current.kind === 'stop') {
+      setShareOpen(false);
+      link.stop().catch(() => {});
     } else {
       setExpandedId(null);
       void send({ type: current.kind });
@@ -421,6 +426,12 @@ export function CombatScreen({
       title: tDialog('revokeTitle'),
       body: tDialog('revokeBody'),
       confirmLabel: tDialog('revoke'),
+    },
+    stop: {
+      icon: IconEyeOff,
+      title: tDialog('stopTitle'),
+      body: tDialog('stopBody'),
+      confirmLabel: tDialog('stop'),
     },
   };
   const dialog = dialogs[confirm?.kind ?? 'remove'];
@@ -618,6 +629,7 @@ export function CombatScreen({
         url={link.token === undefined ? '' : playUrl(origin, combatId, link.token)}
         onCopy={copyLink}
         onReissue={() => setConfirm({ kind: 'revoke' })}
+        onStop={() => setConfirm({ kind: 'stop' })}
         onClose={() => setShareOpen(false)}
       />
       <Dialog

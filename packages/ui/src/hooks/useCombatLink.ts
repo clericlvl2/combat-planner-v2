@@ -11,6 +11,7 @@ export interface CombatLink {
   token: LinkToken | undefined;
   error: Error | null;
   reissue: () => Promise<unknown>;
+  stop: () => Promise<unknown>;
 }
 
 export const combatLinkKey = (id: CombatId) => [...queryKeys.combat, id, 'link'] as const;
@@ -40,5 +41,19 @@ export function useCombatLink(id: CombatId, enabled: boolean): CombatLink {
       mutation({ queryClient, show, t }, { send: () => api.link.reissue(id), invalidate: [key] }),
     [api, id, key, queryClient, show, t],
   );
-  return { token: query.data?.token, error: settledLinkError(query), reissue };
+  const stop = useMemo(
+    () =>
+      mutation(
+        { queryClient, show, t },
+        {
+          send: async () => {
+            await api.link.stopSharing(id);
+            queryClient.removeQueries({ queryKey: key });
+          },
+          invalidate: [],
+        },
+      ),
+    [api, id, key, queryClient, show, t],
+  );
+  return { token: query.data?.token, error: settledLinkError(query), reissue, stop };
 }

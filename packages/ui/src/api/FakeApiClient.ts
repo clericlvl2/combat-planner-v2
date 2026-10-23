@@ -534,34 +534,43 @@ export class FakeApiClient implements ApiClient {
       }),
     reissue: (id) =>
       this.run('link.reissue', [id], () => {
-        const stored = this.stored(id);
-        const now = nowIso();
-        let combat = stored.combat;
-        for (const unit of stored.combat.units) {
-          if (unit.claimedBy === null) continue;
-          const action: Action = {
-            id: ulid(),
-            version: combat.version,
-            type: 'releaseUnit',
-            unitId: unit.id,
-          };
-          const result = apply(combat, action, DM, now);
-          if (result instanceof DomainError) throw fromDomain(result);
-          stored.log = nextStack(stored.log, { action, author: DM, at: now, patch: result.patch });
-          combat = result.combat;
-        }
-        const next: Combat = {
-          ...combat,
-          linkGeneration: combat.linkGeneration + 1,
-          version: combat.version + 1,
-          updatedAt: now,
-        };
-        stored.combat = next;
-        this.broadcast(stored, 'dm');
-        this.endSubscribers(id, { type: 'linkRevoked' }, 'player');
+        const next = this.revokeGeneration(id);
         return { token: this.currentToken(next), generation: next.linkGeneration };
       }),
+    stopSharing: (id) =>
+      this.run('link.stopSharing', [id], () => {
+        this.revokeGeneration(id);
+      }),
   };
+
+  private revokeGeneration(id: CombatId): Combat {
+    const stored = this.stored(id);
+    const now = nowIso();
+    let combat = stored.combat;
+    for (const unit of stored.combat.units) {
+      if (unit.claimedBy === null) continue;
+      const action: Action = {
+        id: ulid(),
+        version: combat.version,
+        type: 'releaseUnit',
+        unitId: unit.id,
+      };
+      const result = apply(combat, action, DM, now);
+      if (result instanceof DomainError) throw fromDomain(result);
+      stored.log = nextStack(stored.log, { action, author: DM, at: now, patch: result.patch });
+      combat = result.combat;
+    }
+    const next: Combat = {
+      ...combat,
+      linkGeneration: combat.linkGeneration + 1,
+      version: combat.version + 1,
+      updatedAt: now,
+    };
+    stored.combat = next;
+    this.broadcast(stored, 'dm');
+    this.endSubscribers(id, { type: 'linkRevoked' }, 'player');
+    return next;
+  }
 
   playAs(playerId: PlayerId): ApiClient['play'] {
     const viewer = { kind: 'player', playerId } as const;

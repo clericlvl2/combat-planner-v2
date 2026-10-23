@@ -1105,6 +1105,31 @@ export const RevokeReissuesLink = meta.story({
   },
 });
 
+export const StopSharingClosesSheet = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const api = fakeApiOf(loaded);
+    const sheet = await openShare(canvas, t);
+    await userEvent.click(within(sheet).getByRole('button', { name: t('ShareSheet:stop') }));
+    const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:stopTitle') });
+    await expect(within(dialog).getByText(t('Dialog:stopBody'))).toBeVisible();
+    await expect(callsOf(api, 'link.stopSharing')).toHaveLength(0);
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:stop') }));
+    await waitFor(() =>
+      expect(canvas.queryByRole('dialog', { name: t('ShareSheet:title') })).toBeNull(),
+    );
+    await waitFor(() => expect(callsOf(api, 'link.stopSharing')).toHaveLength(1));
+    const reopened = await openShare(canvas, t);
+    await expect(
+      await within(reopened).findByText(
+        `${STORY_ORIGIN}/combats/${COMBAT_ID}/play?t=${COMBAT_ID}.1.fake`,
+      ),
+    ).toBeVisible();
+    await expect(callsOf(api, 'link.get')).toHaveLength(2);
+  },
+});
+
 export const MenuNothingToUndo = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');

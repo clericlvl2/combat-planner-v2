@@ -2,11 +2,16 @@ import type { Action, Combat } from '@combat-planner/domain';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 import type { ApiEvent } from '../src/client.ts';
-import { playerLinkSchema, linkReissueResultSchema } from '../src/client.ts';
+import {
+  linkReissueResultSchema,
+  playerCredentialsSchema,
+  playerLinkSchema,
+} from '../src/client.ts';
 import { dispatch } from '../src/combats/dispatch.ts';
-import { actionLog } from '../src/db/schema.ts';
+import { actionLog, combats, players } from '../src/db/schema.ts';
 import { signLink, verifyLink } from '../src/link/token.ts';
 import { subscribe } from '../src/live/registry.ts';
+import { readLink, writeLink } from '../src/sharing/store.ts';
 import type { TestApp } from './helpers.ts';
 import {
   COMBAT_ID,
@@ -178,5 +183,113 @@ describe('link routes', () => {
     expect(after.linkGeneration).toBe(2);
     expect(after.version).toBe(before.version + 1);
     expect(count()).toBe(entries);
+  });
+});
+
+describe('POST /combats/:id/link/stop', () => {
+  let opened: TestApp;
+  let dm: ReturnType<typeof withUser>;
+
+  const play = (token: string, credentials: { playerId: string; playerKey: string }) =>
+    opened.app.request(`/play/${COMBAT_ID}?t=${encodeURIComponent(token)}`, {
+      headers: { 'X-Player-Id': credentials.playerId, 'X-Player-Key': credentials.playerKey },
+    });
+
+  const listen = (viewer: { kind: 'dm' } | { kind: 'player'; playerId: string }) => {
+    const events: ApiEvent[] = [];
+    const unsubscribe = subscribe(COMBAT_ID, {
+      viewer,
+      send: (event) => {
+        events.push(event);
+      },
+    });
+    return { events, unsubscribe };
+  };
+
+  beforeAll(async () => {
+    opened = createTestApp();
+    dm = withUser(opened.app, DM);
+    expect((await call(dm, 'POST', '/combats', combatInput())).status).toBe(200);
+    const action = addUnitAction(ulidAt(720), 1, HERO_ID, 'Ada', 'hero');
+    expect((await call(dm, 'POST', `/combats/${COMBAT_ID}/actions`, action)).status).toBe(200);
+  });
+
+  afterAll(() => {
+    opened.close();
+  });
+
+  it('answers 404 for a combat of another user and keeps the link shared', async () => {
+    expect((await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).status).toBe(200);
+    const stranger = withUser(opened.app, OTHER_DM);
+    expect((await call(stranger, 'POST', `/combats/${COMBAT_ID}/link/stop`)).status).toBe(404);
+    expect(readLink(opened.db, COMBAT_ID)).toEqual({ phase: 'live' });
+  });
+
+  it('turns the link off, releases claims, drops players and keeps the undo stack', async () => {
+    const link = playerLinkSchema.parse(
+      await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json(),
+    );
+    const joined = await opened.app.request(
+      `/play/${COMBAT_ID}/join?t=${encodeURIComponent(link.token)}`,
+      { method: 'POST' },
+    );
+    const credentials = playerCredentialsSchema.parse(await joined.json());
+    const before = await fetchCombat(dm);
+    expect(
+      dispatch(opened.db, {
+        combatId: COMBAT_ID,
+        viewer: { kind: 'player', playerId: credentials.playerId },
+        action: {
+          id: ulidAt(721),
+          version: before.version,
+          type: 'claimUnit',
+          unitId: HERO_ID,
+          displayName: 'Ada',
+        },
+        now: NOW,
+      }),
+    ).toMatchObject({ ok: true });
+    writeLink(opened.db, COMBAT_ID, { phase: 'orphaned', since: NOW });
+    const claimed = await fetchCombat(dm);
+    expect(claimed.units[0]?.claimedBy).toBe(credentials.playerId);
+    const rows = () =>
+      opened.db.select().from(actionLog).where(eq(actionLog.combatId, COMBAT_ID)).all();
+    const stack = rows();
+    const dmStream = listen({ kind: 'dm' });
+    const playerStream = listen({ kind: 'player', playerId: credentials.playerId });
+
+    const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/link/stop`);
+    dmStream.unsubscribe();
+    playerStream.unsubscribe();
+
+    expect(response.status).toBe(204);
+    const after = await fetchCombat(dm);
+    expect(after.linkGeneration).toBe(claimed.linkGeneration + 1);
+    expect(after.units.every((unit) => unit.claimedBy === null)).toBe(true);
+    expect(after.undo).toEqual(claimed.undo);
+    expect(rows()).toEqual(stack);
+    expect(readLink(opened.db, COMBAT_ID)).toEqual({ phase: 'off' });
+    expect(
+      opened.db
+        .select({ linkShared: combats.linkShared, orphanedAt: combats.orphanedAt })
+        .from(combats)
+        .where(eq(combats.id, COMBAT_ID))
+        .get(),
+    ).toEqual({ linkShared: false, orphanedAt: null });
+    expect(opened.db.select().from(players).where(eq(players.combatId, COMBAT_ID)).all()).toEqual(
+      [],
+    );
+    expect(playerStream.events).toEqual([{ type: 'linkRevoked' }]);
+    expect(dmStream.events).toEqual([
+      { type: 'document', version: after.version, document: after },
+    ]);
+    expect((await play(link.token, credentials)).status).toBe(410);
+
+    const shared = playerLinkSchema.parse(
+      await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json(),
+    );
+    expect(shared.generation).toBe(after.linkGeneration);
+    expect(readLink(opened.db, COMBAT_ID)).toEqual({ phase: 'live' });
+    expect((await play(shared.token, credentials)).status).toBe(401);
   });
 });

@@ -4,5 +4,6 @@
   "copy": "Copier",
   "copied": "Copié",
   "note": "Les joueurs choisissent leurs héros. Ils voient les noms des ennemis, leur état de santé et leurs états, mais pas les PV ni les défenses.",
-  "reissue": "Renouveler le lien"
+  "reissue": "Renouveler le lien",
+  "stop": "Arrêter le partage"
 }

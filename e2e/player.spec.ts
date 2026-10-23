@@ -147,6 +147,35 @@ test('a reissued link expires the old one and releases the claim', async ({ page
   await expect(player.getByRole('checkbox', { name: 'Aria' })).toBeEnabled();
 });
 
+test('a DM who stops sharing expires the link and releases the claim', async ({ page }) => {
+  const link = await prepareCombat(page, 'Watchtower');
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+  const sheet = page.getByRole('dialog', { name: t('ShareSheet:title') });
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toHaveCount(1);
+
+  await sheet.getByRole('button', { name: t('ShareSheet:stop') }).click();
+  const confirm = page.getByRole('alertdialog', { name: t('Dialog:stopTitle') });
+  await expect(confirm.getByText(t('Dialog:stopBody'))).toBeVisible();
+  await confirm.getByRole('button', { name: t('Dialog:stop') }).click();
+  await expect(confirm).toBeHidden();
+  await expect(sheet).toBeHidden();
+
+  await expect(
+    player.getByRole('heading', { name: t('MessageScreen:linkRevokedTitle') }),
+  ).toBeVisible();
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toHaveCount(0);
+  await player.goto(link);
+  await expect(
+    player.getByRole('heading', { name: t('MessageScreen:linkRevokedTitle') }),
+  ).toBeVisible();
+
+  const newLink = await shareLink(page);
+  expect(newLink).not.toBe(link);
+  await player.goto(newLink);
+  await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeVisible();
+  await expect(player.getByRole('checkbox', { name: 'Aria' })).not.toBeChecked();
+});
+
 test('a player sees Combat deleted when the DM deletes the combat', async ({ page }) => {
   const link = await prepareCombat(page, 'Old keep');
   await joinAsPlayer(player, link, 'Pat', 'Aria');
