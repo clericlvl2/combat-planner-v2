@@ -75,6 +75,34 @@ const isVisuallyHidden = (element: Element | null) => {
   return box.width <= 1 && box.height <= 1;
 };
 
+const pipsRowOf = (box: HTMLElement) => {
+  const row = box.querySelector('[data-pip]')?.parentElement;
+  if (!row) throw new Error('pips row not rendered');
+  return row;
+};
+
+const expectUnconsciousBadge = async (box: HTMLElement, reference: HTMLElement) => {
+  const badge = box.querySelector<HTMLElement>('[data-part="unconscious"]');
+  if (!badge) throw new Error('unconscious badge not rendered');
+  const pips = pipsRowOf(box);
+  await expect(pips.contains(badge)).toBe(false);
+  await expect(badge.parentElement).toBe(box);
+  await expect(pips.getBoundingClientRect().width).toBe(
+    pipsRowOf(reference).getBoundingClientRect().width,
+  );
+  await expect(badge).toHaveAttribute('aria-hidden', 'true');
+  await expect(getComputedStyle(badge).backgroundColor).toBe(rgb(health.unconscious));
+  await expect(getComputedStyle(badge).borderTopColor).toBe(rgb(base.surface));
+  const icon = badge.querySelector('svg');
+  await expect(icon && getComputedStyle(icon).color).toBe(rgb(base.surface));
+  const rect = badge.getBoundingClientRect();
+  const boxRect = box.getBoundingClientRect();
+  await expect(rect.width).toBe(18);
+  await expect(rect.height).toBe(18);
+  await expect(rect.bottom - boxRect.bottom).toBe(8);
+  await expect(rect.left + rect.width / 2).toBe(boxRect.left + boxRect.width / 2);
+};
+
 function HpBoxList({ boxes }: { boxes: readonly HpBoxProps[] }) {
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, padding: 12 }}>
@@ -153,9 +181,28 @@ const playerCases: readonly HpBoxProps[] = [
   { viewer: 'player', status: 'dead' },
 ];
 
+const stateCell = (canvasElement: HTMLElement, label: string) => {
+  const cell = canvasElement.querySelector<HTMLElement>(`[data-state-cell="${label}"]`);
+  if (!cell) throw new Error(`cell ${label} not rendered`);
+  return boxOf(cell);
+};
+
 export const AllStates = meta.story({
   tags: ['visual'],
   render: () => <StateGrid rows={gridRows} columns={columns} />,
+  play: async ({ canvasElement }) => {
+    for (const column of columns) {
+      await expectUnconsciousBadge(
+        stateCell(canvasElement, `Unconscious · ${column}`),
+        stateCell(canvasElement, `Full · ${column}`),
+      );
+      for (const row of ['Full', 'Wounded', 'Staggered', 'Dead']) {
+        await expect(
+          stateCell(canvasElement, `${row} · ${column}`).querySelector('[data-part="unconscious"]'),
+        ).toBeNull();
+      }
+    }
+  },
 });
 
 export const WithTempHp = meta.story({
@@ -294,6 +341,7 @@ const unconsciousCases: readonly HpBoxProps[] = [
   { viewer: 'dm', hp: -15, maxHp: 30, role: 'hero' },
   { viewer: 'player', hp: -499, maxHp: 999, role: 'hero', mine: true },
   { viewer: 'player', status: 'unconscious' },
+  { viewer: 'dm', hp: -8, maxHp: 30, role: 'hero', tempHp: 5 },
 ];
 
 export const UnconsciousHero = meta.story({
@@ -314,9 +362,10 @@ export const UnconsciousHero = meta.story({
     await expect(down).toHaveAttribute('data-status', 'unconscious');
     await expect(down).not.toHaveAttribute('data-off');
     await expect(getComputedStyle(down).backgroundColor).toBe(rgb(healthTints.unconscious));
-    const icon = down.querySelector<SVGElement>('[data-part="unconscious"]');
-    await expect(icon && getComputedStyle(icon).color).toBe(rgb(health.unconscious));
-    await expect(icon?.closest('[aria-hidden="true"]')).not.toBeNull();
+    for (const index of [0, 1, 3, 4, 5]) {
+      await expectUnconsciousBadge(caseAt(canvasElement, index), caseAt(canvasElement, 2));
+    }
+    await expect(caseAt(canvasElement, 5).querySelector('[data-part="temp-badge"]')).toBeVisible();
     await expect(caseAt(canvasElement, 2)).toHaveAttribute('data-status', 'dead');
     const own = caseAt(canvasElement, 3);
     await expect(boxFacts(own)).toEqual(boxExpected(t, -499, 999, 'player', 'hero'));

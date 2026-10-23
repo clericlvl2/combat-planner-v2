@@ -84,9 +84,6 @@ export function HpBox({
         </span>
       ) : null}
       <span className={classes.pips} aria-hidden="true">
-        {status === 'unconscious' ? (
-          <IconZzz className={classes.sleep} size={12} stroke={2.5} data-part="unconscious" />
-        ) : null}
         {pipSlots.map((slot) => (
           <span
             key={slot}
@@ -96,10 +93,23 @@ export function HpBox({
           />
         ))}
       </span>
+      {status === 'unconscious' ? (
+        <span
+          className={`${classes.badge} ${classes.sleep}`}
+          data-part="unconscious"
+          aria-hidden="true"
+        >
+          <IconZzz size={11} stroke={2.5} />
+        </span>
+      ) : null}
       {showStatus ? <VisuallyHidden data-part="status">{t(status)}</VisuallyHidden> : null}
       {tempHp > 0 ? (
         <>
-          <span className={classes.badge} data-part="temp-badge" aria-hidden="true">
+          <span
+            className={`${classes.badge} ${classes.temp}`}
+            data-part="temp-badge"
+            aria-hidden="true"
+          >
             +{tempHp}
           </span>
           <VisuallyHidden data-part="temp">{t('temp', { amount: tempHp })}</VisuallyHidden>
