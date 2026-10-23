@@ -112,7 +112,9 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 
    `docker compose version` prints a version. Log in again as `deploy` for the group to apply.
 
-5. **Files.** The checkout is read-only on the server; only `deploy/.env` is added.
+5. **Files.** The checkout is read-only on the server and always on `main`; only `deploy/.env` is
+   added. No other branch is checked out or pulled on the server: `dev` runs only in a separate
+   test environment.
 
    ```sh
    git clone --branch main https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
@@ -189,6 +191,9 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 10. **Restore drill.** Run the [restore drill](#restore-drill) once.
 
 ## Update
+
+Production runs released code only: the image tag of a release and the `deploy/` files from
+`main`, pulled after the release is merged.
 
 As `deploy`, in `/opt/combat-planner/deploy`:
 
