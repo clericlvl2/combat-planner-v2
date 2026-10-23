@@ -30,6 +30,8 @@ database restored without them signs every user out and breaks every player link
 player links are bound to `DOMAIN` as well: changing it signs everyone out and breaks shared
 player links; accounts and combats stay.
 
+The app refuses to start on a wrong setting and names the variable in `docker compose logs app`.
+
 The commands use placeholders: `<server-ip>` for the server's address, `<bucket>` for the bucket
 name, `~/.ssh/<key>` for the operator's private SSH key, `<domain>` for `DOMAIN` and `<tag>` for a
 release tag. Replace each before running a command.
