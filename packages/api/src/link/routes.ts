@@ -12,7 +12,7 @@ export const linkApp = new Hono<UserAppEnv>()
     const combat = findOwnCombat(db, c.get('userId'), c.req.param('id'));
     if (!combat) return c.json(NOT_FOUND, 404);
     const link = readLink(db, combat.id);
-    if (link?.phase === 'off') writeLink(db, combat.id, shareLink(link));
+    if (link && link.phase !== 'live') writeLink(db, combat.id, shareLink(link));
     const generation = combat.linkGeneration;
     const token = signLink({ combatId: combat.id, generation }, c.get('env').linkSecret);
     return c.json({ token, generation });

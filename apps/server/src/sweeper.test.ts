@@ -215,6 +215,24 @@ describe('link sweep', () => {
     expect(linkColumns()).toEqual({ linkShared: 1, orphanedAt: null });
   });
 
+  it('keeps the link of an owner who signed in before the sweep that would turn it off', async () => {
+    await shareToken();
+    const base = Date.now();
+    sweepAt(at(base, 0));
+    addSession(base + 15 * MINUTE + 10_000);
+    sweepAt(at(base, 15 * MINUTE + 30_000));
+    expect(linkColumns()).toEqual({ linkShared: 1, orphanedAt: null });
+  });
+
+  it('makes an orphaned link live when the owner opens the share sheet', async () => {
+    await shareToken();
+    const base = Date.now();
+    sweepAt(at(base, 0));
+    expect(linkColumns()).toEqual({ linkShared: 1, orphanedAt: at(base, 0) });
+    await shareToken();
+    expect(linkColumns()).toEqual({ linkShared: 1, orphanedAt: null });
+  });
+
   it('turns the link off 15 minutes after the owner signed out everywhere, once', async () => {
     const token = await shareToken();
     const player = await join(token);

@@ -9,7 +9,7 @@ import {
   reissueGeneration,
   removePlayer,
   sendToPlayer,
-  signedInSince,
+  signedInUsers,
   subscriptions,
   writeLink,
 } from '@combat-planner/api';
@@ -23,11 +23,11 @@ const sameLink = (a: LinkState, b: LinkState): boolean =>
   (a.phase !== 'orphaned' || (b.phase === 'orphaned' && a.since === b.since));
 
 const sweepLinks = (db: AppDatabase, now: string, timeouts: SharingTimeouts): void => {
-  const signedIn = signedInSince(db, now);
+  const signedIn = signedInUsers(db, now);
   for (const shared of listSharedCombats(db)) {
     const next = sweepLink(
       shared.link,
-      { ownerSignedInSince: signedIn.get(shared.ownerId) ?? null, now },
+      { ownerSignedIn: signedIn.has(shared.ownerId), now },
       timeouts,
     );
     if (sameLink(next, shared.link)) continue;

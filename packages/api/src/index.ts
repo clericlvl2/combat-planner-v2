@@ -36,7 +36,7 @@ export {
   listSharedCombats,
   listWatchingPlayers,
   removePlayer,
-  signedInSince,
+  signedInUsers,
   writeLink,
 } from './sharing/store.ts';
 export type { PlayerRow, SharedCombat } from './sharing/store.ts';

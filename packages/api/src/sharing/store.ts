@@ -1,7 +1,7 @@
 import type { CombatId, ConnectedPlayer, LinkState, PlayerId } from '@combat-planner/domain';
 import { followClaims } from '@combat-planner/domain';
 import type { Combat } from '@combat-planner/domain';
-import { and, eq, gt, isNotNull, min } from 'drizzle-orm';
+import { and, eq, gt, isNotNull } from 'drizzle-orm';
 import type { DmCombat } from '../client.ts';
 import { dmDocument } from '../combats/log.ts';
 import type { Executor, Transaction } from '../combats/store.ts';
@@ -67,17 +67,15 @@ export const listSharedCombats = (db: Executor): SharedCombat[] =>
       link: linkOf(row.linkShared, row.orphanedAt),
     }));
 
-export const signedInSince = (db: Executor, now: string): Map<string, string> => {
-  const rows = db
-    .select({ userId: session.userId, since: min(session.createdAt) })
-    .from(session)
-    .where(gt(session.expiresAt, new Date(now)))
-    .groupBy(session.userId)
-    .all();
-  return new Map(
-    rows.flatMap((row) => (row.since === null ? [] : [[row.userId, row.since.toISOString()]])),
+export const signedInUsers = (db: Executor, now: string): Set<string> =>
+  new Set(
+    db
+      .selectDistinct({ userId: session.userId })
+      .from(session)
+      .where(gt(session.expiresAt, new Date(now)))
+      .all()
+      .map((row) => row.userId),
   );
-};
 
 export const liveSessionIds = (db: Executor, now: string): Set<string> =>
   new Set(

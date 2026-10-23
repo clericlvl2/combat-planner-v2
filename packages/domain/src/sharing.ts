@@ -23,27 +23,24 @@ export const LINK_OFF: LinkState = { phase: 'off' };
 const elapsed = (since: string, now: string): number => Date.parse(now) - Date.parse(since);
 
 export const shareLink = (state: LinkState): LinkState =>
-  state.phase === 'off' ? LINK_LIVE : state;
+  state.phase === 'live' ? state : LINK_LIVE;
 
 export const reissueLink = (): LinkState => LINK_LIVE;
 
 export interface LinkSweep {
-  ownerSignedInSince: string | null;
+  ownerSignedIn: boolean;
   now: string;
 }
 
 export const sweepLink = (
   state: LinkState,
-  { ownerSignedInSince, now }: LinkSweep,
+  { ownerSignedIn, now }: LinkSweep,
   timeouts: SharingTimeouts = SHARING_TIMEOUTS,
 ): LinkState => {
   if (state.phase === 'off') return state;
-  if (state.phase === 'live') {
-    return ownerSignedInSince === null ? { phase: 'orphaned', since: now } : state;
-  }
-  const deadline = Date.parse(state.since) + timeouts.orphanedLinkMs;
-  if (ownerSignedInSince !== null && Date.parse(ownerSignedInSince) < deadline) return LINK_LIVE;
-  return Date.parse(now) >= deadline ? LINK_OFF : state;
+  if (ownerSignedIn) return LINK_LIVE;
+  if (state.phase === 'live') return { phase: 'orphaned', since: now };
+  return elapsed(state.since, now) >= timeouts.orphanedLinkMs ? LINK_OFF : state;
 };
 
 export type PlayerState =
