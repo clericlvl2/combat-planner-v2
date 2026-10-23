@@ -43,6 +43,7 @@ export { TextArea } from './atoms/TextArea/TextArea.tsx';
 export { TextField } from './atoms/TextField/TextField.tsx';
 export { ToolButton } from './atoms/ToolButton/ToolButton.tsx';
 export { CardActions } from './molecules/CardActions/CardActions.tsx';
+export { CardSkeleton } from './molecules/CardSkeleton/CardSkeleton.tsx';
 export { CheckList } from './molecules/CheckList/CheckList.tsx';
 export { DefenseLine } from './molecules/DefenseLine/DefenseLine.tsx';
 export { EmptyState } from './molecules/EmptyState/EmptyState.tsx';

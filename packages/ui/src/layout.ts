@@ -31,4 +31,5 @@ export const layout = {
   tapTarget: 44,
   scrollShadow: 12,
   scrollbar: 6,
+  loadingDelay: 250,
 } as const;
