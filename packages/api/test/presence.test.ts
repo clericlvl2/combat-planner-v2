@@ -106,6 +106,13 @@ const playerRow = (playerId: string) =>
     .where(and(eq(players.combatId, COMBAT_ID), eq(players.playerId, playerId)))
     .get();
 
+const playerCount = () =>
+  opened.db
+    .select({ playerId: players.playerId })
+    .from(players)
+    .where(eq(players.combatId, COMBAT_ID))
+    .all().length;
+
 const settled = () => new Promise<void>((resolve) => setTimeout(resolve, 0));
 
 beforeAll(async () => {
@@ -202,10 +209,26 @@ describe('POST /play/:id/leave', () => {
     ]);
     expect((dmEvents[0] as { document: DmCombat }).document.players).toEqual(after.players);
     expect(closed).toBe(true);
-    expect(playerEvents).toEqual([]);
+    expect(playerEvents).toEqual([{ type: 'left' }]);
     expect(playerRow(player.playerId)).toBeUndefined();
     expect((await getPlay(player)).status).toBe(401);
     expect((await join(player)).playerId).not.toBe(player.playerId);
+  });
+
+  it('ends the leaver stream with left, and no player takes the freed place', async () => {
+    const player = await join();
+    await playerAction(player, { type: 'claimUnit', unitId: HERO_ID, displayName: 'Mika' });
+    const rowsBefore = playerCount();
+    const query = new URLSearchParams({ t: token, ...player });
+    const stream = openSse(await opened.app.request(`/play/${COMBAT_ID}/events?${query}`));
+    expect((await stream.event()).event.type).toBe('document');
+    const dmEvents = listenAsDm();
+    expect((await leave(player)).status).toBe(204);
+    expect(await stream.event()).toEqual({ id: undefined, event: { type: 'left' } });
+    expect(await stream.closed()).toBe(true);
+    await settled();
+    expect(playerCount()).toBe(rowsBefore - 1);
+    expect(dmEvents.map((event) => event.type)).toEqual(['document', 'playerLeft']);
   });
 
   it('drops a player without a name and tells the DM nothing', async () => {

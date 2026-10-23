@@ -233,12 +233,13 @@ export const apiEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
   z.object({ type: z.literal('linkRevoked') }),
   z.object({ type: z.literal('dropped') }),
+  z.object({ type: z.literal('left') }),
   z.object({ type: z.literal('playerJoined') }),
   z.object({ type: z.literal('playerLeft'), name: displayNameSchema }),
 ]);
 export type ApiEvent = z.infer<typeof apiEventSchema>;
 export type ApiEndEvent =
-  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' | 'dropped' }>
+  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' | 'dropped' | 'left' }>
   | { type: 'unauthorized' };
 export type PresenceEvent = Extract<ApiEvent, { type: 'playerJoined' | 'playerLeft' }>;
 

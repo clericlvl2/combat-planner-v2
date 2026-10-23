@@ -11,7 +11,7 @@ import { linkTokenSchema } from '../client.ts';
 import { dispatch } from '../combats/dispatch.ts';
 import { NOT_FOUND, findCombatRow, nowIso } from '../combats/store.ts';
 import { signPlayerKey, verifyLink, verifyPlayerKey } from '../link/token.ts';
-import { broadcast, closePlayer } from '../live/registry.ts';
+import { broadcast, closePlayer, sendToPlayer } from '../live/registry.ts';
 import { streamCombatEvents } from '../live/sse.ts';
 import {
   announceRemoval,
@@ -153,6 +153,7 @@ export const playApp = new Hono<ApiAppEnv>()
     const combatId = player.combat.id;
     const { playerId } = player.viewer;
     const removed = c.get('db').transaction((tx) => removePlayer(tx, combatId, playerId));
+    sendToPlayer(combatId, playerId, { type: 'left' });
     closePlayer(combatId, playerId);
     announceRemoval(combatId, removed);
     return c.body(null, 204);

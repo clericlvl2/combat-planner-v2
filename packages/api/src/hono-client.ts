@@ -205,6 +205,7 @@ const streamEventSchema = <Document>(document: z.ZodType<Document>) =>
     z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
     z.object({ type: z.literal('linkRevoked') }),
     z.object({ type: z.literal('dropped') }),
+    z.object({ type: z.literal('left') }),
     z.object({ type: z.literal('playerJoined') }),
     z.object({ type: z.literal('playerLeft'), name: displayNameSchema }),
   ]);
@@ -488,6 +489,7 @@ export function createHonoApiClient({
         'deleted',
         'linkRevoked',
         'dropped',
+        'left',
         'playerJoined',
         'playerLeft',
       ]) {
@@ -505,8 +507,15 @@ export function createHonoApiClient({
     json(() => client.combats[':id'].$get({ param: { id } }, { init: { signal } }), dmCombatSchema);
 
   const joins = new Map<CombatId, Promise<PlayerCredentials>>();
+  const departed = new Set<CombatId>();
+  const playerStreams = new Map<CombatId, Set<Unsubscribe>>();
 
   const join = (combatId: CombatId, token: LinkToken): Promise<PlayerCredentials> => {
+    if (departed.has(combatId)) {
+      return Promise.reject(
+        new ApiError({ status: 401, code: 'unauthorized', message: 'This player left the combat' }),
+      );
+    }
     const pending = joins.get(combatId);
     if (pending) return pending;
     const joining = json(
@@ -597,8 +606,58 @@ export function createHonoApiClient({
       ),
   };
 
+  const trackPlayerStream = (combatId: CombatId, close: Unsubscribe): Unsubscribe => {
+    const open = playerStreams.get(combatId) ?? new Set<Unsubscribe>();
+    open.add(close);
+    playerStreams.set(combatId, open);
+    return () => {
+      open.delete(close);
+      if (open.size === 0 && playerStreams.get(combatId) === open) playerStreams.delete(combatId);
+      close();
+    };
+  };
+
+  const closePlayerStreams = (combatId: CombatId) => {
+    const open = playerStreams.get(combatId);
+    playerStreams.delete(combatId);
+    for (const close of open ?? []) close();
+  };
+
+  const subscribePlayer = (
+    combatId: CombatId,
+    token: LinkToken,
+    onDocument: (document: PlayerCombat, language?: Locale) => void,
+    onEnd: EndListener,
+  ): Unsubscribe => {
+    const open = () =>
+      openStream(
+        () => playEventsUrl(token),
+        playerCombatSchema,
+        async (signal) => {
+          const view = await getPlay(token, signal);
+          return { document: view.combat, language: view.language };
+        },
+        onDocument,
+        onEnd,
+      );
+    if (playerKeys.get(combatId)) return open();
+    let cancelled = false;
+    let close: Unsubscribe | undefined;
+    const openUnlessCancelled = () => {
+      if (!cancelled) close = open();
+    };
+    join(combatId, token).then(openUnlessCancelled, openUnlessCancelled);
+    return () => {
+      cancelled = true;
+      close?.();
+    };
+  };
+
   const play: ApiClient['play'] = {
-    get: (token) => getPlay(token),
+    get: async (token) => {
+      departed.delete(combatIdOf(token));
+      return getPlay(token);
+    },
     dispatch: (token, action) =>
       asPlayer(token, (credentials) =>
         json(
@@ -612,30 +671,11 @@ export function createHonoApiClient({
       ),
     subscribe: (token, onDocument, onEnd) => {
       const combatId = combatIdOf(token);
-      const open = () =>
-        openStream(
-          () => playEventsUrl(token),
-          playerCombatSchema,
-          async (signal) => {
-            const view = await getPlay(token, signal);
-            return { document: view.combat, language: view.language };
-          },
-          onDocument,
-          onEnd,
-        );
-      if (playerKeys.get(combatId)) return open();
-      let cancelled = false;
-      let close: Unsubscribe | undefined;
-      const openUnlessCancelled = () => {
-        if (!cancelled) close = open();
-      };
-      join(combatId, token).then(openUnlessCancelled, openUnlessCancelled);
-      return () => {
-        cancelled = true;
-        close?.();
-      };
+      departed.delete(combatId);
+      return trackPlayerStream(combatId, subscribePlayer(combatId, token, onDocument, onEnd));
     },
     leave: async (combatId) => {
+      departed.add(combatId);
       const credentials = playerKeys.get(combatId);
       if (credentials) {
         try {
@@ -643,9 +683,13 @@ export function createHonoApiClient({
             client.play[':id'].leave.$post({ param: { id: combatId } }, playerHeaders(credentials)),
           );
         } catch (error) {
-          if (!(error instanceof ApiError) || !GONE_STATUSES.has(error.status)) throw error;
+          if (!(error instanceof ApiError) || !GONE_STATUSES.has(error.status)) {
+            departed.delete(combatId);
+            throw error;
+          }
         }
       }
+      closePlayerStreams(combatId);
       playerKeys.delete(combatId);
     },
   };

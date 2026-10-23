@@ -595,9 +595,15 @@ export class FakeApiClient implements ApiClient {
 
   playAs(playerId: PlayerId): ApiClient['play'] {
     const viewer = { kind: 'player', playerId } as const;
+    const departed = new Set<CombatId>();
+    const reopen = (token: LinkToken) => {
+      const link = this.links.get(token);
+      if (link) departed.delete(link.combatId);
+    };
     return {
-      get: (token) =>
-        this.run('play.get', [token, playerId], () => {
+      get: (token) => {
+        reopen(token);
+        return this.run('play.get', [token, playerId], () => {
           const { combat } = this.resolveLink(token);
           return {
             combatId: combat.id,
@@ -605,13 +611,17 @@ export class FakeApiClient implements ApiClient {
             language: this.settingsValue.language,
             combat: project(combat, viewer),
           };
-        }),
+        });
+      },
       dispatch: (token, action) =>
-        this.run('play.dispatch', [token, playerId, action], () =>
-          this.dispatchAs(this.resolveLink(token), viewer, action),
-        ),
+        this.run('play.dispatch', [token, playerId, action], () => {
+          const stored = this.resolveLink(token);
+          if (departed.has(stored.combat.id)) throw fail('unauthorized', 'This player left');
+          return this.dispatchAs(stored, viewer, action);
+        }),
       subscribe: (token, onDocument, onEnd) => {
         this.calls.push({ method: 'play.subscribe', args: [token, playerId] });
+        reopen(token);
         let stored: StoredCombat;
         try {
           stored = this.resolveLink(token);
@@ -630,8 +640,9 @@ export class FakeApiClient implements ApiClient {
           this.playerSubscribers.get(combatId)?.delete(subscriber);
         };
       },
-      leave: (combatId) =>
-        this.run('play.leave', [combatId, playerId], () => {
+      leave: (combatId) => {
+        departed.add(combatId);
+        const leaving = this.run('play.leave', [combatId, playerId], () => {
           const stored = this.combatStore.get(combatId);
           if (!stored) return;
           const { combat } = stored;
@@ -653,7 +664,10 @@ export class FakeApiClient implements ApiClient {
             version: combat.version + 1,
           });
           if (name !== undefined) this.announce(combatId, { type: 'playerLeft', name });
-        }),
+        });
+        leaving.catch(() => departed.delete(combatId));
+        return leaving;
+      },
     };
   }
 

@@ -360,6 +360,14 @@ export const LeaveGoesHome = meta.story({
     await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.leave')).toEqual([
       { method: 'play.leave', args: [COMBAT_ID, MIKA] },
     ]);
+    await expect(
+      fakeApiOf(loaded).play.dispatch(TOKEN, {
+        id: '01ARZ3NDEKTSV4RRFFQ69G5FAZ',
+        version: 0,
+        type: 'releaseUnit',
+        unitId: unitIds.vashti,
+      }),
+    ).rejects.toMatchObject({ code: 'unauthorized' });
   },
 });
 
