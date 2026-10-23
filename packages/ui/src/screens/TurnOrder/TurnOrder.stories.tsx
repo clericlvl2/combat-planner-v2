@@ -1,5 +1,5 @@
 import preview from '#.storybook/preview';
-import type { Action } from '@combat-planner/domain';
+import type { Action, Combat } from '@combat-planner/domain';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import type { FakeApiClient } from '../../api/FakeApiClient.ts';
@@ -10,6 +10,7 @@ import {
   ME,
   MIKA,
   TOKEN,
+  actAsDm,
   ferryCombat,
   playerScenario,
   unitIds,
@@ -41,6 +42,35 @@ const rowOf = async (canvas: Canvas, name: string): Promise<HTMLElement> => {
   const row = label.closest('[data-unit-role]');
   if (!(row instanceof HTMLElement)) throw new Error(`${name} has no row`);
   return row;
+};
+
+const crowded = (combat: Combat, initiative: number): Combat => {
+  const orc = combat.units.find((unit) => unit.id === unitIds.orc);
+  if (!orc) throw new Error('no orc');
+  const filler = Array.from({ length: 8 }, (_, index) => ({
+    ...orc,
+    id: `01JP00000000000000000000F${index}`,
+    name: `Orc Raider ${index + 1}`,
+    initiative,
+    conditions: [],
+  }));
+  return { ...combat, units: [...combat.units, ...filler] };
+};
+
+const listViewport = (canvasElement: HTMLElement): HTMLElement => {
+  const viewport = canvasElement.querySelector('[data-scroll-list] .mantine-ScrollArea-viewport');
+  if (!(viewport instanceof HTMLElement)) throw new Error('no list viewport');
+  return viewport;
+};
+
+const expectInView = async (canvasElement: HTMLElement, row: HTMLElement) => {
+  const viewport = listViewport(canvasElement);
+  await waitFor(async () => {
+    const frame = viewport.getBoundingClientRect();
+    const box = row.getBoundingClientRect();
+    await expect(box.top).toBeGreaterThanOrEqual(frame.top);
+    await expect(box.bottom).toBeLessThanOrEqual(frame.bottom);
+  });
 };
 
 const expandOwn = async (canvas: Canvas) => {
@@ -255,5 +285,71 @@ export const OwnRowExpanded = meta.story({
     await expandOwn(canvas);
     await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
     await expect(canvas.getByText('Hex on Orc Berserker')).toBeVisible();
+  },
+});
+
+export const YouAreNext = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: playerScenario(ferryCombat({ active: 'orc' })) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const strip = await canvas.findByRole('button', { name: t('youAreNext') });
+    await expect(strip).toBeVisible();
+    await expect(strip).toHaveAttribute('data-kind', 'next');
+    await expect(strip.getBoundingClientRect().height).toBe(44);
+  },
+});
+
+export const YourTurn = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const strip = await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) });
+    await expect(strip).toHaveAttribute('data-kind', 'turn');
+    await expect(canvas.queryByRole('button', { name: t('youAreNext') })).toBeNull();
+    const list = canvas.getByText(ME).closest('[data-scroll-list]');
+    await expect(list?.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      strip.getBoundingClientRect().bottom,
+    );
+  },
+});
+
+export const YourTurnScrollsToHero = meta.story({
+  tags: ['!dev'],
+  parameters: {
+    scenario: playerScenario(crowded(ferryCombat({ active: 'tomas', vashtiInitiative: 1 }), 16)),
+  },
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await expect(vashti.getBoundingClientRect().top).toBeGreaterThan(
+      listViewport(canvasElement).getBoundingClientRect().bottom,
+    );
+    await actAsDm(api, { type: 'nextTurn' });
+    await expect(
+      await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) }),
+    ).toBeVisible();
+    await expectInView(canvasElement, vashti);
+  },
+});
+
+export const StripTapScrollsToHero = meta.story({
+  tags: ['!dev'],
+  parameters: {
+    scenario: playerScenario(crowded(ferryCombat({ active: 'orc' }), 5)),
+  },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const vashti = await rowOf(canvas, ME);
+    const viewport = listViewport(canvasElement);
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'instant' });
+    await waitFor(() =>
+      expect(vashti.getBoundingClientRect().bottom).toBeLessThan(
+        viewport.getBoundingClientRect().top,
+      ),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: t('youAreNext') }));
+    await expectInView(canvasElement, vashti);
   },
 });

@@ -1,5 +1,7 @@
 {
   "waiting": "Warte, bis die Spielleitung den Kampf startet",
   "noUnitsTitle": "Noch keine Einheiten",
-  "noUnitsBody": "Die Spielleitung bereitet den Kampf vor. Diese Seite aktualisiert sich von selbst."
+  "noUnitsBody": "Die Spielleitung bereitet den Kampf vor. Diese Seite aktualisiert sich von selbst.",
+  "youAreNext": "Du bist als Nächstes dran",
+  "yourTurn": "Dein Zug · {{name}}"
 }

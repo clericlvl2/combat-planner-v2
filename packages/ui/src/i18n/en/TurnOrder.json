@@ -1,5 +1,7 @@
 {
   "waiting": "Waiting for the DM to start the combat",
   "noUnitsTitle": "No units yet",
-  "noUnitsBody": "The DM is setting up the combat. This page updates by itself."
+  "noUnitsBody": "The DM is setting up the combat. This page updates by itself.",
+  "youAreNext": "You are next",
+  "yourTurn": "Your turn · {{name}}"
 }

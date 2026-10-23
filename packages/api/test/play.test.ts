@@ -80,6 +80,7 @@ const assertVisibility = (document: PlayerCombat, source: Combat) => {
         (key) => key !== 'linkGeneration' && key !== 'undo' && key !== 'players',
       ),
       'myName',
+      'nextUnitId',
     ].sort(),
   );
   const disabled = source.units.filter((unit) => unit.disabled).map((unit) => unit.id);

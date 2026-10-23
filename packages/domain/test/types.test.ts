@@ -77,6 +77,7 @@ describe('types', () => {
     const projection: PlayerCombat = {
       ...playerFields,
       myName: null,
+      nextUnitId: null,
       units: [
         {
           id: unit.id,

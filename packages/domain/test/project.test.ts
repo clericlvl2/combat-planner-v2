@@ -420,3 +420,33 @@ describe('project of a combat without claims', () => {
     }
   });
 });
+
+describe('nextUnitId', () => {
+  it('names the unit after the active one in turn order', () => {
+    expect(doc.nextUnitId).toBe(id(3));
+    expect(project({ ...combat, activeUnitId: id(3) }, PLAYER).nextUnitId).toBe(id(1));
+  });
+
+  it('skips a dead unit', () => {
+    const deadAlly = { ...ally, hp: -ally.maxHp, role: 'enemy' as const };
+    const next = project({ ...combat, units: [own, other, deadAlly, enemy, disabled] }, PLAYER);
+    expect(next.nextUnitId).toBe(id(1));
+  });
+
+  it('skips a disabled unit, which players never see', () => {
+    const hiddenAlly = { ...ally, disabled: true };
+    const next = project({ ...combat, units: [own, other, hiddenAlly, enemy, disabled] }, PLAYER);
+    expect(next.units.some((unit) => unit.id === id(3))).toBe(false);
+    expect(next.nextUnitId).toBe(id(1));
+  });
+
+  it('wraps to the first eligible unit of the next round, past a disabled one', () => {
+    const last = project({ ...combat, activeUnitId: id(4) }, PLAYER);
+    expect(last.nextUnitId).toBe(id(2));
+  });
+
+  it('is null in setup and without an active unit', () => {
+    expect(project({ ...combat, status: 'setup' }, PLAYER).nextUnitId).toBeNull();
+    expect(project({ ...combat, activeUnitId: null }, PLAYER).nextUnitId).toBeNull();
+  });
+});

@@ -176,6 +176,7 @@ export const playerCombatSchema = z
   .object({
     ...combatFields,
     myName: displayNameSchema.nullable(),
+    nextUnitId: ulidSchema.nullable(),
     units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat),
   })
   .omit({ linkGeneration: true, players: true });

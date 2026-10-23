@@ -7,7 +7,7 @@ import type {
   UnitId,
 } from '@combat-planner/domain';
 import { IconHourglass, IconUserOff, IconUsers } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
@@ -16,6 +16,7 @@ import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
+import { TurnStrip } from '../../molecules/TurnStrip/TurnStrip.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
@@ -24,6 +25,7 @@ import { NumpadSheet, useHpFlash } from '../../organisms/NumpadSheet/NumpadSheet
 import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
+import { useMotion } from '../../provider.tsx';
 import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
@@ -75,8 +77,27 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   const [toggling, setToggling] = useState(0);
   const [releasingId, setReleasingId] = useState<UnitId | null>(null);
 
+  const motion = useMotion();
+  const viewportRef = useRef<HTMLDivElement>(null);
+
   const setup = combat.status === 'setup';
   const own = (unit: PlayerUnit) => unit.role !== 'enemy' && unit.mine === true;
+  const ownById = (unitId: UnitId | null) =>
+    setup ? undefined : combat.units.find((unit) => unit.id === unitId && own(unit));
+  const turnHero = ownById(combat.activeUnitId);
+  const nextHero = turnHero ? undefined : ownById(combat.nextUnitId);
+  const turnHeroId = turnHero?.id ?? null;
+
+  const revealUnit = (unitId: UnitId) => {
+    const row = viewportRef.current?.querySelector(`[data-unit-id="${unitId}"]`);
+    row?.scrollIntoView({ block: 'center', behavior: motion === 'off' ? 'instant' : 'smooth' });
+  };
+  const revealRef = useRef(revealUnit);
+  revealRef.current = revealUnit;
+
+  useEffect(() => {
+    if (turnHeroId !== null) revealRef.current(turnHeroId);
+  }, [turnHeroId]);
   const openUnit = combat.units.find((unit) => unit.id === open?.unitId && own(unit));
   const panelOf = (panel: Panel): PlayerUnit | undefined =>
     open?.panel === panel ? openUnit : undefined;
@@ -166,7 +187,20 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           onLeave?.();
         }}
       />
-      <ScrollList className={classes.list} contentClassName={classes.listContent}>
+      {turnHero ? (
+        <TurnStrip kind="turn" onClick={() => revealUnit(turnHero.id)}>
+          {t('yourTurn', { name: turnHero.name })}
+        </TurnStrip>
+      ) : nextHero ? (
+        <TurnStrip kind="next" onClick={() => revealUnit(nextHero.id)}>
+          {t('youAreNext')}
+        </TurnStrip>
+      ) : null}
+      <ScrollList
+        className={classes.list}
+        contentClassName={classes.listContent}
+        viewportRef={viewportRef}
+      >
         {setup && combat.units.length > 0 ? (
           <div className={classes.waiting} role="status">
             <IconHourglass size={20} stroke={2} aria-hidden="true" />
@@ -176,7 +210,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
         {combat.units.map((unit) => {
           const mine = own(unit);
           return (
-            <div key={unit.id} className={classes.slot}>
+            <div key={unit.id} className={classes.slot} data-unit-id={unit.id}>
               <PlayerRow
                 className={classes.row}
                 flash={flashing && flashId === unit.id}
