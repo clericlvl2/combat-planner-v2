@@ -157,7 +157,7 @@ const pageCellInset = layout.contentEdge;
 
 const screen: CSSProperties = { padding: pageCellInset };
 
-type PlayerRowCellProps = Omit<PlayerRowProps, 'claimedByName'> & { hostCollapse?: boolean };
+type PlayerRowCellProps = PlayerRowProps & { hostCollapse?: boolean };
 
 function PlayerRowCell({
   unit,
@@ -174,7 +174,6 @@ function PlayerRowCell({
       <PlayerRow
         {...props}
         unit={note === undefined ? unit : { ...unit, note }}
-        claimedByName={unit.claimedBy ? names[unit.claimedBy] : undefined}
         expanded={expanded}
         onToggle={() => {
           setExpanded((value) => !value);
@@ -696,7 +695,7 @@ export const EnemyFriendlyFieldsHidden = meta.story({
   args: {
     unit: {
       ...orc,
-      claimedBy: MIKA,
+      claimedByName: 'Mika',
       hp: 14,
       maxHp: 40,
       tempHp: 6,

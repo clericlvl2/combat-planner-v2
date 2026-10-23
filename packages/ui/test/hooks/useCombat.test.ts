@@ -23,7 +23,7 @@ import { COMBAT_ID, ENEMY_ID, PLAYER_ID, TOKEN, combat } from '../api/fixtures.t
 import { flush, harness, translate } from './helpers.ts';
 
 const DM = { kind: 'dm' } as const;
-const PLAYER = { kind: 'player', playerId: PLAYER_ID } as const;
+const PLAYER = { kind: 'player' } as const;
 
 const damage = (version: number): Action => ({
   id: '01ARZ3NDEKTSV4RRFFQ69G5FG0',
@@ -46,7 +46,7 @@ const entry = (version: number): CombatEntry<DmCombat> => ({
 describe('combat cache', () => {
   it('keys DM and player views apart', () => {
     expect(combatKey(COMBAT_ID, DM)).toEqual(['combat', COMBAT_ID, 'dm']);
-    expect(combatKey(COMBAT_ID, PLAYER)).toEqual(['combat', COMBAT_ID, 'player', PLAYER_ID]);
+    expect(combatKey(COMBAT_ID, PLAYER)).toEqual(['combat', COMBAT_ID, 'player']);
   });
 
   it('writes a document only when it is newer', () => {
@@ -107,8 +107,12 @@ describe('combat sources', () => {
   });
 
   it('the player reads play.get with the token and keeps the DM language', async () => {
-    const context = harness({ combats: [combat()], settings: { language: 'ru' } });
-    const source = playerSource(context.api, PLAYER, TOKEN);
+    const context = harness({
+      combats: [combat()],
+      settings: { language: 'ru' },
+      playerId: PLAYER_ID,
+    });
+    const source = playerSource(context.api, TOKEN);
     const loaded = await entryFetcher(context.queryClient, combatKey(COMBAT_ID, PLAYER), source)();
     expect(loaded.language).toBe('ru');
     expect(loaded.document.units.find((unit) => unit.id === ENEMY_ID)).not.toHaveProperty('hp');
@@ -132,7 +136,7 @@ describe('combat sources', () => {
   it('the player subscription writes the DM language that arrives with a document', async () => {
     const context = harness({ combats: [combat()], settings: { language: 'ru' } });
     const key = combatKey(COMBAT_ID, PLAYER);
-    subscribeEntry(context.queryClient, key, playerSource(context.api, PLAYER, TOKEN), vi.fn());
+    subscribeEntry(context.queryClient, key, playerSource(context.api, TOKEN), vi.fn());
     expect(context.queryClient.getQueryData<CombatEntry>(key)?.language).toBe('ru');
     await context.api.settings.update({ language: 'ja' });
     await context.api.combats.dispatch(COMBAT_ID, damage(1));
@@ -171,7 +175,7 @@ describe('combat sources', () => {
     const ended = { source: dm, event: { type: 'linkRevoked' } } as const;
     expect(endOf(ended, dm)).toEqual({ type: 'linkRevoked' });
     expect(endOf(ended, dmSource(context.api, ENEMY_ID))).toBeNull();
-    expect(endOf(ended, playerSource(context.api, PLAYER, TOKEN))).toBeNull();
+    expect(endOf(ended, playerSource(context.api, TOKEN))).toBeNull();
     expect(endOf(null, dm)).toBeNull();
   });
 

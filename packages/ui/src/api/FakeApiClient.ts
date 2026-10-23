@@ -141,6 +141,7 @@ const scenarioSession = (session: ScenarioSession | null): Session | null =>
 
 export class FakeApiClient implements ApiClient {
   readonly calls: FakeCall[] = [];
+  readonly play: ApiClient['play'];
 
   private readonly delay: number;
   private session: Session | null;
@@ -161,6 +162,7 @@ export class FakeApiClient implements ApiClient {
 
   constructor({ scenario, delay = 0 }: FakeApiClientOptions) {
     this.delay = delay;
+    this.play = this.playAs(scenario.playerId);
     this.session = scenarioSession(scenario.session);
     this.accounts = scenario.accounts.map((account) => ({ ...account }));
     for (const combat of scenario.combats) {
@@ -557,42 +559,45 @@ export class FakeApiClient implements ApiClient {
       }),
   };
 
-  readonly play: ApiClient['play'] = {
-    get: (token, playerId) =>
-      this.run('play.get', [token, playerId], () => {
-        const { combat } = this.resolveLink(token);
-        return {
-          combatId: combat.id,
-          playerId,
-          language: this.settingsValue.language,
-          combat: project(combat, { kind: 'player', playerId }),
+  playAs(playerId: PlayerId): ApiClient['play'] {
+    const viewer = { kind: 'player', playerId } as const;
+    return {
+      get: (token) =>
+        this.run('play.get', [token, playerId], () => {
+          const { combat } = this.resolveLink(token);
+          return {
+            combatId: combat.id,
+            playerId,
+            language: this.settingsValue.language,
+            combat: project(combat, viewer),
+          };
+        }),
+      dispatch: (token, action) =>
+        this.run('play.dispatch', [token, playerId, action], () =>
+          this.dispatchAs(this.resolveLink(token), viewer, action),
+        ),
+      subscribe: (token, onDocument, onEnd) => {
+        this.calls.push({ method: 'play.subscribe', args: [token, playerId] });
+        let stored: StoredCombat;
+        try {
+          stored = this.resolveLink(token);
+        } catch (error) {
+          const revoked = error instanceof ApiError && error.code === 'linkRevoked';
+          onEnd(revoked ? { type: 'linkRevoked' } : { type: 'deleted', title: '' });
+          return () => {};
+        }
+        const combatId = stored.combat.id;
+        const subscriber: PlayerSubscriber = { playerId, onDocument, onEnd, version: -1 };
+        const subscribers = this.playerSubscribers.get(combatId) ?? new Set<PlayerSubscriber>();
+        subscribers.add(subscriber);
+        this.playerSubscribers.set(combatId, subscribers);
+        if (this.connectionState === 'connected') this.deliverToPlayer(subscriber, stored.combat);
+        return () => {
+          this.playerSubscribers.get(combatId)?.delete(subscriber);
         };
-      }),
-    dispatch: (token, playerId, action) =>
-      this.run('play.dispatch', [token, playerId, action], () =>
-        this.dispatchAs(this.resolveLink(token), { kind: 'player', playerId }, action),
-      ),
-    subscribe: (token, playerId, onDocument, onEnd) => {
-      this.calls.push({ method: 'play.subscribe', args: [token, playerId] });
-      let stored: StoredCombat;
-      try {
-        stored = this.resolveLink(token);
-      } catch (error) {
-        const revoked = error instanceof ApiError && error.code === 'linkRevoked';
-        onEnd(revoked ? { type: 'linkRevoked' } : { type: 'deleted', title: '' });
-        return () => {};
-      }
-      const combatId = stored.combat.id;
-      const subscriber: PlayerSubscriber = { playerId, onDocument, onEnd, version: -1 };
-      const subscribers = this.playerSubscribers.get(combatId) ?? new Set<PlayerSubscriber>();
-      subscribers.add(subscriber);
-      this.playerSubscribers.set(combatId, subscribers);
-      if (this.connectionState === 'connected') this.deliverToPlayer(subscriber, stored.combat);
-      return () => {
-        this.playerSubscribers.get(combatId)?.delete(subscriber);
-      };
-    },
-  };
+      },
+    };
+  }
 
   readonly presets: ApiClient['presets'] = {
     list: () =>

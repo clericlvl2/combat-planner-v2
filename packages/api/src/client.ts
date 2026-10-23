@@ -3,7 +3,6 @@ import type {
   Combat,
   CombatId,
   PlayerCombat,
-  PlayerId,
   Preset,
   PresetId,
   Tag,
@@ -139,6 +138,20 @@ export const playerIdentitySchema = z.object({
 });
 export type PlayerIdentity = z.infer<typeof playerIdentitySchema>;
 
+export const playerKeySchema = z.string().min(1).max(64);
+export type PlayerKey = z.infer<typeof playerKeySchema>;
+
+export const playerCredentialsSchema = z.object({
+  playerId: ulidSchema,
+  playerKey: playerKeySchema,
+});
+export type PlayerCredentials = z.infer<typeof playerCredentialsSchema>;
+
+export interface PlayerKeyStore {
+  get(combatId: CombatId): PlayerCredentials | null;
+  set(combatId: CombatId, credentials: PlayerCredentials): void;
+}
+
 export const playViewSchema = z.object({
   combatId: ulidSchema,
   playerId: ulidSchema,
@@ -261,14 +274,9 @@ export interface LinkApi {
 }
 
 export interface PlayApi {
-  get(token: LinkToken, playerId: PlayerId): Promise<PlayView>;
-  dispatch(token: LinkToken, playerId: PlayerId, action: Action): Promise<VersionResult>;
-  subscribe(
-    token: LinkToken,
-    playerId: PlayerId,
-    onDocument: PlayerDocumentListener,
-    onEnd: EndListener,
-  ): Unsubscribe;
+  get(token: LinkToken): Promise<PlayView>;
+  dispatch(token: LinkToken, action: Action): Promise<VersionResult>;
+  subscribe(token: LinkToken, onDocument: PlayerDocumentListener, onEnd: EndListener): Unsubscribe;
 }
 
 export interface PresetsApi {

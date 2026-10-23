@@ -156,7 +156,8 @@ export const playerUnitSchema = z.object({
   position: z.number().int().positive(),
   initiative: initiativeSchema.nullable(),
   initiativeBonus: initiativeBonusSchema.optional(),
-  claimedBy: ulidSchema.nullable().optional(),
+  claimedByName: displayNameSchema.nullable().optional(),
+  mine: z.boolean().optional(),
   hp: hpSchema.optional(),
   tempHp: tempHpSchema.optional(),
   maxHp: maxHpSchema.optional(),
@@ -168,5 +169,9 @@ export const playerUnitSchema = z.object({
 });
 
 export const playerCombatSchema = z
-  .object({ ...combatFields, units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat) })
-  .omit({ linkGeneration: true });
+  .object({
+    ...combatFields,
+    myName: displayNameSchema.nullable(),
+    units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat),
+  })
+  .omit({ linkGeneration: true, players: true });

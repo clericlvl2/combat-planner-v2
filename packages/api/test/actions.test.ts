@@ -255,7 +255,7 @@ describe('player actions through dispatch', () => {
     expect(enemy).not.toHaveProperty('hp');
     expect(enemy).not.toHaveProperty('note');
     const hero = event.document.units.find((unit) => unit.id === HERO_ID);
-    expect(hero).toMatchObject({ claimedBy: PLAYER_ID, hp: 20, note: '' });
+    expect(hero).toMatchObject({ mine: true, hp: 20, note: '' });
   });
 });
 

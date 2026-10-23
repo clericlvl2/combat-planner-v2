@@ -1,9 +1,10 @@
 import type { Action } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
-import type { ConnectionState, DmCombat, EndListener } from '../src/client.ts';
+import type { ConnectionState, DmCombat, EndListener, PlayerCredentials } from '../src/client.ts';
 import {
   createHonoApiClient,
+  memoryPlayerKeys,
   EVENT_SOURCE_CLOSED,
   PROBE_TIMEOUT_MS,
   RECONNECTING_AFTER_MS,
@@ -15,6 +16,14 @@ import type { EventSourceLike, MessageEventLike } from '../src/hono-client.ts';
 const baseUrl = 'http://combat-planner.test/api';
 const combatId = '01ARZ3NDEKTSV4RRFFQ69G5FAV';
 const playerId = '01ARZ3NDEKTSV4RRFFQ69G5FAW';
+const playerKey = 'player-key-signature';
+const credentials: PlayerCredentials = { playerId, playerKey };
+
+const seededKeys = () => {
+  const keys = memoryPlayerKeys();
+  keys.set(combatId, credentials);
+  return keys;
+};
 const now = '2026-10-16T12:00:00.000Z';
 
 const action: Action = {
@@ -155,7 +164,7 @@ describe('createHonoApiClient error mapping', () => {
     [429, 'rateLimited'],
   ] as const)('maps %i to %s with the body message', async (status, code) => {
     const { fetch } = stubFetch(status, { message: `status ${status}` });
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     await expect(client.combats.get(combatId)).rejects.toMatchObject({
       name: 'ApiError',
       status,
@@ -167,8 +176,8 @@ describe('createHonoApiClient error mapping', () => {
 
   it('maps 410 to linkRevoked', async () => {
     const { fetch } = stubFetch(410, { message: 'gone' });
-    const client = createHonoApiClient({ baseUrl, fetch });
-    await expect(client.play.get(`${combatId}.0.signature`, playerId)).rejects.toMatchObject({
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
+    await expect(client.play.get(`${combatId}.0.signature`)).rejects.toMatchObject({
       status: 410,
       code: 'linkRevoked',
       message: 'gone',
@@ -188,7 +197,7 @@ describe('createHonoApiClient error mapping', () => {
     [410, { code: 'linkRevoked', message: 'This link was reissued' }, 'linkRevoked'],
   ] as const)('prefers a known body code over status %i', async (status, body, code) => {
     const { fetch } = stubFetch(status, body);
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     await expect(client.tags.list()).rejects.toMatchObject({
       status,
       code,
@@ -197,7 +206,7 @@ describe('createHonoApiClient error mapping', () => {
   });
 
   it('maps a failed fetch to a retryable network error', async () => {
-    const client = createHonoApiClient({ baseUrl, fetch: failingFetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch: failingFetch });
     await expect(client.combats.list()).rejects.toMatchObject({
       name: 'ApiError',
       status: 0,
@@ -208,10 +217,106 @@ describe('createHonoApiClient error mapping', () => {
   });
 });
 
+describe('createHonoApiClient player key', () => {
+  const token = `${combatId}.0.signature`;
+  const joined: PlayerCredentials = {
+    playerId: '01ARZ3NDEKTSV4RRFFQ69G5FAY',
+    playerKey: 'joined-key-signature',
+  };
+  const view = {
+    combatId,
+    playerId: joined.playerId,
+    language: 'en',
+    combat: project(combatAt(1), { kind: 'player', playerId: joined.playerId }),
+  };
+
+  function playServer(refusals = 0) {
+    const seen: Seen[] = [];
+    let refused = 0;
+    const fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      const request = new Request(input, init);
+      const url = new URL(request.url);
+      seen.push({ method: request.method, url, headers: request.headers, body: null });
+      if (url.pathname.endsWith('/join')) return Response.json(joined);
+      if (refused < refusals) {
+        refused += 1;
+        return Response.json({ code: 'unauthorized', message: 'no key' }, { status: 401 });
+      }
+      return Response.json(url.pathname.endsWith('/actions') ? { version: 3 } : view);
+    }) as typeof globalThis.fetch;
+    return { fetch, seen };
+  }
+
+  it('joins once before the first request and stores the issued id and key', async () => {
+    const { fetch, seen } = playServer();
+    const playerKeys = memoryPlayerKeys();
+    const client = createHonoApiClient({ baseUrl, fetch, playerKeys });
+    await Promise.all([client.play.get(token), client.play.get(token)]);
+    expect(seen.map((request) => `${request.method} ${request.url.pathname}`)).toEqual([
+      `POST /api/play/${combatId}/join`,
+      `GET /api/play/${combatId}`,
+      `GET /api/play/${combatId}`,
+    ]);
+    expect(seen[0]?.url.searchParams.get('t')).toBe(token);
+    expect(seen[1]?.headers.get('X-Player-Id')).toBe(joined.playerId);
+    expect(seen[1]?.headers.get('X-Player-Key')).toBe(joined.playerKey);
+    expect(playerKeys.get(combatId)).toEqual(joined);
+  });
+
+  it('joins again once on 401 and retries with the new key', async () => {
+    const { fetch, seen } = playServer(1);
+    const playerKeys = seededKeys();
+    const client = createHonoApiClient({ baseUrl, fetch, playerKeys });
+    await expect(client.play.dispatch(token, action)).resolves.toEqual({ version: 3 });
+    expect(seen.map((request) => request.headers.get('X-Player-Key'))).toEqual([
+      playerKey,
+      null,
+      joined.playerKey,
+    ]);
+    expect(playerKeys.get(combatId)).toEqual(joined);
+  });
+
+  it('rejects with unauthorized when the new key is refused too', async () => {
+    const { fetch, seen } = playServer(2);
+    const client = createHonoApiClient({ baseUrl, fetch, playerKeys: seededKeys() });
+    await expect(client.play.get(token)).rejects.toMatchObject({ code: 'unauthorized' });
+    expect(seen).toHaveLength(3);
+  });
+
+  it('opens the stream after joining, with the issued id and key in the URL', async () => {
+    const { fetch, seen } = playServer();
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    client.play.subscribe(
+      token,
+      () => {},
+      () => {},
+    );
+    expect(StubEventSource.instances).toHaveLength(0);
+    await vi.waitFor(() => expect(StubEventSource.instances).toHaveLength(1));
+    expect(seen).toHaveLength(1);
+    const url = new URL(StubEventSource.instances[0]!.url);
+    expect(url.searchParams.get('playerId')).toBe(joined.playerId);
+    expect(url.searchParams.get('playerKey')).toBe(joined.playerKey);
+  });
+
+  it('opens no stream when unsubscribed while joining', async () => {
+    const { fetch } = playServer();
+    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const unsubscribe = client.play.subscribe(
+      token,
+      () => {},
+      () => {},
+    );
+    unsubscribe();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(StubEventSource.instances).toHaveLength(0);
+  });
+});
+
 describe('createHonoApiClient requests', () => {
   it('dispatch posts the action and resolves with { version }', async () => {
     const { fetch, seen } = stubFetch(200, { version: 3 });
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     await expect(client.combats.dispatch(combatId, action)).resolves.toEqual({ version: 3 });
     expect(seen).toHaveLength(1);
     expect(seen[0]?.method).toBe('POST');
@@ -219,27 +324,28 @@ describe('createHonoApiClient requests', () => {
     expect(seen[0]?.body).toEqual(action);
   });
 
-  it('play.dispatch sends the token as a query and the player id as a header', async () => {
+  it('play.dispatch sends the token as a query and the player id and key as headers', async () => {
     const { fetch, seen } = stubFetch(200, { version: 4 });
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     const token = `${combatId}.0.signature`;
-    await expect(client.play.dispatch(token, playerId, action)).resolves.toEqual({ version: 4 });
+    await expect(client.play.dispatch(token, action)).resolves.toEqual({ version: 4 });
     expect(seen[0]?.url.pathname).toBe(`/api/play/${combatId}/actions`);
     expect(seen[0]?.url.searchParams.get('t')).toBe(token);
     expect(seen[0]?.headers.get('X-Player-Id')).toBe(playerId);
+    expect(seen[0]?.headers.get('X-Player-Key')).toBe(playerKey);
   });
 
   it('rejects a token without a leading combat id', async () => {
     const { fetch } = stubFetch(200, { version: 4 });
-    const client = createHonoApiClient({ baseUrl, fetch });
-    await expect(client.play.get('not-a-token', playerId)).rejects.toMatchObject({
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
+    await expect(client.play.get('not-a-token')).rejects.toMatchObject({
       code: 'invalid',
     });
   });
 
   it('remove resolves without a body', async () => {
     const { fetch, seen } = stubFetch(204, null);
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     await expect(client.combats.remove(combatId)).resolves.toBeUndefined();
     expect(seen[0]?.method).toBe('DELETE');
   });
@@ -250,7 +356,7 @@ describe('createHonoApiClient requests', () => {
       user: { id: 'user-1', email: 'dm@example.com', name: 'DM', language: 'ru' },
       method: 'google',
     });
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     await expect(client.auth.session()).resolves.toEqual({
       userId: 'user-1',
       email: 'dm@example.com',
@@ -265,7 +371,7 @@ describe('createHonoApiClient requests', () => {
       token: 'token',
       user: { id: 'user-1', email: 'dm@example.com', name: 'DM', language: 'en' },
     });
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     await expect(
       client.auth.signIn({ email: 'dm@example.com', password: 'password' }),
     ).resolves.toMatchObject({ method: 'email' });
@@ -276,7 +382,7 @@ describe('createHonoApiClient requests', () => {
 
   it('rejects a response that does not match the schema', async () => {
     const { fetch } = stubFetch(200, { version: 'three' });
-    const client = createHonoApiClient({ baseUrl, fetch });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
     await expect(client.combats.dispatch(combatId, action)).rejects.toThrow();
   });
 });
@@ -285,7 +391,12 @@ describe('createHonoApiClient connection', () => {
   it('reports connected, reconnecting after 10 s of errors, and refetches on reopen', async () => {
     vi.useFakeTimers();
     const { fetch } = stubFetch(200, combatAt(5));
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const states: ConnectionState[] = [];
     client.connection.subscribe((state) => states.push(state));
     const documents: DmCombat[] = [];
@@ -324,7 +435,12 @@ describe('createHonoApiClient connection', () => {
   it('hands the DM the undo summary from get, open and the stream', async () => {
     const undone = { ...combatAt(3), undo: { action, unitName: null } };
     const { fetch } = stubFetch(200, undone);
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     await expect(client.combats.get(combatId)).resolves.toEqual(undone);
     await expect(client.combats.open(combatId)).resolves.toEqual(undone);
     const documents: DmCombat[] = [];
@@ -341,7 +457,12 @@ describe('createHonoApiClient connection', () => {
     ['fails the schema', JSON.stringify({ type: 'document', version: 2, document: { id: 1 } })],
   ])('drops an event that %s and refetches the document', async (_case, data) => {
     const { fetch, seen } = stubFetch(200, combatAt(6));
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const documents: DmCombat[] = [];
     const ended = vi.fn();
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), ended);
@@ -365,7 +486,12 @@ describe('createHonoApiClient connection', () => {
         answers.push(() => resolve(Response.json(combatAt(version))));
       });
     }) as typeof globalThis.fetch;
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const documents: DmCombat[] = [];
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
     const source = StubEventSource.instances.at(-1)!;
@@ -400,7 +526,12 @@ describe('createHonoApiClient connection', () => {
         fails.push(() => reject(new TypeError('fetch failed')));
       });
     }) as typeof globalThis.fetch;
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const documents: DmCombat[] = [];
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
     const source = StubEventSource.instances.at(-1)!;
@@ -425,7 +556,12 @@ describe('createHonoApiClient connection', () => {
         signal.addEventListener('abort', () => reject(signal.reason));
       });
     }) as typeof globalThis.fetch;
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const documents: DmCombat[] = [];
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
     const source = StubEventSource.instances.at(-1)!;
@@ -451,7 +587,12 @@ describe('createHonoApiClient connection', () => {
       if (signals.length > 1) return Promise.resolve(Response.json(combatAt(8)));
       return new Promise<Response>(() => {});
     }) as typeof globalThis.fetch;
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const documents: DmCombat[] = [];
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
     const source = StubEventSource.instances.at(-1)!;
@@ -470,7 +611,12 @@ describe('createHonoApiClient connection', () => {
 
   it('holds a repair until the reconnect refetch answers, then runs it as the follow-up', async () => {
     const { fetch, requests } = heldFetch();
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const documents: DmCombat[] = [];
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
     const source = StubEventSource.instances.at(-1)!;
@@ -495,7 +641,12 @@ describe('createHonoApiClient connection', () => {
   it('aborts a reconnect refetch past the timeout and delivers nothing after close', async () => {
     vi.useFakeTimers();
     const { fetch, requests } = heldFetch();
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const documents: DmCombat[] = [];
     const unsubscribe = client.combats.subscribe(combatId, (doc) => documents.push(doc), vi.fn());
     const source = StubEventSource.instances.at(-1)!;
@@ -532,11 +683,15 @@ describe('createHonoApiClient connection', () => {
     const token = `${combatId}.0.signature`;
     const document = project(combatAt(7), { kind: 'player', playerId });
     const { fetch } = stubFetch(200, { combatId, playerId, language: 'fr', combat: document });
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const received: Array<[number, string | undefined]> = [];
     const unsubscribe = client.play.subscribe(
       token,
-      playerId,
       (doc, language) => received.push([doc.version, language]),
       vi.fn(),
     );
@@ -564,7 +719,12 @@ describe('createHonoApiClient connection', () => {
 
   it('closes the stream on a final event and hands it to onEnd', () => {
     const { fetch } = stubFetch(200, combatAt(1));
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const ended = vi.fn();
     client.combats.subscribe(combatId, () => {}, ended);
     const source = StubEventSource.instances[0]!;
@@ -575,13 +735,17 @@ describe('createHonoApiClient connection', () => {
     expect(client.connection.state()).toBe('offline');
   });
 
-  it('play.subscribe puts the token and player id into the stream URL', () => {
+  it('play.subscribe puts the token, the player id and the key into the stream URL', () => {
     const { fetch } = stubFetch(200, null);
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
     const token = `${combatId}.2.signature`;
     client.play.subscribe(
       token,
-      playerId,
       () => {},
       () => {},
     );
@@ -589,11 +753,17 @@ describe('createHonoApiClient connection', () => {
     expect(url.pathname).toBe(`/api/play/${combatId}/events`);
     expect(url.searchParams.get('t')).toBe(token);
     expect(url.searchParams.get('playerId')).toBe(playerId);
+    expect(url.searchParams.get('playerKey')).toBe(playerKey);
   });
 
   it('stays offline without an EventSource implementation', () => {
     const { fetch } = stubFetch(200, null);
-    const client = createHonoApiClient({ baseUrl, fetch, eventSource: undefined });
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: undefined,
+    });
     const unsubscribe = client.combats.subscribe(
       combatId,
       () => {},
@@ -611,7 +781,7 @@ describe('createHonoApiClient stream probe', () => {
     dm: (client: ReturnType<typeof createHonoApiClient>, onEnd: EndListener) =>
       client.combats.subscribe(combatId, () => {}, onEnd),
     player: (client: ReturnType<typeof createHonoApiClient>, onEnd: EndListener) =>
-      client.play.subscribe(token, playerId, () => {}, onEnd),
+      client.play.subscribe(token, () => {}, onEnd),
   };
 
   const documentEvent = (kind: keyof typeof streams) => {
@@ -623,7 +793,12 @@ describe('createHonoApiClient stream probe', () => {
   describe.each(['dm', 'player'] as const)('%s stream', (kind) => {
     it('ends with linkRevoked when the probe answers 410', async () => {
       const { fetch, seen } = stubFetch(410, { code: 'linkRevoked', message: 'reissued' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       streams[kind](client, ended);
       const source = StubEventSource.instances[0]!;
@@ -640,7 +815,12 @@ describe('createHonoApiClient stream probe', () => {
 
     it('ends with deleted and the last title when the probe answers 404', async () => {
       const { fetch } = stubFetch(404, { code: 'notFound', message: 'Combat not found' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       streams[kind](client, ended);
       const source = StubEventSource.instances[0]!;
@@ -656,7 +836,12 @@ describe('createHonoApiClient stream probe', () => {
 
     it('ends with deleted and an empty title when no document arrived', async () => {
       const { fetch } = stubFetch(404, { code: 'notFound', message: 'Combat not found' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       streams[kind](client, ended);
       StubEventSource.instances[0]!.emit('error');
@@ -665,7 +850,12 @@ describe('createHonoApiClient stream probe', () => {
 
     it('keeps the browser reconnect on any other probe result', async () => {
       const { fetch, seen } = stubFetch(500, { message: 'boom' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       streams[kind](client, ended);
       const source = StubEventSource.instances[0]!;
@@ -679,7 +869,12 @@ describe('createHonoApiClient stream probe', () => {
 
     it('ends with unauthorized when the probe answers 401', async () => {
       const { fetch } = stubFetch(401, { message: 'Unauthorized' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       streams[kind](client, ended);
       const source = StubEventSource.instances[0]!;
@@ -695,7 +890,12 @@ describe('createHonoApiClient stream probe', () => {
     it('reopens a refused stream itself with backoff and reports reconnecting until it opens', async () => {
       vi.useFakeTimers();
       const { fetch, seen } = stubFetch(502, { message: 'Bad gateway' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const states: ConnectionState[] = [];
       client.connection.subscribe((state) => states.push(state));
       const ended = vi.fn();
@@ -735,7 +935,12 @@ describe('createHonoApiClient stream probe', () => {
 
     it('does not end a stream that was closed before the probe answered', async () => {
       const { fetch } = stubFetch(410, { code: 'linkRevoked', message: 'reissued' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       const unsubscribe = streams[kind](client, ended);
       StubEventSource.instances[0]!.emit('error');
@@ -762,7 +967,12 @@ describe('createHonoApiClient stream probe', () => {
     it('reopens a refused stream after the REST probe answers 200', async () => {
       vi.useFakeTimers();
       const { fetch, seen } = stubFetch(200, restBody());
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       const unsubscribe = streams[kind](client, ended);
       const first = StubEventSource.instances[0]!;
@@ -788,7 +998,12 @@ describe('createHonoApiClient stream probe', () => {
     it('leaves no timer or source when unsubscribed while the reopen timer is pending', async () => {
       vi.useFakeTimers();
       const { fetch, seen } = stubFetch(502, { message: 'Bad gateway' });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       const unsubscribe = streams[kind](client, ended);
       const source = StubEventSource.instances[0]!;
@@ -810,7 +1025,12 @@ describe('createHonoApiClient stream probe', () => {
     it('aborts the probe fetch and leaves no timer or source when unsubscribed while the probe is pending', async () => {
       vi.useFakeTimers();
       const { fetch, signals } = hangingFetch({ honorAbort: true });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       const unsubscribe = streams[kind](client, ended);
       const source = StubEventSource.instances[0]!;
@@ -834,7 +1054,12 @@ describe('createHonoApiClient stream probe', () => {
     it('times out a probe that never answers and counts it as a failed reopen', async () => {
       vi.useFakeTimers();
       const { fetch, signals } = hangingFetch({ honorAbort: false });
-      const client = createHonoApiClient({ baseUrl, fetch, eventSource: StubEventSource });
+      const client = createHonoApiClient({
+        baseUrl,
+        playerKeys: seededKeys(),
+        fetch,
+        eventSource: StubEventSource,
+      });
       const ended = vi.fn();
       const unsubscribe = streams[kind](client, ended);
       StubEventSource.instances[0]!.open();

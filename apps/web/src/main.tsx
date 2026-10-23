@@ -17,7 +17,7 @@ import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { aboutLinks } from './about.ts';
-import { browserStorage, playerIdOf } from './playerId.ts';
+import { browserStorage, playerKeysOf } from './playerId.ts';
 import { AppProviders } from './providers.tsx';
 import { BindLanguage, RouteLocale, languageBridge } from './routeLocale.ts';
 import { createAppRouter } from './router.tsx';
@@ -27,13 +27,12 @@ if (!rootElement) throw new Error('Element #root is missing');
 const asideElement = document.getElementById('aside');
 
 const locale = browserLocale(navigator.languages);
-const api = createHonoApiClient({ baseUrl: '/api' });
+const api = createHonoApiClient({ baseUrl: '/api', playerKeys: playerKeysOf(browserStorage) });
 const queryClient = createQueryClient();
 const { language, bind } = languageBridge();
 const router = createAppRouter({
   api,
   queryClient,
-  playerId: playerIdOf(browserStorage),
   about: aboutLinks(import.meta.env),
   language,
 });

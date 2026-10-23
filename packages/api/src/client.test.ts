@@ -149,17 +149,17 @@ function createMemoryClient() {
       },
     },
     play: {
-      get: async (token, playerId) => {
+      get: async (token) => {
         const combatId = token.split(':')[0] ?? '';
-        const { units: _units, ...fields } = combat(combatId);
+        const { units: _units, players: _players, ...fields } = combat(combatId);
         return {
           combatId,
-          playerId,
+          playerId: combatId,
           language: settings.language,
-          combat: { ...fields, units: [] },
+          combat: { ...fields, myName: null, units: [] },
         };
       },
-      dispatch: async (token, _playerId, action) => {
+      dispatch: async (token, action) => {
         const combatId = token.split(':')[0] ?? '';
         return combatsApi.dispatch(combatId, action);
       },

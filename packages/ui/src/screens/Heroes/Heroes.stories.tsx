@@ -20,22 +20,13 @@ import {
 import { Heroes } from './Heroes.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
-interface HeroesScreenProps {
-  playerId: string;
-}
-
-function HeroesScreen({ playerId }: HeroesScreenProps) {
-  const { combat, dispatch } = useCombat(COMBAT_ID, { kind: 'player', playerId }, TOKEN);
+function HeroesScreen() {
+  const { combat, dispatch } = useCombat(COMBAT_ID, { kind: 'player' }, TOKEN);
   const [done, setDone] = useState(false);
   if (!combat) return null;
   return (
     <>
-      <Heroes
-        combat={combat}
-        playerId={playerId}
-        dispatch={dispatch}
-        onDone={() => setDone(true)}
-      />
+      <Heroes combat={combat} dispatch={dispatch} onDone={() => setDone(true)} />
       {done ? <span hidden data-done="" /> : null}
     </>
   );
@@ -53,7 +44,6 @@ const longHeroName = 'Ильза Отважная, дочь стражника �
 const meta = preview.meta({
   title: 'Screens/Heroes',
   component: HeroesScreen,
-  args: { playerId: MIKA },
   parameters: { phoneFrame: { overlay: true }, scenario: firstVisit },
 });
 
@@ -178,8 +168,8 @@ export const JoinClaimsOnReturnedVersion = meta.story({
     const t = storyT(globals, 'Heroes');
     const api = fakeApiOf(loaded);
     const dispatch = api.play.dispatch.bind(api.play);
-    api.play.dispatch = async (token, playerId, action) => {
-      const result = await dispatch(token, playerId, action);
+    api.play.dispatch = async (token, action) => {
+      const result = await dispatch(token, action);
       if (action.type === 'claimUnit' && action.unitId === unitIds.vashti) {
         await actAsDm(api, { type: 'editNote', unitId: unitIds.orc, note: 'Ярость' });
         return { version: result.version + 1 };
@@ -219,9 +209,12 @@ export const ReturningRename = meta.story({
       displayName: 'Мика',
     });
     await expect(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' })).toBeChecked();
-    const { combat } = await api.play.get(TOKEN, MIKA);
-    await expect(combat.players[MIKA]).toBe('Мика');
-    await expect(combat.units.find((unit) => unit.id === unitIds.vashti)?.claimedBy).toBe(MIKA);
+    const { combat } = await api.play.get(TOKEN);
+    await expect(combat.myName).toBe('Мика');
+    await expect(combat.units.find((unit) => unit.id === unitIds.vashti)).toMatchObject({
+      mine: true,
+      claimedByName: 'Мика',
+    });
   },
 });
 

@@ -3,33 +3,53 @@ import { actionSchema, project, ulidSchema } from '@combat-planner/domain';
 import { zValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
 import { Hono } from 'hono';
+import { ulid } from 'ulid';
 import { z } from 'zod';
 import type { ApiAppEnv } from '../app.ts';
-import type { LinkToken, PlayView } from '../client.ts';
+import type { LinkToken, PlayView, PlayerCredentials } from '../client.ts';
 import { linkTokenSchema } from '../client.ts';
 import { dispatch } from '../combats/dispatch.ts';
 import { NOT_FOUND, findCombatRow, nowIso } from '../combats/store.ts';
-import { verifyLink } from '../link/token.ts';
+import { signPlayerKey, verifyLink, verifyPlayerKey } from '../link/token.ts';
 import { streamCombatEvents } from '../live/sse.ts';
 import { dmLanguage, recordPlayer } from './store.ts';
 
 const PLAYER_ID_HEADER = 'X-Player-Id';
+const PLAYER_KEY_HEADER = 'X-Player-Key';
 
 const LINK_REVOKED = { code: 'linkRevoked', message: 'This link was reissued' } as const;
-const PLAYER_ID_INVALID = {
-  code: 'invalid',
-  message: `${PLAYER_ID_HEADER} must be a ULID`,
+const UNAUTHORIZED = {
+  code: 'unauthorized',
+  message: 'Join the combat to get a player key',
 } as const;
 
 const tokenQuerySchema = z.object({ t: linkTokenSchema });
-const eventsQuerySchema = z.object({ t: linkTokenSchema, playerId: ulidSchema });
+const eventsQuerySchema = z.object({
+  t: linkTokenSchema,
+  playerId: z.string().optional(),
+  playerKey: z.string().optional(),
+});
+
+type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
 
 interface Resolved {
   combat: Combat;
   ownerId: string;
 }
 
-type Refusal = { status: 404; body: typeof NOT_FOUND } | { status: 410; body: typeof LINK_REVOKED };
+interface ResolvedPlayer extends Resolved {
+  viewer: PlayerViewer;
+}
+
+type Refusal =
+  | { status: 401; body: typeof UNAUTHORIZED }
+  | { status: 404; body: typeof NOT_FOUND }
+  | { status: 410; body: typeof LINK_REVOKED };
+
+interface GivenCredentials {
+  playerId: string | undefined;
+  playerKey: string | undefined;
+}
 
 const resolveLink = (c: Context<ApiAppEnv>, token: LinkToken): Resolved | Refusal => {
   const claims = verifyLink(token, c.get('env').linkSecret);
@@ -42,14 +62,32 @@ const resolveLink = (c: Context<ApiAppEnv>, token: LinkToken): Resolved | Refusa
   return { combat: row.document, ownerId: row.ownerId };
 };
 
-const playerIdOf = (c: Context<ApiAppEnv>): PlayerId | undefined => {
-  const parsed = ulidSchema.safeParse(c.req.header(PLAYER_ID_HEADER));
-  return parsed.success ? parsed.data : undefined;
+const resolvePlayer = (
+  c: Context<ApiAppEnv>,
+  token: LinkToken,
+  given: GivenCredentials,
+): ResolvedPlayer | Refusal => {
+  const resolved = resolveLink(c, token);
+  if ('status' in resolved) return resolved;
+  const playerId = ulidSchema.safeParse(given.playerId);
+  if (!playerId.success || given.playerKey === undefined) {
+    return { status: 401, body: UNAUTHORIZED };
+  }
+  const claims = {
+    combatId: resolved.combat.id,
+    generation: resolved.combat.linkGeneration,
+    playerId: playerId.data,
+  };
+  if (!verifyPlayerKey(given.playerKey, claims, c.get('env').linkSecret)) {
+    return { status: 401, body: UNAUTHORIZED };
+  }
+  return { ...resolved, viewer: { kind: 'player', playerId: playerId.data } };
 };
 
-type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
-
-const playerViewer = (playerId: PlayerId): PlayerViewer => ({ kind: 'player', playerId });
+const headerCredentials = (c: Context<ApiAppEnv>): GivenCredentials => ({
+  playerId: c.req.header(PLAYER_ID_HEADER),
+  playerKey: c.req.header(PLAYER_KEY_HEADER),
+});
 
 const rememberName = (c: Context<ApiAppEnv>, combat: Combat, playerId: PlayerId): void => {
   const displayName = combat.players[playerId];
@@ -57,17 +95,27 @@ const rememberName = (c: Context<ApiAppEnv>, combat: Combat, playerId: PlayerId)
 };
 
 export const playApp = new Hono<ApiAppEnv>()
-  .get('/:id', zValidator('query', tokenQuerySchema), (c) => {
+  .post('/:id/join', zValidator('query', tokenQuerySchema), (c) => {
     const resolved = resolveLink(c, c.req.valid('query').t);
     if ('status' in resolved) return c.json(resolved.body, resolved.status);
-    const playerId = playerIdOf(c);
-    if (playerId === undefined) return c.json(PLAYER_ID_INVALID, 400);
-    rememberName(c, resolved.combat, playerId);
-    const view: PlayView = {
-      combatId: resolved.combat.id,
+    const { id: combatId, linkGeneration: generation } = resolved.combat;
+    const playerId = ulid();
+    const credentials: PlayerCredentials = {
       playerId,
-      language: dmLanguage(c.get('db'), resolved.ownerId),
-      combat: project(resolved.combat, playerViewer(playerId)),
+      playerKey: signPlayerKey({ combatId, generation, playerId }, c.get('env').linkSecret),
+    };
+    return c.json(credentials);
+  })
+  .get('/:id', zValidator('query', tokenQuerySchema), (c) => {
+    const player = resolvePlayer(c, c.req.valid('query').t, headerCredentials(c));
+    if ('status' in player) return c.json(player.body, player.status);
+    const { combat, ownerId, viewer } = player;
+    rememberName(c, combat, viewer.playerId);
+    const view: PlayView = {
+      combatId: combat.id,
+      playerId: viewer.playerId,
+      language: dmLanguage(c.get('db'), ownerId),
+      combat: project(combat, viewer),
     };
     return c.json(view);
   })
@@ -76,37 +124,35 @@ export const playApp = new Hono<ApiAppEnv>()
     zValidator('query', tokenQuerySchema),
     zValidator('json', actionSchema),
     (c) => {
-      const resolved = resolveLink(c, c.req.valid('query').t);
-      if ('status' in resolved) return c.json(resolved.body, resolved.status);
-      const playerId = playerIdOf(c);
-      if (playerId === undefined) return c.json(PLAYER_ID_INVALID, 400);
+      const player = resolvePlayer(c, c.req.valid('query').t, headerCredentials(c));
+      if ('status' in player) return c.json(player.body, player.status);
+      const { viewer } = player;
       const outcome = dispatch(c.get('db'), {
-        combatId: resolved.combat.id,
-        viewer: playerViewer(playerId),
+        combatId: player.combat.id,
+        viewer,
         action: c.req.valid('json'),
         now: nowIso(),
       });
       if (!outcome.ok) {
         return c.json({ code: outcome.code, message: outcome.message }, outcome.status);
       }
-      rememberName(c, outcome.combat, playerId);
+      rememberName(c, outcome.combat, viewer.playerId);
       return c.json({ version: outcome.version });
     },
   )
   .get('/:id/events', zValidator('query', eventsQuerySchema), (c) => {
-    const { t, playerId } = c.req.valid('query');
-    const resolved = resolveLink(c, t);
-    if ('status' in resolved) return c.json(resolved.body, resolved.status);
+    const { t, playerId, playerKey } = c.req.valid('query');
+    const player = resolvePlayer(c, t, { playerId, playerKey });
+    if ('status' in player) return c.json(player.body, player.status);
     const db = c.get('db');
-    const combatId = resolved.combat.id;
-    const viewer = playerViewer(playerId);
-    const { ownerId } = resolved;
+    const { combat, ownerId, viewer } = player;
+    const combatId = combat.id;
     return streamCombatEvents(c, {
       combatId,
       viewer,
       load: () => {
-        const combat = findCombatRow(db, combatId)?.document;
-        return combat && project(combat, viewer);
+        const current = findCombatRow(db, combatId)?.document;
+        return current && project(current, viewer);
       },
       language: () => dmLanguage(db, ownerId),
     });

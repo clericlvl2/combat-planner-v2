@@ -125,7 +125,17 @@ const EVERY_COLUMN = [
   'position',
   'initiative',
 ];
-const FRIENDLY_COLUMNS = [...EVERY_COLUMN, 'claimedBy', 'hp', 'tempHp', 'maxHp', 'ac', 'pd', 'md'];
+const FRIENDLY_COLUMNS = [
+  ...EVERY_COLUMN,
+  'claimedByName',
+  'mine',
+  'hp',
+  'tempHp',
+  'maxHp',
+  'ac',
+  'pd',
+  'md',
+];
 const OWN_COLUMN = [...FRIENDLY_COLUMNS, 'initiativeBonus', 'note', 'hpHistory'];
 
 const columnOf = (unit: Unit): string[] => {
@@ -140,9 +150,20 @@ describe('project', () => {
   });
 
   it('keeps every combat-level field except linkGeneration and the players map in the player document', () => {
-    const { units: _units, linkGeneration: _linkGeneration, ...fields } = combat;
+    const { units: _units, linkGeneration: _linkGeneration, players: _players, ...fields } = combat;
     expect(doc).toMatchObject(fields);
-    expect(doc.players).toEqual(combat.players);
+    expect('players' in doc).toBe(false);
+    expect(doc.myName).toBe('Анна');
+  });
+
+  it('never contains another player id', () => {
+    const text = JSON.stringify(doc);
+    expect(text).not.toContain(OTHER_PLAYER_ID);
+    expect(text).not.toContain(PLAYER_ID);
+  });
+
+  it('gives no name to a player who has not joined', () => {
+    expect(project({ ...combat, players: {} }, PLAYER).myName).toBeNull();
   });
 
   it('never contains linkGeneration', () => {
@@ -208,7 +229,7 @@ describe('project', () => {
         [...(unit.role === 'enemy' ? EVERY_COLUMN : FRIENDLY_COLUMNS)].sort(),
       );
     }
-    expect(pu(unclaimed, 1).claimedBy).toBeNull();
+    expect(pu(unclaimed, 1)).toMatchObject({ claimedByName: null, mine: false });
   });
 
   it('shows an enemy claimed by the player as Enemy', () => {
@@ -302,18 +323,17 @@ describe('Visibility for players', () => {
   });
 
   it('Claimed by, display name | Own Hero', () => {
-    expect(ownUnit.claimedBy).toBe(PLAYER_ID);
-    expect(doc.players[PLAYER_ID]).toBe('Анна');
+    expect(ownUnit).toMatchObject({ claimedByName: 'Анна', mine: true });
   });
 
   it('Claimed by, display name | Other Hero, Ally', () => {
-    expect(otherUnit.claimedBy).toBe(OTHER_PLAYER_ID);
-    expect(doc.players[OTHER_PLAYER_ID]).toBe('Bob');
-    expect(allyUnit.claimedBy).toBeNull();
+    expect(otherUnit).toMatchObject({ claimedByName: 'Bob', mine: false });
+    expect(allyUnit).toMatchObject({ claimedByName: null, mine: false });
   });
 
   it('Claimed by, display name | Enemy', () => {
-    expect('claimedBy' in enemyUnit).toBe(false);
+    expect('claimedByName' in enemyUnit).toBe(false);
+    expect('mine' in enemyUnit).toBe(false);
   });
 
   it('HP, temp HP, max HP | Own Hero', () => {

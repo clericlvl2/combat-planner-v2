@@ -2,7 +2,7 @@ import type { Action, Combat, Patch, UndoableEntry, Viewer } from '@combat-plann
 import { DomainError, LIMITS, apply, nextStack, undoSummary } from '@combat-planner/domain';
 import { asc, eq } from 'drizzle-orm';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
-import { playerLinkSchema } from '../src/client.ts';
+import { playerCredentialsSchema, playerLinkSchema } from '../src/client.ts';
 import { dispatch } from '../src/combats/dispatch.ts';
 import { actionLog } from '../src/db/schema.ts';
 import type { TestApp } from './helpers.ts';
@@ -247,9 +247,14 @@ describe('a log written before the stack', () => {
       await (await call(dm, 'GET', `/combats/${COMBAT_ID}/link`)).json(),
     );
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const joined = await opened.app.request(
+      `/play/${COMBAT_ID}/join?${new URLSearchParams({ t: link.token }).toString()}`,
+      { method: 'POST' },
+    );
+    const credentials = playerCredentialsSchema.parse(await joined.json());
     const reads = countLogReads(opened);
     const response = await opened.app.request(
-      `/play/${COMBAT_ID}/events?${new URLSearchParams({ t: link.token, playerId: PLAYER_ID }).toString()}`,
+      `/play/${COMBAT_ID}/events?${new URLSearchParams({ t: link.token, ...credentials }).toString()}`,
     );
     const stream = openSse(response);
     const initial = await stream.event();

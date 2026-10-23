@@ -10,7 +10,12 @@ const visibleUnits = (combat: Combat): Unit[] => {
   return order.filter((unit) => !unit.disabled);
 };
 
-const playerUnit = (unit: Unit, position: number, playerId: PlayerId): PlayerUnit => {
+const playerUnit = (
+  unit: Unit,
+  position: number,
+  playerId: PlayerId,
+  players: Combat['players'],
+): PlayerUnit => {
   const status = healthStatus(unit.hp, unit.maxHp);
   const everyColumn: PlayerUnit = {
     id: unit.id,
@@ -24,7 +29,8 @@ const playerUnit = (unit: Unit, position: number, playerId: PlayerId): PlayerUni
   };
   const friendlyColumns: PlayerUnit = {
     ...everyColumn,
-    claimedBy: unit.claimedBy,
+    claimedByName: unit.claimedBy === null ? null : (players[unit.claimedBy] ?? null),
+    mine: unit.claimedBy === playerId,
     hp: unit.hp,
     tempHp: unit.tempHp,
     maxHp: unit.maxHp,
@@ -62,9 +68,11 @@ export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat {
     activeUnitId: activeVisible ? combat.activeUnitId : null,
     lastPlayedAt: combat.lastPlayedAt,
     version: combat.version,
-    players: combat.players,
+    myName: combat.players[viewer.playerId] ?? null,
     createdAt: combat.createdAt,
     updatedAt: combat.updatedAt,
-    units: visible.map((unit, index) => playerUnit(unit, index + 1, viewer.playerId)),
+    units: visible.map((unit, index) =>
+      playerUnit(unit, index + 1, viewer.playerId, combat.players),
+    ),
   };
 }

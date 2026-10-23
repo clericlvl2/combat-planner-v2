@@ -24,12 +24,15 @@ export interface Scenario {
   combats: Combat[];
   links: Partial<Record<CombatId, LinkToken>>;
   players: Partial<Record<CombatId, Record<PlayerId, DisplayName>>>;
+  playerId: PlayerId;
   presets: Preset[];
   tags: Tag[];
   settings: Settings;
   providers: SocialProvider[];
   connection: ConnectionState;
 }
+
+export const FAKE_PLAYER_ID: PlayerId = '01JP000000000000000000PME0';
 
 export const DM_ACCOUNT: FakeAccount = {
   userId: 'dm-1',
@@ -51,6 +54,7 @@ const defaults: Scenario = {
   combats: [],
   links: {},
   players: {},
+  playerId: FAKE_PLAYER_ID,
   presets: [],
   tags: [],
   settings: { language: DM_ACCOUNT.language },

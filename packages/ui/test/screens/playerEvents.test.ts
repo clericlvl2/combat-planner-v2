@@ -26,7 +26,7 @@ function step(combat: Combat, body: ActionBody, author: Viewer = DM): Combat {
 }
 
 const eventsAfter = (combat: Combat, body: ActionBody, author?: Viewer) =>
-  playerEvents(viewOf(combat), viewOf(step(combat, body, author)), MIKA);
+  playerEvents(viewOf(combat), viewOf(step(combat, body, author)));
 
 describe('playerEvents', () => {
   it('reports a DM restart', () => {
@@ -56,9 +56,7 @@ describe('playerEvents', () => {
       { type: 'claimUnit', unitId: unitIds.vashti, displayName: 'Alex' },
       { kind: 'player', playerId: ALEX },
     );
-    expect(events).toEqual([
-      { kind: 'taken', unitId: unitIds.vashti, name: 'Vashti the Hexer', by: ALEX },
-    ]);
+    expect(events).toEqual([{ kind: 'taken', unitId: unitIds.vashti, name: 'Vashti the Hexer' }]);
   });
 
   it('reports nothing on an ordinary update', () => {

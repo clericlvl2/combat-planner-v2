@@ -1,6 +1,6 @@
 import { ApiError } from '@combat-planner/api/client';
 import type { LinkToken } from '@combat-planner/api/client';
-import type { Action, CombatId, PlayerCombat, PlayerId, UnitId } from '@combat-planner/domain';
+import type { Action, CombatId, PlayerCombat, UnitId } from '@combat-planner/domain';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCombat } from '../../hooks/useCombat.ts';
@@ -17,21 +17,18 @@ import classes from './PlayerView.module.css';
 export interface PlayerViewProps {
   combatId: CombatId;
   token: LinkToken;
-  playerId: PlayerId;
   random?: () => number;
 }
 
 type View = 'heroes' | 'turnOrder';
 
-const holdsHero = (combat: PlayerCombat, playerId: PlayerId): boolean =>
-  combat.units.some((unit) => unit.claimedBy === playerId);
+const PLAYER = { kind: 'player' } as const;
 
-export function PlayerView({ combatId, token, playerId, random }: PlayerViewProps) {
-  const { combat, language, error, ended, dispatch, refetch } = useCombat(
-    combatId,
-    { kind: 'player', playerId },
-    token,
-  );
+const holdsHero = (combat: PlayerCombat): boolean =>
+  combat.units.some((unit) => unit.mine === true);
+
+export function PlayerView({ combatId, token, random }: PlayerViewProps) {
+  const { combat, language, error, ended, dispatch, refetch } = useCombat(combatId, PLAYER, token);
   const { i18n } = useTranslation();
   const notify = usePlayerToasts();
   const [view, setView] = useState<View | null>(null);
@@ -39,7 +36,7 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
   const ownReleases = useRef(new Set<UnitId>());
   const previous = useRef<PlayerCombat | undefined>(undefined);
 
-  if (combat && view === null) setView(holdsHero(combat, playerId) ? 'turnOrder' : 'heroes');
+  if (combat && view === null) setView(holdsHero(combat) ? 'turnOrder' : 'heroes');
   if (combat && combat.title !== seenTitle) setSeenTitle(combat.title);
 
   useLayoutEffect(() => {
@@ -51,7 +48,7 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
     previous.current = combat;
     if (before === undefined || combat === undefined || before === combat) return;
     let lostHero = false;
-    for (const event of playerEvents(before, combat, playerId)) {
+    for (const event of playerEvents(before, combat)) {
       if (event.kind === 'taken') continue;
       if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) {
         lostHero = true;
@@ -64,8 +61,8 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
         notify(event.kind);
       }
     }
-    if (lostHero && !holdsHero(combat, playerId)) setView('heroes');
-  }, [combat, playerId, notify]);
+    if (lostHero && !holdsHero(combat)) setView('heroes');
+  }, [combat, notify]);
 
   const send = useCallback(
     async (action: Action) => {
@@ -101,16 +98,10 @@ export function PlayerView({ combatId, token, playerId, random }: PlayerViewProp
   return (
     <div className={classes.root}>
       {view === 'heroes' ? (
-        <Heroes
-          combat={combat}
-          playerId={playerId}
-          dispatch={send}
-          onDone={() => setView('turnOrder')}
-        />
+        <Heroes combat={combat} dispatch={send} onDone={() => setView('turnOrder')} />
       ) : (
         <TurnOrder
           combat={combat}
-          playerId={playerId}
           dispatch={send}
           random={random}
           onHeroes={() => setView('heroes')}
