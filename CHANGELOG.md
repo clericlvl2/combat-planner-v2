@@ -1,5 +1,41 @@
 # Changelog
 
+## [0.1.2](https://github.com/clericlvl2/combat-planner-v2/compare/v0.1.1...v0.1.2) (2026-10-23)
+
+
+### Features
+
+* **api:** a shared link turns off 15 minutes after the DM signs out everywhere ([f65ec62](https://github.com/clericlvl2/combat-planner-v2/commit/f65ec6287b74f1f0c4b421780923cf6da5ac32e0))
+* **deploy:** Google and GitHub sign-in on the server, and www redirects to the bare domain ([20f4821](https://github.com/clericlvl2/combat-planner-v2/commit/20f4821a138328f5c03a6709c90ca91009d359ce))
+* **ui:** a player without a hero for 15 minutes is asked to reconnect ([686e076](https://github.com/clericlvl2/combat-planner-v2/commit/686e076dc77e1d923b2c6a3b21841dc79c48642d))
+* **ui:** the Account screen signs out on other devices ([f45f96a](https://github.com/clericlvl2/combat-planner-v2/commit/f45f96a6603556faf1b3b1d1fcd2e1a1025c9adf))
+
+
+### Bug Fixes
+
+* **api:** a client over its per-minute request budget gets 429 with Retry-After ([919b815](https://github.com/clericlvl2/combat-planner-v2/commit/919b815390555119deec2ef63f3494439f0cdd2d))
+* **api:** a combat admits at most 12 players ([28814f3](https://github.com/clericlvl2/combat-planner-v2/commit/28814f306bf0d474d7f9fd0d42e05e0092a45cc7))
+* **api:** a combat's action log keeps only what undo can reach ([6a555f2](https://github.com/clericlvl2/combat-planner-v2/commit/6a555f2a49d5efd0f8ded9421e692dad1ec2e1a8))
+* **api:** a DM keeps at most 25 tags ([72d3f27](https://github.com/clericlvl2/combat-planner-v2/commit/72d3f27bb29e72f7648fe70eef59df27c8e9b4c3))
+* **api:** a DM who signs in again keeps the shared link ([5f90978](https://github.com/clericlvl2/combat-planner-v2/commit/5f90978c5bfbbe3bdc2bc6399eca761c22c1ecf4))
+* **api:** a player acts only with the key the server issued ([f8de070](https://github.com/clericlvl2/combat-planner-v2/commit/f8de070cea3635a1bb8648125caaf806c8f3c9e2))
+* **api:** a request body over 64 KB is refused with 413 ([e193727](https://github.com/clericlvl2/combat-planner-v2/commit/e193727f53d2bdefcabe984058fa85ab91731396))
+* **api:** a stored preset with more than 25 tags still loads in the Library ([9be29dc](https://github.com/clericlvl2/combat-planner-v2/commit/9be29dc207457e4034c15020916c5bdb40ac8859))
+* **api:** a write waits up to 5 s for a lock instead of failing with SQLITE_BUSY ([1ded556](https://github.com/clericlvl2/combat-planner-v2/commit/1ded55660d52690940afd39e28debb5d26cca71e))
+* **api:** a write waits up to 5 s for a lock; deploy files for a VPS ([f30871e](https://github.com/clericlvl2/combat-planner-v2/commit/f30871e429018068a80667cd298739c9e1f8ec87))
+* **api:** every response carries HSTS, a strict content security policy and anti-framing headers ([f43c582](https://github.com/clericlvl2/combat-planner-v2/commit/f43c582bfc33c8a5b2fd3041289fb3726620f1d1))
+* **api:** heroes claimed before the update can be claimed again ([eef292b](https://github.com/clericlvl2/combat-planner-v2/commit/eef292b8c9c1b807b4ac929ca6769fdaf7b53ed1))
+* **api:** tables sharing one address get separate play, action and live-update budgets per combat ([2e0d9b0](https://github.com/clericlvl2/combat-planner-v2/commit/2e0d9b0ea686404239f8d6ec91e8432195222053))
+* **api:** the 6th email sign-in or 4th sign-up from one address within a minute gets 429 ([932f257](https://github.com/clericlvl2/combat-planner-v2/commit/932f25732aba99cc633f5c427520ce221b805cba))
+* **api:** the update marks as shared only combats with players ([d9f193d](https://github.com/clericlvl2/combat-planner-v2/commit/d9f193dbc44144d05297921d05001b73acf3248e))
+* **domain:** a unit's HP history keeps its newest 100 entries ([9f1f46b](https://github.com/clericlvl2/combat-planner-v2/commit/9f1f46b6a36317a1a714c0e4b23e626369bd1513))
+* **domain:** claiming a hero leaves the DM's undo untouched ([49f9095](https://github.com/clericlvl2/combat-planner-v2/commit/49f90957830980205f5671c2d61d876b927dd659))
+* **domain:** undo works as a stack of the last 10 actions ([236ca40](https://github.com/clericlvl2/combat-planner-v2/commit/236ca405b9818b893f3452fc9096d78f06b54de3))
+* **server:** one broken combat no longer stops link and player timeouts ([d23e996](https://github.com/clericlvl2/combat-planner-v2/commit/d23e996b1e52cedb2a3a3ce4e6808302063f6eb8))
+* **server:** shortened test timers never apply in production ([651bd59](https://github.com/clericlvl2/combat-planner-v2/commit/651bd5978af3f80d37f90462c017c05323e2d89f))
+* **ui:** the Library says when the tag limit is reached ([cf99db3](https://github.com/clericlvl2/combat-planner-v2/commit/cf99db34b15c9ee24f789cbf801184bd172d1084))
+* **ui:** too many requests shows "wait a minute" instead of wrong credentials or a generic error ([67d5bdf](https://github.com/clericlvl2/combat-planner-v2/commit/67d5bdf1475ed054964424724beb8fd9cd39c6cf))
+
 ## [0.1.1](https://github.com/clericlvl2/combat-planner-v2/compare/v0.1.0...v0.1.1) (2026-10-22)
 
 
