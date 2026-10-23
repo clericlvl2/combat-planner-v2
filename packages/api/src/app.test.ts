@@ -1,6 +1,6 @@
 import { healthSchema } from '@combat-planner/domain';
 import { afterAll, describe, expect, it } from 'vite-plus/test';
-import { createApiApp } from './app.ts';
+import { BODY_LIMIT_BYTES, createApiApp } from './app.ts';
 import { openDatabase } from './db/index.ts';
 import type { ApiEnv } from './env.ts';
 
@@ -26,5 +26,15 @@ describe('api app', () => {
   it('answers an unknown route with 404', async () => {
     const response = await app.request('/events');
     expect(response.status).toBe(404);
+  });
+
+  it('refuses a body over 64 KB with 413 and the error shape', async () => {
+    const response = await app.request('/presets', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ padding: 'x'.repeat(BODY_LIMIT_BYTES) }),
+    });
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ code: 'limit', message: 'Request body exceeds 64 KB' });
   });
 });
