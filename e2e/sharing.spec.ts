@@ -42,7 +42,7 @@ async function prepareCombat(page: Page, title: string): Promise<Prepared> {
 async function signOut(page: Page): Promise<void> {
   await page.goto('/account');
   await page.getByRole('button', { name: t('Account:signOut'), exact: true }).click();
-  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(page).toHaveURL(/\/$/);
 }
 
 const offline = (page: Page) =>

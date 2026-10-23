@@ -7,7 +7,8 @@ const signOut = async (page: Page, email: string) => {
   await page.goto('/account');
   await expect(page.getByText(email)).toBeVisible();
   await page.getByRole('button', { name: t('Account:signOut'), exact: true }).click();
-  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole('heading', { level: 1, name: t('Landing:title') })).toBeVisible();
 };
 
 test('sign-up lands on an empty combat list', async ({ page }) => {

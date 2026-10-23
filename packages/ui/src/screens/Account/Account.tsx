@@ -23,6 +23,7 @@ export function Account() {
   const { show } = useToasts();
   const [draft, setDraft] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [blurred, setBlurred] = useState(false);
   const sending = useRef<string | null>(null);
 
@@ -58,9 +59,11 @@ export function Account() {
   };
 
   const leave = () => {
+    setLeaving(true);
     signOut()
-      .then(() => navigate('/auth/sign-in'))
+      .then(() => navigate('/'))
       .catch((error: unknown) => {
+        setLeaving(false);
         if (error instanceof ApiError && toastedCodes.has(error.code)) return;
         show({ message: t('signOutFailed'), kind: 'error' });
       });
@@ -81,7 +84,7 @@ export function Account() {
   };
 
   return (
-    <PageScreen title={t('title')} section="account">
+    <PageScreen title={t('title')} section="account" signedOutPath={leaving ? '/' : undefined}>
       <PageSection label={t('signedInAs')}>
         <div className={classes.card}>
           <div className={classes.block}>

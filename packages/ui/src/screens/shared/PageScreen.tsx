@@ -12,10 +12,17 @@ export interface PageScreenProps {
   title: string;
   section: DrawerSection;
   openToGuests?: boolean;
+  signedOutPath?: string;
   children: ReactNode;
 }
 
-export function PageScreen({ title, section, openToGuests = false, children }: PageScreenProps) {
+export function PageScreen({
+  title,
+  section,
+  openToGuests = false,
+  signedOutPath = '/auth/sign-in',
+  children,
+}: PageScreenProps) {
   const navigate = useNavigate();
   const { session } = useAccount();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -23,8 +30,8 @@ export function PageScreen({ title, section, openToGuests = false, children }: P
   const guest = signedOut && openToGuests;
 
   useEffect(() => {
-    if (signedOut && !openToGuests) void navigate('/auth/sign-in');
-  }, [signedOut, openToGuests, navigate]);
+    if (signedOut && !openToGuests) void navigate(signedOutPath);
+  }, [signedOut, openToGuests, signedOutPath, navigate]);
 
   return (
     <div className={classes.root}>
