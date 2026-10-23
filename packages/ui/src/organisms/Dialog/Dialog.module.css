@@ -30,6 +30,7 @@
   max-height: 100%;
   padding: 16px;
   overflow-y: auto;
+  scrollbar-width: none;
   border: 2px solid var(--cp-color-ink);
   border-radius: var(--mantine-radius-sheet);
   background: var(--cp-color-surface);

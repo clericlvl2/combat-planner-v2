@@ -91,6 +91,7 @@
   &[data-long] {
     max-height: 320px;
     overflow-y: auto;
+    scrollbar-width: none;
     overscroll-behavior: contain;
   }
 

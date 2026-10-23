@@ -10,6 +10,7 @@
   min-height: 0;
   padding: 160px 24px 40px;
   overflow-y: auto;
+  scrollbar-width: none;
   background: var(--cp-color-background);
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);

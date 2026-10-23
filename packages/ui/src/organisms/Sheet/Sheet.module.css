@@ -105,6 +105,7 @@
   margin: -6px;
   padding: 6px;
   overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .actions {
