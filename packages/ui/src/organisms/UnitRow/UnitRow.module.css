@@ -149,6 +149,10 @@
   gap: 8px;
 }
 
+.wideTrigger {
+  grid-column: 1 / -1;
+}
+
 .trigger {
   box-sizing: border-box;
   display: flex;

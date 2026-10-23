@@ -32,6 +32,7 @@ export type UnitRowTarget =
   | 'hp'
   | 'conditions'
   | 'history'
+  | 'defenses'
   | 'note'
   | 'edit'
   | 'more';
@@ -66,6 +67,7 @@ interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childre
   initiativeOpen?: boolean;
   conditionsOpen?: boolean;
   historyOpen?: boolean;
+  defensesOpen?: boolean;
   menuOpen?: boolean;
   busy?: boolean;
   duplicateDisabled?: boolean;
@@ -93,6 +95,7 @@ export function UnitRow({
   initiativeOpen = false,
   conditionsOpen = false,
   historyOpen = false,
+  defensesOpen = false,
   menuOpen = false,
   busy = false,
   duplicateDisabled = false,
@@ -255,7 +258,6 @@ export function UnitRow({
           acMod={unit.acMod}
           pdMod={unit.pdMod}
           mdMod={unit.mdMod}
-          onEdit={readOnly ? undefined : () => onDefenses?.()}
         />
         {unit.conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
@@ -324,6 +326,19 @@ export function UnitRow({
               onClick={() => onHistory?.()}
             >
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
+              <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+            </UnstyledButton>
+            <UnstyledButton
+              component="button"
+              type="button"
+              className={`${classes.trigger} ${classes.wideTrigger}`}
+              aria-haspopup="dialog"
+              aria-expanded={defensesOpen}
+              data-open={defensesOpen || undefined}
+              data-tap={tapOf('defenses')}
+              onClick={() => onDefenses?.()}
+            >
+              <span className={classes.triggerLabel}>{t('defenses')}</span>
               <IconChevronDown size={20} stroke={2} aria-hidden="true" />
             </UnstyledButton>
           </div>

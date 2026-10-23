@@ -37,10 +37,11 @@
 
 .reading {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-columns: auto auto;
   grid-template-areas:
     'label total'
     'base base';
+  justify-content: start;
   align-items: baseline;
   column-gap: 8px;
   row-gap: 2px;

@@ -15,7 +15,7 @@ import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
 import classes from './PlayerRow.module.css';
 
-export type PlayerRowTarget = 'initiative' | 'hp' | 'conditions' | 'history' | 'note';
+export type PlayerRowTarget = 'initiative' | 'hp' | 'conditions' | 'history' | 'defenses' | 'note';
 
 export interface PlayerRowProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -141,9 +141,7 @@ export function PlayerRow({
             </>
           ) : null}
         </span>
-        {defenses ? (
-          <DefenseLine {...defenses} onEdit={mine && onDefenses ? onDefenses : undefined} />
-        ) : null}
+        {defenses ? <DefenseLine {...defenses} /> : null}
         {conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
             {conditions.map((condition) => (
@@ -222,6 +220,19 @@ export function PlayerRow({
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
               <IconChevronDown size={20} stroke={2} aria-hidden="true" />
             </UnstyledButton>
+            {onDefenses ? (
+              <UnstyledButton
+                component="button"
+                type="button"
+                className={`${classes.trigger} ${classes.wideTrigger}`}
+                aria-haspopup="dialog"
+                data-tap={tapOf('defenses')}
+                onClick={() => onDefenses()}
+              >
+                <span className={classes.triggerLabel}>{t('defenses')}</span>
+                <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+              </UnstyledButton>
+            ) : null}
           </div>
           <NoteField value={note} onChange={onNoteChange} data-tap={tapOf('note')} />
           <CardActions open={moreOpen} busy={busy} onEdit={onEdit} onMore={onMore} />

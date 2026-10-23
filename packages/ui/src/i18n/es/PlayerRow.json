@@ -1,6 +1,7 @@
 {
   "conditions": "Estados",
   "hpHistory": "Historial PG",
+  "defenses": "Ajuste de defensa",
   "charmed": "hechizado",
   "confused": "confundido",
   "dazed": "atontado",

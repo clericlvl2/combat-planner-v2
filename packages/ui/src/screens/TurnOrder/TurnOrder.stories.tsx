@@ -159,8 +159,9 @@ export const PlayerEditsOwnDefenses = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
     const api = fakeApiOf(loaded);
+    await expandOwn(canvas);
     const vashti = await rowOf(canvas, ME);
-    await userEvent.click(within(vashti).getByRole('button', { name: t('DefenseLine:edit') }));
+    await userEvent.click(within(vashti).getByRole('button', { name: t('PlayerRow:defenses') }));
     const sheet = await canvas.findByRole('dialog', {
       name: t('DefenseSheet:title', { name: ME }),
     });
@@ -175,13 +176,14 @@ export const PlayerEditsOwnDefenses = meta.story({
         expect.objectContaining({ type: 'setDefenseMods', unitId: unitIds.vashti, md: -2 }),
       ]),
     );
-    const line = within(await rowOf(canvas, ME)).getByRole('button', {
-      name: t('DefenseLine:edit'),
-    });
+    const line = (await rowOf(canvas, ME)).querySelector<HTMLElement>(
+      '[role="group"]:has(> [data-stat])',
+    );
+    if (!line) throw new Error('defense line missing');
     await waitFor(() =>
       expect(line.querySelector('[data-stat="md"]')).toHaveAttribute('data-mod', 'down'),
     );
-    await expect(line).toHaveAccessibleDescription(
+    await expect(line).toHaveAccessibleName(
       new RegExp(`${escapeRegExp(t('DefenseLine:md'))}\\s13$`),
     );
   },
@@ -192,10 +194,15 @@ export const PlayerCannotEditAlly = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'TurnOrder');
     const tomas = await rowOf(canvas, 'Brother Tomas of the Silver Lantern Order');
-    await expect(within(tomas).queryByRole('button', { name: t('DefenseLine:edit') })).toBeNull();
+    await userEvent.click(within(tomas).getByText('Brother Tomas of the Silver Lantern Order'));
+    await expect(tomas).not.toHaveAttribute('data-expanded');
+    await expect(within(tomas).queryByRole('button', { name: t('PlayerRow:defenses') })).toBeNull();
     await expect(within(tomas).getByRole('group', { name: /17/ })).toBeVisible();
+    await expandOwn(canvas);
     const vashti = await rowOf(canvas, ME);
-    await expect(within(vashti).getByRole('button', { name: t('DefenseLine:edit') })).toBeVisible();
+    await expect(
+      within(vashti).getByRole('button', { name: t('PlayerRow:defenses') }),
+    ).toBeVisible();
   },
 });
 

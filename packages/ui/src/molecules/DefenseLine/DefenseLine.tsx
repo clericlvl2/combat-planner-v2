@@ -1,6 +1,4 @@
 import { LIMITS } from '@combat-planner/domain';
-import { UnstyledButton, VisuallyHidden } from '@mantine/core';
-import { useId } from 'react';
 import type { HTMLAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import classes from './DefenseLine.module.css';
@@ -9,14 +7,13 @@ export type DefenseStat = 'ac' | 'pd' | 'md';
 
 export type DefenseModDirection = 'up' | 'down';
 
-export interface DefenseLineProps extends Omit<HTMLAttributes<HTMLElement>, 'children'> {
+export interface DefenseLineProps extends Omit<HTMLAttributes<HTMLSpanElement>, 'children'> {
   ac: number | null;
   pd: number | null;
   md: number | null;
   acMod?: number;
   pdMod?: number;
   mdMod?: number;
-  onEdit?: () => void;
 }
 
 const nbsp = ' ';
@@ -37,12 +34,10 @@ export function DefenseLine({
   acMod = 0,
   pdMod = 0,
   mdMod = 0,
-  onEdit,
   className,
   ...rest
 }: DefenseLineProps) {
   const { t } = useTranslation('DefenseLine');
-  const descriptionId = useId();
   const stats = [
     { stat: 'ac', base: ac, mod: acMod },
     { stat: 'pd', base: pd, mod: pdMod },
@@ -66,29 +61,13 @@ export function DefenseLine({
       <span className={classes.value}>{total ?? '—'}</span>
     </span>
   ));
-  const rootClass = className ? `${classes.root} ${className}` : classes.root;
-
-  if (onEdit) {
-    return (
-      <UnstyledButton
-        {...rest}
-        component="button"
-        type="button"
-        className={`${rootClass} ${classes.edit}`}
-        aria-label={t('edit')}
-        aria-describedby={descriptionId}
-        onClick={onEdit}
-      >
-        <span className={classes.chips} aria-hidden="true">
-          {chips}
-        </span>
-        <VisuallyHidden id={descriptionId}>{text}</VisuallyHidden>
-      </UnstyledButton>
-    );
-  }
-
   return (
-    <span {...rest} className={rootClass} role="group" aria-label={text}>
+    <span
+      {...rest}
+      className={className ? `${classes.root} ${className}` : classes.root}
+      role="group"
+      aria-label={text}
+    >
       {chips}
     </span>
   );

@@ -1,5 +1,5 @@
 import preview from '#.storybook/preview';
-import { expect, fn, userEvent } from 'storybook/test';
+import { expect } from 'storybook/test';
 import { base, hpActions } from '../../theme.ts';
 import { DefenseLine } from './DefenseLine.tsx';
 import type { DefenseLineProps } from './DefenseLine.tsx';
@@ -153,21 +153,5 @@ export const TotalStaysInRange = meta.story({
   args: { ac: 98, pd: 1, md: 12, acMod: 5, pdMod: -3 },
   play: async ({ canvasElement }) => {
     await expect(valuesOf(canvasElement)).toEqual(['99', '0', '12']);
-  },
-});
-
-export const EditOpens = meta.story({
-  tags: ['!dev'],
-  args: { ac: 18, pd: 16, md: 12, acMod: 1, onEdit: fn() },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'DefenseLine');
-    const button = canvas.getByRole('button', { name: t('edit') });
-    await expect(button).toHaveAccessibleDescription(
-      `${t('ac')}\u00A019\u00A0· ${t('pd')}\u00A016\u00A0· ${t('md')}\u00A012`,
-    );
-    const tap = getComputedStyle(button, '::after');
-    await expect(button.getBoundingClientRect().height - 2 * Number.parseFloat(tap.top)).toBe(44);
-    await userEvent.click(button);
-    await expect(args.onEdit).toHaveBeenCalledOnce();
   },
 });

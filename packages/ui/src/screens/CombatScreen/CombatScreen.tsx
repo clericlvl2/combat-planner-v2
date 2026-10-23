@@ -596,6 +596,7 @@ export function CombatScreen({
             initiativeOpen={isOpen('initiative', unit)}
             conditionsOpen={isOpen('conditions', unit)}
             historyOpen={isOpen('history', unit)}
+            defensesOpen={isOpen('defenses', unit)}
             menuOpen={isOpen('menu', unit)}
             busy={busyUnitId === unit.id}
             duplicateDisabled={atCap}

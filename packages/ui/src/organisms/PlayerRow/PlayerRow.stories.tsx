@@ -261,10 +261,9 @@ export const OwnHero = meta.story({
     const lines = [...canvas.getByText('Vashti the Hexer').getClientRects()];
     await expect(lines.at(-1)?.top).toBe(claimer.getBoundingClientRect().top);
     await expect(
-      canvas.getByRole('button', {
-        name: t('DefenseLine:edit'),
-        description: (description: string) =>
-          description.replace(/\s+/g, ' ') ===
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
           `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
       }),
     ).toBeVisible();
@@ -488,7 +487,13 @@ export const TapRowExpandsAndCollapses = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
     const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
-    await userEvent.click(canvas.getByText('Vashti the Hexer'));
+    await userEvent.click(
+      canvas.getByRole('group', {
+        name: (name: string) =>
+          name.replace(/\s+/g, ' ') ===
+          `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 12 · ${t('DefenseLine:md')} 15`,
+      }),
+    );
     await expect(args.onToggle).toHaveBeenCalledOnce();
     await expect(name).toHaveAttribute('aria-expanded', 'true');
     await expect(canvas.getByRole('button', { name: t('conditions') })).toBeVisible();
@@ -625,7 +630,6 @@ export const OtherRowsReadOnly = meta.story({
 
 interface KeyboardSpies {
   onInitiative: unknown;
-  onDefenses?: unknown;
   onToggle: unknown;
   onHp: unknown;
   onConditions: unknown;
@@ -638,10 +642,6 @@ async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: 
   await expect(canvas.getByRole('button', { name: /^15/ })).toHaveFocus();
   await userEvent.keyboard('{Enter}');
   await expect(args.onInitiative).toHaveBeenCalledOnce();
-  await userEvent.tab();
-  await expect(canvas.getByRole('button', { name: t('DefenseLine:edit') })).toHaveFocus();
-  await userEvent.keyboard('{Enter}');
-  await expect(args.onDefenses).toHaveBeenCalledOnce();
   await userEvent.tab();
   await expect(name).toHaveFocus();
   await userEvent.keyboard('{Enter}');

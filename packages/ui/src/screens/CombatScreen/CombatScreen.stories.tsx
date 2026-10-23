@@ -756,12 +756,12 @@ export const UndoLastAction = meta.story({
   },
 });
 
-export const DefenseLineOpensSheet = meta.story({
+export const DefensesTriggerOpensSheet = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
-    const row = await rowOf(canvasElement, names.orc);
-    await userEvent.click(within(row).getByRole('button', { name: t('DefenseLine:edit') }));
+    const row = await expand(canvasElement, names.orc);
+    await userEvent.click(within(row).getByRole('button', { name: t('UnitRow:defenses') }));
     const sheet = await canvas.findByRole('dialog', {
       name: t('DefenseSheet:title', { name: names.orc }),
     });
@@ -776,9 +776,10 @@ export const DefenseLineOpensSheet = meta.story({
     await expect(stepperOf('ac').getByText('20')).toBeVisible();
     await expect(stepperOf('pd').getByText('15')).toBeVisible();
     await expect(within(sheet).getAllByText(t('DefenseSheet:base', { value: 18 }))).toHaveLength(1);
-    const line = within(row).getByRole('button', { name: t('DefenseLine:edit') });
+    const line = row.querySelector<HTMLElement>('[role="group"]:has(> [data-stat])');
+    if (!line) throw new Error('defense line missing');
     await waitFor(() =>
-      expect(line).toHaveAccessibleDescription(
+      expect(line).toHaveAccessibleName(
         `${t('DefenseLine:ac')}\u00A020\u00A0· ${t('DefenseLine:pd')}\u00A015\u00A0· ${t('DefenseLine:md')}\u00A012`,
       ),
     );

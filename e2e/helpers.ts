@@ -98,10 +98,7 @@ export async function addUnit(page: Page, name: string, type: UnitType): Promise
 export async function openUnitMenu(page: Page, name: string, item: string): Promise<void> {
   const row = unitRow(page, name);
   const details = row.getByRole('button', { name, exact: true });
-  if ((await details.getAttribute('aria-expanded')) !== 'true') {
-    const box = await details.boundingBox();
-    await details.click({ position: { x: (box?.width ?? 0) / 2, y: 4 } });
-  }
+  if ((await details.getAttribute('aria-expanded')) !== 'true') await details.click();
   await row.getByRole('button', { name: t('CardActions:more') }).click();
   await page
     .getByRole('menu', { name: t('UnitRow:menuLabel', { name }) })
