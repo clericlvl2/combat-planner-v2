@@ -194,6 +194,8 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     ...paletteVariables(),
     '--cp-tap-target': `${layout.tapTarget}px`,
     '--cp-scroll-shadow': `${layout.scrollShadow}px`,
+    '--cp-list-inset-top': `${layout.listInset.top}px`,
+    '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
   },
   light: {},
   dark: {},

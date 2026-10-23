@@ -18,7 +18,7 @@
   flex-direction: column;
   gap: var(--cp-scroll-gap);
   min-height: 0;
-  padding: 12px;
+  padding: var(--cp-list-inset-top) 12px var(--cp-list-inset-bottom);
   overflow-y: auto;
   scrollbar-width: none;
 

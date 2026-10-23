@@ -14,6 +14,7 @@ export const layout = {
   statusBar: 44,
   contentEdge: 12,
   listGap: 8,
+  listInset: { top: 16, bottom: 44 },
   bottomBar: {
     height: 98,
     padding: { top: 10, right: 28, bottom: 28, left: 28 },
