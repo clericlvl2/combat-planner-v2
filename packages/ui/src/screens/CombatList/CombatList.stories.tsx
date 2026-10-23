@@ -267,9 +267,9 @@ export const CreateSendsPayload = meta.story({
       color: 5,
     });
     await expect(input.id).toMatch(/^[0-9A-HJKMNP-TV-Z]{26}$/);
-    await waitFor(() => expect(locationOf(canvasElement)).toBe(`/combats/${input.id}`));
     await waitFor(() => expect(titlesOf(canvas, t)[0]).toBe('Siege of Greyhold'));
-    await expect(canvas.queryByRole('dialog')).toBeNull();
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await expect(locationOf(canvasElement)).toBe('/combats');
   },
 });
 
@@ -472,8 +472,8 @@ export const CreateRetry = meta.story({
     const [first] = created[0]!.args as [{ id: string }];
     const [second] = created[1]!.args as [{ id: string }];
     await expect(second.id).toBe(first.id);
-    await waitFor(() => expect(locationOf(canvasElement)).toBe(`/combats/${first.id}`));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await expect(locationOf(canvasElement)).toBe('/combats');
   },
 });
 

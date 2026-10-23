@@ -1,6 +1,6 @@
 import { expect } from '@playwright/test';
 import type { Browser, BrowserContext, Page } from '@playwright/test';
-import { startsWithT, t } from './t.ts';
+import { escapeRegExp, startsWithT, t } from './t.ts';
 
 export const PASSWORD = 'correct-horse-battery';
 
@@ -58,6 +58,9 @@ export async function createCombat(page: Page, title: string): Promise<string> {
   const sheet = page.getByRole('dialog', { name: t('CombatFormSheet:newCombat') });
   await sheet.getByLabel(t('CombatFormSheet:title')).fill(title);
   await sheet.getByRole('button', { name: t('CombatFormSheet:create'), exact: true }).click();
+  await expect(sheet).toBeHidden();
+  await expect(page).toHaveURL(/\/combats$/);
+  await page.getByRole('button', { name: new RegExp(`^${escapeRegExp(title)}`) }).click();
   await expect(page).toHaveURL(/\/combats\/[0-9A-Z]{26}$/);
   await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
   return new URL(page.url()).pathname;

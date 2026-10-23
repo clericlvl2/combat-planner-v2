@@ -154,14 +154,9 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
     if (form === null || pending) return;
     setPending(true);
     try {
-      if (form.mode === 'create') {
-        await create({ id: form.id, ...value });
-        setFormOpen(false);
-        void navigate(`/combats/${form.id}`);
-      } else {
-        await update(form.id, value);
-        setFormOpen(false);
-      }
+      if (form.mode === 'create') await create({ id: form.id, ...value });
+      else await update(form.id, value);
+      setFormOpen(false);
     } catch {
       return;
     } finally {

@@ -21,6 +21,8 @@ test('a DM runs a combat and a player follows the turn order', async ({
   await page.getByRole('button', { name: t('BottomBar:newCombat') }).click();
   await page.getByLabel(t('CombatFormSheet:title')).fill('Goblin ambush');
   await page.getByRole('button', { name: t('CombatFormSheet:create'), exact: true }).click();
+  await expect(page).toHaveURL(/\/combats$/);
+  await page.getByRole('button', { name: new RegExp(`^${escapeRegExp('Goblin ambush')}`) }).click();
   await expect(page).toHaveURL(/\/combats\/[0-9A-Z]{26}$/);
 
   await page.getByRole('button', { name: t('EmptyState:addUnit') }).click();
