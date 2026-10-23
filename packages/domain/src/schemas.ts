@@ -23,6 +23,7 @@ export const LIMITS = {
   roll: { min: 1, max: 20 },
   amount: { min: 0, max: 999 },
   undoDepth: 10,
+  hpHistory: 100,
 } as const;
 
 export interface IntRange {

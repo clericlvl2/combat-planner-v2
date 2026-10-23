@@ -140,7 +140,7 @@ const withEntry = (
     round: context.round,
     at: context.at,
   };
-  return { ...unit, hpHistory: [...unit.hpHistory, entry] };
+  return { ...unit, hpHistory: [...unit.hpHistory, entry].slice(-LIMITS.hpHistory) };
 };
 
 export type HpFields = Pick<Unit, 'hp' | 'tempHp' | 'maxHp'>;

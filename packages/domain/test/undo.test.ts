@@ -169,6 +169,31 @@ describe('Undo', () => {
     expect((target as DomainError).message).toContain('10');
   });
 
+  it('Undo of an HP change at a full history restores the dropped entry.', () => {
+    const full = Array.from({ length: LIMITS.hpHistory }, (_, index) => ({
+      kind: 'damage' as const,
+      amount: 1,
+      absorbed: 0,
+      previous: 30,
+      result: 29,
+      round: null,
+      at: NOW,
+      max: 30 + index,
+    }));
+    const before = fresh(
+      makeCombat({ units: [hero, { ...goblin, hp: 29, hpHistory: full }], version: 2 }),
+    );
+    let state = before;
+    for (let step = 0; step < LIMITS.undoDepth; step += 1) {
+      state = dispatch(state, { type: 'damage', unitId: id(2), amount: 1 });
+    }
+    expect(state.combat.units[1]?.hpHistory).toHaveLength(LIMITS.hpHistory);
+    expect(state.combat.units[1]?.hpHistory[0]?.max).toBe(30 + LIMITS.undoDepth);
+    for (let step = 0; step < LIMITS.undoDepth; step += 1) state = undo(state);
+    expect(state.combat.units[1]?.hpHistory).toEqual(full);
+    expect(stable(state.combat)).toEqual(stable(before.combat));
+  });
+
   it('Player actions are in the same history and are undone the same way.', () => {
     const byPlayer = dispatch(setup(), { type: 'damage', unitId: id(1), amount: 6 }, PLAYER);
     expect(byPlayer.log[0]?.author).toEqual(PLAYER);

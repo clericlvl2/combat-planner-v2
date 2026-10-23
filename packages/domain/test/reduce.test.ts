@@ -922,6 +922,17 @@ describe('HP history', () => {
     expect(history[1]).toMatchObject({ kind: 'temp', amount: 6 });
     expect(history[2]).toMatchObject({ kind: 'damage', amount: 8, absorbed: 6, result: 8 });
   });
+  it('Keeps the newest 100 entries per unit; the oldest is dropped.', () => {
+    expect(LIMITS.hpHistory).toBe(100);
+    const full = Array.from({ length: LIMITS.hpHistory }, (_, index) => ({
+      ...ENTRY,
+      amount: index,
+    }));
+    const history = hist(go(one({ hpHistory: full }), { type: 'heal', unitId: id(1), amount: 1 }));
+    expect(history).toHaveLength(LIMITS.hpHistory);
+    expect(history[0]?.amount).toBe(1);
+    expect(history.at(-1)).toMatchObject({ kind: 'heal', amount: 1 });
+  });
 });
 
 describe('Undo', () => {
