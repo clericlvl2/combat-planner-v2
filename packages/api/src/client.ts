@@ -72,6 +72,7 @@ export const signUpInputSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
   displayName: displayNameSchema,
+  language: localeSchema.optional(),
 });
 export type SignUpInput = z.infer<typeof signUpInputSchema>;
 

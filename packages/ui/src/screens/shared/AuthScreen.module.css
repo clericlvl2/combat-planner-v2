@@ -99,3 +99,7 @@
     inset: min(0px, (100% - var(--cp-tap-target)) / 2);
   }
 }
+
+.language {
+  align-self: center;
+}

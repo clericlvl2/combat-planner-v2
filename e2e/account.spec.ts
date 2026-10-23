@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { signIn, signUp } from './helpers.ts';
+import { PASSWORD, signIn, signUp, uniqueClientIp, uniqueEmail } from './helpers.ts';
 import { t } from './t.ts';
 
 function patchResponse(page: Page, path: string) {
@@ -11,6 +11,7 @@ function patchResponse(page: Page, path: string) {
 }
 
 const DE = { lng: 'de' } as const;
+const EN = { lng: 'en' } as const;
 
 test('a new account under ru-RU gets language ru and a Russian combat list', async ({ page }) => {
   await signUp(page);
@@ -19,6 +20,29 @@ test('a new account under ru-RU gets language ru and a Russian combat list', asy
   expect(await session.json()).toMatchObject({ user: { language: 'ru' } });
   await expect(page.getByRole('heading', { level: 1, name: t('CombatList:title') })).toBeVisible();
   await expect(page.getByText(t('EmptyState:noCombatsTitle'))).toBeVisible();
+});
+
+test('a guest who switches to English on sign-in signs up with language en', async ({ page }) => {
+  await page.context().setExtraHTTPHeaders({ 'x-forwarded-for': uniqueClientIp() });
+  await page.goto('/auth/sign-in');
+  await expect(page.getByRole('heading', { level: 1, name: t('SignIn:title') })).toBeVisible();
+  await page.getByRole('button', { name: t('LanguageSheet:current', { name: 'Русский' }) }).click();
+  await page.getByRole('radio', { name: 'English' }).click();
+  await expect(page.getByRole('heading', { level: 1, name: t('SignIn:title', EN) })).toBeVisible();
+
+  await page.getByRole('link', { name: t('SignIn:signUp', EN) }).click();
+  await expect(page.getByRole('heading', { level: 1, name: t('SignUp:title', EN) })).toBeVisible();
+  await page.getByLabel(t('SignUp:displayName', EN)).fill('Erin');
+  await page.getByLabel(t('SignUp:email', EN)).fill(uniqueEmail());
+  await page.getByLabel(t('SignUp:password', EN)).fill(PASSWORD);
+  await page.getByRole('button', { name: t('SignUp:submit', EN) }).click();
+  await expect(page).toHaveURL(/\/combats$/);
+
+  const session = await page.request.get('/api/auth/get-session');
+  expect(await session.json()).toMatchObject({ user: { language: 'en' } });
+  await expect(
+    page.getByRole('heading', { level: 1, name: t('CombatList:title', EN) }),
+  ).toBeVisible();
 });
 
 test('the language switches at once and stays after a reload', async ({ page }) => {

@@ -380,6 +380,22 @@ describe('createHonoApiClient requests', () => {
     ).resolves.toMatchObject({ method: 'email' });
   });
 
+  it('auth.signUp sends the chosen language as Accept-Language', async () => {
+    const { fetch, seen } = stubFetch(200, {
+      token: 'token',
+      user: { id: 'user-1', email: 'dm@example.com', name: 'DM', language: 'en' },
+    });
+    const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });
+    await client.auth.signUp({
+      email: 'dm@example.com',
+      password: 'password',
+      displayName: 'DM',
+      language: 'en',
+    });
+    expect(seen[0]?.headers.get('accept-language')).toBe('en');
+    expect(seen[0]?.body).toEqual({ email: 'dm@example.com', password: 'password', name: 'DM' });
+  });
+
   it('rejects a response that does not match the schema', async () => {
     const { fetch } = stubFetch(200, { version: 'three' });
     const client = createHonoApiClient({ baseUrl, playerKeys: seededKeys(), fetch });

@@ -20,6 +20,8 @@ import {
   unitIds,
 } from './PlayerView.scenarios.ts';
 import { PlayerView } from './PlayerView.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
+import { storyLocale } from '../../storybook/withLocale.tsx';
 import { anyValue, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
@@ -300,7 +302,29 @@ export const MenuOpen = meta.story({
     const t = playerT(parameters);
     await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
     const items = await canvas.findAllByRole('menuitem');
-    await expect(items.map((item) => item.textContent)).toEqual([t('CombatHeader:heroes')]);
+    await expect(items.map((item) => item.textContent)).toEqual([
+      t('CombatHeader:heroes'),
+      `${t('CombatHeader:language')}${localeNames[storyLocale({ locale: parameters.scenario?.settings.language })]}`,
+    ]);
+  },
+});
+
+export const MenuSwitchesLanguage = meta.story({
+  tags: ['!dev'],
+  parameters: {
+    scenario: playerScenario(ferryCombat({ status: 'setup' }), { settings: { language: 'de' } }),
+  },
+  play: async ({ canvas }) => {
+    const de = storyT({ locale: 'de' }, 'CombatHeader');
+    const en = storyT({ locale: 'en' }, 'CombatHeader');
+    await expect(await canvas.findByText(de('setup'))).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: de('menu') }));
+    await userEvent.click(
+      await canvas.findByRole('menuitem', { name: new RegExp(de('language')) }),
+    );
+    await userEvent.click(await canvas.findByRole('radio', { name: localeNames.en }));
+    await expect(await canvas.findByText(en('setup'))).toBeVisible();
+    await expect(canvas.queryByText(de('setup'))).toBeNull();
   },
 });
 

@@ -72,7 +72,10 @@ async function start(
   );
   routes[0]?.children?.find(({ id }) => id === 'dm')?.children?.push(...dmChildren);
   const router: MemoryRouter = createMemoryRouter(routes, { initialEntries: [path] });
-  cleanups.push(watchRouteLocale(router, i18n, BROWSER_LOCALE), () => router.dispose());
+  cleanups.push(
+    watchRouteLocale(router, i18n, () => BROWSER_LOCALE),
+    () => router.dispose(),
+  );
   await settled(router);
   return { api, queryClient, router, i18n };
 }

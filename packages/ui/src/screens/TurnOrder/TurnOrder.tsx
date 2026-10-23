@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
+import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
@@ -23,6 +24,8 @@ import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
 import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
+import { LanguageSheet } from '../shared/LanguageSheet.tsx';
 import classes from './TurnOrder.module.css';
 
 export interface TurnOrderProps {
@@ -61,6 +64,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
   const { t } = useTranslation('TurnOrder');
   const { t: tMenu } = useTranslation('Menu');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const { locale } = useLocaleChoice();
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Open | null>(null);
   const [flashId, setFlashId] = useState<UnitId | null>(null);
@@ -129,6 +134,11 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
         onHeroes={() => {
           setMenuOpen(false);
           onHeroes();
+        }}
+        languageName={localeNames[locale]}
+        onLanguage={() => {
+          setMenuOpen(false);
+          setLanguageOpen(true);
         }}
       />
       <div className={classes.list}>
@@ -251,6 +261,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
           onCancel={close}
         />
       ) : null}
+      <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
       <PlayerToast aboveBottomBar={false} />
     </div>
   );

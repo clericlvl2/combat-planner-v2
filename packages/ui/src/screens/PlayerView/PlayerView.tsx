@@ -4,6 +4,7 @@ import type { Action, CombatId, PlayerCombat, UnitId } from '@combat-planner/dom
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCombat } from '../../hooks/useCombat.ts';
+import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatDeleted } from '../CombatDeleted/CombatDeleted.tsx';
 import { Heroes } from '../Heroes/Heroes.tsx';
@@ -31,6 +32,7 @@ const holdsHero = (combat: PlayerCombat): boolean =>
 export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps) {
   const { combat, language, error, ended, dispatch, refetch } = useCombat(combatId, PLAYER, token);
   const { i18n } = useTranslation();
+  const { chosen } = useLocaleChoice();
   const notify = usePlayerToasts();
   const [view, setView] = useState<View | null>(null);
   const [seenTitle, setSeenTitle] = useState<string | null>(null);
@@ -41,8 +43,9 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
   if (combat && combat.title !== seenTitle) setSeenTitle(combat.title);
 
   useLayoutEffect(() => {
-    if (language !== null && i18n.language !== language) void i18n.changeLanguage(language);
-  }, [language, i18n]);
+    const shown = chosen() ?? language;
+    if (shown !== null && i18n.language !== shown) void i18n.changeLanguage(shown);
+  }, [language, i18n, chosen]);
 
   useEffect(() => {
     const before = previous.current;

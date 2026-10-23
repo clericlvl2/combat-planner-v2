@@ -616,11 +616,14 @@ export function createHonoApiClient({
   return {
     connection: connection.api,
     auth: {
-      signUp: async ({ email, password, displayName }: SignUpInput) =>
+      signUp: async ({ email, password, displayName, language }: SignUpInput) =>
         sessionOf(
           await json(
             () =>
-              client.auth['sign-up'].email.$post({ json: { email, password, name: displayName } }),
+              client.auth['sign-up'].email.$post(
+                { json: { email, password, name: displayName } },
+                language === undefined ? undefined : { headers: { 'accept-language': language } },
+              ),
             authResponseSchema,
           ),
           'email',

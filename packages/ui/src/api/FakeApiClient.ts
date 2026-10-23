@@ -409,7 +409,7 @@ export class FakeApiClient implements ApiClient {
         if (this.accounts.some((account) => account.email === input.email)) {
           throw fail('emailTaken', 'User already exists');
         }
-        const account: FakeAccount = { userId: ulid(), language: 'en', ...input };
+        const account: FakeAccount = { userId: ulid(), ...input, language: input.language ?? 'en' };
         this.accounts.push(account);
         return this.signInAs(account);
       }),

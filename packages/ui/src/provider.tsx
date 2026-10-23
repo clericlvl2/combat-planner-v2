@@ -4,9 +4,11 @@ import { MantineProvider, mergeThemeOverrides } from '@mantine/core';
 import type { MantineThemeOverride } from '@mantine/core';
 import { createInstance } from 'i18next';
 import type { i18n as I18n, Resource } from 'i18next';
-import { createContext, useContext, useLayoutEffect, useMemo } from 'react';
+import { createContext, useContext, useLayoutEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { I18nextProvider, initReactI18next } from 'react-i18next';
+import { memoryLocaleStorage } from './localeChoice.ts';
+import type { LocaleStorage } from './localeChoice.ts';
 import { cssVariablesResolver, theme } from './theme.ts';
 
 export const locales = LOCALES;
@@ -108,14 +110,22 @@ export function useMotion(): Motion {
   return useContext(MotionContext);
 }
 
+const LocaleStorageContext = createContext<LocaleStorage>(memoryLocaleStorage());
+
+export function useLocaleStorage(): LocaleStorage {
+  return useContext(LocaleStorageContext);
+}
+
 export interface UiProviderProps {
   motion: Motion;
   locale: Locale;
+  localeStorage?: LocaleStorage;
   children: ReactNode;
 }
 
-export function UiProvider({ motion, locale, children }: UiProviderProps) {
+export function UiProvider({ motion, locale, localeStorage, children }: UiProviderProps) {
   const i18n = useMemo(() => createI18n(locale), [locale]);
+  const [memoryStorage] = useState(memoryLocaleStorage);
 
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -129,9 +139,11 @@ export function UiProvider({ motion, locale, children }: UiProviderProps) {
 
   return (
     <MotionContext.Provider value={motion}>
-      <MantineProvider theme={themes[motion]} cssVariablesResolver={cssVariablesResolver}>
-        <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-      </MantineProvider>
+      <LocaleStorageContext.Provider value={localeStorage ?? memoryStorage}>
+        <MantineProvider theme={themes[motion]} cssVariablesResolver={cssVariablesResolver}>
+          <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+        </MantineProvider>
+      </LocaleStorageContext.Provider>
     </MotionContext.Provider>
   );
 }

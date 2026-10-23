@@ -4,6 +4,7 @@ import {
   IconArrowBackUp,
   IconChevronLeft,
   IconDots,
+  IconLanguage,
   IconRefresh,
   IconShare,
   IconSwitchHorizontal,
@@ -52,6 +53,8 @@ export interface CombatHeaderProps extends Omit<
   onEscalationChange?: (value: EscalationValue) => void;
   onMenuSelect?: (action: CombatMenuAction) => void;
   onHeroes?: () => void;
+  onLanguage?: () => void;
+  languageName?: string;
   undoDisabled?: boolean;
 }
 
@@ -265,6 +268,8 @@ export function CombatHeader({
   onEscalationChange,
   onMenuSelect,
   onHeroes,
+  onLanguage,
+  languageName,
   undoDisabled = false,
   className,
   ...rest
@@ -282,7 +287,12 @@ export function CombatHeader({
   const menuOpen = open === 'menu';
 
   const items: MenuItem[] = player
-    ? [{ id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') }]
+    ? [
+        { id: 'heroes', icon: IconSwitchHorizontal, label: t('heroes') },
+        ...(onLanguage
+          ? [{ id: 'language', icon: IconLanguage, label: t('language'), hint: languageName }]
+          : []),
+      ]
     : [
         { id: 'addUnit', icon: IconUserPlus, label: t('addUnit') },
         { id: 'undo', icon: IconArrowBackUp, label: t('undo'), disabled: undoDisabled },
@@ -294,7 +304,8 @@ export function CombatHeader({
       ];
 
   const selectItem = (id: string) => {
-    if (player) onHeroes?.();
+    if (player && id === 'language') onLanguage?.();
+    else if (player) onHeroes?.();
     else onMenuSelect?.(id as CombatMenuAction);
   };
 

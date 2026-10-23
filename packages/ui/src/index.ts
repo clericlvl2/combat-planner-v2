@@ -26,6 +26,8 @@ export type { ConditionName } from './theme.ts';
 export { layout } from './layout.ts';
 export { UiProvider, createI18n, locales, useMotion } from './provider.tsx';
 export type { Locale, Motion, UiProviderProps } from './provider.tsx';
+export { LOCALE_STORAGE_KEY, guestLocale, storeLocale, storedLocale } from './localeChoice.ts';
+export type { LocaleStorage } from './localeChoice.ts';
 export { Button } from './atoms/Button/Button.tsx';
 export { Checkbox } from './atoms/Checkbox/Checkbox.tsx';
 export { Chip } from './atoms/Chip/Chip.tsx';
