@@ -4,6 +4,9 @@
 		max_size 64KiB
 	}
 	header -Via
+	basic_auth /admin* {
+		{$ADMIN_USER} {$ADMIN_PASSWORD_HASH}
+	}
 	reverse_proxy app:3000
 }
 

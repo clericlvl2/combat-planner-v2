@@ -9,6 +9,7 @@ import type {
   DmCombat,
   DocumentListener,
   EndListener,
+  ErrorReport,
   LinkToken,
   PlayerDocumentListener,
   PresenceEvent,
@@ -146,6 +147,7 @@ const scenarioSession = (session: ScenarioSession | null): Session | null =>
 
 export class FakeApiClient implements ApiClient {
   readonly calls: FakeCall[] = [];
+  readonly errorReports: ErrorReport[] = [];
   readonly play: ApiClient['play'];
 
   private readonly delay: number;
@@ -208,6 +210,10 @@ export class FakeApiClient implements ApiClient {
 
   announce(combatId: CombatId, event: PresenceEvent): void {
     for (const subscriber of this.dmSubscribers.get(combatId) ?? []) subscriber.onPresence?.(event);
+  }
+
+  reportError(report: ErrorReport): void {
+    this.errorReports.push(report);
   }
 
   failNext(code: ApiErrorCode): void {

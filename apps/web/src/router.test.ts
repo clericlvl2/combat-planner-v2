@@ -27,6 +27,8 @@ const about = {
   sourceUrl: 'https://example.com/source',
 };
 
+const reportError = (): void => undefined;
+
 type MemoryRouter = ReturnType<typeof createMemoryRouter>;
 
 const routers: MemoryRouter[] = [];
@@ -55,6 +57,7 @@ async function open(
       queryClient: createQueryClient(),
       about,
       language: Promise.resolve(createI18n('en')),
+      reportError,
     },
     () => router,
   );
@@ -220,10 +223,14 @@ describe('router', () => {
     expect(html).toContain('>Go home<');
   });
 
-  it('shows RouteError as the root error page and hands it a callback for when it is shown', async () => {
+  it('shows RouteError as the root error page and hands it callbacks for show and report', async () => {
     const router = await open('/combats', true);
-    const element = router.routes[0]?.errorElement as ReactElement<{ onShow: unknown }>;
+    const element = router.routes[0]?.errorElement as ReactElement<{
+      onShow: unknown;
+      onReport: unknown;
+    }>;
     expect(element.type).toBe(RouteError);
     expect(element.props.onShow).toBeTypeOf('function');
+    expect(element.props.onReport).toBe(reportError);
   });
 });

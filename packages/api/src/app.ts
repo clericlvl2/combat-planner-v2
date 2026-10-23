@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { HTTPException } from 'hono/http-exception';
 import { authProvidersApp, createAuth, createAuthApp } from './auth/index.ts';
 import { requireUser } from './auth/require-user.ts';
 import type { SessionResolver } from './auth/require-user.ts';
@@ -9,6 +10,8 @@ import { eventsApp } from './combats/events.ts';
 import { combatsApp } from './combats/routes.ts';
 import type { AppDatabase } from './db/index.ts';
 import type { ApiEnv } from './env.ts';
+import { errorsApp } from './errors/routes.ts';
+import { recordError } from './errors/store.ts';
 import { healthApp } from './health.ts';
 import { presetsApp } from './presets/routes.ts';
 import { tagsApp } from './tags/routes.ts';
@@ -63,7 +66,22 @@ export function createApiApp({ db, env, auth, rateLimit = true }: ApiAppDeps) {
     .route('/settings', settingsApp)
     .route('/account', createAccountApp(instance))
     .route('/combats', userCombatsApp)
-    .route('/play', playApp);
+    .route('/play', playApp)
+    .route('/errors', errorsApp)
+    .onError((error, c) => {
+      if (error instanceof HTTPException) return error.getResponse();
+      console.error(error);
+      try {
+        recordError(db, 'server', {
+          message: error.message || error.name,
+          stack: error.stack,
+          path: c.req.routePath,
+        });
+      } catch (recordFailure) {
+        console.error('error report not stored', recordFailure);
+      }
+      return c.text('Internal Server Error', 500);
+    });
 }
 
 export type AppType = ReturnType<typeof createApiApp>;

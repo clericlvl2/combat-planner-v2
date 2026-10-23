@@ -1,3 +1,5 @@
+addr: ':9090'
+
 dbs:
   - path: /data/combat-planner.db
     replica:

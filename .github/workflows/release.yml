@@ -73,3 +73,11 @@ jobs:
     uses: ./.github/workflows/docker.yml
     with:
       tag: ${{ needs.release.outputs.tag }}
+
+  deploy:
+    needs: [release, docker]
+    permissions:
+      contents: read
+    uses: ./.github/workflows/deploy.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}

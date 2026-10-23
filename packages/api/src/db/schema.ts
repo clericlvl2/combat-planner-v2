@@ -183,3 +183,19 @@ export const presetTags = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.presetId, table.tagId] })],
 );
+
+export const dailyStats = sqliteTable('daily_stats', {
+  day: text('day').primaryKey(),
+  playerJoins: integer('player_joins').default(0).notNull(),
+  actions: integer('actions').default(0).notNull(),
+});
+
+export const errorReports = sqliteTable('error_reports', {
+  id: integer('id').primaryKey(),
+  at: integer('at').notNull(),
+  source: text('source').$type<'client' | 'server'>().notNull(),
+  message: text('message').notNull(),
+  stack: text('stack'),
+  path: text('path'),
+  version: text('version'),
+});

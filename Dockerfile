@@ -25,7 +25,9 @@ COPY packages/ui/package.json packages/ui/
 RUN pnpm install --frozen-lockfile --prod --filter @combat-planner/server...
 
 FROM node:24-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS production
-ENV NODE_ENV=production \
+ARG VITE_APP_VERSION
+ENV APP_VERSION=$VITE_APP_VERSION \
+  NODE_ENV=production \
   PORT=3000 \
   DATABASE_PATH=/data/combat-planner.db \
   STATIC_ROOT=/app/apps/web/dist

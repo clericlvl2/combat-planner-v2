@@ -234,6 +234,7 @@ function createMemoryClient() {
       update: async (patch) => ({ ...session, ...patch }),
       remove: async () => {},
     },
+    reportError: () => undefined,
   } satisfies ApiClient;
 }
 

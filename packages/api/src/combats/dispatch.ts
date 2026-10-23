@@ -4,6 +4,7 @@ import type { DmCombat } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import { broadcastDocument } from '../live/registry.ts';
 import { followCombatClaims } from '../sharing/store.ts';
+import { countAction } from '../stats/store.ts';
 import { dmDocument, readStack, recordAction } from './log.ts';
 import type { Transaction } from './store.ts';
 import { findCombatRow, saveCombat } from './store.ts';
@@ -71,6 +72,7 @@ const run = (
   saveCombat(tx, result.combat);
   followCombatClaims(tx, result.combat, now);
   recordAction(tx, combatId, stack, { action, author: viewer, at: now, patch: result.patch });
+  countAction(tx, now);
   return {
     ok: true,
     version: result.combat.version,

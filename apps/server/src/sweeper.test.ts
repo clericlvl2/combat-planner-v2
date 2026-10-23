@@ -375,3 +375,37 @@ describe('sweep with a broken combat', () => {
     expect(errors).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('daily stats sweep', () => {
+  it('deletes the counters of days older than 30 days', () => {
+    sqlite
+      .prepare('insert into daily_stats (day, player_joins, actions) values (?, 1, 1), (?, 1, 1)')
+      .run('2026-09-15', '2026-09-16');
+    sweep(db, '2026-10-16T12:00:00.000Z', SHARING_TIMEOUTS);
+    const days = sqlite
+      .prepare("select day from daily_stats where day < '2026-10-01' order by day")
+      .pluck()
+      .all();
+    expect(days).toEqual(['2026-09-16']);
+  });
+});
+
+describe('error reports sweep', () => {
+  it('keeps 14 days of error reports and at most the newest 500', () => {
+    const now = Date.parse('2026-10-16T12:00:00.000Z');
+    const insert = sqlite.prepare(
+      "insert into error_reports (at, source, message) values (?, 'client', ?)",
+    );
+    insert.run(now - 14 * 86_400_000 - 1, 'too old');
+    insert.run(now - 14 * 86_400_000 + 1, 'oldest kept');
+    for (let index = 0; index < 500; index += 1) insert.run(now - index, `recent ${index}`);
+    sweep(db, new Date(now).toISOString(), SHARING_TIMEOUTS);
+    const messages = sqlite
+      .prepare('select message from error_reports order by at desc')
+      .pluck()
+      .all();
+    expect(messages).toHaveLength(500);
+    expect(messages[0]).toBe('recent 0');
+    expect(messages.at(-1)).toBe('recent 499');
+  });
+});

@@ -7,14 +7,18 @@ HTTPS on a domain and a continuous SQLite backup to Yandex Object Storage.
 
 - `app`: the release image `ghcr.io/clericlvl2/combat-planner-v2:<tag>`, pulled anonymously.
   No port is published; only Caddy reaches it. It receives only `BETTER_AUTH_URL`,
-  `BETTER_AUTH_SECRET`, `LINK_SECRET` and the optional `GOOGLE_*` and `GITHUB_*` sign-in pairs,
-  never the bucket key.
+  `BETTER_AUTH_SECRET`, `LINK_SECRET`, the optional `GOOGLE_*` and `GITHUB_*` sign-in pairs and
+  `ADMIN_PAGE=1`, never the bucket key. `ADMIN_PAGE=1` turns on the owner's status page `/admin`;
+  without it the app answers 404 there.
 - `caddy`: `caddy:2` on ports 80/tcp and 443/tcp+udp (HTTP/3), with automatic Let's Encrypt
   certificates for `DOMAIN` and `www.DOMAIN`, proxying `DOMAIN` to `app:3000` and redirecting
   `www.DOMAIN` to `DOMAIN` (`Caddyfile`). It refuses a request body over 64 KiB under `/api/`
-  with 413 and sends no `Via` header.
+  with 413 and sends no `Via` header. It asks for `ADMIN_USER` and its password (checked against
+  `ADMIN_PASSWORD_HASH`) on `/admin*` and answers 401 without them; it refuses to start while
+  either variable is empty.
 - `litestream`: `litestream/litestream:0.5`, replicating `/data/combat-planner.db` to the bucket
-  every 10 s (`litestream.yml`). It runs as uid 1000, like `app`, because it writes beside the
+  every 10 s (`litestream.yml`), and serves Prometheus metrics on port 9090 inside the compose
+  network only, read by the app's status page. It runs as uid 1000, like `app`, because it writes beside the
   database. It starts once `app` is healthy, so `app` creates the `data` volume with the right
   owner.
 
@@ -122,12 +126,13 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 
    `docker compose version` prints a version. Log in again as `deploy` for the group to apply.
 
-5. **Files.** The checkout is read-only on the server and always on `main`; only `deploy/.env` is
-   added. No other branch is checked out or pulled on the server: unreleased code runs only in a
-   separate test environment.
+5. **Files.** The checkout is read-only on the server and always on a release tag (detached
+   `HEAD`), the same tag as the app image; only `deploy/.env` is added. No branch is checked out
+   or pulled on the server: unreleased code runs only in a separate test environment.
+   `<tag>` is the latest release on https://github.com/clericlvl2/combat-planner-v2/releases.
 
    ```sh
-   git clone --branch main https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
+   git clone --branch <tag> https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
    chown -R deploy:deploy /opt/combat-planner
    ```
 
@@ -140,8 +145,7 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    nano .env
    ```
 
-   In `nano`, set `APP_IMAGE` to the tag of the latest release on
-   https://github.com/clericlvl2/combat-planner-v2/releases, without the `v`.
+   In `nano`, set `APP_IMAGE` to `<tag>` without the `v`.
 
 6. **Registry check.** As `deploy`, in `/opt/combat-planner/deploy`:
 
@@ -174,6 +178,8 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
      `https://<domain>/api/auth/callback/google` and `https://<domain>/api/auth/callback/github`.
      An empty pair keeps that sign-in off. A change takes `docker compose up -d app`.
 
+   - `ADMIN_USER` and `ADMIN_PASSWORD_HASH`: [Admin page](#admin-page), steps 1–2.
+
    Copy the two secrets into the password manager, then `clear`. Values typed in `nano` stay out
    of the shell history; never pass them as command arguments.
 
@@ -200,31 +206,166 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 
 10. **Restore drill.** Run the [restore drill](#restore-drill) once.
 
-## Update
+## Admin page
 
-Production runs released code only: the image tag of a release and the `deploy/` files from
-`main`, pulled after the release is created.
+`https://<domain>/admin` shows server load, usage, a 14-day table and the status of every part of
+the stack, refreshed every 30 s; the background checks run every minute. Caddy refuses to start
+without `ADMIN_USER` and `ADMIN_PASSWORD_HASH`, so a server updated to a release with the admin
+page takes these steps before `docker compose up`. As `deploy`, in `/opt/combat-planner/deploy`:
+
+1. Choose a login and a long password; keep both in the password manager.
+2. `docker compose run --rm --no-deps caddy caddy hash-password` asks for the password twice and
+   prints its hash. `nano .env`: set `ADMIN_USER` to the login and `ADMIN_PASSWORD_HASH` to the
+   hash in single quotes, e.g. `ADMIN_PASSWORD_HASH='$2a$14$…'`: unquoted, Compose would read
+   each `$` as a variable. Then `clear`.
+3. `docker compose up -d --force-recreate caddy app litestream`: Caddy reads the login, the app
+   turns the page on and Litestream starts serving its metrics.
+
+`https://<domain>/admin` asks for the login and password; without them it answers 401.
+
+The section «Последние ошибки» lists the newest 20 of the errors the app records itself: uncaught
+browser errors (`POST /api/errors`, at most 10 a minute per address) and unhandled server errors,
+with the route pattern as the path. URLs lose their query and fragment, so player link tokens are
+never stored; no address, user or header is stored. The sweeper keeps 14 days and at most 500
+rows. The check «Ошибки за час» turns red from 1 server error or 10 browser errors in the last
+hour.
+
+## Monitoring
+
+`GET /api/health/checks` exists while `ADMIN_PAGE=1`, outside the admin login: `200
+{"status":"ok"}` while no check on `/admin` is red, `503 {"status":"problem"}` otherwise, with no
+check names. The Docker healthcheck and `deploy/deploy.sh` read only `/api/health`, so a red check
+never restarts the container or rolls back a deploy.
+
+UptimeRobot (free plan) e-mails the owner. In its dashboard, with the owner's e-mail as the alert
+contact:
+
+1. HTTP(s) keyword monitor `https://<domain>/api/health`, keyword `ok`, interval 5 min.
+2. HTTP(s) monitor `https://<domain>/api/health/checks`, alert on any status other than 200,
+   interval 5 min.
+
+When the second monitor alerts, open `/admin` and look for the red row.
+
+## Deploy
+
+A release deploys itself: the `release` workflow ends with the job `deploy`
+(`.github/workflows/deploy.yml`), which waits in the GitHub environment `production` until the
+owner presses "Review deployments" → "Approve and deploy" on the run. A manual run deploys any
+released tag, the current one (redeploy) or an older one (rollback):
+
+```sh
+gh workflow run deploy -f tag=<tag>
+```
+
+The run waits for the same approval. The job refuses a tag that is not `vX.Y.Z` or has no GitHub
+Release, then connects as `deploy` with the deploy key, which can run only `deploy/deploy.sh`
+([Deploy key](#deploy-key)). The script's output is the job log and its exit code the job's
+result. The script:
+
+1. Runs from a temporary copy of itself, refuses anything but `vX.Y.Z` and refuses to run while
+   another deploy holds `/opt/combat-planner/.deploy.lock`.
+2. Records the commit of the checkout and `APP_IMAGE` from `.env`, runs `git fetch --tags origin`
+   and refuses a tag without `deploy/deploy.sh`, which the next deploy could not run. Such a tag
+   is deployed by hand ([Manual deploy](#manual-deploy)).
+3. Checks out the tag (detached), pulls `ghcr.io/clericlvl2/combat-planner-v2:<version>` and
+   snapshots the database through the running app into the `data` volume,
+   `/data/backups/pre-<tag>-<UTC time>.db`; the newest 3 snapshots stay.
+4. Sets `APP_IMAGE` in `.env` (no other line changes), runs
+   `docker compose up -d --force-recreate --wait` and waits up to 60 s for
+   `<BETTER_AUTH_URL>/api/health` to answer 200.
+5. Success: drops dangling images (`docker image prune -f`; the previous release's image stays
+   for a rollback), prints the tag and commit, exits 0.
+6. Failure in step 3 or 4: checks out the previous commit, restores the previous `APP_IMAGE`,
+   recreates the containers and checks health again; prints `rolled back to <commit> (<image>)`
+   and exits 1. When the previous version is not healthy either, it exits 2 without touching the
+   database and prints the snapshot path and the commands of a [restore](#restore) to the moment
+   the deploy started.
+
+Images of older releases stay on the 10 GB disk; `docker image prune -af` while production runs
+drops every image no container uses, the previous release's included.
+
+Old code may not run on a schema migrated by a newer release: a rollback across a migration first
+restores the database to a moment before the newer release was deployed ([Restore](#restore),
+with `-timestamp`), then deploys the previous tag.
+
+## Deploy key
+
+One-time setup of the deploy button. The key is used only by the `deploy` workflow; its private
+half lives only on the operator's machine and in the GitHub secret, and is never printed or
+pasted anywhere. Prerequisite: the server runs a release that contains `deploy/deploy.sh`, deployed
+by hand ([Manual deploy](#manual-deploy)); `<tag>` below is that release.
+
+1. On the operator's machine, create the key:
+
+   ```sh
+   ssh-keygen -t ed25519 -N '' -C 'github-deploy' -f ~/.ssh/combat_planner_github_deploy
+   ```
+
+2. Allow it on the server for `deploy/deploy.sh` only: `command=` runs the script whatever the
+   client asks, with the requested command (the tag) in `SSH_ORIGINAL_COMMAND`; `restrict` turns
+   off port, agent and X11 forwarding and the PTY. On the operator's machine:
+
+   ```sh
+   printf 'command="/opt/combat-planner/deploy/deploy.sh",restrict %s\n' \
+     "$(cat ~/.ssh/combat_planner_github_deploy.pub)" \
+     | ssh -i ~/.ssh/<key> deploy@<server-ip> 'cat >> ~/.ssh/authorized_keys'
+   ```
+
+3. Read the server's host key and check it against the server's own:
+
+   ```sh
+   ssh-keyscan -t ed25519 <server-ip> > /tmp/combat_planner_known_hosts
+   ssh-keygen -lf /tmp/combat_planner_known_hosts
+   ssh -i ~/.ssh/<key> deploy@<server-ip> 'ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub'
+   ```
+
+   Both fingerprints are equal; otherwise stop.
+
+4. Create the GitHub environment `production` with the owner as its required reviewer, and its
+   three secrets:
+
+   ```sh
+   gh api -X PUT repos/clericlvl2/combat-planner-v2/environments/production --input - <<EOF
+   {"reviewers": [{"type": "User", "id": $(gh api user --jq .id)}]}
+   EOF
+   gh secret set DEPLOY_HOST --env production --repo clericlvl2/combat-planner-v2 --body '<server-ip>'
+   gh secret set DEPLOY_KNOWN_HOSTS --env production --repo clericlvl2/combat-planner-v2 < /tmp/combat_planner_known_hosts
+   gh secret set DEPLOY_SSH_KEY --env production --repo clericlvl2/combat-planner-v2 < ~/.ssh/combat_planner_github_deploy
+   rm /tmp/combat_planner_known_hosts
+   ```
+
+5. Test: `gh workflow run deploy -f tag=<tag>`, approve the run on GitHub; the same version
+   redeploys and the job ends green.
+
+To revoke the key, delete its line from `/home/deploy/.ssh/authorized_keys` on the server and the
+secret `DEPLOY_SSH_KEY` on GitHub.
+
+## Manual deploy
+
+For emergencies, e.g. when GitHub Actions is down, or for a tag without `deploy/deploy.sh`.
+Production runs released code only: the image and the `deploy/` files of the same release tag.
 
 As `deploy`, in `/opt/combat-planner/deploy`:
 
-1. `nano .env`: set the release tag in `APP_IMAGE`.
-2. Pull and restart the app, then drop every image no container uses, the previous release
-   included: the 10 GB disk holds only a few images.
+1. Check out the release's files:
 
    ```sh
-   docker compose pull app && docker compose up -d app && docker image prune -af
+   git fetch --tags origin && git checkout --detach <tag>
    ```
 
-3. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
+2. `nano .env`: set the release tag, without the `v`, in `APP_IMAGE`.
+3. Pull the image and recreate the containers: a bind-mounted file such as `Caddyfile` reaches
+   its container only when the container is recreated.
+
+   ```sh
+   docker compose pull app && docker compose up -d --force-recreate --wait
+   ```
+
+4. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
    `{"status":"ok"}`.
 
-A release that changes files in `deploy/` takes `git pull` before step 2 and
-`docker compose up -d --force-recreate` in step 2: a bind-mounted file such as `Caddyfile`
-reaches its container only when the container is recreated.
-
-Rollback is the same procedure with the previous tag, which is pulled again. Old code may not run
-on a schema migrated by a newer release: such a rollback first restores the database to a moment
-before the update ([Restore](#restore), with `-timestamp`), then starts the previous tag.
+Rollback is the same procedure with the previous tag; the rule on migrations under
+[Deploy](#deploy) applies.
 
 ## Restore drill
 

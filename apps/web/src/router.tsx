@@ -31,6 +31,7 @@ export interface AppRouteOptions {
   queryClient: QueryClient;
   about: AboutLinks;
   language: Promise<LanguageSwitch>;
+  reportError: (error: unknown) => void;
 }
 
 export type RouterStateGetter = () => { state: LocaleRouterState };
@@ -38,7 +39,7 @@ export type RouterStateGetter = () => { state: LocaleRouterState };
 const unreachable = (): undefined => undefined;
 
 export function createRoutes(
-  { api, queryClient, about, language }: AppRouteOptions,
+  { api, queryClient, about, language, reportError }: AppRouteOptions,
   router: RouterStateGetter,
 ): RouteObject[] {
   const cachedSession = (): Promise<Session | null | undefined> =>
@@ -125,7 +126,7 @@ export function createRoutes(
     {
       id: 'root',
       path: '/',
-      errorElement: <RouteError onShow={leaveDm} />,
+      errorElement: <RouteError onShow={leaveDm} onReport={reportError} />,
       children: [
         {
           id: 'home',

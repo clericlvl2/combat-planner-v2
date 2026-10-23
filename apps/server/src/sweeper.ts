@@ -2,6 +2,8 @@ import {
   announceReissue,
   announceRemoval,
   closeEndedDmStreams,
+  deleteOldErrors,
+  deleteOldStats,
   findCombatRow,
   lastActionAt,
   listSharedCombats,
@@ -92,11 +94,18 @@ export function sweep(db: AppDatabase, now: string, timeouts: SharingTimeouts): 
   attempt('watching players', () => dropWatchingPlayers(db, now, timeouts));
   attempt('idle streams', () => dropIdleStreams(db, now, timeouts));
   attempt('ended DM streams', () => closeEndedDmStreams(db, now));
+  attempt('daily stats', () => deleteOldStats(db, now));
+  attempt('error reports', () => deleteOldErrors(db, now));
 }
 
-export function startSweeper(db: AppDatabase, timers: SharingTimers): () => void {
+export function startSweeper(
+  db: AppDatabase,
+  timers: SharingTimers,
+  onSwept: (at: Date) => void = () => {},
+): () => void {
   const timer = setInterval(() => {
     sweep(db, new Date().toISOString(), timers.timeouts);
+    onSwept(new Date());
   }, timers.sweepIntervalMs);
   timer.unref();
   return () => clearInterval(timer);
