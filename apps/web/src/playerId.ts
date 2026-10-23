@@ -4,11 +4,12 @@ import type { CombatId } from '@combat-planner/domain';
 
 export const PLAYER_KEY_PREFIX = 'combat-planner.player.';
 
-export type PlayerKeyStorage = Pick<Storage, 'getItem' | 'setItem'>;
+export type PlayerKeyStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>;
 
 export const browserStorage: PlayerKeyStorage = {
   getItem: (key) => globalThis.localStorage.getItem(key),
   setItem: (key, value) => globalThis.localStorage.setItem(key, value),
+  removeItem: (key) => globalThis.localStorage.removeItem(key),
 };
 
 const storageKey = (combatId: CombatId): string => `${PLAYER_KEY_PREFIX}${combatId}`;
@@ -38,6 +39,14 @@ export function playerKeysOf(storage: PlayerKeyStorage): PlayerKeyStore {
       known.set(combatId, credentials);
       try {
         storage.setItem(storageKey(combatId), JSON.stringify(credentials));
+      } catch {
+        return;
+      }
+    },
+    delete: (combatId) => {
+      known.delete(combatId);
+      try {
+        storage.removeItem(storageKey(combatId));
       } catch {
         return;
       }

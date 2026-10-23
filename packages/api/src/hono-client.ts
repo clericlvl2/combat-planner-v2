@@ -2,6 +2,7 @@ import type { CombatId, PlayerCombat, PresetId, TagId } from '@combat-planner/do
 import {
   combatSchema,
   combatTitleSchema,
+  displayNameSchema,
   playerCombatSchema,
   presetSchema,
   tagSchema,
@@ -38,6 +39,7 @@ import type {
   Locale,
   PlayerCredentials,
   PlayerKeyStore,
+  PresenceListener,
   Session,
   SignInInput,
   SignInMethod,
@@ -80,6 +82,9 @@ export function memoryPlayerKeys(): PlayerKeyStore {
     get: (combatId) => stored.get(combatId) ?? null,
     set: (combatId, credentials) => {
       stored.set(combatId, credentials);
+    },
+    delete: (combatId) => {
+      stored.delete(combatId);
     },
   };
 }
@@ -179,6 +184,8 @@ const EMPTY_JSON_BODY = {
   init: { body: JSON.stringify({}) },
 };
 
+const GONE_STATUSES: ReadonlySet<number> = new Set([401, 404]);
+
 const ULID_PREFIX = /^[0-7][0-9A-HJKMNP-TV-Z]{25}/;
 
 const combatIdOf = (token: LinkToken): CombatId => {
@@ -198,6 +205,8 @@ const streamEventSchema = <Document>(document: z.ZodType<Document>) =>
     z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
     z.object({ type: z.literal('linkRevoked') }),
     z.object({ type: z.literal('dropped') }),
+    z.object({ type: z.literal('playerJoined') }),
+    z.object({ type: z.literal('playerLeft'), name: displayNameSchema }),
   ]);
 
 type StreamStatus = 'connecting' | 'open' | 'error' | 'reconnecting';
@@ -279,6 +288,7 @@ export function createHonoApiClient({
     refetch: (signal?: AbortSignal) => Promise<Delivery<Document>>,
     onDocument: (document: Document, language?: Locale) => void,
     onEnd: EndListener,
+    onPresence?: PresenceListener,
   ): Unsubscribe {
     const EventSourceImpl = eventSource;
     if (!EventSourceImpl) return () => {};
@@ -444,6 +454,10 @@ export function createHonoApiClient({
           deliver(language === undefined ? { document } : { document, language });
           return;
         }
+        if (parsed.data.type === 'playerJoined' || parsed.data.type === 'playerLeft') {
+          onPresence?.(parsed.data);
+          return;
+        }
         end(parsed.data);
       };
       next.addEventListener('open', () => {
@@ -468,7 +482,15 @@ export function createHonoApiClient({
         }, RECONNECTING_AFTER_MS);
         probe();
       });
-      for (const type of ['message', 'document', 'deleted', 'linkRevoked', 'dropped']) {
+      for (const type of [
+        'message',
+        'document',
+        'deleted',
+        'linkRevoked',
+        'dropped',
+        'playerJoined',
+        'playerLeft',
+      ]) {
         next.addEventListener(type, handleEvent);
       }
       return next;
@@ -563,13 +585,14 @@ export function createHonoApiClient({
         () => client.combats[':id'].actions.$post({ param: { id }, json: action }),
         versionResultSchema,
       ),
-    subscribe: (id, onDocument, onEnd) =>
+    subscribe: (id, onDocument, onEnd, onPresence) =>
       openStream(
         () => `${baseUrl}/combats/${id}/events`,
         dmCombatSchema,
         async (signal) => ({ document: await getCombat(id, signal) }),
         onDocument,
         onEnd,
+        onPresence,
       ),
   };
 
@@ -610,6 +633,19 @@ export function createHonoApiClient({
         cancelled = true;
         close?.();
       };
+    },
+    leave: async (combatId) => {
+      const credentials = playerKeys.get(combatId);
+      if (credentials) {
+        try {
+          await none(() =>
+            client.play[':id'].leave.$post({ param: { id: combatId } }, playerHeaders(credentials)),
+          );
+        } catch (error) {
+          if (!(error instanceof ApiError) || !GONE_STATUSES.has(error.status)) throw error;
+        }
+      }
+      playerKeys.delete(combatId);
     },
   };
 

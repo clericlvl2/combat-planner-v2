@@ -76,3 +76,11 @@ export function sendToPlayer(combatId: CombatId, playerId: PlayerId, event: ApiE
     }
   }
 }
+
+export function closePlayer(combatId: CombatId, playerId: PlayerId): void {
+  for (const subscriber of audienceOf(combatId, 'player')) {
+    if (subscriber.viewer.kind === 'player' && subscriber.viewer.playerId === playerId) {
+      subscriber.close?.();
+    }
+  }
+}

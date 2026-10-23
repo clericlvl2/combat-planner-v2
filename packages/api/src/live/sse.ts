@@ -2,6 +2,7 @@ import type { CombatId, PlayerCombat, Viewer } from '@combat-planner/domain';
 import type { Context } from 'hono';
 import { streamSSE } from 'hono/streaming';
 import type { ApiEvent, DmCombat, Locale } from '../client.ts';
+import { isPresenceEvent } from '../client.ts';
 import { subscribe } from './registry.ts';
 
 export const HEARTBEAT_MS = 15_000;
@@ -55,7 +56,7 @@ export const streamCombatEvents = (c: Context, request: StreamRequest): Response
         };
         const send = (event: ApiEvent) => {
           if (!accepting) return;
-          if (event.type === 'document') {
+          if (event.type === 'document' || isPresenceEvent(event)) {
             void stream.writeSSE(toMessage(event));
             return;
           }

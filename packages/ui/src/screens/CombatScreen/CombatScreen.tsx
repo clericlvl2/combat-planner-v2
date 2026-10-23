@@ -1,5 +1,5 @@
 import { ApiError } from '@combat-planner/api/client';
-import type { DmCombat } from '@combat-planner/api/client';
+import type { DmCombat, PresenceEvent } from '@combat-planner/api/client';
 import {
   LIMITS,
   nextTurnBlockReason,
@@ -26,7 +26,7 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { ulid } from 'ulid';
@@ -62,6 +62,7 @@ import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatNotFound } from '../CombatNotFound/CombatNotFound.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
 import { toastLook } from '../shared/toastLook.ts';
+import { claimEvents } from './claimEvents.ts';
 import { isUndoable, undoLabel } from './undoLabel.ts';
 import classes from './CombatScreen.module.css';
 
@@ -133,11 +134,36 @@ export function CombatScreen({
   const { t: tRow } = useTranslation('UnitRow');
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const { combat, error, ended, dispatch, refetch } = useCombat(combatId, DM);
+  const { toasts, show: showToast, dismiss } = useToasts();
+  const presence = useRef<{ pending: string[]; showing: boolean }>({
+    pending: [],
+    showing: false,
+  });
+  const announce = useCallback(
+    (message: string) => {
+      const queue = presence.current;
+      queue.pending.push(message);
+      if (queue.showing) return;
+      const showNext = () => {
+        const next = queue.pending.shift();
+        queue.showing = next !== undefined;
+        if (next !== undefined) showToast({ message: next, kind: 'neutral', onDismiss: showNext });
+      };
+      showNext();
+    },
+    [showToast],
+  );
+  const onPresence = (event: PresenceEvent) => {
+    announce(
+      event.type === 'playerJoined'
+        ? tToast('playerJoined')
+        : tToast('playerLeft', { name: event.name }),
+    );
+  };
+  const { combat, error, ended, dispatch, refetch } = useCombat(combatId, DM, { onPresence });
   useConnection();
   const { presets, create: createPreset } = usePresets();
   const { tags } = useTags();
-  const { toasts, show: showToast, dismiss } = useToasts();
   const [headerOpen, setHeaderOpen] = useState<CombatHeaderPopover | null>(null);
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Panel | null>(null);
@@ -148,6 +174,8 @@ export function CombatScreen({
   const { flashing, flash } = useHpFlash();
   const link = useCombatLink(combatId, shareOpen);
   const knownVersion = useRef(0);
+  const previous = useRef<DmCombat | undefined>(undefined);
+  const ownReleases = useRef(new Set<UnitId>());
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const { session } = useAccount();
   const signedOut =
@@ -165,6 +193,28 @@ export function CombatScreen({
     setShareOpen(false);
     showToast({ message: t('linkFailed'), kind: 'error' });
   }, [linkFailed, showToast, t]);
+
+  useEffect(
+    () => () => {
+      presence.current.pending = [];
+    },
+    [],
+  );
+
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = combat;
+    if (before === undefined || combat === undefined || before === combat) return;
+    for (const event of claimEvents(before, combat)) {
+      if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) continue;
+      announce(
+        tToast(event.kind === 'claimed' ? 'playerClaimed' : 'playerReleased', {
+          name: event.player,
+          hero: event.hero,
+        }),
+      );
+    }
+  }, [combat, announce, tToast]);
 
   const key = combatKey(combatId, DM);
   const latest = (): DmCombat | undefined =>
@@ -365,8 +415,20 @@ export function CombatScreen({
     return true;
   };
 
+  const releaseAsDm = async (unitIds: readonly UnitId[], run: () => Promise<boolean>) => {
+    for (const unitId of unitIds) ownReleases.current.add(unitId);
+    if (await run()) return;
+    for (const unitId of unitIds) ownReleases.current.delete(unitId);
+  };
+
   const reissue = () => {
-    link.reissue().catch(() => {});
+    const claimed = combat.units.filter((unit) => unit.claimedBy !== null).map((unit) => unit.id);
+    void releaseAsDm(claimed, () =>
+      link.reissue().then(
+        () => true,
+        () => false,
+      ),
+    );
   };
 
   const confirmed = (current: Confirm) => {
@@ -515,7 +577,9 @@ export function CombatScreen({
             onSaveAsPreset={() => saveAsPreset(unit)}
             onReleaseClaim={() => {
               close();
-              void send({ type: 'releaseUnit', unitId: unit.id });
+              void releaseAsDm([unit.id], async () =>
+                Boolean(await send({ type: 'releaseUnit', unitId: unit.id })),
+              );
             }}
             onRemove={() => {
               close();

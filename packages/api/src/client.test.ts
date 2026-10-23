@@ -171,6 +171,7 @@ function createMemoryClient() {
         return combatsApi.dispatch(combatId, action);
       },
       subscribe: () => () => {},
+      leave: async () => {},
     },
     presets: {
       list: async () => [...presets.values()],

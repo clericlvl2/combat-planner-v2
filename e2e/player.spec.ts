@@ -251,6 +251,18 @@ test('a DM release sends the player back to Heroes with a toast', async ({ page 
   await expect(player.getByRole('checkbox', { name: 'Aria' })).not.toBeChecked();
 });
 
+test('the DM sees a toast when a player takes a hero', async ({ page }) => {
+  const link = await prepareCombat(page, 'Watchtower');
+  await closeShare(page);
+
+  await joinAsPlayer(player, link, 'Pat', 'Aria');
+
+  await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toBeVisible();
+  await expect(page.getByText(t('Toast:playerClaimed', { name: 'Pat', hero: 'Aria' }))).toBeVisible(
+    { timeout: 10_000 },
+  );
+});
+
 test('a DM removal of the hero sends the player back to Heroes with a toast', async ({ page }) => {
   const link = await prepareCombat(page, 'Removed');
   await joinAsPlayer(player, link, 'Pat', 'Aria');

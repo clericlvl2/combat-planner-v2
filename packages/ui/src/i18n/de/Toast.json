@@ -22,5 +22,9 @@
   "heroTaken": "{{hero}} wurde gerade vergeben",
   "presetAdded": "{{name}} zur Bibliothek hinzugefügt",
   "unitRemoved": "{{name}} entfernt",
-  "undo": "Rückgängig"
+  "undo": "Rückgängig",
+  "playerClaimed": "{{name}} hat {{hero}} übernommen",
+  "playerReleased": "{{name}} hat {{hero}} freigegeben",
+  "playerLeft": "{{name}} hat den Kampf verlassen",
+  "playerJoined": "Ein neuer Spieler hat den Link geöffnet"
 }

@@ -1,4 +1,10 @@
-import type { CombatId, ConnectedPlayer, LinkState, PlayerId } from '@combat-planner/domain';
+import type {
+  CombatId,
+  ConnectedPlayer,
+  DisplayName,
+  LinkState,
+  PlayerId,
+} from '@combat-planner/domain';
 import { followClaims } from '@combat-planner/domain';
 import type { Combat } from '@combat-planner/domain';
 import { and, count, eq, gt, isNotNull } from 'drizzle-orm';
@@ -7,6 +13,7 @@ import { dmDocument } from '../combats/log.ts';
 import type { Executor, Transaction } from '../combats/store.ts';
 import { findCombatRow, saveCombat } from '../combats/store.ts';
 import { combats, players, session } from '../db/schema.ts';
+import { broadcast, broadcastDocument } from '../live/registry.ts';
 
 export interface SharedCombat {
   combatId: CombatId;
@@ -156,19 +163,34 @@ export const followCombatClaims = (db: Executor, combat: Combat, now: string): v
   }
 };
 
+export interface RemovedPlayer {
+  name: DisplayName | undefined;
+  document: DmCombat | undefined;
+}
+
 export const removePlayer = (
   tx: Transaction,
   combatId: CombatId,
   playerId: PlayerId,
-): DmCombat | undefined => {
+): RemovedPlayer => {
   deletePlayer(tx, combatId, playerId);
   const combat = findCombatRow(tx, combatId)?.document;
-  if (!combat || combat.players[playerId] === undefined) return undefined;
+  const name = combat?.players[playerId];
+  const holdsHero = combat?.units.some((unit) => unit.claimedBy === playerId) === true;
+  if (!combat || (name === undefined && !holdsHero)) return { name, document: undefined };
   const next: Combat = {
     ...combat,
+    units: combat.units.map((unit) =>
+      unit.claimedBy === playerId ? { ...unit, claimedBy: null } : unit,
+    ),
     players: Object.fromEntries(Object.entries(combat.players).filter(([id]) => id !== playerId)),
     version: combat.version + 1,
   };
   saveCombat(tx, next);
-  return dmDocument(tx, next);
+  return { name, document: dmDocument(tx, next) };
+};
+
+export const announceRemoval = (combatId: CombatId, { name, document }: RemovedPlayer): void => {
+  if (document) broadcastDocument(combatId, document);
+  if (name !== undefined) broadcast(combatId, { type: 'playerLeft', name }, 'dm');
 };

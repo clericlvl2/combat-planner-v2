@@ -17,6 +17,9 @@ const memoryStorage = (initial: Record<string, string> = {}) => {
     setItem: (key, value) => {
       values.set(key, value);
     },
+    removeItem: (key) => {
+      values.delete(key);
+    },
   };
   return { storage, values, reads: () => reads };
 };
@@ -53,11 +56,27 @@ describe('playerKeysOf', () => {
       setItem: () => {
         throw new Error('SecurityError');
       },
+      removeItem: () => {
+        throw new Error('SecurityError');
+      },
     };
     const keys = playerKeysOf(storage);
     expect(keys.get(COMBAT_ID)).toBeNull();
     keys.set(COMBAT_ID, CREDENTIALS);
     expect(keys.get(COMBAT_ID)).toEqual(CREDENTIALS);
+  });
+
+  it('forgets the credentials of a combat the player left, in memory and in the storage', () => {
+    const { storage, values } = memoryStorage({
+      [`${PLAYER_KEY_PREFIX}${COMBAT_ID}`]: JSON.stringify(CREDENTIALS),
+      [`${PLAYER_KEY_PREFIX}${OTHER_COMBAT_ID}`]: JSON.stringify(CREDENTIALS),
+    });
+    const keys = playerKeysOf(storage);
+    expect(keys.get(COMBAT_ID)).toEqual(CREDENTIALS);
+    keys.delete(COMBAT_ID);
+    expect(keys.get(COMBAT_ID)).toBeNull();
+    expect(values.has(`${PLAYER_KEY_PREFIX}${COMBAT_ID}`)).toBe(false);
+    expect(keys.get(OTHER_COMBAT_ID)).toEqual(CREDENTIALS);
   });
 
   it('reads the storage once per combat', () => {

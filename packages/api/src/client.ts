@@ -151,6 +151,7 @@ export type PlayerCredentials = z.infer<typeof playerCredentialsSchema>;
 export interface PlayerKeyStore {
   get(combatId: CombatId): PlayerCredentials | null;
   set(combatId: CombatId, credentials: PlayerCredentials): void;
+  delete(combatId: CombatId): void;
 }
 
 export const playViewSchema = z.object({
@@ -229,11 +230,17 @@ export const apiEventSchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
   z.object({ type: z.literal('linkRevoked') }),
   z.object({ type: z.literal('dropped') }),
+  z.object({ type: z.literal('playerJoined') }),
+  z.object({ type: z.literal('playerLeft'), name: displayNameSchema }),
 ]);
 export type ApiEvent = z.infer<typeof apiEventSchema>;
 export type ApiEndEvent =
   | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' | 'dropped' }>
   | { type: 'unauthorized' };
+export type PresenceEvent = Extract<ApiEvent, { type: 'playerJoined' | 'playerLeft' }>;
+
+export const isPresenceEvent = (event: ApiEvent): event is PresenceEvent =>
+  event.type === 'playerJoined' || event.type === 'playerLeft';
 
 export type Unsubscribe = () => void;
 export type DocumentListener<Document extends DmCombat | PlayerCombat> = (
@@ -241,6 +248,7 @@ export type DocumentListener<Document extends DmCombat | PlayerCombat> = (
 ) => void;
 export type PlayerDocumentListener = (document: PlayerCombat, language?: Locale) => void;
 export type EndListener = (event: ApiEndEvent) => void;
+export type PresenceListener = (event: PresenceEvent) => void;
 export type ConnectionListener = (state: ConnectionState) => void;
 
 export interface ConnectionApi {
@@ -267,7 +275,12 @@ export interface CombatsApi {
   open(id: CombatId): Promise<DmCombat>;
   get(id: CombatId): Promise<DmCombat>;
   dispatch(id: CombatId, action: Action): Promise<VersionResult>;
-  subscribe(id: CombatId, onDocument: DocumentListener<DmCombat>, onEnd: EndListener): Unsubscribe;
+  subscribe(
+    id: CombatId,
+    onDocument: DocumentListener<DmCombat>,
+    onEnd: EndListener,
+    onPresence?: PresenceListener,
+  ): Unsubscribe;
 }
 
 export interface LinkApi {
@@ -280,6 +293,7 @@ export interface PlayApi {
   get(token: LinkToken): Promise<PlayView>;
   dispatch(token: LinkToken, action: Action): Promise<VersionResult>;
   subscribe(token: LinkToken, onDocument: PlayerDocumentListener, onEnd: EndListener): Unsubscribe;
+  leave(combatId: CombatId): Promise<void>;
 }
 
 export interface PresetsApi {

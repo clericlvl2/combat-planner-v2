@@ -11,6 +11,8 @@ import type {
   EndListener,
   LinkToken,
   PlayerDocumentListener,
+  PresenceEvent,
+  PresenceListener,
   Session,
   SocialProvider,
   Unsubscribe,
@@ -60,6 +62,7 @@ interface StoredCombat {
 interface DmSubscriber {
   onDocument: DocumentListener<DmCombat>;
   onEnd: EndListener;
+  onPresence?: PresenceListener;
   version: number;
 }
 
@@ -199,6 +202,10 @@ export class FakeApiClient implements ApiClient {
 
   dropPlayers(combatId: CombatId): void {
     this.endSubscribers(combatId, { type: 'dropped' }, 'player');
+  }
+
+  announce(combatId: CombatId, event: PresenceEvent): void {
+    for (const subscriber of this.dmSubscribers.get(combatId) ?? []) subscriber.onPresence?.(event);
   }
 
   failNext(code: ApiErrorCode): void {
@@ -504,9 +511,9 @@ export class FakeApiClient implements ApiClient {
       this.run('combats.dispatch', [id, action], () =>
         this.dispatchAs(this.stored(id), DM, action),
       ),
-    subscribe: (id, onDocument, onEnd) => {
+    subscribe: (id, onDocument, onEnd, onPresence) => {
       this.calls.push({ method: 'combats.subscribe', args: [id] });
-      const subscriber: DmSubscriber = { onDocument, onEnd, version: -1 };
+      const subscriber: DmSubscriber = { onDocument, onEnd, onPresence, version: -1 };
       if (!this.session) {
         onEnd({ type: 'unauthorized' });
         return () => {};
@@ -609,6 +616,30 @@ export class FakeApiClient implements ApiClient {
           this.playerSubscribers.get(combatId)?.delete(subscriber);
         };
       },
+      leave: (combatId) =>
+        this.run('play.leave', [combatId, playerId], () => {
+          const stored = this.combatStore.get(combatId);
+          if (!stored) return;
+          const { combat } = stored;
+          const name = combat.players[playerId];
+          const holdsHero = combat.units.some((unit) => unit.claimedBy === playerId);
+          const subscribers = this.playerSubscribers.get(combatId);
+          for (const subscriber of subscribers ?? []) {
+            if (subscriber.playerId === playerId) subscribers?.delete(subscriber);
+          }
+          if (name === undefined && !holdsHero) return;
+          this.save(stored, {
+            ...combat,
+            units: combat.units.map((unit) =>
+              unit.claimedBy === playerId ? { ...unit, claimedBy: null } : unit,
+            ),
+            players: Object.fromEntries(
+              Object.entries(combat.players).filter(([id]) => id !== playerId),
+            ),
+            version: combat.version + 1,
+          });
+          if (name !== undefined) this.announce(combatId, { type: 'playerLeft', name });
+        }),
     };
   }
 
