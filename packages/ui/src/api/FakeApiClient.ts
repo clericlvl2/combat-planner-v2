@@ -83,6 +83,7 @@ export const FAKE_ERROR_STATUS: Record<ApiErrorCode, number> = {
   network: 0,
   linkRevoked: 410,
   limit: 422,
+  rateLimited: 429,
   emailTaken: 422,
 };
 

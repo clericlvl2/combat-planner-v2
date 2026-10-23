@@ -97,7 +97,9 @@ const ERROR_CODES: Record<number, ApiErrorCode> = {
   404: 'notFound',
   409: 'version',
   410: 'linkRevoked',
+  413: 'limit',
   422: 'invalid',
+  429: 'rateLimited',
 };
 
 const errorBodySchema = z.object({ code: z.string().optional(), message: z.string().optional() });

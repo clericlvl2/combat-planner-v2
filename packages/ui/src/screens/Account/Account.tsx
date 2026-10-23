@@ -13,7 +13,7 @@ import { PageSection } from '../shared/PageSection.tsx';
 import { submitOnEnter } from '../shared/submitOnEnter.ts';
 import classes from './Account.module.css';
 
-const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit']);
+const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit', 'rateLimited']);
 
 export function Account() {
   const { t } = useTranslation('Account');

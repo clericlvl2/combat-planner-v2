@@ -232,3 +232,18 @@ export const CantReachServer = meta.story({
     await expect(locationOf(canvasElement)).toBe('/auth/sign-in');
   },
 });
+
+export const TooManyRequests = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
+    await providersLoaded(loaded);
+    await userEvent.type(canvas.getByRole('textbox', { name: t('email') }), 'dm@ferry.games');
+    await userEvent.type(canvas.getByLabelText(t('password')), 'ferry-crossing');
+    fakeApiOf(loaded).failNext('rateLimited');
+    await userEvent.click(canvas.getByRole('button', { name: t('submit') }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:tooManyRequests'));
+    await expect(canvas.queryByText(t('wrongCredentials'))).toBeNull();
+    await expect(locationOf(canvasElement)).toBe('/auth/sign-in');
+  },
+});

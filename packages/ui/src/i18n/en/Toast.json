@@ -3,6 +3,7 @@
   "show": "Show toast",
   "unitCap": "This combat already has {{limit}} units",
   "limitReached": "Limit reached",
+  "tooManyRequests": "Too many requests — wait a minute",
   "linkCopied": "Link copied",
   "serverUnreachable": "Couldn’t reach the server. Nothing changed.",
   "retry": "Retry",

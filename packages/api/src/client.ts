@@ -179,6 +179,7 @@ export const API_ERROR_CODES = [
   'network',
   'linkRevoked',
   'limit',
+  'rateLimited',
   'emailTaken',
 ] as const;
 export type ApiErrorCode = (typeof API_ERROR_CODES)[number];

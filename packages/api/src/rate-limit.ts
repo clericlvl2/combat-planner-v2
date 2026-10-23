@@ -10,7 +10,7 @@ export const RATE_LIMIT_BUDGETS = {
 
 export type RateLimitBucket = keyof typeof RATE_LIMIT_BUDGETS;
 
-export const TOO_MANY_REQUESTS = { code: 'limit', message: 'Too many requests' } as const;
+export const TOO_MANY_REQUESTS = { code: 'rateLimited', message: 'Too many requests' } as const;
 
 const ACTIONS_PATH = /^\/combats\/[^/]+\/actions$/;
 const COMBAT_PATH = /^\/(?:combats|play)\/([^/]+)/;

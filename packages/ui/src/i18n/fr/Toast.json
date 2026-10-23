@@ -3,6 +3,7 @@
   "show": "Afficher la notification",
   "unitCap": "Ce combat compte déjà {{limit}} unités",
   "limitReached": "Limite atteinte",
+  "tooManyRequests": "Trop de requêtes — patientez une minute",
   "linkCopied": "Lien copié",
   "serverUnreachable": "Impossible de joindre le serveur. Rien n’a changé.",
   "retry": "Réessayer",

@@ -3,6 +3,7 @@
   "show": "通知を表示",
   "unitCap": "この戦闘にはすでに{{limit}}体のユニットがいます",
   "limitReached": "上限に達しました",
+  "tooManyRequests": "リクエストが多すぎます。1分ほどお待ちください",
   "linkCopied": "リンクをコピーしました",
   "serverUnreachable": "サーバーに接続できません。変更は反映されていません。",
   "retry": "再試行",

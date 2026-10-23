@@ -77,7 +77,7 @@ describe('rate limiter', () => {
     expect(refused.headers.get('retry-after')).toBe(
       String((RATE_LIMIT_WINDOW_MS - ((START + 15_000) % RATE_LIMIT_WINDOW_MS)) / 1000),
     );
-    expect(await refused.json()).toEqual({ code: 'limit', message: 'Too many requests' });
+    expect(await refused.json()).toEqual({ code: 'rateLimited', message: 'Too many requests' });
   });
 
   it('counts each client IP separately', async () => {

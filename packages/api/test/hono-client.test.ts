@@ -151,6 +151,8 @@ describe('createHonoApiClient error mapping', () => {
     [409, 'version'],
     [422, 'invalid'],
     [400, 'invalid'],
+    [413, 'limit'],
+    [429, 'rateLimited'],
   ] as const)('maps %i to %s with the body message', async (status, code) => {
     const { fetch } = stubFetch(status, { message: `status ${status}` });
     const client = createHonoApiClient({ baseUrl, fetch });
