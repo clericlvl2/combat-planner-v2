@@ -1,6 +1,6 @@
-import { IconSwords } from '@tabler/icons-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router';
+import { Logo } from '../../atoms/Logo/Logo.tsx';
 import classes from './AuthScreen.module.css';
 import { ScreenToast } from './ScreenToast.tsx';
 
@@ -27,7 +27,7 @@ export function AuthScreen({
         <div className={classes.heading}>
           <div className={classes.brand}>
             <span className={classes.logo} aria-hidden="true">
-              <IconSwords size={24} stroke={2} />
+              <Logo size={24} />
             </span>
             <h1 className={classes.title}>{title}</h1>
           </div>
