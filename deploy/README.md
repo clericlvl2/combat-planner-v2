@@ -30,13 +30,15 @@ database restored without them signs every user out and breaks every player link
 player links are bound to `DOMAIN` as well: changing it signs everyone out and breaks shared
 player links; accounts and combats stay.
 
-The examples use the server `195.2.67.81` and the bucket `combat-planner-backup-ttrpg74`.
+The commands use placeholders: `<server-ip>` for the server's address, `<bucket>` for the bucket
+name, `~/.ssh/<key>` for the operator's private SSH key, `<domain>` for `DOMAIN` and `<tag>` for a
+release tag. Replace each before running a command.
 
 ## Runbook
 
 Prerequisites:
 
-- SSH access as `root` by key, e.g. `ssh -i ~/.ssh/combat_planner_vdsina root@195.2.67.81`.
+- SSH access as `root` by key, e.g. `ssh -i ~/.ssh/<key> root@<server-ip>`.
 - A domain whose `A` records for the bare name and `www` point to the server.
 - A Yandex Object Storage bucket (standard class, public access off, versioning off: Litestream
   deletes its own old files, and versioning would keep them) and a service account with the
@@ -67,8 +69,8 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
      sshd -T | grep -E '^(passwordauthentication|permitrootlogin) '
      ```
 
-     Both lines read `no`. Restart SSH only after `ssh -i ~/.ssh/combat_planner_vdsina
-     deploy@195.2.67.81` and `sudo -i` work from a second terminal: `systemctl restart ssh`.
+     Both lines read `no`. Restart SSH only after `ssh -i ~/.ssh/<key>
+     deploy@<server-ip>` and `sudo -i` work from a second terminal: `systemctl restart ssh`.
 
 2. **Swap.**
 
@@ -151,7 +153,7 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    ```sh
    docker pull ghcr.io/clericlvl2/combat-planner-v2:<tag>
    docker save ghcr.io/clericlvl2/combat-planner-v2:<tag> | gzip > combat-planner.tar.gz
-   scp combat-planner.tar.gz deploy@195.2.67.81:
+   scp -i ~/.ssh/<key> combat-planner.tar.gz deploy@<server-ip>:
    ```
 
    On the server, as `deploy`:
@@ -163,7 +165,7 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 7. **Secrets.** As `deploy`, run `openssl rand -hex 32` twice, then `nano .env` and fill in:
    - `DOMAIN`: the bare domain, e.g. `planner.example.com`;
    - `BETTER_AUTH_SECRET` and `LINK_SECRET`: the two generated values;
-   - `LITESTREAM_BUCKET`, e.g. `combat-planner-backup-ttrpg74`, `LITESTREAM_ACCESS_KEY_ID` and
+   - `LITESTREAM_BUCKET`: `<bucket>`; `LITESTREAM_ACCESS_KEY_ID` and
      `LITESTREAM_SECRET_ACCESS_KEY` from the Yandex console;
    - optionally `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID` and
      `GITHUB_CLIENT_SECRET` from the OAuth clients registered with the callback URLs
