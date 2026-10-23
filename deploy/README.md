@@ -7,9 +7,11 @@ HTTPS on a domain and a continuous SQLite backup to Yandex Object Storage.
 
 - `app`: the release image `ghcr.io/clericlvl2/combat-planner-v2:<tag>`, pulled anonymously.
   No port is published; only Caddy reaches it. It receives only `BETTER_AUTH_URL`,
-  `BETTER_AUTH_SECRET` and `LINK_SECRET`, never the bucket key.
-- `caddy`: `caddy:2` on ports 80/tcp and 443/tcp+udp (HTTP/3), with an automatic Let's Encrypt
-  certificate for `DOMAIN`, proxying to `app:3000` (`Caddyfile`).
+  `BETTER_AUTH_SECRET`, `LINK_SECRET` and the optional `GOOGLE_*` and `GITHUB_*` sign-in pairs,
+  never the bucket key.
+- `caddy`: `caddy:2` on ports 80/tcp and 443/tcp+udp (HTTP/3), with automatic Let's Encrypt
+  certificates for `DOMAIN` and `www.DOMAIN`, proxying `DOMAIN` to `app:3000` and redirecting
+  `www.DOMAIN` to `DOMAIN` (`Caddyfile`).
 - `litestream`: `litestream/litestream:0.5`, replicating `/data/combat-planner.db` to the bucket
   every 10 s (`litestream.yml`). It runs as uid 1000, like `app`, because it writes beside the
   database. It starts once `app` is healthy, so `app` creates the `data` volume with the right
@@ -29,7 +31,7 @@ The examples use the server `195.2.67.81` and the bucket `combat-planner-backup-
 Prerequisites:
 
 - SSH access as `root` by key, e.g. `ssh -i ~/.ssh/combat_planner_vdsina root@195.2.67.81`.
-- A domain whose `A` record points to the server.
+- A domain whose `A` records for the bare name and `www` point to the server.
 - A Yandex Object Storage bucket (standard class, public access off, versioning off: Litestream
   deletes its own old files, and versioning would keep them) and a service account with the
   folder role `storage.editor` and a static access key.
@@ -154,7 +156,11 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    - `DOMAIN`: the bare domain, e.g. `planner.example.com`;
    - `BETTER_AUTH_SECRET` and `LINK_SECRET`: the two generated values;
    - `LITESTREAM_BUCKET`, e.g. `combat-planner-backup-ttrpg74`, `LITESTREAM_ACCESS_KEY_ID` and
-     `LITESTREAM_SECRET_ACCESS_KEY` from the Yandex console.
+     `LITESTREAM_SECRET_ACCESS_KEY` from the Yandex console;
+   - optionally `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`, `GITHUB_CLIENT_ID` and
+     `GITHUB_CLIENT_SECRET` from the OAuth clients registered with the callback URLs
+     `https://<domain>/api/auth/callback/google` and `https://<domain>/api/auth/callback/github`.
+     An empty pair keeps that sign-in off. A change takes `docker compose up -d app`.
 
    Copy the two secrets into the password manager, then `clear`. Values typed in `nano` stay out
    of the shell history; never pass them as command arguments.
