@@ -59,3 +59,22 @@ describe('server app', () => {
     close();
   });
 });
+
+describe('security headers', () => {
+  it.each(['/api/health', '/combats/01J'])('come with %s', async (route) => {
+    const { app, close } = start();
+    const response = await app.request(route);
+    expect(response.status).toBe(200);
+    expect(Object.fromEntries(response.headers)).toMatchObject({
+      'strict-transport-security': 'max-age=31536000; includeSubDomains',
+      'x-content-type-options': 'nosniff',
+      'referrer-policy': 'no-referrer',
+      'x-frame-options': 'DENY',
+      'content-security-policy':
+        "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+        "font-src 'self' data:; img-src 'self' data:; connect-src 'self'; " +
+        "frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
+    });
+    close();
+  });
+});
