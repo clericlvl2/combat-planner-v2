@@ -13,6 +13,7 @@ import { TextField } from '../../atoms/TextField/TextField.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { layout } from '../../layout.ts';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { PlayerHeader } from '../../organisms/PlayerHeader/PlayerHeader.tsx';
 import { PlayerToast, usePlayerToasts } from '../PlayerView/PlayerToast.tsx';
@@ -161,7 +162,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
         round={combat.status === 'active' ? combat.round : null}
         escalation={combat.escalation as EscalationValue}
       />
-      <div className={classes.body}>
+      <ScrollList className={classes.body} contentClassName={classes.bodyContent}>
         <div className={classes.heading}>
           <h2 className={classes.title}>{t('title')}</h2>
           <Button
@@ -235,7 +236,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
             })}
           </div>
         </div>
-      </div>
+      </ScrollList>
       <div className={classes.footer}>
         <BottomBar
           label={joined ? t('done') : t('join')}

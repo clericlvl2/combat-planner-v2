@@ -2,6 +2,7 @@ import type { Icon } from '@tabler/icons-react';
 import type { HTMLAttributes, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import classes from './MessageScreen.module.css';
 
 export interface MessageScreenProps extends Omit<
@@ -31,9 +32,10 @@ export function MessageScreen({
   const { t } = useTranslation('MessageScreen');
   const withAction = actionLabel !== undefined && onAction !== undefined;
   return (
-    <div
+    <ScrollList
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
+      contentClassName={classes.content}
       data-system-screen=""
     >
       <span className={classes.tile} aria-hidden="true">
@@ -55,6 +57,6 @@ export function MessageScreen({
           ) : null}
         </div>
       ) : null}
-    </div>
+    </ScrollList>
   );
 }

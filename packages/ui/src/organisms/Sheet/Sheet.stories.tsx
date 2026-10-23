@@ -361,7 +361,7 @@ export const NoActions = meta.story({
     const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
     await expect(canvas.queryByRole('button', { name: t('done') })).toBeNull();
     const last = sheet.lastElementChild;
-    await expect(last).toHaveAttribute('data-sheet-content');
+    await expect(last).toContainElement(sheet.querySelector<HTMLElement>('[data-sheet-content]'));
   },
 });
 

@@ -96,19 +96,17 @@
 }
 
 .list {
-  composes: fade from '../../scroll.module.css';
   box-sizing: border-box;
-  display: grid;
   flex: 1;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-content: start;
   min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--cp-color-border) transparent;
-  scrollbar-gutter: stable;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-field);
+}
+
+.listContent {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-content: start;
 }
 
 .preset {

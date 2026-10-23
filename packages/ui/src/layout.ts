@@ -27,4 +27,5 @@ export const layout = {
   drawer: { width: 300, padding: { top: 56, right: 12, bottom: 28, left: 12 } },
   tapTarget: 44,
   scrollShadow: 12,
+  scrollbar: 6,
 } as const;

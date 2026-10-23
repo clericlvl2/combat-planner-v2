@@ -9,18 +9,15 @@
 }
 
 .body {
-  composes: fade from '../../scroll.module.css';
-  box-sizing: border-box;
-  display: flex;
   flex: 1;
+  min-height: 0;
+}
+
+.bodyContent {
+  display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 0;
   padding: 16px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--cp-color-border) transparent;
-  scrollbar-gutter: stable;
 }
 
 .heading {

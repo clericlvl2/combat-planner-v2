@@ -12,6 +12,7 @@ import {
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { useMotion } from '../../provider.tsx';
 import classes from './Sheet.module.css';
 
@@ -129,14 +130,14 @@ export function Sheet(props: SheetProps) {
           )}
           <IconButton icon={IconX} variant="outline" aria-label={t('close')} onClick={onClose} />
         </div>
-        <div
-          ref={contentRef}
+        <ScrollList
           className={classes.content}
-          data-sheet-content=""
-          onFocus={revealFocused}
+          contentClassName={classes.body}
+          viewportRef={contentRef}
+          viewportProps={{ 'data-sheet-content': '', onFocus: revealFocused }}
         >
           {children}
-        </div>
+        </ScrollList>
         {actionList.length > 0 ? (
           <div className={classes.actions}>
             {actionList.map((action, index) => (

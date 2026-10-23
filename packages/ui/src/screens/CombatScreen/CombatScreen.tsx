@@ -42,6 +42,7 @@ import { usePresets } from '../../hooks/usePresets.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import type {
@@ -527,7 +528,7 @@ export function CombatScreen({
         }}
         onMenuSelect={selectMenu}
       />
-      <div className={classes.list}>
+      <ScrollList className={classes.list} contentClassName={classes.listContent}>
         {units.map((unit) => (
           <UnitRow
             key={unit.id}
@@ -597,7 +598,7 @@ export function CombatScreen({
             action={{ label: tEmpty('addUnit'), icon: IconUserPlus, onAction: openAdd }}
           />
         ) : null}
-      </div>
+      </ScrollList>
       <TurnBar
         mode={setup ? 'start' : 'next'}
         nextName={nextName}

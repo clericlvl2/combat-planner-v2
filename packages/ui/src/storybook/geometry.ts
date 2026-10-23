@@ -473,6 +473,7 @@ function inside(box: Box, edge: Box): boolean {
 
 function sheetActionFindings(root: HTMLElement): Finding[] {
   const sheets = [...root.querySelectorAll('[data-sheet-content]')]
+    .map((content) => content.closest('[data-scroll-list]') ?? content)
     .map((content) => content.parentElement)
     .filter((sheet): sheet is HTMLElement => sheet !== null && isShown(sheet));
   return sheets.flatMap((sheet) => {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { useAccount } from '../../hooks/useAccount.ts';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Drawer } from '../../organisms/Drawer/Drawer.tsx';
 import type { DrawerSection } from '../../organisms/Drawer/Drawer.tsx';
 import { PageHeader } from '../../organisms/PageHeader/PageHeader.tsx';
@@ -40,7 +41,9 @@ export function PageScreen({
       ) : (
         <PageHeader title={title} onMenu={() => setDrawerOpen(true)} />
       )}
-      <div className={classes.content}>{children}</div>
+      <ScrollList className={classes.content} contentClassName={classes.inner}>
+        {children}
+      </ScrollList>
       <ScreenToast />
       {guest ? null : (
         <Drawer

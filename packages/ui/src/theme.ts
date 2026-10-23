@@ -157,6 +157,8 @@ export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as co
 
 export const tapMarker = { width: 3, color: interaction.tapMarker, offset: 2 } as const;
 
+const scrollShadow = { color: base.ink, alpha: 12 } as const;
+
 const px = (value: number) => `${value}px`;
 
 function kebab(name: string): string {
@@ -196,6 +198,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     ...paletteVariables(),
     '--cp-tap-target': `${layout.tapTarget}px`,
     '--cp-scroll-shadow': `${layout.scrollShadow}px`,
+    '--cp-scroll-shadow-color': `color-mix(in srgb, ${scrollShadow.color} ${scrollShadow.alpha}%, transparent)`,
     '--cp-list-inset-top': `${layout.listInset.top}px`,
     '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
   },

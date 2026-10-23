@@ -340,9 +340,8 @@ export const HistoryExpandedLong = meta.story({
     const t = storyT(globals, 'NumpadSheet');
     await expandHistory(canvas, t('HpHistory:title'));
     await expect(canvas.getAllByRole('listitem')).toHaveLength(10);
-    await expect(canvas.getByRole('list', { name: t('HpHistory:title') })).toHaveAttribute(
-      'data-long',
-    );
+    const list = canvas.getByRole('list', { name: t('HpHistory:title') });
+    await expect(list.closest('[data-scroll-list]')).toHaveAttribute('data-long');
   },
 });
 

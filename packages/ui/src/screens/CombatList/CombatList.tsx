@@ -20,6 +20,7 @@ import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombatList } from '../../hooks/useCombatList.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { CombatCard } from '../../organisms/CombatCard/CombatCard.tsx';
@@ -293,7 +294,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
           importFile(event).catch(() => {});
         }}
       />
-      <div className={classes.list}>
+      <ScrollList className={classes.list} contentClassName={classes.listContent}>
         {visible.map((combat) => (
           <CombatCard
             key={combat.id}
@@ -332,7 +333,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
             body={tEmpty('noResultsBody', { query: query.trim() })}
           />
         ) : null}
-      </div>
+      </ScrollList>
       <BottomBar
         label={tBar('newCombat')}
         icon={IconPlus}

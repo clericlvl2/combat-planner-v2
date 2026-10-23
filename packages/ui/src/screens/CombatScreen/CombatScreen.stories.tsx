@@ -163,7 +163,7 @@ const openShare = async (canvas: Canvas, t: TFunction) => {
 
 const scrollList = async (canvasElement: HTMLElement) => {
   const first = await rowOf(canvasElement, 'Flussbrückenwächterin Adelheid von Stein');
-  const list = first.parentElement;
+  const list = first.closest<HTMLElement>('[data-scrollarea-viewport]');
   if (!list) throw new Error('The unit list is missing');
   list.scrollTop = 38;
   await waitFor(() => expect(list.scrollTop).toBe(38));

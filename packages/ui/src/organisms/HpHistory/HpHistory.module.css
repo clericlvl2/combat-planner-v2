@@ -77,8 +77,15 @@
   }
 }
 
-.list {
-  composes: fade from '../../scroll.module.css';
+.list[data-long] {
+  max-height: 320px;
+
+  & [data-scrollarea-viewport] {
+    overscroll-behavior: contain;
+  }
+}
+
+.listContent {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-content: start;
@@ -87,20 +94,6 @@
   & > [role='listitem'] {
     grid-column: 1 / -1;
     grid-template-columns: subgrid;
-  }
-
-  &[data-long] {
-    max-height: 320px;
-    overflow-y: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--cp-color-border) transparent;
-    scrollbar-gutter: stable;
-    overscroll-behavior: contain;
-  }
-
-  &:focus-visible {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
   }
 }
 

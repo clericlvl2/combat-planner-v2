@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { Logo } from '../../atoms/Logo/Logo.tsx';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import classes from './AuthScreen.module.css';
 import { LanguageSheet } from './LanguageSheet.tsx';
@@ -35,7 +36,7 @@ export function AuthScreen({
 
   return (
     <div className={classes.root}>
-      <div className={classes.body}>
+      <ScrollList className={classes.body} contentClassName={classes.bodyContent}>
         <div className={classes.heading}>
           <div className={classes.brand}>
             <span className={classes.logo} aria-hidden="true">
@@ -63,7 +64,7 @@ export function AuthScreen({
         >
           {languageName}
         </Button>
-      </div>
+      </ScrollList>
       <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
       <ScreenToast />
     </div>

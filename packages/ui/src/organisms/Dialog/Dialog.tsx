@@ -4,6 +4,7 @@ import { useId, useLayoutEffect, useRef } from 'react';
 import type { KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import classes from './Dialog.module.css';
 
 export type DialogTone = 'ink' | 'danger';
@@ -69,7 +70,7 @@ export function Dialog(props: DialogProps) {
         <div className={classes.scrim} data-scrim="" aria-hidden="true" onClick={onCancel} />
         <div className={classes.inner}>
           <FocusTrap active={trapFocus}>
-            <div
+            <ScrollList
               role="alertdialog"
               tabIndex={-1}
               data-mantine-stop-propagation="true"
@@ -77,6 +78,7 @@ export function Dialog(props: DialogProps) {
               aria-labelledby={titleId}
               aria-describedby={bodyId}
               className={classes.dialog}
+              contentClassName={classes.content}
               data-tone={tone}
             >
               <span className={classes.icon} aria-hidden="true">
@@ -113,7 +115,7 @@ export function Dialog(props: DialogProps) {
                   </Button>
                 </div>
               </div>
-            </div>
+            </ScrollList>
           </FocusTrap>
         </div>
       </div>

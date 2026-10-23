@@ -97,18 +97,16 @@
 }
 
 .content {
-  composes: fade from '../../scroll.module.css';
-  display: flex;
   flex: 0 1 auto;
-  flex-direction: column;
-  gap: 12px;
   min-height: 0;
   margin: -6px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   padding: 6px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--cp-color-border) transparent;
-  scrollbar-gutter: stable;
 }
 
 .actions {

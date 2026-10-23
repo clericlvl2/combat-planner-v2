@@ -9,16 +9,13 @@
 }
 
 .list {
-  composes: fade from '../../scroll.module.css';
-  box-sizing: border-box;
-  display: flex;
   flex: 1;
+  min-height: 0;
+}
+
+.listContent {
+  display: flex;
   flex-direction: column;
   gap: 8px;
-  min-height: 0;
   padding: var(--cp-list-inset-top) 12px var(--cp-list-inset-bottom);
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: var(--cp-color-border) transparent;
-  scrollbar-gutter: stable;
 }

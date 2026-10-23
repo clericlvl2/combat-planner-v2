@@ -15,6 +15,7 @@ import type { DispatchResult } from '../../hooks/combat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
+import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
@@ -146,7 +147,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           onLeave?.();
         }}
       />
-      <div className={classes.list}>
+      <ScrollList className={classes.list} contentClassName={classes.listContent}>
         {setup && combat.units.length > 0 ? (
           <div className={classes.waiting} role="status">
             <IconHourglass size={20} stroke={2} aria-hidden="true" />
@@ -213,7 +214,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
         {combat.units.length === 0 ? (
           <EmptyState icon={IconUsers} title={t('noUnitsTitle')} body={t('noUnitsBody')} />
         ) : null}
-      </div>
+      </ScrollList>
       {numpadUnit ? (
         <NumpadSheet
           opened
