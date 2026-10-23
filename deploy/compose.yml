@@ -11,6 +11,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      ADMIN_PAGE: '1'
     volumes:
       - data:/data
     read_only: true
@@ -31,6 +32,8 @@ services:
       - '443:443/udp'
     environment:
       DOMAIN: ${DOMAIN:?set DOMAIN in deploy/.env}
+      ADMIN_USER: ${ADMIN_USER:-}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:-}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

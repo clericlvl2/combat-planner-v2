@@ -7,14 +7,18 @@ HTTPS on a domain and a continuous SQLite backup to Yandex Object Storage.
 
 - `app`: the release image `ghcr.io/clericlvl2/combat-planner-v2:<tag>`, pulled anonymously.
   No port is published; only Caddy reaches it. It receives only `BETTER_AUTH_URL`,
-  `BETTER_AUTH_SECRET`, `LINK_SECRET` and the optional `GOOGLE_*` and `GITHUB_*` sign-in pairs,
-  never the bucket key.
+  `BETTER_AUTH_SECRET`, `LINK_SECRET`, the optional `GOOGLE_*` and `GITHUB_*` sign-in pairs and
+  `ADMIN_PAGE=1`, never the bucket key. `ADMIN_PAGE=1` turns on the owner's status page `/admin`;
+  without it the app answers 404 there.
 - `caddy`: `caddy:2` on ports 80/tcp and 443/tcp+udp (HTTP/3), with automatic Let's Encrypt
   certificates for `DOMAIN` and `www.DOMAIN`, proxying `DOMAIN` to `app:3000` and redirecting
   `www.DOMAIN` to `DOMAIN` (`Caddyfile`). It refuses a request body over 64 KiB under `/api/`
-  with 413 and sends no `Via` header.
+  with 413 and sends no `Via` header. It asks for `ADMIN_USER` and its password (checked against
+  `ADMIN_PASSWORD_HASH`) on `/admin*` and answers 401 without them; it refuses to start while
+  either variable is empty.
 - `litestream`: `litestream/litestream:0.5`, replicating `/data/combat-planner.db` to the bucket
-  every 10 s (`litestream.yml`). It runs as uid 1000, like `app`, because it writes beside the
+  every 10 s (`litestream.yml`), and serves Prometheus metrics on port 9090 inside the compose
+  network only, read by the app's status page. It runs as uid 1000, like `app`, because it writes beside the
   database. It starts once `app` is healthy, so `app` creates the `data` volume with the right
   owner.
 
@@ -174,6 +178,8 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
      `https://<domain>/api/auth/callback/google` and `https://<domain>/api/auth/callback/github`.
      An empty pair keeps that sign-in off. A change takes `docker compose up -d app`.
 
+   - `ADMIN_USER` and `ADMIN_PASSWORD_HASH`: [Admin page](#admin-page), steps 1–2.
+
    Copy the two secrets into the password manager, then `clear`. Values typed in `nano` stay out
    of the shell history; never pass them as command arguments.
 
@@ -199,6 +205,23 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    - Open the link on a second device; a change by the DM appears there within a second.
 
 10. **Restore drill.** Run the [restore drill](#restore-drill) once.
+
+## Admin page
+
+`https://<domain>/admin` shows server load, usage, a 14-day table and the status of every part of
+the stack, refreshed every 30 s; the background checks run every minute. Caddy refuses to start
+without `ADMIN_USER` and `ADMIN_PASSWORD_HASH`, so a server updated to a release with the admin
+page takes these steps before `docker compose up`. As `deploy`, in `/opt/combat-planner/deploy`:
+
+1. Choose a login and a long password; keep both in the password manager.
+2. `docker compose run --rm --no-deps caddy caddy hash-password` asks for the password twice and
+   prints its hash. `nano .env`: set `ADMIN_USER` to the login and `ADMIN_PASSWORD_HASH` to the
+   hash in single quotes, e.g. `ADMIN_PASSWORD_HASH='$2a$14$…'`: unquoted, Compose would read
+   each `$` as a variable. Then `clear`.
+3. `docker compose up -d --force-recreate caddy app litestream`: Caddy reads the login, the app
+   turns the page on and Litestream starts serving its metrics.
+
+`https://<domain>/admin` asks for the login and password; without them it answers 401.
 
 ## Update
 
