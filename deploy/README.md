@@ -18,6 +18,11 @@ HTTPS on a domain and a continuous SQLite backup to Yandex Object Storage.
   database. It starts once `app` is healthy, so `app` creates the `data` volume with the right
   owner.
 
+`caddy` and `litestream` are pinned by image digest. Every container runs with a read-only root
+filesystem (writable volumes and a `/tmp` tmpfs only), `no-new-privileges`, every capability
+dropped except Caddy's `NET_BIND_SERVICE`, and a memory limit sized for 1 GB RAM plus 1 GB swap:
+`app` 512 MB, `caddy` and `litestream` 128 MB each.
+
 Every setting lives in `deploy/.env` on the server only; `.env.example` lists the variables and
 where each value comes from. Litestream copies only the database, not `secrets.json`, so
 `BETTER_AUTH_SECRET` and `LINK_SECRET` are set in `.env` and kept in the password manager: a

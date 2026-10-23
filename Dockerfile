@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-slim AS base
+FROM node:24-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS base
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 RUN corepack enable && corepack prepare pnpm@10.34.7 --activate
 RUN apt-get update \
@@ -23,7 +23,7 @@ COPY packages/domain/package.json packages/domain/
 COPY packages/ui/package.json packages/ui/
 RUN pnpm install --frozen-lockfile --prod --filter @combat-planner/server...
 
-FROM node:24-slim AS production
+FROM node:24-slim@sha256:55fb5f5a527ea2c5c4a95f963e48ef90aa38c7b346054fdc8ee9957a2b55d205 AS production
 ENV NODE_ENV=production \
   PORT=3000 \
   DATABASE_PATH=/data/combat-planner.db \
