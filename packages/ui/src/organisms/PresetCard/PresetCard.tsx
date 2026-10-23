@@ -77,7 +77,7 @@ export function PresetCard({
       data-expanded={expanded || undefined}
       onClick={handleClick}
     >
-      <RoleBlock className={classes.role} fill unitRole={preset.role} top={{ kind: 'none' }} />
+      <RoleBlock className={classes.role} fill tile unitRole={preset.role} top={{ kind: 'none' }} />
       <div className={classes.main}>
         <span className={classes.name} data-part="name">
           {preset.name}

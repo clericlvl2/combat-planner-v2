@@ -278,10 +278,11 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cp-card-gap);
   min-height: 0;
   padding: 8px 12px;
   overflow: hidden;
+  background: var(--cp-color-soft);
 }
 
 .row {
@@ -289,19 +290,27 @@
   box-sizing: border-box;
   display: grid;
   flex: none;
-  grid-template-columns: 48px minmax(0, 1fr) 84px;
+  grid-template-columns: 49px minmax(0, 1fr) 85px;
   min-height: 64px;
-  border: 2px solid var(--cp-color-border);
+  border: 1px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
 
   &[data-dead] {
     background: var(--cp-role-inactive-fill);
   }
 
   &[data-active] {
-    border-color: var(--cp-color-ink);
+    z-index: 1;
+    border-color: var(--cp-color-accent);
     background: var(--cp-color-accent);
+    box-shadow: var(--cp-active-shadow);
+    transform: scale(var(--cp-active-scale));
   }
 }
 
@@ -313,9 +322,10 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  width: 48px;
-  padding: 8px 0;
-  border-radius: 14px 0 0 14px;
+  width: var(--cp-role-tile-width);
+  margin: var(--cp-role-tile-inset);
+  padding: 6px 0;
+  border-radius: var(--mantine-radius-tile);
   background: var(--cp-role-enemy);
   color: var(--cp-color-surface);
 
@@ -329,28 +339,6 @@
 
   .row[data-dead] & {
     background: var(--cp-role-inactive);
-  }
-}
-
-.notch {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 0;
-  height: 0;
-  margin-top: -9px;
-  border-top: 9px solid transparent;
-  border-bottom: 9px solid transparent;
-  border-left: 9px solid var(--cp-color-accent);
-  opacity: 0;
-  transform: translateX(-9px);
-  transition:
-    opacity 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
-
-  .row[data-active] & {
-    opacity: 1;
-    transform: none;
   }
 }
 
@@ -370,17 +358,17 @@
 
 .roleLabel {
   max-width: 100%;
-  font-size: var(--mantine-font-size-caps);
+  font-size: var(--mantine-font-size-capsTile);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-align: center;
   text-transform: uppercase;
 }
 
 .you {
-  max-width: 44px;
-  padding: 1px 5px;
+  max-width: 100%;
+  padding: 1px 3px;
   border-radius: var(--mantine-radius-full);
   background: var(--cp-color-surface);
   color: var(--cp-role-hero);
@@ -427,11 +415,15 @@
   gap: 2px;
   height: 22px;
   padding: 0 4px;
-  border: 1px solid var(--cp-color-border);
+  border: 1px solid transparent;
   border-radius: var(--mantine-radius-full);
-  background: var(--cp-color-surface);
+  background: var(--cp-color-background);
   line-height: 20px;
   white-space: nowrap;
+
+  .row[data-active] & {
+    background: var(--cp-color-surface);
+  }
 }
 
 .defenseLabel {

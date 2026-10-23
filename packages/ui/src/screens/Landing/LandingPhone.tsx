@@ -149,7 +149,6 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
       data-dead={dead || undefined}
     >
       <span className={classes.role} data-role={unit.role}>
-        <span className={classes.notch} />
         <span className={classes.roleValue} data-editable={viewer === 'dm' || mine || undefined}>
           {unit.initiative}
         </span>

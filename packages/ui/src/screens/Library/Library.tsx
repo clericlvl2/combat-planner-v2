@@ -316,6 +316,7 @@ export function Library() {
         {visible.map((preset) => (
           <PresetCard
             key={preset.id}
+            className={classes.card}
             preset={preset}
             tags={preset.tags.map(tagName).filter((name) => name !== '')}
             expanded={expandedId === preset.id}

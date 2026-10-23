@@ -210,15 +210,16 @@ export const DuplicateDisabled = meta.story({
     await expect(canvas.getByRole('menuitem', { name: t('delete') })).toBeEnabled();
   },
 });
-export const RoleFillsCard = meta.story({
+export const RoleTileInsetInCard = meta.story({
   tags: ['!dev'],
   play: async ({ canvasElement }) => {
     const role = canvasElement.querySelector<HTMLElement>('[data-fill]');
     await expect(role).not.toBeNull();
     const card = role?.closest('article');
     await expect(role?.getBoundingClientRect().height).toBe(
-      (card?.getBoundingClientRect().height ?? 0) - 4,
+      (card?.getBoundingClientRect().height ?? 0) - 2 - 2 * layout.roleTile.inset,
     );
+    await expect(role).toHaveAttribute('data-tile');
   },
 });
 

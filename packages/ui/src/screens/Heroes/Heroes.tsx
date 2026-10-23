@@ -211,6 +211,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
                       {state === 'own' ? (
                         <RoleBlock
                           className={classes.role}
+                          tile
                           unitRole="hero"
                           top={
                             unit.initiative === null
