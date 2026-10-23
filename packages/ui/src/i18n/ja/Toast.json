@@ -13,6 +13,7 @@
   "reconnecting": "再接続中…",
   "presetDuplicated": "{{name}}を作成しました",
   "accountDeleted": "アカウントを削除しました",
+  "otherDevicesSignedOut": "他のデバイスからログアウトしました",
   "dmRestarted": "DMが戦闘をやり直しました",
   "dmCleared": "DMが戦闘をクリアしました",
   "dmReleased": "DMが{{hero}}の担当を解除しました。ヒーローを選んでください。",

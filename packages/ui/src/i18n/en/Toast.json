@@ -13,6 +13,7 @@
   "reconnecting": "Reconnecting…",
   "presetDuplicated": "{{name}} created",
   "accountDeleted": "Your account was deleted",
+  "otherDevicesSignedOut": "Signed out on other devices",
   "dmRestarted": "The DM restarted the combat",
   "dmCleared": "The DM cleared the combat",
   "dmReleased": "The DM released {{hero}}. Pick a hero.",

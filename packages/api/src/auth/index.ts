@@ -29,7 +29,6 @@ const DISABLED_AUTH_PATHS = [
   '/refresh-token',
   '/request-password-reset',
   '/reset-password',
-  '/revoke-other-sessions',
   '/revoke-session',
   '/revoke-sessions',
   '/send-verification-email',
@@ -169,6 +168,7 @@ export type AuthRoutes = {
   '/sign-in/email': { $post: AuthEndpoint<AuthApi['signInEmail']> };
   '/sign-in/social': { $post: AuthEndpoint<AuthApi['signInSocial']> };
   '/sign-out': { $post: AuthEndpoint<AuthApi['signOut']> };
+  '/revoke-other-sessions': { $post: AuthEndpoint<AuthApi['revokeOtherSessions']> };
   '/get-session': { $get: AuthEndpoint<AuthApi['getSession']> };
 };
 

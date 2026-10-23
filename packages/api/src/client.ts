@@ -236,6 +236,7 @@ export interface AuthApi {
   signUp(input: SignUpInput): Promise<Session>;
   signIn(input: SignInInput): Promise<Session>;
   signOut(): Promise<void>;
+  signOutOtherDevices(): Promise<void>;
   session(): Promise<Session | null>;
   providers(): Promise<SocialProvider[]>;
   socialSignIn(provider: SocialProvider, callbackUrl: string): Promise<{ url: string }>;

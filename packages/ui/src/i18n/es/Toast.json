@@ -13,6 +13,7 @@
   "reconnecting": "Reconectando…",
   "presetDuplicated": "Se creó {{name}}",
   "accountDeleted": "Tu cuenta se ha eliminado",
+  "otherDevicesSignedOut": "Sesión cerrada en otros dispositivos",
   "dmRestarted": "El DM reinició el combate",
   "dmCleared": "El DM vació el combate",
   "dmReleased": "El DM liberó a {{hero}}. Elige un héroe.",

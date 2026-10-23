@@ -9,6 +9,8 @@
   "enterName": "Enter a display name",
   "signOut": "Sign out",
   "signOutFailed": "Couldn’t sign out. Try again.",
+  "signOutOthers": "Sign out on other devices",
+  "signOutOthersFailed": "Couldn’t sign out on other devices. Try again.",
   "dangerZone": "Danger zone",
   "deleteAccount": "Delete account",
   "deleteNote": "Deletes all combats, presets and player links."

@@ -15,6 +15,7 @@ export interface AccountActions {
   signUp: (input: SignUpInput) => Promise<Session>;
   socialSignIn: (provider: SocialProvider, callbackUrl: string) => Promise<{ url: string }>;
   signOut: () => Promise<void>;
+  signOutOtherDevices: () => Promise<void>;
   update: (patch: AccountPatch) => Promise<Session>;
   remove: () => Promise<void>;
 }
@@ -45,6 +46,11 @@ export function accountActions(api: ApiClient, context: MutationContext): Accoun
       send: () => api.auth.signOut(),
       invalidate: [],
       clearCache: true,
+    }),
+    signOutOtherDevices: mutation(context, {
+      send: () => api.auth.signOutOtherDevices(),
+      invalidate: [],
+      success: () => ({ message: t('otherDevicesSignedOut'), kind: 'neutral' }),
     }),
     update: mutation(context, {
       send: (patch: AccountPatch) => api.account.update(patch),

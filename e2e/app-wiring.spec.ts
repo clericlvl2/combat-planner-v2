@@ -61,7 +61,7 @@ test('sign-in returns to the browser language after a DM signs out in another', 
     .getByText(t('Drawer:account', DE))
     .click();
   await expect(page.getByRole('heading', { level: 1, name: t('Account:title', DE) })).toBeVisible();
-  await page.getByRole('button', { name: t('Account:signOut', DE) }).click();
+  await page.getByRole('button', { name: t('Account:signOut', DE), exact: true }).click();
 
   await expect(page).toHaveURL(/\/auth\/sign-in$/);
   await expect(page.getByRole('heading', { level: 1, name: t('SignIn:title') })).toBeVisible();

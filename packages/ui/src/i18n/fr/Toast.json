@@ -13,6 +13,7 @@
   "reconnecting": "Reconnexion…",
   "presetDuplicated": "{{name}} créé",
   "accountDeleted": "Votre compte a été supprimé",
+  "otherDevicesSignedOut": "Déconnecté des autres appareils",
   "dmRestarted": "Le MJ a relancé le combat",
   "dmCleared": "Le MJ a vidé le combat",
   "dmReleased": "Le MJ a libéré {{hero}}. Choisissez un héros.",

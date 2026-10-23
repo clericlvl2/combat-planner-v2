@@ -50,6 +50,7 @@ const CONTRACT_PATHS = [
   '/sign-in/email',
   '/sign-in/social',
   '/sign-out',
+  '/revoke-other-sessions',
   '/get-session',
   '/callback/:id',
   '/error',
@@ -603,5 +604,23 @@ describe('auth rate limit', () => {
       expect((await fromIp('203.0.113.9', '/auth/sign-up/email', attempt(index))).status).toBe(200);
     }
     expect((await fromIp('203.0.113.9', '/auth/sign-up/email', attempt(3))).status).toBe(429);
+  });
+});
+
+describe('POST /auth/revoke-other-sessions', () => {
+  it('ends every other session of the user and keeps the current one', async () => {
+    const phone = createBrowser(opened.app);
+    const laptop = createBrowser(opened.app);
+    const credentials = { email: 'devices@example.com', password: PASSWORD };
+    expect((await signUp(phone, credentials.email, 'Dana')).status).toBe(200);
+    expect((await browse(laptop, 'POST', '/auth/sign-in/email', credentials)).status).toBe(200);
+    const client = createHonoApiClient({
+      baseUrl: 'http://localhost',
+      fetch: ((input, init) =>
+        phone.request(input instanceof Request ? input.url : String(input), init)) as typeof fetch,
+    });
+    await expect(client.auth.signOutOtherDevices()).resolves.toBeUndefined();
+    expect((await browse(phone, 'GET', '/combats')).status).toBe(200);
+    expect((await browse(laptop, 'GET', '/combats')).status).toBe(401);
   });
 });

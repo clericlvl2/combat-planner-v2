@@ -13,6 +13,7 @@
   "reconnecting": "Verbindung wird wiederhergestellt…",
   "presetDuplicated": "{{name}} erstellt",
   "accountDeleted": "Dein Konto wurde gelöscht",
+  "otherDevicesSignedOut": "Auf anderen Geräten abgemeldet",
   "dmRestarted": "Die Spielleitung hat den Kampf neu gestartet",
   "dmCleared": "Die Spielleitung hat den Kampf geleert",
   "dmReleased": "Die Spielleitung hat {{hero}} freigegeben. Wähle einen Helden.",

@@ -544,6 +544,8 @@ export function createHonoApiClient({
           'email',
         ),
       signOut: () => none(() => client.auth['sign-out'].$post({}, EMPTY_JSON_BODY)),
+      signOutOtherDevices: () =>
+        none(() => client.auth['revoke-other-sessions'].$post({}, EMPTY_JSON_BODY)),
       session: async () => {
         const found = await json(() => client.auth['get-session'].$get(), authSessionSchema);
         return found === null ? null : sessionOf(found, found.method);

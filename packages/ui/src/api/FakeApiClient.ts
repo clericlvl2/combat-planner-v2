@@ -424,6 +424,7 @@ export class FakeApiClient implements ApiClient {
       this.run('auth.signOut', [], () => {
         this.session = null;
       }),
+    signOutOtherDevices: () => this.run('auth.signOutOtherDevices', [], () => {}),
     session: () => this.run('auth.session', [], () => this.session),
     providers: () => this.run('auth.providers', [], () => [...this.providerList]),
     socialSignIn: (provider, callbackUrl) =>
