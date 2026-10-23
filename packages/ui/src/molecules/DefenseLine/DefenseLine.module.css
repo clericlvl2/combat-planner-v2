@@ -1,6 +1,6 @@
 .root {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 3px;
   min-width: 0;
   font-family: var(--cp-font-ui);
