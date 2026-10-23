@@ -1,6 +1,6 @@
 import type { HealthStatus, Role } from './types.ts';
 
-export type HealthSegments = 0 | 1 | 2 | 3 | 4;
+export type HealthSegments = 0 | 1 | 2;
 
 export const healthStatus = (hp: number, maxHp: number, role: Role): HealthStatus => {
   if (hp <= 0) return role === 'hero' && hp > -Math.ceil(maxHp / 2) ? 'unconscious' : 'dead';
@@ -9,18 +9,13 @@ export const healthStatus = (hp: number, maxHp: number, role: Role): HealthStatu
   return 'staggered';
 };
 
-export const healthSegments = (
-  status: HealthStatus,
-  hp?: number,
-  maxHp?: number,
-): HealthSegments => {
+export const healthSegments = (status: HealthStatus): HealthSegments => {
   switch (status) {
     case 'full':
-      return 4;
     case 'wounded':
-      return 3;
+      return 2;
     case 'staggered':
-      return hp !== undefined && maxHp !== undefined && hp * 4 < maxHp ? 1 : 2;
+      return 1;
     case 'unconscious':
     case 'dead':
       return 0;

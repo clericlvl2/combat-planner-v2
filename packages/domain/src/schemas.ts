@@ -160,7 +160,7 @@ export const playerUnitSchema = z.object({
   name: unitNameSchema,
   role: roleSchema,
   healthStatus: healthStatusSchema,
-  healthSegments: z.literal([0, 1, 2, 3, 4]),
+  healthSegments: z.literal([0, 1, 2]),
   conditions: conditionsSchema,
   position: z.number().int().positive(),
   initiative: initiativeSchema.nullable(),

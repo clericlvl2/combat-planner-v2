@@ -122,7 +122,7 @@ const changeHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number): Player
     hp: next.hp,
     tempHp: next.tempHp,
     healthStatus: status,
-    healthSegments: healthSegments(status, next.hp, next.maxHp),
+    healthSegments: healthSegments(status),
   };
 };
 

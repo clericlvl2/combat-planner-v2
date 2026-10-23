@@ -36,7 +36,7 @@ const playerUnit = (
     name: unit.name,
     role: unit.role,
     healthStatus: status,
-    healthSegments: healthSegments(status, unit.hp, unit.maxHp),
+    healthSegments: healthSegments(status),
     conditions: unit.conditions,
     position,
     initiative: unit.initiative,

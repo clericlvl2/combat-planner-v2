@@ -88,7 +88,7 @@ describe('types', () => {
           name: unit.name,
           role: unit.role,
           healthStatus: 'full',
-          healthSegments: 4,
+          healthSegments: 2,
           conditions: [],
           position: 1,
           initiative: null,
