@@ -203,8 +203,9 @@ As `deploy`, in `/opt/combat-planner/deploy`:
 3. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
    `{"status":"ok"}`.
 
-A release that changes files in `deploy/` takes `git pull` before step 2 and `docker compose up -d`
-for all services in step 2.
+A release that changes files in `deploy/` takes `git pull` before step 2 and
+`docker compose up -d --force-recreate` in step 2: a bind-mounted file such as `Caddyfile`
+reaches its container only when the container is recreated.
 
 Rollback is the same procedure with the previous tag, which is pulled again. Old code may not run
 on a schema migrated by a newer release: such a rollback first restores the database to a moment
