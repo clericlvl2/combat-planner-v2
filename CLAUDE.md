@@ -132,7 +132,7 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
 - Format: Oxfmt, `singleQuote`, `printWidth: 100`.
 - Commits: Conventional Commits whose subject states the user-visible result, e.g.
   `fix(ui): the ru restart label fits its button`. Types `feat`, `fix`, `perf`, `revert` show in
-  the changelog; `docs`, `chore`, `test`, `refactor`, `ci`, `build` do not.
+  the release notes; `docs`, `chore`, `test`, `refactor`, `ci`, `build` do not.
 - Branches: short-lived branches from `main`, merged into `main` through a pull request; a release
   is a manual run of the `release` workflow on `main`.
 
