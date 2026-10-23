@@ -1,5 +1,6 @@
 {
   "title": "Combates",
   "search": "Buscar combates",
-  "sort": "Ordenar"
+  "sort": "Ordenar",
+  "import": "Importar desde archivo"
 }

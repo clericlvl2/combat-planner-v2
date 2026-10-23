@@ -1,16 +1,18 @@
 import preview from '#.storybook/preview';
 import type { TFunction } from 'i18next';
 import type { ApiErrorCode } from '@combat-planner/api/client';
+import { toCombatFile } from '@combat-planner/domain';
 import { useState } from 'react';
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import { useApi } from '../../api/ApiProvider.tsx';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import { COMBAT_SORT_KEY, CombatList } from './CombatList.tsx';
 import {
+  combatOf,
   fullScenario,
   listCombats,
   listScenario,
@@ -70,6 +72,19 @@ const openMenu = async (canvas: Canvas, t: TFunction) => {
   await expand(canvas, ambush.title, t);
   await userEvent.click(canvas.getByRole('button', { name: t('CardActions:more') }));
   await expect(canvas.getByRole('menuitem', { name: t('Menu:duplicate') })).toBeVisible();
+};
+
+const importedCombat = combatOf(90, { title: 'Siege of Greyhold', color: 2, units: 3 });
+
+const combatFileOf = (content: string): File =>
+  new File([content], 'combat.combat.json', { type: 'application/json' });
+
+const pickFile = async (canvas: Canvas, canvasElement: HTMLElement, t: TFunction, file: File) => {
+  await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
+  const input = canvasElement.querySelector<HTMLInputElement>('input[type="file"]');
+  if (input === null) throw new Error('The import input is missing');
+  await expect(input).toHaveAttribute('accept', '.json,application/json');
+  await userEvent.upload(input, file);
 };
 
 const openSheet = async (canvas: Canvas, opener: HTMLElement, name: string) => {
@@ -137,6 +152,7 @@ export const Default = meta.story({
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
     await expect(titlesOf(canvas, t)).toEqual(listCombats.map((combat) => combat.title));
     await expect(canvas.getByRole('button', { name: t('sort') })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('import') })).toBeEnabled();
     await expect(fakeApiOf(loaded).calls.map((call) => call.method)).toContain('combats.list');
     const chevron = canvas.getByRole('button', { name: detailsOf(t, ambush.title) });
     chevron.focus();
@@ -312,6 +328,73 @@ export const DuplicateToast = meta.story({
   },
 });
 
+export const ExportDownloadsFile = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'CombatList');
+    const names: string[] = [];
+    const click = spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement,
+    ) {
+      names.push(this.download);
+    });
+    try {
+      await openMenu(canvas, t);
+      await userEvent.click(canvas.getByRole('menuitem', { name: t('CombatCard:export') }));
+      await waitFor(() => expect(names).toEqual(['Ambush at the Ferry.combat.json']));
+      const fetched = fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.get');
+      await expect(fetched.map((call) => call.args)).toEqual([[ambush.id]]);
+    } finally {
+      click.mockRestore();
+    }
+  },
+});
+
+export const ImportAddsCombat = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatList');
+    const file = toCombatFile(importedCombat);
+    await pickFile(canvas, canvasElement, t, combatFileOf(JSON.stringify(file, null, 2)));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('Toast:imported', { title: 'Siege of Greyhold' }),
+    );
+    const imports = fakeApiOf(loaded).calls.filter(
+      (call) => call.method === 'combats.importCombat',
+    );
+    await expect(imports.map((call) => call.args)).toEqual([[file]]);
+    await waitFor(() => expect(titlesOf(canvas, t)[0]).toBe('Siege of Greyhold'));
+    await expect(locationOf(canvasElement)).toBe('/combats');
+  },
+});
+
+export const InvalidFileToast = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatList');
+    await pickFile(canvas, canvasElement, t, combatFileOf('{"format":"combat-planner/combat"}'));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:invalidFile'));
+    await expect(
+      fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.importCombat'),
+    ).toHaveLength(0);
+  },
+});
+
+export const ImportOverUnitLimit = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatList');
+    const crowded = combatOf(91, { title: 'Horde', color: 1, units: 100 });
+    await pickFile(canvas, canvasElement, t, combatFileOf(JSON.stringify(toCombatFile(crowded))));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('Toast:unitCap', { limit: 99 }),
+    );
+    await expect(
+      fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.importCombat'),
+    ).toHaveLength(0);
+  },
+});
+
 export const DeleteConfirmation = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
@@ -401,6 +484,22 @@ export const CombatLimitReached = meta.story({
     await expect(canvas.queryByRole('dialog')).toBeNull();
     await expect(
       fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.create'),
+    ).toHaveLength(0);
+  },
+});
+
+export const ImportAtCombatLimit = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: fullScenario },
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'CombatList');
+    await canvas.findByRole('button', { name: detailsOf(t, 'Encounter 1') });
+    await userEvent.click(canvas.getByRole('button', { name: t('import') }));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('BottomBar:combatLimitReached'),
+    );
+    await expect(
+      fakeApiOf(loaded).calls.filter((call) => call.method === 'combats.importCombat'),
     ).toHaveLength(0);
   },
 });

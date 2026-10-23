@@ -20,5 +20,6 @@
   "details": "Details zu {{title}}",
   "menuLabel": "Aktionen für {{title}}",
   "duplicate": "Duplizieren",
-  "delete": "Löschen"
+  "delete": "Löschen",
+  "export": "In Datei exportieren"
 }

@@ -142,7 +142,14 @@ export const MenuOpen = meta.story({
     await expect(menu).toHaveAttribute('aria-expanded', 'true');
     await expect(await canvas.findByRole('menu', { name: t('menuLabel') })).toBeVisible();
     const items = canvas.getAllByRole('menuitem').map((item) => item.textContent);
-    await expect(items).toEqual([t('addUnit'), t('undo'), t('share'), t('restart'), t('clear')]);
+    await expect(items).toEqual([
+      t('addUnit'),
+      t('undo'),
+      t('share'),
+      t('export'),
+      t('restart'),
+      t('clear'),
+    ]);
   },
 });
 
@@ -205,7 +212,7 @@ export const SetupMenuOpen = meta.story({
     await expect(canvas.getByRole('button', { name: t('menu') })).toHaveAttribute('data-open');
     await canvas.findByRole('menu', { name: t('menuLabel') });
     const items = canvas.getAllByRole('menuitem').map((item) => item.textContent);
-    await expect(items).toEqual([t('addUnit'), t('undo'), t('share'), t('clear')]);
+    await expect(items).toEqual([t('addUnit'), t('undo'), t('share'), t('export'), t('clear')]);
   },
 });
 

@@ -19,5 +19,6 @@
   "clear": "Vaciar combate",
   "heroes": "Héroes",
   "language": "Idioma",
-  "leave": "Salir del combate"
+  "leave": "Salir del combate",
+  "export": "Exportar a archivo"
 }

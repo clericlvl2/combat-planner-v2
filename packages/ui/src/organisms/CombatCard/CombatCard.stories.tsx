@@ -168,7 +168,7 @@ export const MenuOpen = meta.story({
       await canvas.findByRole('menu', { name: t('menuLabel', { title: 'Ambush at the Ferry' }) }),
     ).toBeVisible();
     const items = canvas.getAllByRole('menuitem').map((item) => item.textContent);
-    await expect(items).toEqual([t('duplicate'), t('delete')]);
+    await expect(items).toEqual([t('duplicate'), t('export'), t('delete')]);
   },
 });
 

@@ -61,6 +61,7 @@ import { UnitRow } from '../../organisms/UnitRow/UnitRow.tsx';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatNotFound } from '../CombatNotFound/CombatNotFound.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
+import { saveCombatFile } from '../shared/combatFile.ts';
 import { toastLook } from '../shared/toastLook.ts';
 import { claimEvents } from './claimEvents.ts';
 import { isUndoable, undoLabel } from './undoLabel.ts';
@@ -337,6 +338,7 @@ export function CombatScreen({
     if (action === 'addUnit') openAdd();
     else if (action === 'undo') void undo();
     else if (action === 'share') setShareOpen(true);
+    else if (action === 'export') saveCombatFile(combat).catch(() => {});
     else setConfirm({ kind: action });
   };
 

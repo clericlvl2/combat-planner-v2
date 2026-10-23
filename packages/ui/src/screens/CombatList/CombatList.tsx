@@ -3,13 +3,15 @@ import { LIMITS } from '@combat-planner/domain';
 import type { CombatId } from '@combat-planner/domain';
 import { ApiError } from '@combat-planner/api/client';
 import {
+  IconFileImport,
   IconPlus,
   IconSearchOff,
   IconSortDescending,
   IconSwords,
   IconTrash,
 } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import type { ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { ulid } from 'ulid';
@@ -21,6 +23,7 @@ import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { CombatCard } from '../../organisms/CombatCard/CombatCard.tsx';
+import type { CombatCardAction } from '../../organisms/CombatCard/CombatCard.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import { Drawer } from '../../organisms/Drawer/Drawer.tsx';
 import type { DrawerSection } from '../../organisms/Drawer/Drawer.tsx';
@@ -28,6 +31,8 @@ import { PageHeader } from '../../organisms/PageHeader/PageHeader.tsx';
 import { SortSheet, combatSorts } from '../../organisms/SortSheet/SortSheet.tsx';
 import type { CombatSort } from '../../organisms/SortSheet/SortSheet.tsx';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
+import { COMBAT_FILE_ACCEPT, readCombatFile, saveCombatFile } from '../shared/combatFile.ts';
+import { hasCode } from '../shared/hasCode.ts';
 import { toastLook } from '../shared/toastLook.ts';
 import { CombatFormSheet, emptyCombatForm } from './CombatFormSheet/CombatFormSheet.tsx';
 import type { CombatFormValue } from './CombatFormSheet/CombatFormSheet.tsx';
@@ -38,6 +43,8 @@ export const COMBAT_SORT_KEY = 'combat-planner.combat-sort';
 const DEFAULT_SORT: CombatSort = 'newestFirst';
 
 const SORT_TOOL = 'sort';
+
+const IMPORT_TOOL = 'import';
 
 const dayMs = 24 * 60 * 60 * 1000;
 
@@ -109,9 +116,20 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   const { t: tBar } = useTranslation('BottomBar');
   const { t: tDialog } = useTranslation('Dialog');
   const navigate = useNavigate();
-  const { combats, error, refetch, create, update, duplicate, remove } = useCombatList();
+  const {
+    combats,
+    error,
+    refetch,
+    create,
+    update,
+    duplicate,
+    remove,
+    importCombat,
+    fetchDocument,
+  } = useCombatList();
   const { session } = useAccount();
-  const { toasts, dismiss } = useToasts();
+  const { toasts, dismiss, show: showToast, t: tToast } = useToasts();
+  const fileRef = useRef<HTMLInputElement | null>(null);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<CombatSort>(readCombatSort);
   const [sortOpen, setSortOpen] = useState(false);
@@ -164,14 +182,60 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
     }
   };
 
-  const selectMenu = (combat: CombatSummary, action: 'duplicate' | 'delete') => {
+  const selectMenu = (combat: CombatSummary, action: CombatCardAction) => {
     setMenuId(null);
     if (action === 'delete') {
       setDeleteId(combat.id);
       return;
     }
+    if (action === 'export') {
+      fetchDocument(combat.id)
+        .then(saveCombatFile)
+        .catch(() => {});
+      return;
+    }
     setExpandedId(null);
     duplicate(combat.id, ulid()).catch(() => {});
+  };
+
+  const invalidFile = () => {
+    showToast({ message: tToast('invalidFile'), kind: 'error' });
+  };
+
+  const selectTool = (id: string) => {
+    if (id !== IMPORT_TOOL) {
+      setSortOpen(true);
+      return;
+    }
+    if (atLimit) {
+      showToast({ message: tBar('combatLimitReached'), kind: 'warning' });
+      return;
+    }
+    fileRef.current?.click();
+  };
+
+  const importFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const picked = input.files?.[0];
+    input.value = '';
+    if (picked === undefined) return;
+    const read = await readCombatFile(picked);
+    if (read.kind === 'invalid') {
+      invalidFile();
+      return;
+    }
+    if (read.kind === 'unitLimit') {
+      showToast({
+        message: tToast('unitCap', { limit: LIMITS.unitsPerCombat }),
+        kind: 'warning',
+      });
+      return;
+    }
+    try {
+      await importCombat(read.file);
+    } catch (importError) {
+      if (hasCode(importError, 'invalid')) invalidFile();
+    }
   };
 
   const confirmDelete = () => {
@@ -199,8 +263,8 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
         onMenu={() => setDrawerOpen(true)}
         search={{ value: query, placeholder: t('search') }}
         onSearch={setQuery}
-        tools={
-          all.length > 0
+        tools={[
+          ...(all.length > 0
             ? [
                 {
                   id: SORT_TOOL,
@@ -209,9 +273,25 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
                   active: custom,
                 },
               ]
-            : []
-        }
-        onTool={() => setSortOpen(true)}
+            : []),
+          {
+            id: IMPORT_TOOL,
+            icon: IconFileImport,
+            'aria-label': t('import'),
+            disabled: !loaded,
+          },
+        ]}
+        onTool={selectTool}
+      />
+      <input
+        ref={fileRef}
+        type="file"
+        accept={COMBAT_FILE_ACCEPT}
+        hidden
+        aria-label={t('import')}
+        onChange={(event) => {
+          importFile(event).catch(() => {});
+        }}
       />
       <div className={classes.list}>
         {visible.map((combat) => (

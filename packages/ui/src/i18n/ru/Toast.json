@@ -26,5 +26,7 @@
   "playerClaimed": "{{name}} занял {{hero}}",
   "playerReleased": "{{name}} освободил {{hero}}",
   "playerLeft": "{{name}} покинул бой",
-  "playerJoined": "Новый игрок открыл ссылку"
+  "playerJoined": "Новый игрок открыл ссылку",
+  "invalidFile": "Файл не подходит",
+  "imported": "Импортировано: {{title}}"
 }

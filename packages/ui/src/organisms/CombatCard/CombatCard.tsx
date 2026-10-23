@@ -1,6 +1,12 @@
 import type { CombatStatus } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
-import { IconChevronDown, IconChevronUp, IconCopy, IconTrash } from '@tabler/icons-react';
+import {
+  IconChevronDown,
+  IconChevronUp,
+  IconCopy,
+  IconFileExport,
+  IconTrash,
+} from '@tabler/icons-react';
 import { useId } from 'react';
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -10,7 +16,7 @@ import { Menu } from '../Menu/Menu.tsx';
 import type { MenuItem } from '../Menu/Menu.tsx';
 import classes from './CombatCard.module.css';
 
-export type CombatCardAction = 'duplicate' | 'delete';
+export type CombatCardAction = 'duplicate' | 'export' | 'delete';
 
 export type CombatCardTarget = 'chevron' | 'edit' | 'more';
 
@@ -89,6 +95,7 @@ export function CombatCard({
     .join(' · ');
   const items: MenuItem[] = [
     { id: 'duplicate', icon: IconCopy, label: t('duplicate'), disabled: duplicateDisabled },
+    { id: 'export', icon: IconFileExport, label: t('export') },
     { id: 'delete', icon: IconTrash, label: t('delete'), tone: 'danger', divider: true },
   ];
   const Chevron = expanded ? IconChevronUp : IconChevronDown;

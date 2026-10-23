@@ -4,6 +4,7 @@ import {
   IconArrowBackUp,
   IconChevronLeft,
   IconDots,
+  IconFileExport,
   IconLanguage,
   IconLogout,
   IconRefresh,
@@ -32,7 +33,7 @@ import classes from './CombatHeader.module.css';
 
 export type CombatHeaderPopover = 'round' | 'escalation' | 'menu';
 
-export type CombatMenuAction = 'addUnit' | 'undo' | 'share' | 'restart' | 'clear';
+export type CombatMenuAction = 'addUnit' | 'undo' | 'share' | 'export' | 'restart' | 'clear';
 
 export type CombatHeaderViewer = 'dm' | 'player';
 
@@ -301,6 +302,7 @@ export function CombatHeader({
         { id: 'addUnit', icon: IconUserPlus, label: t('addUnit') },
         { id: 'undo', icon: IconArrowBackUp, label: t('undo'), disabled: undoDisabled },
         { id: 'share', icon: IconShare, label: t('share') },
+        { id: 'export', icon: IconFileExport, label: t('export') },
         ...(setup
           ? []
           : [{ id: 'restart', icon: IconRefresh, label: t('restart'), divider: true }]),

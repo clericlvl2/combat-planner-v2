@@ -19,5 +19,6 @@
   "clear": "Kampf leeren",
   "heroes": "Helden",
   "language": "Sprache",
-  "leave": "Kampf verlassen"
+  "leave": "Kampf verlassen",
+  "export": "In Datei exportieren"
 }

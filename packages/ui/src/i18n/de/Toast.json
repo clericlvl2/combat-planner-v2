@@ -26,5 +26,7 @@
   "playerClaimed": "{{name}} hat {{hero}} übernommen",
   "playerReleased": "{{name}} hat {{hero}} freigegeben",
   "playerLeft": "{{name}} hat den Kampf verlassen",
-  "playerJoined": "Ein neuer Spieler hat den Link geöffnet"
+  "playerJoined": "Ein neuer Spieler hat den Link geöffnet",
+  "invalidFile": "Diese Datei passt nicht",
+  "imported": "{{title}} importiert"
 }
