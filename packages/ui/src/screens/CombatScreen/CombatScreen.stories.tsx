@@ -1610,11 +1610,6 @@ export const Loading = meta.story({
   },
 });
 
-const expectBusy = async (button: HTMLElement) => {
-  await waitFor(() => expect(button).toHaveAttribute('aria-busy', 'true'));
-  await expect(button).toBeDisabled();
-};
-
 export const ShareWaitsForLink = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
@@ -1622,7 +1617,9 @@ export const ShareWaitsForLink = meta.story({
     const menu = await openMenu(canvas, t);
     fakeApiOf(loaded).holdNext();
     await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:share') }));
-    await expectBusy(canvas.getByRole('button', { name: t('CombatHeader:menu') }));
+    const busy = canvas.getByRole('button', { name: t('CombatHeader:menu') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
     await expect(canvas.queryByRole('dialog', { name: t('ShareSheet:title') })).toBeNull();
   },
 });
@@ -1637,7 +1634,9 @@ export const UndoWaits = meta.story({
     await waitFor(() => expect(undo).toBeEnabled());
     fakeApiOf(loaded).holdNext();
     await userEvent.click(undo);
-    await expectBusy(canvas.getByRole('button', { name: t('CombatHeader:menu') }));
+    const busy = canvas.getByRole('button', { name: t('CombatHeader:menu') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
     await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
   },
 });
@@ -1650,7 +1649,9 @@ export const SaveAsPresetWaits = meta.story({
     fakeApiOf(loaded).holdNext();
     await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:saveAsPreset') }));
     const row = await rowOf(canvasElement, names.orc);
-    await expectBusy(within(row).getByRole('button', { name: t('CardActions:more') }));
+    const busy = within(row).getByRole('button', { name: t('CardActions:more') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
   },
 });
 
@@ -1662,7 +1663,9 @@ export const ReleaseWaits = meta.story({
     fakeApiOf(loaded).holdNext();
     await userEvent.click(within(menu).getByRole('menuitem', { name: t('UnitRow:releaseClaim') }));
     const row = await rowOf(canvasElement, names.vashti);
-    await expectBusy(within(row).getByRole('button', { name: t('CardActions:more') }));
+    const busy = within(row).getByRole('button', { name: t('CardActions:more') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
     await expect(within(row).getByText('@Mika')).toBeVisible();
   },
 });

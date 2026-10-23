@@ -621,11 +621,6 @@ const loadingLoader: Loader = ({ parameters }) => {
   return { api };
 };
 
-const expectBusy = async (button: HTMLElement) => {
-  await waitFor(() => expect(button).toHaveAttribute('aria-busy', 'true'));
-  await expect(button).toBeDisabled();
-};
-
 export const Loading = meta.story({
   tags: ['visual'],
   loaders: [loadingLoader],
@@ -662,7 +657,9 @@ export const SetMaxWaits = meta.story({
     fakeApiOf(loaded).holdNext();
     const setMax = within(sheet).getByRole('button', { name: t('NumpadSheet:setMax') });
     await userEvent.click(setMax);
-    await expectBusy(setMax);
+    const busy = setMax;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
   },
 });
 
@@ -675,7 +672,9 @@ export const ConditionWaits = meta.story({
     const sheet = await canvas.findByRole('dialog', { name: t('PlayerRow:conditions') });
     fakeApiOf(loaded).holdNext();
     await userEvent.click(within(sheet).getByRole('checkbox', { name: t('Chip:weakened') }));
-    await expectBusy(within(sheet).getByRole('button', { name: t('ConditionPicker:done') }));
+    const busy = within(sheet).getByRole('button', { name: t('ConditionPicker:done') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
   },
 });
 
@@ -688,7 +687,9 @@ export const ReleaseWaits = meta.story({
     await userEvent.click(more);
     fakeApiOf(loaded).holdNext();
     await userEvent.click(await canvas.findByRole('menuitem', { name: t('Menu:releaseClaim') }));
-    await expectBusy(more);
+    const busy = more;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
   },
 });
 
@@ -701,7 +702,9 @@ export const LeaveWaits = meta.story({
     fakeApiOf(loaded).holdNext();
     const confirm = within(dialog).getByRole('button', { name: t('Dialog:leave') });
     await userEvent.click(confirm);
-    await expectBusy(confirm);
+    const busy = confirm;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
     await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
@@ -716,6 +719,8 @@ export const JoinWaits = meta.story({
     fakeApiOf(loaded).holdNext();
     const join = canvas.getByRole('button', { name: t('Heroes:join') });
     await userEvent.click(join);
-    await expectBusy(join);
+    const busy = join;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
   },
 });
