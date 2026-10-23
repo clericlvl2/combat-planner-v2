@@ -1,11 +1,14 @@
 import { ApiError } from '@combat-planner/api/client';
 import { LIMITS } from '@combat-planner/domain';
+import { Loader } from '@mantine/core';
+import type { Icon } from '@tabler/icons-react';
 import { IconChevronRight, IconDevicesX, IconLogout, IconUserX } from '@tabler/icons-react';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
+import { useDelayed } from '../../hooks/useDelayed.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import { PageScreen } from '../shared/PageScreen.tsx';
@@ -14,6 +17,19 @@ import { submitOnEnter } from '../shared/submitOnEnter.ts';
 import classes from './Account.module.css';
 
 const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit', 'rateLimited']);
+
+interface RowIconProps {
+  icon: Icon;
+  busy: boolean;
+}
+
+function RowIcon({ icon: IconComponent, busy }: RowIconProps) {
+  return busy ? (
+    <Loader className={classes.icon} size={20} color="currentColor" />
+  ) : (
+    <IconComponent className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+  );
+}
 
 export function Account() {
   const { t } = useTranslation('Account');
@@ -24,6 +40,10 @@ export function Account() {
   const [draft, setDraft] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const [othersLeaving, setOthersLeaving] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const leavingShown = useDelayed(leaving);
+  const othersShown = useDelayed(othersLeaving);
   const [blurred, setBlurred] = useState(false);
   const sending = useRef<string | null>(null);
 
@@ -59,6 +79,7 @@ export function Account() {
   };
 
   const leave = () => {
+    if (leaving) return;
     setLeaving(true);
     signOut()
       .then(() => navigate('/'))
@@ -70,17 +91,25 @@ export function Account() {
   };
 
   const leaveOtherDevices = () => {
-    signOutOtherDevices().catch((error: unknown) => {
-      if (error instanceof ApiError && toastedCodes.has(error.code)) return;
-      show({ message: t('signOutOthersFailed'), kind: 'error' });
-    });
+    if (othersLeaving) return;
+    setOthersLeaving(true);
+    signOutOtherDevices()
+      .catch((error: unknown) => {
+        if (error instanceof ApiError && toastedCodes.has(error.code)) return;
+        show({ message: t('signOutOthersFailed'), kind: 'error' });
+      })
+      .finally(() => setOthersLeaving(false));
   };
 
   const confirmDelete = () => {
-    setConfirming(false);
+    if (removing) return;
+    setRemoving(true);
     remove()
       .then(() => navigate('/auth/sign-in'))
-      .catch(() => {});
+      .catch(() => {
+        setRemoving(false);
+        setConfirming(false);
+      });
   };
 
   return (
@@ -109,13 +138,25 @@ export function Account() {
             />
           </div>
           <span className={classes.divider} aria-hidden="true" />
-          <button type="button" className={classes.row} onClick={leave}>
-            <IconLogout className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+          <button
+            type="button"
+            className={classes.row}
+            aria-busy={leavingShown || undefined}
+            disabled={leavingShown}
+            onClick={leave}
+          >
+            <RowIcon icon={IconLogout} busy={leavingShown} />
             <span className={classes.rowLabel}>{t('signOut')}</span>
           </button>
           <span className={classes.divider} aria-hidden="true" />
-          <button type="button" className={classes.row} onClick={leaveOtherDevices}>
-            <IconDevicesX className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+          <button
+            type="button"
+            className={classes.row}
+            aria-busy={othersShown || undefined}
+            disabled={othersShown}
+            onClick={leaveOtherDevices}
+          >
+            <RowIcon icon={IconDevicesX} busy={othersShown} />
             <span className={classes.rowLabel}>{t('signOutOthers')}</span>
           </button>
         </div>
@@ -147,6 +188,7 @@ export function Account() {
         title={tDialog('deleteAccountTitle')}
         body={tDialog('deleteAccountBody')}
         confirmLabel={tDialog('delete')}
+        loading={removing}
         onConfirm={confirmDelete}
         onCancel={() => setConfirming(false)}
       />

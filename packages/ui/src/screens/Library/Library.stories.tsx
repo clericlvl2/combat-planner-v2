@@ -685,7 +685,8 @@ export const CreateRetry = meta.story({
     await fillCreate(canvas, t);
     fakeApiOf(loaded).failNext('network');
     await userEvent.click(canvas.getByRole('button', { name: t('Sheet:create') }));
-    await expect(await canvas.findByRole('button', { name: t('Sheet:create') })).toBeDisabled();
+    const create = await canvas.findByRole('button', { name: t('Sheet:create') });
+    await waitFor(() => expect(create).toBeDisabled());
     await userEvent.click(await canvas.findByRole('button', { name: t('Toast:retry') }));
     await waitFor(() =>
       expect(canvas.queryByRole('dialog', { name: t('BottomBar:newPreset') })).toBeNull(),
@@ -872,17 +873,49 @@ export const DuplicateAtLimit = meta.story({
 });
 
 export const Loading = meta.story({
+  tags: ['visual'],
   render: () => (
     <HoldFirstCall>
       <Library />
     </HoldFirstCall>
   ),
-  play: async ({ canvas, globals, loaded }) => {
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'Library');
     await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
     await waitFor(() => expect(callsOf(loaded, 'presets.list')).toHaveLength(1));
     await expect(canvas.getByRole('button', { name: t('BottomBar:newPreset') })).toBeDisabled();
     await expect(canvas.queryByRole('article')).toBeNull();
     await expect(canvas.queryByText(t('emptyTitle'))).toBeNull();
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-card-skeleton]')?.children).toHaveLength(4),
+    );
+  },
+});
+
+export const DuplicateWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(canvas.getByRole('menuitem', { name: t('Menu:duplicate') }));
+    const more = canvas.getByRole('button', { name: t('CardActions:more') });
+    await waitFor(() => expect(more).toHaveAttribute('aria-busy', 'true'));
+    await expect(more).toBeDisabled();
+  },
+});
+
+export const DeleteWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Library');
+    await openMenu(canvas, t);
+    await userEvent.click(canvas.getByRole('menuitem', { name: t('Button:delete') }));
+    const dialog = await canvas.findByRole('alertdialog');
+    fakeApiOf(loaded).holdNext();
+    const confirm = within(dialog).getByRole('button', { name: t('Button:delete') });
+    await userEvent.click(confirm);
+    await waitFor(() => expect(confirm).toHaveAttribute('aria-busy', 'true'));
+    await expect(confirm).toBeDisabled();
   },
 });

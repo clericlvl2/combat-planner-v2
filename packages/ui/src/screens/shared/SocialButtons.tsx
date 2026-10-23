@@ -27,7 +27,7 @@ export interface SocialButtonsProps {
 export function SocialButtons({ onRedirect }: SocialButtonsProps) {
   const { t } = useTranslation('SignIn');
   const { providers, socialSignIn } = useAccount();
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<SocialProvider | null>(null);
   const sending = useRef(false);
   const [failed, setFailed] = useState(false);
   if (!providers || providers.length === 0) return null;
@@ -35,13 +35,13 @@ export function SocialButtons({ onRedirect }: SocialButtonsProps) {
   const start = (provider: SocialProvider) => {
     if (sending.current) return;
     sending.current = true;
-    setBusy(true);
+    setBusy(provider);
     setFailed(false);
     socialSignIn(provider, signedInUrl())
       .then(({ url }) => onRedirect(url))
       .catch(() => {
         sending.current = false;
-        setBusy(false);
+        setBusy(null);
         setFailed(true);
       });
   };
@@ -60,7 +60,8 @@ export function SocialButtons({ onRedirect }: SocialButtonsProps) {
           size="M"
           fullWidth
           icon={providerIcons[provider]}
-          disabled={busy}
+          disabled={busy !== null && busy !== provider}
+          loading={busy === provider}
           onClick={() => start(provider)}
         >
           {t(provider)}

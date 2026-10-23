@@ -30,7 +30,7 @@ const plainMenu = { variant: 'plain', icon: IconMenu2, labelKey: 'openNavigation
 const softBack = { variant: 'soft', icon: IconChevronLeft, labelKey: 'back' } as const;
 const filledPlus = { variant: 'filled', icon: IconPlus, labelKey: 'add' } as const;
 
-const states = ['default', 'pressed', 'disabled', 'focus'] as const;
+const states = ['default', 'pressed', 'disabled', 'focus', 'loading'] as const;
 type State = (typeof states)[number];
 
 const row = (label: string, props: IconButtonCellProps) => ({
@@ -41,6 +41,7 @@ const row = (label: string, props: IconButtonCellProps) => ({
       data-pressed={state === 'pressed' ? '' : undefined}
       data-focus={state === 'focus' ? '' : undefined}
       disabled={state === 'disabled'}
+      loading={state === 'loading'}
     />
   ),
 });

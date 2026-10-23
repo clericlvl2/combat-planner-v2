@@ -1,7 +1,7 @@
 import preview from '#.storybook/preview';
 import type { TFunction } from 'i18next';
 import { LIMITS } from '@combat-planner/domain';
-import { expect, fn, userEvent } from 'storybook/test';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { CombatFormSheet, emptyCombatForm } from './CombatFormSheet.tsx';
 import type { CombatFormMode, CombatFormValue } from './CombatFormSheet.tsx';
 import { storyT } from '../../../storybook/storyT.ts';
@@ -141,9 +141,10 @@ export const Saving = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'CombatFormSheet');
     const save = canvas.getByRole('button', { name: t('save') });
-    await expect(save).toBeDisabled();
     await userEvent.click(save, { pointerEventsCheck: 0 });
     await expect(args.onSubmit).not.toHaveBeenCalled();
+    await waitFor(() => expect(save).toHaveAttribute('aria-busy', 'true'));
+    await expect(save).toBeDisabled();
   },
 });
 

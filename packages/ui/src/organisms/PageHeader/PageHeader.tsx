@@ -28,6 +28,7 @@ export interface PageHeaderTool {
   count?: number;
   active?: boolean;
   disabled?: boolean;
+  loading?: boolean;
 }
 
 export interface PageHeaderFilter {
@@ -115,6 +116,7 @@ export function PageHeader({
               count={tool.count}
               active={tool.active}
               disabled={tool.disabled}
+              loading={tool.loading}
               aria-label={tool['aria-label']}
               onClick={() => onTool?.(tool.id)}
             />

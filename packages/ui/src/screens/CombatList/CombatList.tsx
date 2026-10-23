@@ -18,7 +18,9 @@ import { ulid } from 'ulid';
 import type { CombatColor } from '../../atoms/Swatch/Swatch.tsx';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombatList } from '../../hooks/useCombatList.ts';
+import { useDelayed } from '../../hooks/useDelayed.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { CardSkeleton } from '../../molecules/CardSkeleton/CardSkeleton.tsx';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
@@ -142,6 +144,9 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   const [formKey, setFormKey] = useState(0);
   const [pending, setPending] = useState(false);
   const [deleteId, setDeleteId] = useState<CombatId | null>(null);
+  const [busyId, setBusyId] = useState<CombatId | null>(null);
+  const [removing, setRemoving] = useState(false);
+  const [importing, setImporting] = useState(false);
   const signedOut =
     session === null || (error instanceof ApiError && error.code === 'unauthorized');
 
@@ -152,6 +157,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   const locale = i18n.language;
   const all = combats ?? [];
   const loaded = combats !== undefined;
+  const skeleton = useDelayed(!loaded && error === null);
   const visible = searchCombats(sortCombats(all, sort, locale), query, locale);
   const atLimit = all.length >= LIMITS.combatsPerDm;
   const custom = sort !== DEFAULT_SORT;
@@ -189,14 +195,17 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
       setDeleteId(combat.id);
       return;
     }
-    if (action === 'export') {
-      fetchDocument(combat.id)
-        .then(saveCombatFile)
-        .catch(() => {});
-      return;
-    }
-    setExpandedId(null);
-    duplicate(combat.id, ulid()).catch(() => {});
+    if (busyId !== null) return;
+    setBusyId(combat.id);
+    const request =
+      action === 'export'
+        ? fetchDocument(combat.id).then(saveCombatFile)
+        : duplicate(combat.id, ulid()).then(() => setExpandedId(null));
+    request
+      .catch(() => {})
+      .finally(() => {
+        setBusyId(null);
+      });
   };
 
   const invalidFile = () => {
@@ -232,18 +241,26 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
       });
       return;
     }
+    setImporting(true);
     try {
       await importCombat(read.file);
     } catch (importError) {
       if (hasCode(importError, 'invalid')) invalidFile();
+    } finally {
+      setImporting(false);
     }
   };
 
   const confirmDelete = () => {
-    if (deleting === undefined) return;
-    setDeleteId(null);
-    setExpandedId(null);
-    remove(deleting.id).catch(() => {});
+    if (deleting === undefined || removing) return;
+    setRemoving(true);
+    remove(deleting.id)
+      .then(() => setExpandedId(null))
+      .catch(() => {})
+      .finally(() => {
+        setRemoving(false);
+        setDeleteId(null);
+      });
   };
 
   const navigateTo = (section: DrawerSection) => {
@@ -280,6 +297,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
             icon: IconFileImport,
             'aria-label': t('import'),
             disabled: !loaded,
+            loading: importing,
           },
         ]}
         onTool={selectTool}
@@ -307,6 +325,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
             lastPlayedDays={sort === 'lastPlayed' ? daysSince(now, combat.lastPlayedAt) : undefined}
             expanded={expandedId === combat.id}
             menuOpen={menuId === combat.id}
+            busy={busyId === combat.id}
             duplicateDisabled={atLimit}
             onOpen={() => navigate(`/combats/${combat.id}`)}
             onToggle={() => {
@@ -319,6 +338,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
             onMenuSelect={(action) => selectMenu(combat, action)}
           />
         ))}
+        {skeleton ? <CardSkeleton variant="combat" count={4} /> : null}
         {loaded && all.length === 0 ? (
           <EmptyState
             icon={IconSwords}
@@ -386,6 +406,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
         title={tDialog('deleteCombatTitle', { name: deleting?.title ?? '' })}
         body={tDialog('deleteCombatBody', { count: deleting?.unitCount ?? 0 })}
         confirmLabel={tDialog('delete')}
+        loading={removing}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteId(null)}
       />

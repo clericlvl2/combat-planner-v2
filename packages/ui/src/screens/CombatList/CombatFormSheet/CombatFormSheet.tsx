@@ -67,7 +67,7 @@ export function CombatFormSheet({
           data-sheet-action=""
           variant="primary"
           fullWidth
-          disabled={pending}
+          loading={pending}
           onClick={() =>
             onSubmit({ title: title.trim() || fallback, description: description.trim(), color })
           }
