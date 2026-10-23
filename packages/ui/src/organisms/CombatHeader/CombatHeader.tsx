@@ -5,6 +5,7 @@ import {
   IconChevronLeft,
   IconDots,
   IconLanguage,
+  IconLogout,
   IconRefresh,
   IconShare,
   IconSwitchHorizontal,
@@ -55,6 +56,7 @@ export interface CombatHeaderProps extends Omit<
   onHeroes?: () => void;
   onLanguage?: () => void;
   languageName?: string;
+  onLeave?: () => void;
   undoDisabled?: boolean;
 }
 
@@ -270,6 +272,7 @@ export function CombatHeader({
   onHeroes,
   onLanguage,
   languageName,
+  onLeave,
   undoDisabled = false,
   className,
   ...rest
@@ -292,6 +295,7 @@ export function CombatHeader({
         ...(onLanguage
           ? [{ id: 'language', icon: IconLanguage, label: t('language'), hint: languageName }]
           : []),
+        { id: 'leave', icon: IconLogout, label: t('leave'), tone: 'danger', divider: true },
       ]
     : [
         { id: 'addUnit', icon: IconUserPlus, label: t('addUnit') },
@@ -304,7 +308,8 @@ export function CombatHeader({
       ];
 
   const selectItem = (id: string) => {
-    if (player && id === 'language') onLanguage?.();
+    if (player && id === 'leave') onLeave?.();
+    else if (player && id === 'language') onLanguage?.();
     else if (player) onHeroes?.();
     else onMenuSelect?.(id as CombatMenuAction);
   };

@@ -18,5 +18,6 @@
   "restart": "Relancer le combat",
   "clear": "Vider le combat",
   "heroes": "Héros",
-  "language": "Langue"
+  "language": "Langue",
+  "leave": "Quitter le combat"
 }

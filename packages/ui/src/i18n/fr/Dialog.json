@@ -27,5 +27,8 @@
   "deletePresetTitle": "Supprimer {{name}} ?",
   "deletePresetBody": "Le modèle quitte la Bibliothèque. Les unités déjà ajoutées aux combats restent.",
   "deleteAccountTitle": "Supprimer votre compte ?",
-  "deleteAccountBody": "Tous les combats, modèles et liens des joueurs sont supprimés. Action irréversible."
+  "deleteAccountBody": "Tous les combats, modèles et liens des joueurs sont supprimés. Action irréversible.",
+  "leaveTitle": "Quitter le combat ?",
+  "leaveBody": "Vos héros sont libérés. Rouvrez le lien pour revenir en tant que nouveau joueur.",
+  "leave": "Quitter"
 }

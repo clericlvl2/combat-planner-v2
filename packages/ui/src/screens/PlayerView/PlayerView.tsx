@@ -1,10 +1,15 @@
 import { ApiError } from '@combat-planner/api/client';
 import type { LinkToken } from '@combat-planner/api/client';
 import type { Action, CombatId, PlayerCombat, UnitId } from '@combat-planner/domain';
+import { IconLogout } from '@tabler/icons-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useApi } from '../../api/ApiProvider.tsx';
+import { errorToast } from '../../hooks/toasts.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
+import { useToasts } from '../../hooks/useToasts.ts';
+import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatDeleted } from '../CombatDeleted/CombatDeleted.tsx';
 import { Heroes } from '../Heroes/Heroes.tsx';
@@ -33,8 +38,12 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
   const { combat, language, error, ended, dispatch, refetch } = useCombat(combatId, PLAYER, token);
   const { i18n } = useTranslation();
   const { chosen } = useLocaleChoice();
+  const { t: tDialog } = useTranslation('Dialog');
+  const api = useApi();
+  const { show, t: tToast } = useToasts();
   const notify = usePlayerToasts();
   const [view, setView] = useState<View | null>(null);
+  const [leaving, setLeaving] = useState(false);
   const [seenTitle, setSeenTitle] = useState<string | null>(null);
   const ownReleases = useRef(new Set<UnitId>());
   const previous = useRef<PlayerCombat | undefined>(undefined);
@@ -83,6 +92,21 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     void refetch();
   };
 
+  const leave = () => {
+    setLeaving(false);
+    void api.play.leave(combatId).then(
+      () => onHome(),
+      (failure: unknown) => {
+        show(
+          errorToast(failure, tToast, leave) ?? {
+            message: tToast('serverUnreachable'),
+            kind: 'error',
+          },
+        );
+      },
+    );
+  };
+
   if (ended?.type === 'linkRevoked') return <LinkExpired onHome={onHome} />;
   if (ended?.type === 'dropped') return <CantReachServer onRetry={reload} onHome={onHome} />;
   if (ended?.type === 'deleted') {
@@ -113,8 +137,18 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
           dispatch={send}
           random={random}
           onHeroes={() => setView('heroes')}
+          onLeave={() => setLeaving(true)}
         />
       )}
+      <Dialog
+        opened={leaving}
+        icon={IconLogout}
+        title={tDialog('leaveTitle')}
+        body={tDialog('leaveBody')}
+        confirmLabel={tDialog('leave')}
+        onConfirm={leave}
+        onCancel={() => setLeaving(false)}
+      />
     </div>
   );
 }

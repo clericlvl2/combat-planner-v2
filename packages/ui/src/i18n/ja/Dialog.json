@@ -27,5 +27,8 @@
   "deletePresetTitle": "{{name}}を削除しますか？",
   "deletePresetBody": "プリセットはライブラリから削除されます。戦闘に追加済みのユニットは残ります。",
   "deleteAccountTitle": "アカウントを削除しますか？",
-  "deleteAccountBody": "すべての戦闘、プリセット、プレイヤー用リンクが削除されます。元に戻せません。"
+  "deleteAccountBody": "すべての戦闘、プリセット、プレイヤー用リンクが削除されます。元に戻せません。",
+  "leaveTitle": "戦闘から抜けますか？",
+  "leaveBody": "ヒーローの担当は解除されます。リンクを開き直すと、新しいプレイヤーとして参加します。",
+  "leave": "抜ける"
 }

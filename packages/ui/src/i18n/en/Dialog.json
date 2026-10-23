@@ -27,5 +27,8 @@
   "deletePresetTitle": "Delete {{name}}?",
   "deletePresetBody": "The preset leaves the Library. Units already added to combats stay.",
   "deleteAccountTitle": "Delete your account?",
-  "deleteAccountBody": "All combats, presets and player links are deleted. This can’t be undone."
+  "deleteAccountBody": "All combats, presets and player links are deleted. This can’t be undone.",
+  "leaveTitle": "Leave the combat?",
+  "leaveBody": "Your heroes are released. Open the link again to join as a new player.",
+  "leave": "Leave"
 }

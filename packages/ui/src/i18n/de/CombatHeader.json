@@ -18,5 +18,6 @@
   "restart": "Kampf neu starten",
   "clear": "Kampf leeren",
   "heroes": "Helden",
-  "language": "Sprache"
+  "language": "Sprache",
+  "leave": "Kampf verlassen"
 }

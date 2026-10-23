@@ -27,5 +27,8 @@
   "deletePresetTitle": "{{name}} löschen?",
   "deletePresetBody": "Die Vorlage verlässt die Bibliothek. Bereits zu Kämpfen hinzugefügte Einheiten bleiben.",
   "deleteAccountTitle": "Dein Konto löschen?",
-  "deleteAccountBody": "Alle Kämpfe, Vorlagen und Spielerlinks werden gelöscht. Das lässt sich nicht rückgängig machen."
+  "deleteAccountBody": "Alle Kämpfe, Vorlagen und Spielerlinks werden gelöscht. Das lässt sich nicht rückgängig machen.",
+  "leaveTitle": "Kampf verlassen?",
+  "leaveBody": "Deine Helden werden freigegeben. Öffne den Link erneut, um als neuer Spieler beizutreten.",
+  "leave": "Verlassen"
 }

@@ -32,6 +32,7 @@ export interface TurnOrderProps {
   combat: PlayerCombat;
   dispatch: (action: Action) => Promise<DispatchResult>;
   onHeroes: () => void;
+  onLeave?: () => void;
   random?: () => number;
 }
 
@@ -60,7 +61,7 @@ const toggledCondition = (
   after.find((condition) => !before.includes(condition)) ??
   before.find((condition) => !after.includes(condition));
 
-export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps) {
+export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnOrderProps) {
   const { t } = useTranslation('TurnOrder');
   const { t: tMenu } = useTranslation('Menu');
   const [menuOpen, setMenuOpen] = useState(false);
@@ -139,6 +140,10 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
         onLanguage={() => {
           setMenuOpen(false);
           setLanguageOpen(true);
+        }}
+        onLeave={() => {
+          setMenuOpen(false);
+          onLeave?.();
         }}
       />
       <div className={classes.list}>

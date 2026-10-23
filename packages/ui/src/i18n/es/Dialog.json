@@ -27,5 +27,8 @@
   "deletePresetTitle": "¿Eliminar {{name}}?",
   "deletePresetBody": "La plantilla sale de la Biblioteca. Las unidades ya añadidas a combates se mantienen.",
   "deleteAccountTitle": "¿Eliminar tu cuenta?",
-  "deleteAccountBody": "Se eliminan todos los combates, plantillas y enlaces de jugadores. No se puede deshacer."
+  "deleteAccountBody": "Se eliminan todos los combates, plantillas y enlaces de jugadores. No se puede deshacer.",
+  "leaveTitle": "¿Salir del combate?",
+  "leaveBody": "Tus héroes quedan libres. Abre el enlace de nuevo para entrar como jugador nuevo.",
+  "leave": "Salir"
 }

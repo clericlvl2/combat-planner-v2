@@ -100,6 +100,12 @@ const refocus = () => {
   focusManager.setFocused(undefined);
 };
 
+const openLeave = async (canvas: Canvas, t: TFunction) => {
+  await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
+  await userEvent.click(await canvas.findByRole('menuitem', { name: t('CombatHeader:leave') }));
+  return canvas.findByRole('alertdialog', { name: t('Dialog:leaveTitle') });
+};
+
 const meta = preview.meta({
   title: 'Screens/PlayerView',
   component: PlayerView,
@@ -305,6 +311,7 @@ export const MenuOpen = meta.story({
     await expect(items.map((item) => item.textContent)).toEqual([
       t('CombatHeader:heroes'),
       `${t('CombatHeader:language')}${localeNames[storyLocale({ locale: parameters.scenario?.settings.language })]}`,
+      t('CombatHeader:leave'),
     ]);
   },
 });
@@ -325,6 +332,47 @@ export const MenuSwitchesLanguage = meta.story({
     await userEvent.click(await canvas.findByRole('radio', { name: localeNames.en }));
     await expect(await canvas.findByText(en('setup'))).toBeVisible();
     await expect(canvas.queryByText(de('setup'))).toBeNull();
+  },
+});
+
+export const LeaveConfirmation = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: orcTurn },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    await expect(within(dialog).getByText(t('Dialog:leaveBody'))).toBeVisible();
+    await expect(within(dialog).getByRole('button', { name: t('Dialog:leave') })).toBeVisible();
+    await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.leave')).toEqual(
+      [],
+    );
+  },
+});
+
+export const LeaveGoesHome = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ args, canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:leave') }));
+    await waitFor(() => expect(args.onHome).toHaveBeenCalledOnce());
+    await expect(fakeApiOf(loaded).calls.filter((call) => call.method === 'play.leave')).toEqual([
+      { method: 'play.leave', args: [COMBAT_ID, MIKA] },
+    ]);
+  },
+});
+
+export const LeaveFailureStays = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ args, canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    fakeApiOf(loaded).failNext('network');
+    await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:leave') }));
+    await expect(await canvas.findByText(t('Toast:serverUnreachable'))).toBeVisible();
+    await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
 
