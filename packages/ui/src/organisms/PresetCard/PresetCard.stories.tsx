@@ -177,9 +177,13 @@ export const ThreeDigitHp = meta.story({
     preset: { name: 'Ancient Black Dragon', role: 'enemy', maxHp: 320, ac: 24, pd: 22, md: 20 },
     tags: ['Dragons', 'Bosses'],
   },
-  play: async ({ canvas }) => {
+  play: async ({ canvas, canvasElement }) => {
     await expect(canvas.getByText('320')).toBeVisible();
     await expect(canvas.getByText('Dragons · Bosses')).toBeVisible();
+    const chips = [...canvasElement.querySelectorAll('[data-stat]')];
+    const tops = new Set(chips.map((chip) => chip.getBoundingClientRect().top));
+    await expect(chips).toHaveLength(3);
+    await expect(tops.size).toBe(1);
   },
 });
 

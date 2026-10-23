@@ -449,6 +449,12 @@ export const MaximumHp = meta.story({
       defenses: [30, 28, 26],
     }),
   },
+  play: async ({ canvasElement }) => {
+    const chips = [...canvasElement.querySelectorAll('[data-stat]')];
+    const tops = new Set(chips.map((chip) => chip.getBoundingClientRect().top));
+    await expect(chips).toHaveLength(3);
+    await expect(tops.size).toBe(1);
+  },
 });
 
 export const FourConditions = meta.story({
