@@ -5,6 +5,7 @@ export const LIMITS = {
   combatsPerDm: 100,
   unitsPerCombat: 99,
   presetsPerDm: 1000,
+  tagsPerDm: 25,
   unitName: 40,
   combatTitle: 80,
   combatDescription: 500,
@@ -140,7 +141,7 @@ export const presetSchema = z.object({
   pd: defenseSchema,
   md: defenseSchema,
   initiativeBonus: initiativeBonusSchema,
-  tags: z.array(ulidSchema).refine(unique),
+  tags: z.array(ulidSchema).max(LIMITS.tagsPerDm).refine(unique),
   createdAt: isoDateSchema,
   updatedAt: isoDateSchema,
 });

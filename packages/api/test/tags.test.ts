@@ -1,10 +1,10 @@
 import type { Tag } from '@combat-planner/domain';
-import { presetSchema, tagSchema } from '@combat-planner/domain';
+import { LIMITS, presetSchema, tagSchema } from '@combat-planner/domain';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 import { presetTags, tags } from '../src/db/schema.ts';
 import type { Requester, TestApp } from './helpers.ts';
-import { DM, OTHER_DM, call, createTestApp, withUser } from './helpers.ts';
+import { DM, OTHER_DM, call, createTestApp, ulidAt, withUser } from './helpers.ts';
 
 const BOSS_ID = '01ARZ3NDEKTSV4RRFFQ69G5TB0';
 const UNDEAD_ID = '01ARZ3NDEKTSV4RRFFQ69G5TB1';
@@ -174,5 +174,25 @@ describe('DELETE /tags/:id', () => {
   it('frees the name for a new tag', async () => {
     const response = await create(dm, SPARE_ID, 'Boss');
     expect(response.status).toBe(200);
+  });
+});
+
+describe('tag limit', () => {
+  it('refuses the 26th tag of a DM with the limit error and keeps a known id', async () => {
+    const limited = createTestApp();
+    const owner = withUser(limited.app, DM);
+    for (let index = 0; index < LIMITS.tagsPerDm; index += 1) {
+      expect((await create(owner, ulidAt(index), `Tag ${index}`)).status).toBe(200);
+    }
+    const refused = await create(owner, ulidAt(LIMITS.tagsPerDm), 'One more');
+    expect(refused.status).toBe(422);
+    expect(await refused.json()).toEqual({
+      code: 'limit',
+      message: `A DM keeps at most ${LIMITS.tagsPerDm} tags`,
+    });
+    expect(await list(owner)).toHaveLength(LIMITS.tagsPerDm);
+    expect((await create(owner, ulidAt(0), 'Tag 0')).status).toBe(200);
+    expect((await create(withUser(limited.app, OTHER_DM), ulidAt(99), 'Boss')).status).toBe(200);
+    limited.close();
   });
 });

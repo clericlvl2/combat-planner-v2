@@ -20,6 +20,7 @@ describe('LIMITS', () => {
       combatsPerDm: 100,
       unitsPerCombat: 99,
       presetsPerDm: 1000,
+      tagsPerDm: 25,
       unitName: 40,
       combatTitle: 80,
       combatDescription: 500,
@@ -201,6 +202,9 @@ describe('presetSchema', () => {
     expect(presetSchema.safeParse({ ...preset, maxHp: 1000 }).success).toBe(false);
     expect(presetSchema.safeParse({ ...preset, ac: 100 }).success).toBe(false);
     expect(presetSchema.safeParse({ ...preset, tags: [id(2), id(2)] }).success).toBe(false);
+    const tags = (count: number) => Array.from({ length: count }, (_, n) => id(n + 10));
+    expect(presetSchema.safeParse({ ...preset, tags: tags(25) }).success).toBe(true);
+    expect(presetSchema.safeParse({ ...preset, tags: tags(26) }).success).toBe(false);
   });
 });
 
