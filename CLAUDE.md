@@ -134,7 +134,7 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   `fix(ui): the ru restart label fits its button`. Types `feat`, `fix`, `perf`, `revert` show in
   the changelog; `docs`, `chore`, `test`, `refactor`, `ci`, `build` do not.
 - Branches: short-lived branches from `main`, merged into `main` through a pull request; a release
-  is the merge of the release-please pull request.
+  is a manual run of the `release` workflow on `main`.
 
 ## Versions
 

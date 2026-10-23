@@ -98,10 +98,14 @@ Versions follow SemVer; commit messages follow Conventional Commits.
 1. Work happens on a short-lived branch from `main`.
 2. A pull request to `main` runs CI and the end-to-end tests. It is merged with a
    merge commit.
-3. release-please opens or updates the pull request «chore(main): release X.Y.Z»
-   with `CHANGELOG.md` and the version in `package.json`.
-4. Merging that pull request is the release: it creates the tag, the GitHub Release
-   and the Docker image `ghcr.io/clericlvl2/combat-planner-v2:X.Y.Z`.
+3. A release is a run of the «release» workflow from the Actions tab, or
+   `gh workflow run release -f bump=auto`, on a `main` commit with green CI. The
+   `bump` input is `auto` (computed from the commits since the last tag), `patch`,
+   `minor` or `major`; a run with no `feat`, `fix`, `perf` or `revert` commit since
+   the last tag fails.
+4. The run creates the tag `vX.Y.Z`, the GitHub Release with the notes and the Docker
+   image `ghcr.io/clericlvl2/combat-planner-v2:X.Y.Z`. The version lives only in the
+   tag; nothing is committed to `main`.
 
 ## Legal
 

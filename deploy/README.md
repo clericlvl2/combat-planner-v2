@@ -201,7 +201,7 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 ## Update
 
 Production runs released code only: the image tag of a release and the `deploy/` files from
-`main`, pulled after the release is merged.
+`main`, pulled after the release is created.
 
 As `deploy`, in `/opt/combat-planner/deploy`:
 
