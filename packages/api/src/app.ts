@@ -15,6 +15,7 @@ import { settingsApp } from './settings/routes.ts';
 import { createAccountApp } from './account/routes.ts';
 import { linkApp } from './link/routes.ts';
 import { playApp } from './play/routes.ts';
+import { createRateLimiter } from './rate-limit.ts';
 
 export interface ApiAppDeps {
   db: AppDatabase;
@@ -39,6 +40,7 @@ const userCombatsApp = new Hono<ApiAppEnv>()
 export function createApiApp({ db, env, auth }: ApiAppDeps) {
   const instance = createAuth({ db, env });
   return new Hono<ApiAppEnv>()
+    .use(createRateLimiter())
     .use(
       bodyLimit({
         maxSize: BODY_LIMIT_BYTES,
