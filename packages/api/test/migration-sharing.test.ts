@@ -148,3 +148,47 @@ describe('migration 0002_sharing_lifecycle', () => {
     expect(combatRow(quietId).linkShared).toBe(0);
   });
 });
+
+describe('migration 0003_release_claims', () => {
+  it('releases every claim, keeps the units in order and bumps the version once', () => {
+    const document = documentOf(playedId);
+    expect(document.units.map((item) => [item.id, item.claimedBy])).toEqual([
+      [heroA, null],
+      [heroB, null],
+      [enemy, null],
+    ]);
+    expect(document.units[0]).toEqual({ ...played.units[0], claimedBy: null });
+    expect(document.version).toBe(8);
+    expect(combatRow(playedId).version).toBe(8);
+    expect(documentOf(quietId).units).toEqual([]);
+    expect(documentOf(quietId).version).toBe(3);
+    expect(combatRow(quietId).version).toBe(3);
+  });
+
+  it('keeps the link generation, the players, the last action time and the undo stack', () => {
+    const document = documentOf(playedId);
+    expect(document.linkGeneration).toBe(3);
+    expect(document.players).toEqual({ [playerA]: 'Ada' });
+    expect(combatRow(playedId).updatedAt).toBe(now);
+    const log = opened.db.$client
+      .prepare('SELECT `action`, `patch` FROM `action_log` WHERE `combatId` = ?')
+      .all(playedId);
+    expect(log).toEqual([{ action: logAction, patch: logPatch }]);
+  });
+
+  it('starts the watching timeout of every player, who now holds no hero', () => {
+    const rows = opened.db.$client
+      .prepare('SELECT `watchingSince` FROM `players` ORDER BY `playerId`')
+      .all() as { watchingSince: string | null }[];
+    expect(rows).toHaveLength(2);
+    for (const { watchingSince } of rows) {
+      expect(watchingSince).toMatch(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/);
+      expect(Date.parse(watchingSince ?? '')).toBeGreaterThanOrEqual(migratedAt - 1000);
+    }
+  });
+
+  it('runs once', () => {
+    runMigrations(opened.db);
+    expect(combatRow(playedId).version).toBe(8);
+  });
+});

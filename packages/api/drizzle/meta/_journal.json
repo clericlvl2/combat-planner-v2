@@ -22,6 +22,13 @@
       "when": 1792759394747,
       "tag": "0002_sharing_lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1792761878770,
+      "tag": "0003_release_claims",
+      "breakpoints": true
     }
   ]
 }
