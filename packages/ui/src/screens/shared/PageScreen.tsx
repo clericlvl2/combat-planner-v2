@@ -11,33 +11,41 @@ import { ScreenToast } from './ScreenToast.tsx';
 export interface PageScreenProps {
   title: string;
   section: DrawerSection;
+  openToGuests?: boolean;
   children: ReactNode;
 }
 
-export function PageScreen({ title, section, children }: PageScreenProps) {
+export function PageScreen({ title, section, openToGuests = false, children }: PageScreenProps) {
   const navigate = useNavigate();
   const { session } = useAccount();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const signedOut = session === null;
+  const guest = signedOut && openToGuests;
 
   useEffect(() => {
-    if (signedOut) void navigate('/auth/sign-in');
-  }, [signedOut, navigate]);
+    if (signedOut && !openToGuests) void navigate('/auth/sign-in');
+  }, [signedOut, openToGuests, navigate]);
 
   return (
     <div className={classes.root}>
-      <PageHeader title={title} onMenu={() => setDrawerOpen(true)} />
+      {guest ? (
+        <PageHeader title={title} onBack={() => void navigate('/')} />
+      ) : (
+        <PageHeader title={title} onMenu={() => setDrawerOpen(true)} />
+      )}
       <div className={classes.content}>{children}</div>
       <ScreenToast />
-      <Drawer
-        opened={drawerOpen}
-        current={section}
-        email={session?.email ?? ''}
-        onNavigate={(next) => {
-          void navigate(`/${next}`);
-        }}
-        onClose={() => setDrawerOpen(false)}
-      />
+      {guest ? null : (
+        <Drawer
+          opened={drawerOpen}
+          current={section}
+          email={session?.email ?? ''}
+          onNavigate={(next) => {
+            void navigate(`/${next}`);
+          }}
+          onClose={() => setDrawerOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@ import type { Locale } from '@combat-planner/ui';
 import { useEffect, useLayoutEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 
-export const OWN_LOCALE_ROUTES: readonly string[] = ['dm', 'play'];
+export const OWN_LOCALE_ROUTES: readonly string[] = ['dm', 'play', 'about'];
 
 export interface LocaleRouterState {
   matches: readonly { route: { id: string } }[];

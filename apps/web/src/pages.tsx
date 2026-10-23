@@ -1,6 +1,7 @@
 import type { LinkToken } from '@combat-planner/api/client';
 import type { CombatId } from '@combat-planner/domain';
 import {
+  About,
   CombatScreen,
   Drawer,
   LinkExpired,
@@ -71,6 +72,21 @@ export function DmPages() {
     <>
       <Outlet />
       <SwipeDrawer />
+    </>
+  );
+}
+
+export interface AboutPageProps {
+  version: string;
+  sourceUrl: string;
+}
+
+export function AboutPage({ version, sourceUrl }: AboutPageProps) {
+  const { session } = useAccount();
+  return (
+    <>
+      <About version={version} sourceUrl={sourceUrl} />
+      {session ? <SwipeDrawer /> : null}
     </>
   );
 }

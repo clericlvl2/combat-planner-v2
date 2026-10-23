@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
 import { expect } from 'storybook/test';
+import { scenario } from '../../api/scenarios.ts';
 import { About } from './About.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
@@ -37,5 +38,15 @@ export const Default = meta.story({
       ),
     ).toEqual([sourceUrl]);
     await expect(canvas.getByText(t('legal'))).toBeVisible();
+  },
+});
+
+export const Guest = meta.story({
+  parameters: { scenario: scenario({ session: null }) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'About');
+    await expect(canvas.getByRole('heading', { level: 1, name: t('title') })).toBeVisible();
+    await expect(await canvas.findByRole('button', { name: t('PageHeader:back') })).toBeVisible();
+    await expect(canvas.queryByRole('button', { name: t('PageHeader:openNavigation') })).toBeNull();
   },
 });

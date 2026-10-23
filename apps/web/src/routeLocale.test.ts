@@ -122,8 +122,11 @@ const loaderArgs = {
   context: {},
 } as LoaderFunctionArgs;
 
+const SESSION_LANGUAGE_PAGES: readonly string[] = ['dm', 'about'];
+
 const showsPageOutsideDm = (route: { id: string; element?: unknown; children?: unknown }) =>
-  route.id !== 'dm' && (route.element !== undefined || route.children !== undefined);
+  !SESSION_LANGUAGE_PAGES.includes(route.id) &&
+  (route.element !== undefined || route.children !== undefined);
 
 const holdSession = (api: FakeApiClient): (() => void) => {
   const session = api.auth.session.bind(api.auth);
@@ -255,6 +258,15 @@ describe('watchRouteLocale', () => {
       expect(router.state.location.pathname).toBe('/combats');
       expect(i18n.language, pageId).toBe(BROWSER_LOCALE);
     }
+  });
+
+  it.each([
+    [true, DM_LANGUAGE],
+    [false, BROWSER_LOCALE],
+  ])('opens About in the session language, signed in: %s', async (signedIn, language) => {
+    const { router, i18n } = await start('/about', signedIn);
+    expect(router.state.location.pathname).toBe('/about');
+    expect(i18n.language).toBe(language);
   });
 
   it('leaves the language alone when a DM navigation is aborted', async () => {

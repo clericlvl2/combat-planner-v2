@@ -1,5 +1,4 @@
 import {
-  About,
   Account,
   CombatList,
   FakeApiClient,
@@ -18,7 +17,7 @@ import { renderToString } from 'react-dom/server';
 import { RouterProvider, createMemoryRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
-import { CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
+import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import { AppProviders } from './providers.tsx';
 import { createRoutes } from './router.tsx';
 
@@ -111,7 +110,6 @@ describe('router', () => {
     ['/library', 'library', Library],
     ['/settings', 'settings', Settings],
     ['/account', 'account', Account],
-    ['/about', 'about', About],
   ])('renders the DM page %s behind the session guard', async (path, id, screen) => {
     const router = await open(path, true);
     expect(router.state.location.pathname).toBe(path);
@@ -132,8 +130,11 @@ describe('router', () => {
     expect(html).toContain('href="/auth/sign-in"');
   });
 
-  it('passes the build values to About', async () => {
-    const router = await open('/about', true);
+  it.each([true, false])('renders About with the build values, signed in: %s', async (signedIn) => {
+    const router = await open('/about', signedIn);
+    expect(router.state.location.pathname).toBe('/about');
+    expect(routeIds(router)).toEqual(['root', 'about']);
+    expect(leafElement(router).type).toBe(AboutPage);
     expect(leafElement(router).props).toEqual(about);
   });
 
@@ -144,7 +145,7 @@ describe('router', () => {
     expect(router.state.loaderData.combat).toEqual({ combatId: COMBAT_ID });
   });
 
-  it.each(['/combats', `/combats/${COMBAT_ID}`, '/library', '/settings', '/account', '/about'])(
+  it.each(['/combats', `/combats/${COMBAT_ID}`, '/library', '/settings', '/account'])(
     'sends %s to sign-in without a session',
     async (path) => {
       const router = await open(path, false);
