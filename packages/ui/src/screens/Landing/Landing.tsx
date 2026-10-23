@@ -53,6 +53,7 @@ export function Landing({ sourceUrl }: LandingProps) {
             </span>
             <span className={classes.name}>{t('Landing:name')}</span>
             <Button
+              className={classes.language}
               variant="ghost"
               size="S"
               icon={IconLanguage}
@@ -90,7 +91,9 @@ export function Landing({ sourceUrl }: LandingProps) {
         </div>
         <p className={classes.legal}>{t('About:legal')}</p>
       </footer>
-      <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
+      <div className={classes.overlays}>
+        <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
+      </div>
     </div>
   );
 }

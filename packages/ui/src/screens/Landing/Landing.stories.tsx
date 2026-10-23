@@ -3,6 +3,8 @@ import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-r
 import { expect } from 'storybook/test';
 import { scenario } from '../../api/scenarios.ts';
 import { storyT } from '../../storybook/storyT.ts';
+import { storyLocale } from '../../storybook/withLocale.tsx';
+import { localeNames } from '../Settings/localeNames.ts';
 import { Landing } from './Landing.tsx';
 
 const sourceUrl = 'https://github.com/clericlvl2/combat-planner-v2';
@@ -51,6 +53,11 @@ export const Default = meta.story({
       sourceUrl,
     );
     await expect(canvas.getByText(t('About:legal'))).toBeVisible();
+    await expect(
+      canvas.getByRole('button', {
+        name: t('LanguageSheet:current', { name: localeNames[storyLocale(globals)] }),
+      }),
+    ).toBeVisible();
   },
 });
 
