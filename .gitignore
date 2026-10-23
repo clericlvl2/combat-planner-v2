@@ -10,6 +10,7 @@ test-results/
 *.db
 *.db-*
 data/
+**/secrets.json
 .DS_Store
 .idea/
 .claude/

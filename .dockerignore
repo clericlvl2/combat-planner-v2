@@ -19,6 +19,7 @@
 **/data
 **/*.db
 **/*.db-*
+**/secrets.json
 Dockerfile
 .dockerignore
 docker-compose.yml
