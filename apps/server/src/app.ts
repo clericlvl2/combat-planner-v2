@@ -69,7 +69,17 @@ export function createServerApp({
       probes: admin.probes,
       litestreamMetricsUrl: admin.litestreamMetricsUrl,
     });
-  const app = new Hono().use(securityHeaders).route('/api', createApiApp({ db: opened.db, env }));
+  const app = new Hono().use(securityHeaders);
+  if (started) {
+    const { checker } = started;
+    app.get('/api/health/checks', (c) => {
+      c.header('Cache-Control', 'no-store');
+      return checker.rows().some((row) => row.status === 'problem')
+        ? c.json({ status: 'problem' }, 503)
+        : c.json({ status: 'ok' }, 200);
+    });
+  }
+  app.route('/api', createApiApp({ db: opened.db, env }));
   if (admin && started) {
     app.route(
       '/admin',
@@ -83,6 +93,7 @@ export function createServerApp({
     );
   }
   app
+    .all('/api/health/checks', (c) => c.notFound())
     .all('/admin', (c) => c.notFound())
     .all('/admin/*', (c) => c.notFound())
     .use('/*', serveStatic({ root: staticRoot }))

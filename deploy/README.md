@@ -223,6 +223,29 @@ page takes these steps before `docker compose up`. As `deploy`, in `/opt/combat-
 
 `https://<domain>/admin` asks for the login and password; without them it answers 401.
 
+The section «Последние ошибки» lists the newest 20 of the errors the app records itself: uncaught
+browser errors (`POST /api/errors`, at most 10 a minute per address) and unhandled server errors,
+with the route pattern as the path. URLs lose their query and fragment, so player link tokens are
+never stored; no address, user or header is stored. The sweeper keeps 14 days and at most 500
+rows. The check «Ошибки за час» turns red from 1 server error or 10 browser errors in the last
+hour.
+
+## Monitoring
+
+`GET /api/health/checks` exists while `ADMIN_PAGE=1`, outside the admin login: `200
+{"status":"ok"}` while no check on `/admin` is red, `503 {"status":"problem"}` otherwise, with no
+check names. The Docker healthcheck and `deploy/deploy.sh` read only `/api/health`, so a red check
+never restarts the container or rolls back a deploy.
+
+UptimeRobot (free plan) e-mails the owner. In its dashboard, with the owner's e-mail as the alert
+contact:
+
+1. HTTP(s) keyword monitor `https://<domain>/api/health`, keyword `ok`, interval 5 min.
+2. HTTP(s) monitor `https://<domain>/api/health/checks`, alert on any status other than 200,
+   interval 5 min.
+
+When the second monitor alerts, open `/admin` and look for the red row.
+
 ## Deploy
 
 A release deploys itself: the `release` workflow ends with the job `deploy`
