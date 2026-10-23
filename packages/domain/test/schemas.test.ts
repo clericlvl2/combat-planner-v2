@@ -202,9 +202,8 @@ describe('presetSchema', () => {
     expect(presetSchema.safeParse({ ...preset, maxHp: 1000 }).success).toBe(false);
     expect(presetSchema.safeParse({ ...preset, ac: 100 }).success).toBe(false);
     expect(presetSchema.safeParse({ ...preset, tags: [id(2), id(2)] }).success).toBe(false);
-    const tags = (count: number) => Array.from({ length: count }, (_, n) => id(n + 10));
-    expect(presetSchema.safeParse({ ...preset, tags: tags(25) }).success).toBe(true);
-    expect(presetSchema.safeParse({ ...preset, tags: tags(26) }).success).toBe(false);
+    const tags = Array.from({ length: 30 }, (_, n) => id(n + 10));
+    expect(presetSchema.safeParse({ ...preset, tags }).success).toBe(true);
   });
 });
 

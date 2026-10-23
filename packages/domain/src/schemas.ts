@@ -141,7 +141,7 @@ export const presetSchema = z.object({
   pd: defenseSchema,
   md: defenseSchema,
   initiativeBonus: initiativeBonusSchema,
-  tags: z.array(ulidSchema).max(LIMITS.tagsPerDm).refine(unique),
+  tags: z.array(ulidSchema).refine(unique),
   createdAt: isoDateSchema,
   updatedAt: isoDateSchema,
 });

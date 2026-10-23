@@ -147,7 +147,9 @@ export const playViewSchema = z.object({
 });
 export type PlayView = z.infer<typeof playViewSchema>;
 
-export const presetCreateInputSchema = presetSchema.omit({ createdAt: true, updatedAt: true });
+export const presetCreateInputSchema = presetSchema
+  .omit({ createdAt: true, updatedAt: true })
+  .extend({ tags: presetSchema.shape.tags.max(LIMITS.tagsPerDm) });
 export type PresetCreateInput = z.infer<typeof presetCreateInputSchema>;
 
 export const presetPatchSchema = presetCreateInputSchema.omit({ id: true }).partial();
