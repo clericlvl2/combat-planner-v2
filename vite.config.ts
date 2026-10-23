@@ -16,6 +16,7 @@ const browserOptimizeDeps = {
     'react-router',
     'storybook-addon-remix-react-router',
     'ulid',
+    'vite-plus/test/browser',
   ],
 };
 
