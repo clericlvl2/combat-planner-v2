@@ -7,7 +7,7 @@ import type {
 } from '@combat-planner/api/client';
 import type { CombatId, PlayerCombat } from '@combat-planner/domain';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useApi } from '../api/ApiProvider.tsx';
 import {
   combatKey,
@@ -25,10 +25,13 @@ import type {
   CombatSource,
   Dispatch,
   DmViewer,
+  PendingTracker,
   PlayerViewer,
   SourceEnd,
 } from './combat.ts';
 import { forgetSessionOn } from './mutations.ts';
+import { NO_ENTRIES, pendingKey, pendingTracker } from './optimistic.ts';
+import type { Entries } from './optimistic.ts';
 import { toastStoreOf } from './toasts.ts';
 import { useToasts } from './useToasts.ts';
 
@@ -40,6 +43,8 @@ export interface CombatState<Document extends CombatDocument> {
   ended: ApiEndEvent | null;
   dispatch: Dispatch;
   refetch: () => Promise<void>;
+  pending: Entries;
+  tracker: PendingTracker;
 }
 
 export interface DmCombatOptions {
@@ -80,6 +85,22 @@ export function useCombat(
     [queryClient, key, source],
   );
   const query = useQuery({ queryKey: key, queryFn: fetchEntry });
+  const tracker = useMemo(() => pendingTracker(queryClient, id, { kind }), [queryClient, id, kind]);
+  const entriesKey = useMemo(() => pendingKey(id, { kind }), [id, kind]);
+  const subscribePending = useCallback(
+    (listener: () => void) => queryClient.getQueryCache().subscribe(listener),
+    [queryClient],
+  );
+  const readPending = useCallback(
+    () => queryClient.getQueryData<Entries>(entriesKey) ?? NO_ENTRIES,
+    [queryClient, entriesKey],
+  );
+  const pending = useSyncExternalStore(subscribePending, readPending);
+  const serverVersion = query.data?.document.version;
+
+  useEffect(() => {
+    if (serverVersion !== undefined) tracker.prune();
+  }, [serverVersion, tracker]);
   const [ended, setEnded] = useState<SourceEnd | null>(null);
   const [attempt, setAttempt] = useState(0);
 
@@ -104,8 +125,9 @@ export function useCombat(
         t,
         generation: toastStoreOf(queryClient).generation,
         failed: (error) => forgetSessionOn(queryClient, error),
+        pending: tracker,
       }),
-    [source, queryClient, key, show, t],
+    [source, queryClient, key, show, t, tracker],
   );
 
   const { refetch } = query;
@@ -126,5 +148,7 @@ export function useCombat(
     ended: endOf(ended, source),
     dispatch,
     refetch: reload,
+    pending,
+    tracker,
   };
 }

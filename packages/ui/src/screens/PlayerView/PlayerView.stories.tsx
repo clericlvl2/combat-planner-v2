@@ -613,3 +613,109 @@ export const DmLanguage = meta.story({
     await expect(canvas.getByText('Warte, bis die Spielleitung den Kampf startet')).toBeVisible();
   },
 });
+
+const loadingLoader: Loader = ({ parameters }) => {
+  const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+  api.play.get = () => new Promise(() => undefined);
+  api.play.subscribe = () => () => {};
+  return { api };
+};
+
+const expectBusy = async (button: HTMLElement) => {
+  await waitFor(() => expect(button).toHaveAttribute('aria-busy', 'true'));
+  await expect(button).toBeDisabled();
+};
+
+export const Loading = meta.story({
+  tags: ['visual'],
+  loaders: [loadingLoader],
+  play: async ({ canvasElement }) => {
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-card-skeleton]')?.children).toHaveLength(5),
+    );
+    await expect(canvasElement.querySelector('[data-unit-role]')).toBeNull();
+  },
+});
+
+export const HpChangeShowsAtOnce = meta.story({
+  name: 'HP Change Shows At Once',
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const sheet = await openNumpad(canvas);
+    await userEvent.click(within(sheet).getByRole('button', { name: '7' }));
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
+    const vashti = await rowOf(canvas, ME);
+    await expect(await within(vashti).findByRole('button', { name: /^13 \/36/ })).toBeVisible();
+    await expect(vashti).toHaveAttribute('data-flash');
+  },
+});
+
+export const SetMaxWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const sheet = await openNumpad(canvas);
+    await userEvent.click(within(sheet).getByRole('button', { name: '4' }));
+    await userEvent.click(within(sheet).getByRole('button', { name: '0' }));
+    fakeApiOf(loaded).holdNext();
+    const setMax = within(sheet).getByRole('button', { name: t('NumpadSheet:setMax') });
+    await userEvent.click(setMax);
+    await expectBusy(setMax);
+  },
+});
+
+export const ConditionWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await expandOwn(canvas);
+    await userEvent.click(canvas.getByRole('button', { name: t('PlayerRow:conditions') }));
+    const sheet = await canvas.findByRole('dialog', { name: t('PlayerRow:conditions') });
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(within(sheet).getByRole('checkbox', { name: t('Chip:weakened') }));
+    await expectBusy(within(sheet).getByRole('button', { name: t('ConditionPicker:done') }));
+  },
+});
+
+export const ReleaseWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await expandOwn(canvas);
+    const more = canvas.getByRole('button', { name: t('CardActions:more') });
+    await userEvent.click(more);
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('Menu:releaseClaim') }));
+    await expectBusy(more);
+  },
+});
+
+export const LeaveWaits = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ args, canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    fakeApiOf(loaded).holdNext();
+    const confirm = within(dialog).getByRole('button', { name: t('Dialog:leave') });
+    await userEvent.click(confirm);
+    await expectBusy(confirm);
+    await expect(args.onHome).not.toHaveBeenCalled();
+  },
+});
+
+export const JoinWaits = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: joinScenario },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await typeName(canvas, t);
+    await userEvent.click(canvas.getByRole('checkbox', { name: ME }));
+    fakeApiOf(loaded).holdNext();
+    const join = canvas.getByRole('button', { name: t('Heroes:join') });
+    await userEvent.click(join);
+    await expectBusy(join);
+  },
+});

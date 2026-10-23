@@ -54,6 +54,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
   const [chosen, setChosen] = useState<ReadonlySet<UnitId>>(new Set());
   const previous = useRef(combat);
   const submitting = useRef(false);
+  const [joining, setJoining] = useState(false);
 
   const heroes = combat.units.filter((unit) => unit.role === 'hero');
   const stateOf = (unit: PlayerUnit): HeroState => {
@@ -143,8 +144,10 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
         ? join(displayName, combat.version, [own.id])
         : Promise.resolve(true);
     submitting.current = true;
+    setJoining(true);
     void work.then((done) => {
       submitting.current = false;
+      setJoining(false);
       if (done) onDone();
     });
   };
@@ -242,6 +245,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
           label={joined ? t('done') : t('join')}
           icon={IconLogin2}
           disabled={!ready}
+          loading={joining}
           hint={ready ? undefined : t('hint')}
           onClick={submit}
         />

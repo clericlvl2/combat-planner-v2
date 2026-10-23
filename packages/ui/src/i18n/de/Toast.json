@@ -5,7 +5,7 @@
   "limitReached": "Limit erreicht",
   "tooManyRequests": "Zu viele Anfragen – warte eine Minute",
   "linkCopied": "Link kopiert",
-  "serverUnreachable": "Server nicht erreichbar. Nichts wurde geändert.",
+  "serverUnreachable": "Server nicht erreichbar. Die Änderung wurde zurückgenommen.",
   "retry": "Wiederholen",
   "undoneDamage": "Rückgängig: {{amount}} Schaden an {{name}}",
   "duplicated": "{{title}} (Kopie) erstellt",

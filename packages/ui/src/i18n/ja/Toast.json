@@ -5,7 +5,7 @@
   "limitReached": "上限に達しました",
   "tooManyRequests": "リクエストが多すぎます。1分ほどお待ちください",
   "linkCopied": "リンクをコピーしました",
-  "serverUnreachable": "サーバーに接続できません。変更は反映されていません。",
+  "serverUnreachable": "サーバーに接続できません。変更は取り消されました。",
   "retry": "再試行",
   "undoneDamage": "取り消し：{{name}}への{{amount}}ダメージ",
   "duplicated": "{{title}}（コピー）を作成しました",

@@ -25,6 +25,7 @@ export interface PlayerRowProps extends Omit<
   setup?: boolean;
   conditionsOpen?: boolean;
   moreOpen?: boolean;
+  busy?: boolean;
   flash?: boolean;
   onToggle: () => void;
   onInitiative: (event: MouseEvent<HTMLButtonElement>) => void;
@@ -47,6 +48,7 @@ export function PlayerRow({
   setup = false,
   conditionsOpen = false,
   moreOpen = false,
+  busy = false,
   flash = false,
   onToggle,
   onInitiative,
@@ -199,7 +201,7 @@ export function PlayerRow({
             </UnstyledButton>
           </div>
           <NoteField value={note} onChange={onNoteChange} data-tap={tapOf('note')} />
-          <CardActions open={moreOpen} onEdit={onEdit} onMore={onMore} />
+          <CardActions open={moreOpen} busy={busy} onEdit={onEdit} onMore={onMore} />
         </div>
       ) : null}
     </div>

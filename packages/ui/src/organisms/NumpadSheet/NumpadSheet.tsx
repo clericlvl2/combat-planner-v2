@@ -29,7 +29,7 @@ export interface NumpadSheetProps extends NumpadHealth {
   role: Role;
   initiative: number | null;
   history: readonly HpHistoryEntry[];
-  onApply: (kind: HpHistoryKind, amount: number) => void;
+  onApply: (kind: HpHistoryKind, amount: number) => void | Promise<unknown>;
   onClose: () => void;
   'data-tap'?: HpHistoryKind;
 }
@@ -200,6 +200,7 @@ export function NumpadSheet({
   const [previewKind, setPreviewKind] = useState<HpHistoryKind>('damage');
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const [openedBefore, setOpenedBefore] = useState(opened);
+  const [waiting, setWaiting] = useState<HpHistoryKind | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const appliedRef = useRef(false);
   const motion = useMotion();
@@ -265,9 +266,20 @@ export function NumpadSheet({
   const applyKind = (kind: HpHistoryKind) => {
     if (amount === null || !enabled(kind) || appliedRef.current) return;
     appliedRef.current = true;
-    onApply(kind, amount);
-    setAmount(null);
-    onClose();
+    const applied = onApply(kind, amount);
+    if (!(applied instanceof Promise)) {
+      setAmount(null);
+      onClose();
+      return;
+    }
+    setWaiting(kind);
+    void applied
+      .catch(() => undefined)
+      .then(() => {
+        setWaiting(null);
+        setAmount(null);
+        onClose();
+      });
   };
 
   return (
@@ -286,7 +298,8 @@ export function NumpadSheet({
               data-tap={tap === kind ? '' : undefined}
               size={kind === 'damage' ? 'M' : 'S'}
               fullWidth
-              disabled={!enabled(kind)}
+              disabled={!enabled(kind) || (waiting !== null && waiting !== kind)}
+              loading={waiting === kind}
               onPointerEnter={() => setPreviewKind(kind)}
               onFocus={() => setPreviewKind(kind)}
               onClick={() => applyKind(kind)}

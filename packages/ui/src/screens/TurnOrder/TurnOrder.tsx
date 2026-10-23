@@ -72,6 +72,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   const [open, setOpen] = useState<Open | null>(null);
   const [flashId, setFlashId] = useState<UnitId | null>(null);
   const { flashing, flash } = useHpFlash();
+  const [toggling, setToggling] = useState(0);
+  const [releasingId, setReleasingId] = useState<UnitId | null>(null);
 
   const setup = combat.status === 'setup';
   const own = (unit: PlayerUnit) => unit.role !== 'enemy' && unit.mine === true;
@@ -94,17 +96,30 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   };
 
   const applyHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number) => {
+    const sent = dispatch({ ...target(unit), type: hpActionTypes[kind], amount });
+    if (kind === 'max') {
+      return sent.then((result) => {
+        if (!result.applied) return;
+        setFlashId(unit.id);
+        flash();
+      });
+    }
     close();
-    void dispatch({ ...target(unit), type: hpActionTypes[kind], amount }).then((result) => {
-      if (!result.applied) return;
-      setFlashId(unit.id);
-      flash();
+    setFlashId(unit.id);
+    flash();
+    void sent.then((result) => {
+      if (!result.applied) setFlashId((current) => (current === unit.id ? null : current));
     });
+    return undefined;
   };
 
   const changeConditions = (unit: PlayerUnit, next: Condition[]) => {
     const condition = toggledCondition(unit.conditions, next);
-    if (condition) send({ ...target(unit), type: 'toggleCondition', condition });
+    if (!condition) return;
+    setToggling((count) => count + 1);
+    void dispatch({ ...target(unit), type: 'toggleCondition', condition }).finally(() =>
+      setToggling((count) => count - 1),
+    );
   };
 
   const saveEdit = (unit: PlayerUnit, draft: UnitDraft) => {
@@ -114,8 +129,12 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
 
   const selectMore = (unit: PlayerUnit, id: string) => {
     if (id !== RELEASE_CLAIM) return;
-    send({ ...target(unit), type: 'releaseUnit' });
-    setExpandedId(null);
+    close();
+    setReleasingId(unit.id);
+    void dispatch({ ...target(unit), type: 'releaseUnit' }).finally(() => {
+      setReleasingId(null);
+      setExpandedId(null);
+    });
   };
 
   const numpadUnit = panelOf('numpad');
@@ -168,6 +187,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
                 setup={setup}
                 conditionsOpen={isOpen('conditions', unit)}
                 moreOpen={isOpen('more', unit)}
+                busy={releasingId === unit.id}
                 onToggle={() => {
                   if (expandedId === unit.id) close();
                   setExpandedId((current) => (current === unit.id ? null : unit.id));
@@ -236,6 +256,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           value={conditionsUnit.conditions}
           onChange={(next) => changeConditions(conditionsUnit, next)}
           onClose={close}
+          pending={toggling > 0}
         />
       ) : null}
       {historyUnit ? (

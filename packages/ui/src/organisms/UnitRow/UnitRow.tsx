@@ -63,6 +63,7 @@ interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childre
   conditionsOpen?: boolean;
   historyOpen?: boolean;
   menuOpen?: boolean;
+  busy?: boolean;
   duplicateDisabled?: boolean;
   random?: () => number;
   'data-tap'?: UnitRowTarget;
@@ -89,6 +90,7 @@ export function UnitRow({
   conditionsOpen = false,
   historyOpen = false,
   menuOpen = false,
+  busy = false,
   duplicateDisabled = false,
   random,
   onToggle,
@@ -319,6 +321,7 @@ export function UnitRow({
             target={
               <CardActions
                 open={menuOpen}
+                busy={busy}
                 data-tap={tap === 'edit' || tap === 'more' ? tap : undefined}
                 onEdit={() => onEdit?.()}
                 onMore={() => onMore?.()}

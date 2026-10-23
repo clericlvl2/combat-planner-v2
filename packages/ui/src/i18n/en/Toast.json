@@ -5,7 +5,7 @@
   "limitReached": "Limit reached",
   "tooManyRequests": "Too many requests — wait a minute",
   "linkCopied": "Link copied",
-  "serverUnreachable": "Couldn’t reach the server. Nothing changed.",
+  "serverUnreachable": "Couldn’t reach the server. The change was undone.",
   "retry": "Retry",
   "undoneDamage": "Undid: {{amount}} damage to {{name}}",
   "duplicated": "{{title}} (copy) created",
