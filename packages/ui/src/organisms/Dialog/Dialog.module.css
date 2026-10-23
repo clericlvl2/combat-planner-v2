@@ -33,7 +33,9 @@
   max-height: 100%;
   padding: 16px;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cp-color-border) transparent;
+  scrollbar-gutter: stable;
   border: 2px solid var(--cp-color-ink);
   border-radius: var(--mantine-radius-sheet);
   background: var(--cp-color-surface);

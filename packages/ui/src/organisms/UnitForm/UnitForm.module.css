@@ -104,7 +104,9 @@
   align-content: start;
   min-height: 0;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cp-color-border) transparent;
+  scrollbar-gutter: stable;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-field);
 }

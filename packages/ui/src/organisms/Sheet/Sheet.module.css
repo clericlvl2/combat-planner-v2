@@ -108,7 +108,9 @@
   margin: -6px;
   padding: 6px;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cp-color-border) transparent;
+  scrollbar-gutter: stable;
 }
 
 .actions {

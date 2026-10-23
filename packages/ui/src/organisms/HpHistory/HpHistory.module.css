@@ -92,7 +92,9 @@
   &[data-long] {
     max-height: 320px;
     overflow-y: auto;
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--cp-color-border) transparent;
+    scrollbar-gutter: stable;
     overscroll-behavior: contain;
   }
 

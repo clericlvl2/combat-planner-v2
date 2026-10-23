@@ -25,7 +25,9 @@
   width: min(300px, var(--cp-layout-viewport-width, 100%) - 56px);
   padding: 56px 12px 28px;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--cp-color-border) transparent;
+  scrollbar-gutter: stable;
   border-right: 2px solid var(--cp-color-ink);
   border-radius: 0 var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0;
   background: var(--cp-color-background);
