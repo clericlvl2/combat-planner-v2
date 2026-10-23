@@ -97,13 +97,11 @@
 }
 
 .content {
-  composes: shadows from '../../scroll.module.css';
-  --cp-scroll-gap: 12px;
-
+  composes: fade from '../../scroll.module.css';
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
-  gap: var(--cp-scroll-gap);
+  gap: 12px;
   min-height: 0;
   margin: -6px;
   padding: 6px;

@@ -96,7 +96,7 @@
 }
 
 .list {
-  composes: shadows from '../../scroll.module.css';
+  composes: fade from '../../scroll.module.css';
   box-sizing: border-box;
   display: grid;
   flex: 1;

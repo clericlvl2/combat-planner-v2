@@ -1,93 +1,71 @@
-@property --cp-scroll-gap {
+@property --cp-fade-top {
   syntax: '<length>';
   inherits: false;
   initial-value: 0px;
 }
 
-@keyframes appear {
+@property --cp-fade-bottom {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes fade-top {
   from {
-    opacity: 0;
+    --cp-fade-top: 0px;
   }
 
   to {
-    opacity: 1;
+    --cp-fade-top: var(--cp-scroll-shadow);
   }
 }
 
-@keyframes disappear {
+@keyframes fade-bottom {
   from {
-    opacity: 1;
+    --cp-fade-bottom: var(--cp-scroll-shadow);
   }
 
   to {
-    opacity: 0;
+    --cp-fade-bottom: 0px;
   }
 }
 
-.shadows {
-  scroll-timeline: --cp-scroll block;
-
-  &::before,
-  &::after {
-    --cp-scroll-gap: inherit;
-
-    content: '';
-    position: sticky;
-    z-index: 10;
-    display: block;
-    flex: none;
-    grid-column: 1 / -1;
-    align-self: stretch;
-    height: var(--cp-scroll-shadow);
-    border-image: var(--cp-scroll-shadow-fill) 0 fill / 0 / 0 64px;
-    opacity: 0;
-    pointer-events: none;
-    animation-name: appear;
-    animation-timing-function: linear;
-    animation-fill-mode: both;
-    animation-timeline: --cp-scroll;
-  }
-
-  &::before {
-    --cp-scroll-shadow-fill: linear-gradient(
-      color-mix(in srgb, var(--cp-color-ink) 18%, transparent),
+@supports (animation-timeline: scroll()) {
+  .fade {
+    --cp-fade-mask: linear-gradient(
+      to bottom,
+      transparent,
+      #000 var(--cp-fade-top),
+      #000 calc(100% - var(--cp-fade-bottom)),
       transparent
     );
 
-    top: 0;
-    margin-bottom: calc(-1 * (var(--cp-scroll-shadow) + var(--cp-scroll-gap)));
-    animation-range: 0 var(--cp-scroll-shadow);
+    scroll-timeline: --cp-scroll block;
+    animation-name: fade-top, fade-bottom;
+    animation-duration: auto;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: --cp-scroll;
+    animation-range:
+      0 var(--cp-scroll-shadow),
+      calc(100% - var(--cp-scroll-shadow)) 100%;
+    -webkit-mask-image: var(--cp-fade-mask);
+    mask-image: var(--cp-fade-mask);
+
+    &:focus-visible {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
   }
 
-  &::after {
-    --cp-scroll-shadow-fill: linear-gradient(
-      transparent,
-      color-mix(in srgb, var(--cp-color-ink) 18%, transparent)
-    );
-
-    bottom: 0;
-    margin-top: calc(-1 * (var(--cp-scroll-shadow) + var(--cp-scroll-gap)));
-    animation-name: disappear;
-    animation-range: calc(100% - var(--cp-scroll-shadow)) 100%;
-  }
-}
-
-:global(:root[data-motion='off']) .shadows {
-  &::before,
-  &::after {
-    animation-name: appear !important;
+  :global(:root[data-motion='off']) .fade {
+    animation-name: fade-top, fade-bottom !important;
     animation-duration: auto !important;
     animation-timing-function: linear !important;
     animation-fill-mode: both !important;
     animation-timeline: --cp-scroll !important;
-  }
-
-  &::before {
-    animation-range: 0 var(--cp-scroll-shadow) !important;
-  }
-
-  &::after {
-    animation-name: disappear !important;
-    animation-range: calc(100% - var(--cp-scroll-shadow)) 100% !important;
+    animation-range:
+      0 var(--cp-scroll-shadow),
+      calc(100% - var(--cp-scroll-shadow)) 100% !important;
   }
 }

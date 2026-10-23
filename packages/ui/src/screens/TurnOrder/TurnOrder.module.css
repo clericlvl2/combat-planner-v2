@@ -9,14 +9,12 @@
 }
 
 .list {
-  composes: shadows from '../../scroll.module.css';
-  --cp-scroll-gap: 8px;
-
+  composes: fade from '../../scroll.module.css';
   box-sizing: border-box;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--cp-scroll-gap);
+  gap: 8px;
   min-height: 0;
   padding: var(--cp-list-inset-top) 12px var(--cp-list-inset-bottom);
   overflow-y: auto;

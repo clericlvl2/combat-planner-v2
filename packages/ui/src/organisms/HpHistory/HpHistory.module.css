@@ -78,7 +78,7 @@
 }
 
 .list {
-  composes: shadows from '../../scroll.module.css';
+  composes: fade from '../../scroll.module.css';
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-content: start;
