@@ -43,6 +43,7 @@ export const reissueGeneration = (
   const released = releaseEveryClaim(tx, combat, now);
   const next: Combat = {
     ...released,
+    players: {},
     linkGeneration: released.linkGeneration + 1,
     version: released.version + 1,
     updatedAt: now,

@@ -424,10 +424,10 @@ export function CombatScreen({
     for (const unitId of unitIds) ownReleases.current.delete(unitId);
   };
 
-  const reissue = () => {
+  const releaseEveryClaim = (run: () => Promise<unknown>) => {
     const claimed = combat.units.filter((unit) => unit.claimedBy !== null).map((unit) => unit.id);
     void releaseAsDm(claimed, () =>
-      link.reissue().then(
+      run().then(
         () => true,
         () => false,
       ),
@@ -440,10 +440,10 @@ export function CombatScreen({
       const unit = unitById(current.unitId);
       if (unit) void removeUnit(unit);
     } else if (current.kind === 'revoke') {
-      reissue();
+      releaseEveryClaim(link.reissue);
     } else if (current.kind === 'stop') {
       setShareOpen(false);
-      link.stop().catch(() => {});
+      releaseEveryClaim(link.stop);
     } else {
       setExpandedId(null);
       void send({ type: current.kind });

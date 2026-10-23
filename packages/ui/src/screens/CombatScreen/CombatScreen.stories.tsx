@@ -1129,7 +1129,7 @@ export const RevokeReissuesLink = meta.story({
 
 export const StopSharingClosesSheet = meta.story({
   tags: ['!dev'],
-  play: async ({ canvas, globals, loaded }) => {
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     const api = fakeApiOf(loaded);
     const sheet = await openShare(canvas, t);
@@ -1142,6 +1142,15 @@ export const StopSharingClosesSheet = meta.story({
       expect(canvas.queryByRole('dialog', { name: t('ShareSheet:title') })).toBeNull(),
     );
     await waitFor(() => expect(callsOf(api, 'link.stopSharing')).toHaveLength(1));
+    await waitFor(async () =>
+      expect(within(await rowOf(canvasElement, names.vashti)).queryByText('@Mika')).toBeNull(),
+    );
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeNull();
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Jonas', hero: names.aldric })),
+    ).toBeNull();
     const reopened = await openShare(canvas, t);
     await expect(
       await within(reopened).findByText(

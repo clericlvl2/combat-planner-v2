@@ -583,6 +583,7 @@ export class FakeApiClient implements ApiClient {
     }
     const next: Combat = {
       ...combat,
+      players: {},
       linkGeneration: combat.linkGeneration + 1,
       version: combat.version + 1,
       updatedAt: now,

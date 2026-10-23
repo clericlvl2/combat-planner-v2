@@ -152,7 +152,8 @@ describe('link routes', () => {
     expect(result.generation).toBe(after.linkGeneration);
     expect(result.token).toBe(signLink({ combatId: COMBAT_ID, generation: 1 }, secret));
     expect(after.units.every((unit) => unit.claimedBy === null)).toBe(true);
-    expect(after.players).toEqual(before.players);
+    expect(Object.keys(before.players)).toHaveLength(2);
+    expect(after.players).toEqual({});
     expect(dmStream.events).toEqual([
       { type: 'document', version: after.version, document: after },
     ]);
@@ -266,6 +267,8 @@ describe('POST /combats/:id/link/stop', () => {
     const after = await fetchCombat(dm);
     expect(after.linkGeneration).toBe(claimed.linkGeneration + 1);
     expect(after.units.every((unit) => unit.claimedBy === null)).toBe(true);
+    expect(claimed.players).toEqual({ [credentials.playerId]: 'Ada' });
+    expect(after.players).toEqual({});
     expect(after.undo).toEqual(claimed.undo);
     expect(rows()).toEqual(stack);
     expect(readLink(opened.db, COMBAT_ID)).toEqual({ phase: 'off' });
