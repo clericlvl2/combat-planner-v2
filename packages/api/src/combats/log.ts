@@ -1,6 +1,6 @@
 import type { ActionId, Combat, CombatId, LogEntry } from '@combat-planner/domain';
 import { LIMITS, undoSummary } from '@combat-planner/domain';
-import { and, desc, eq, max } from 'drizzle-orm';
+import { and, desc, eq, lt, max, ne, sql } from 'drizzle-orm';
 import type { DmCombat } from '../client.ts';
 import { actionLog } from '../db/schema.ts';
 import type { Executor } from './store.ts';
@@ -60,6 +60,26 @@ export const undoWindow = (db: Executor, combatId: CombatId): LogEntry[] => {
   return window.toReversed();
 };
 
+const pruneLog = (db: Executor, combatId: CombatId): void => {
+  const oldestReachable = db
+    .select({ seq: actionLog.seq })
+    .from(actionLog)
+    .where(
+      and(
+        eq(actionLog.combatId, combatId),
+        ne(sql`json_extract(${actionLog.action}, '$.type')`, 'undo'),
+      ),
+    )
+    .orderBy(desc(actionLog.seq))
+    .limit(1)
+    .offset(LIMITS.undoDepth)
+    .get();
+  if (!oldestReachable) return;
+  db.delete(actionLog)
+    .where(and(eq(actionLog.combatId, combatId), lt(actionLog.seq, oldestReachable.seq)))
+    .run();
+};
+
 export const appendLogEntry = (
   db: Executor,
   combatId: CombatId,
@@ -78,6 +98,7 @@ export const appendLogEntry = (
       undoneBy: entry.undoneBy,
     })
     .run();
+  pruneLog(db, combatId);
 };
 
 export const markUndone = (

@@ -1,5 +1,5 @@
-import type { Action, ActionId, LogEntry, Patch } from '@combat-planner/domain';
-import { LIMITS, undoSummary } from '@combat-planner/domain';
+import type { Action, ActionId, Combat, LogEntry, Patch } from '@combat-planner/domain';
+import { DomainError, LIMITS, apply, undoSummary } from '@combat-planner/domain';
 import { asc, eq } from 'drizzle-orm';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
 import { playerLinkSchema } from '../src/client.ts';
@@ -68,8 +68,8 @@ const claim = (): void => {
   );
 };
 
-const fullLog = (): LogEntry[] =>
-  opened.db
+const logOf = (source: TestApp, combatId: string): LogEntry[] =>
+  source.db
     .select({
       action: actionLog.action,
       author: actionLog.author,
@@ -78,9 +78,11 @@ const fullLog = (): LogEntry[] =>
       undoneBy: actionLog.undoneBy,
     })
     .from(actionLog)
-    .where(eq(actionLog.combatId, COMBAT_ID))
+    .where(eq(actionLog.combatId, combatId))
     .orderBy(asc(actionLog.seq))
     .all();
+
+const fullLog = (): LogEntry[] => logOf(opened, COMBAT_ID);
 
 const countLogReads = () => {
   const reads = { statements: 0, rows: 0 };
@@ -150,7 +152,7 @@ afterEach(() => {
 
 describe('undo summary over a long log', () => {
   it('reads newest-first and stops at the newest undoable entry not undone', async () => {
-    expect(fullLog().length).toBeGreaterThan(SEEDED);
+    expect(fullLog()).toHaveLength(LIMITS.undoDepth + 1);
     const newest = damage(9);
     expect(await expectBoundedSummary()).toEqual({ action: newest, unitName: 'Goblin' });
   });
@@ -183,7 +185,7 @@ describe('undo summary over a long log', () => {
     for (const action of [...newer].reverse()) undoOf(action);
     const { undo, reads } = await readBoundedSummary();
     expect(undo).toBeNull();
-    expect(reads).toEqual({ statements: 3, rows: ROW_BOUND });
+    expect(reads).toEqual({ statements: 3, rows: WORST_CASE_ENTRIES });
   });
 });
 
@@ -192,7 +194,7 @@ describe('undo over a long log', () => {
     const target = damage(8);
     const undone = Array.from({ length: LIMITS.undoDepth - 1 }, (_, index) => damage(index + 1));
     for (const action of [...undone].reverse()) undoOf(action);
-    expect(fullLog().length).toBeGreaterThan(2 * ROW_BOUND);
+    expect(fullLog().length).toBeLessThanOrEqual(WORST_CASE_ENTRIES);
     const combat = await fetchCombat(dm);
     const undo: Action = { id: seededId(), version: combat.version, type: 'undo' };
     const reads = countLogReads();
@@ -217,5 +219,88 @@ describe('player SSE connect', () => {
     await new Promise<void>((resolve) => setTimeout(resolve, 0));
     expect(initial.event.type).toBe('document');
     expect(reads).toEqual({ statements: 0, rows: 0 });
+  });
+});
+
+describe('log pruning', () => {
+  type Payload =
+    | { type: 'damage' | 'heal'; unitId: string; amount: number }
+    | { type: 'undo' }
+    | ReturnType<typeof addUnitAction>;
+
+  it('keeps undo identical to the full log and the row count bounded', async () => {
+    const pruned = createTestApp();
+    const requester = withUser(pruned.app, DM);
+    expect((await call(requester, 'POST', '/combats', combatInput())).status).toBe(200);
+    const { undo: _undo, ...initial } = await fetchCombat(requester);
+    let mirror: Combat = initial;
+    let mirrorLog: LogEntry[] = [];
+    let next = 0;
+    const step = async (payload: Payload) => {
+      next += 1;
+      const action = { ...payload, id: ulidAt(200 + next), version: mirror.version } as Action;
+      const response = await call(requester, 'POST', `/combats/${COMBAT_ID}/actions`, action);
+      const result = apply(mirror, action, { kind: 'dm' }, NOW, mirrorLog);
+      if (result instanceof DomainError) {
+        expect(response.status).toBe(422);
+        expect(await response.json()).toEqual({ code: result.code, message: result.message });
+      } else {
+        expect(response.status).toBe(200);
+        const log =
+          'undone' in result
+            ? mirrorLog.map((entry) =>
+                entry.action.id === result.undone ? { ...entry, undoneBy: action.id } : entry,
+              )
+            : mirrorLog;
+        mirrorLog = [
+          ...log,
+          { action, author: { kind: 'dm' }, at: NOW, patch: result.patch, undoneBy: null },
+        ];
+        mirror = result.combat;
+      }
+      const document = await fetchCombat(requester);
+      expect(document.version).toBe(mirror.version);
+      expect(document.units.map(({ id, hp }) => ({ id, hp }))).toEqual(
+        mirror.units.map(({ id, hp }) => ({ id, hp })),
+      );
+      expect(document.undo).toEqual(undoSummary(mirror, mirrorLog));
+      expect(logOf(pruned, COMBAT_ID).length).toBeLessThanOrEqual(WORST_CASE_ENTRIES);
+      return response.status;
+    };
+    const hits = async (count: number) => {
+      for (let index = 0; index < count; index += 1) {
+        await step({
+          type: index % 3 === 2 ? 'heal' : 'damage',
+          unitId: ENEMY_ID,
+          amount: 1 + (index % 4),
+        });
+      }
+    };
+    const undos = async (count: number) => {
+      const statuses: number[] = [];
+      for (let index = 0; index < count; index += 1) statuses.push(await step({ type: 'undo' }));
+      return statuses;
+    };
+
+    await step(addUnitAction(ulidAt(150), 1, ENEMY_ID, 'Goblin', 'enemy'));
+    await hits(25);
+    expect(await undos(5)).toEqual(Array.from({ length: 5 }, () => 200));
+    await hits(3);
+    const deep = await undos(LIMITS.undoDepth + 2);
+    expect(deep).toEqual([
+      ...Array.from({ length: 5 }, () => 200),
+      ...Array.from({ length: LIMITS.undoDepth + 2 - 5 }, () => 422),
+    ]);
+    await hits(LIMITS.undoDepth * 4);
+    const window = await undos(LIMITS.undoDepth + 1);
+    expect(window.slice(0, LIMITS.undoDepth)).toEqual(
+      Array.from({ length: LIMITS.undoDepth }, () => 200),
+    );
+    expect(window.at(-1)).toBe(422);
+    await hits(LIMITS.undoDepth * 3);
+    expect(logOf(pruned, COMBAT_ID)).toHaveLength(LIMITS.undoDepth + 1);
+    expect((await call(requester, 'DELETE', `/combats/${COMBAT_ID}`)).status).toBe(204);
+    expect(logOf(pruned, COMBAT_ID)).toHaveLength(0);
+    pruned.close();
   });
 });
