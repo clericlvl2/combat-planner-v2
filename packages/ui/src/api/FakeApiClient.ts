@@ -197,6 +197,10 @@ export class FakeApiClient implements ApiClient {
     for (const subscriber of ended) subscriber.onEnd({ type: 'unauthorized' });
   }
 
+  dropPlayers(combatId: CombatId): void {
+    this.endSubscribers(combatId, { type: 'dropped' }, 'player');
+  }
+
   failNext(code: ApiErrorCode): void {
     this.pendingFailure = fail(code);
   }

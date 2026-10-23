@@ -64,10 +64,11 @@ export function useCombat(
   );
   const query = useQuery({ queryKey: key, queryFn: fetchEntry });
   const [ended, setEnded] = useState<SourceEnd | null>(null);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(
     () => subscribeEntry(queryClient, key, source, (event) => setEnded({ source, event })),
-    [queryClient, key, source],
+    [queryClient, key, source, attempt],
   );
 
   const dispatch = useMemo(
@@ -84,9 +85,13 @@ export function useCombat(
   );
 
   const { refetch } = query;
+  const dropped = endOf(ended, source)?.type === 'dropped';
   const reload = useCallback(async () => {
     await refetch();
-  }, [refetch]);
+    if (!dropped) return;
+    setEnded(null);
+    setAttempt((count) => count + 1);
+  }, [refetch, dropped]);
 
   const entry = visibleEntry(query.data, query.error);
   return {

@@ -80,6 +80,7 @@ export function PlayerView({ combatId, token, random }: PlayerViewProps) {
   };
 
   if (ended?.type === 'linkRevoked') return <LinkExpired />;
+  if (ended?.type === 'dropped') return <CantReachServer onRetry={reload} />;
   if (ended?.type === 'deleted') {
     return <CombatDeleted combatTitle={ended.title || (combat?.title ?? seenTitle)} />;
   }

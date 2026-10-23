@@ -487,6 +487,26 @@ export const CantReachServerRetry = meta.story({
   },
 });
 
+export const DroppedRetry = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, parameters, loaded }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    const calls = (method: string) => api.calls.filter((call) => call.method === method);
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: COMBAT_TITLE }),
+    ).toBeVisible();
+    await waitFor(() => expect(calls('play.subscribe')).toHaveLength(1));
+    api.dropPlayers(COMBAT_ID);
+    await userEvent.click(await canvas.findByRole('button', { name: t('MessageScreen:tryAgain') }));
+    await expect(
+      await canvas.findByRole('heading', { level: 1, name: COMBAT_TITLE }),
+    ).toBeVisible();
+    await expect(calls('play.get')).toHaveLength(2);
+    await expect(calls('play.subscribe')).toHaveLength(2);
+  },
+});
+
 export const DmLanguage = meta.story({
   name: 'DM Language',
   tags: ['!dev'],
