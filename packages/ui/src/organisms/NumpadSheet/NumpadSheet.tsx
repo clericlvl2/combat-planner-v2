@@ -1,12 +1,5 @@
-import { LIMITS, apply, healthStatus } from '@combat-planner/domain';
-import type {
-  Action,
-  Combat,
-  HealthStatus,
-  HpHistoryEntry,
-  HpHistoryKind,
-  Role,
-} from '@combat-planner/domain';
+import { LIMITS, apply, healthSegments, healthStatus } from '@combat-planner/domain';
+import type { Action, Combat, HpHistoryEntry, HpHistoryKind, Role } from '@combat-planner/domain';
 import { UnstyledButton, VisuallyHidden } from '@mantine/core';
 import { IconArrowRight, IconBackspace } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -46,13 +39,6 @@ const actionLabels = {
   max: 'setMax',
 } as const satisfies Record<HpHistoryKind, string>;
 const pipSlots = [0, 1] as const;
-const filledPips: Record<HealthStatus, number> = {
-  full: 2,
-  wounded: 1,
-  staggered: 1,
-  unconscious: 0,
-  dead: 0,
-};
 
 function hpAction(kind: HpHistoryKind, amount: number): Action {
   const target = { id: previewId, version: 0, unitId: previewId, amount };
@@ -149,7 +135,7 @@ function HpReading({ label, health, role, side }: HpReadingProps) {
             <span
               key={slot}
               className={classes.pip}
-              data-filled={slot < filledPips[status] || undefined}
+              data-filled={slot < healthSegments(status) || undefined}
             />
           ))}
         </span>

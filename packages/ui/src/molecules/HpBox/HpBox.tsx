@@ -1,4 +1,4 @@
-import { healthStatus } from '@combat-planner/domain';
+import { healthSegments, healthStatus } from '@combat-planner/domain';
 import type { HealthStatus, Role } from '@combat-planner/domain';
 import { UnstyledButton, VisuallyHidden } from '@mantine/core';
 import { IconZzz } from '@tabler/icons-react';
@@ -32,14 +32,6 @@ export type HpBoxProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'onClick
   };
 
 const pipSlots = [0, 1] as const;
-
-const pipsOf: Record<HealthStatus, number> = {
-  full: 2,
-  wounded: 1,
-  staggered: 1,
-  unconscious: 0,
-  dead: 0,
-};
 
 function formatHp(value: number): string {
   return value < 0 ? `−${Math.abs(value)}` : String(value);
@@ -97,7 +89,7 @@ export function HpBox({
   const status = numbers
     ? healthStatus(numbers.hp, numbers.maxHp, numbers.role)
     : (statusProp ?? 'full');
-  const pips = pipsOf[status];
+  const pips = healthSegments(status);
   const dm = viewer === 'dm';
   const off = !preset && (status === 'dead' || disabled);
   const button = Boolean(onClick && numbers);

@@ -349,6 +349,7 @@ export const ThreeDigitHpWounded = meta.story({
     await typeAmount(canvas, '120');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('167/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('wounded'));
+    await expect(filledPips(canvasElement, 'after')).toBe(2);
   },
 });
 
