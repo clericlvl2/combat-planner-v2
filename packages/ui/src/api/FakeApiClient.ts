@@ -34,8 +34,10 @@ import {
   LIMITS,
   apply,
   authorize,
+  combatFileSchema,
   copyCombat,
   duplicateName,
+  fromCombatFile,
   nextStack,
   normalizeTag,
   project,
@@ -493,6 +495,18 @@ export class FakeApiClient implements ApiClient {
       this.run('combats.duplicate', [id, newId], () =>
         this.storeCombat(copyCombat(this.stored(id).combat, newId, nowIso())),
       ),
+    importCombat: (file) =>
+      this.run('combats.importCombat', [file], () => {
+        this.requireSession();
+        const parsed = combatFileSchema.safeParse(file);
+        if (!parsed.success) throw fail('invalid', 'This is not a combat file');
+        if (parsed.data.combat.units.length > LIMITS.unitsPerCombat) {
+          throw fail('limit', `This combat already has ${LIMITS.unitsPerCombat} units`);
+        }
+        return this.storeCombat(
+          fromCombatFile(parsed.data, { combatId: ulid(), unitId: () => ulid() }, nowIso()),
+        );
+      }),
     open: (id) =>
       this.run('combats.open', [id], () => {
         const stored = this.stored(id);

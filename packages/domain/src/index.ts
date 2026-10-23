@@ -1,3 +1,12 @@
+export {
+  COMBAT_FILE_FORMAT,
+  COMBAT_FILE_VERSION,
+  combatFileSchema,
+  combatFileUnitSchema,
+  fromCombatFile,
+  toCombatFile,
+} from './combatFile.ts';
+export type { CombatFile, CombatFileIds, CombatFileUnit } from './combatFile.ts';
 export { healthSchema, tickSchema } from './health.ts';
 export type { Health, Tick } from './health.ts';
 export { COMBAT_STATUSES, CONDITIONS, HEALTH_STATUSES, HP_HISTORY_KINDS, ROLES } from './types.ts';

@@ -1,6 +1,7 @@
 import type {
   Action,
   Combat,
+  CombatFile,
   CombatId,
   PlayerCombat,
   Preset,
@@ -44,6 +45,8 @@ export const acceptLanguages = (header: string | null): string[] =>
     .split(',')
     .map((part) => part.split(';')[0]?.trim() ?? '')
     .filter((language) => language !== '');
+
+export const BODY_LIMIT_BYTES = 64 * 1024;
 
 export const versionSchema = z.number().int().nonnegative();
 export const versionResultSchema = z.object({ version: versionSchema });
@@ -272,6 +275,7 @@ export interface CombatsApi {
   update(id: CombatId, patch: CombatPatch): Promise<VersionResult>;
   remove(id: CombatId): Promise<void>;
   duplicate(id: CombatId, newId: CombatId): Promise<Combat>;
+  importCombat(file: CombatFile): Promise<Combat>;
   open(id: CombatId): Promise<DmCombat>;
   get(id: CombatId): Promise<DmCombat>;
   dispatch(id: CombatId, action: Action): Promise<VersionResult>;

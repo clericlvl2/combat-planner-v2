@@ -578,6 +578,7 @@ export function createHonoApiClient({
         () => client.combats[':id'].duplicate.$post({ param: { id }, json: { id: newId } }),
         combatSchema,
       ),
+    importCombat: (file) => json(() => client.combats.import.$post({ json: file }), combatSchema),
     open: (id) => json(() => client.combats[':id'].open.$post({ param: { id } }), dmCombatSchema),
     get: (id) => getCombat(id),
     dispatch: (id, action) =>

@@ -3,6 +3,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { authProvidersApp, createAuth, createAuthApp } from './auth/index.ts';
 import { requireUser } from './auth/require-user.ts';
 import type { SessionResolver } from './auth/require-user.ts';
+import { BODY_LIMIT_BYTES } from './client.ts';
 import { actionsApp } from './combats/actions.ts';
 import { eventsApp } from './combats/events.ts';
 import { combatsApp } from './combats/routes.ts';
@@ -24,7 +25,7 @@ export interface ApiAppDeps {
   rateLimit?: boolean;
 }
 
-export const BODY_LIMIT_BYTES = 64 * 1024;
+export { BODY_LIMIT_BYTES };
 
 const BODY_TOO_LARGE = { code: 'limit', message: 'Request body exceeds 64 KB' } as const;
 
