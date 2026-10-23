@@ -10,6 +10,8 @@ const FALLBACK_NAME = 'combat';
 
 const MAX_READ_BYTES = 1024 * 1024;
 
+const REVOKE_DOWNLOAD_AFTER_MS = 60_000;
+
 const UNSAFE_CHARACTERS = new Set('\\/:*?"<>|');
 
 const FIRST_PRINTABLE = 0x20;
@@ -72,7 +74,7 @@ const download = (file: File) => {
   document.body.append(link);
   link.click();
   link.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+  setTimeout(() => URL.revokeObjectURL(url), REVOKE_DOWNLOAD_AFTER_MS);
 };
 
 const aborted = (error: unknown): boolean =>
