@@ -23,13 +23,7 @@ export default defineConfig({
   fmt: {
     singleQuote: true,
     printWidth: 100,
-    ignorePatterns: [
-      '.claude/**',
-      'CLAUDE.md',
-      'pnpm-lock.yaml',
-      'CHANGELOG.md',
-      '.release-please-manifest.json',
-    ],
+    ignorePatterns: ['.claude/**', 'CLAUDE.md', 'pnpm-lock.yaml'],
   },
   lint: {
     ignorePatterns: [
@@ -54,6 +48,7 @@ export default defineConfig({
             'packages/*/src/**/*.test.ts',
             'packages/*/test/**/*.test.ts',
             'apps/*/src/**/*.test.ts',
+            'scripts/*.test.mjs',
           ],
           environment: 'node',
         },
