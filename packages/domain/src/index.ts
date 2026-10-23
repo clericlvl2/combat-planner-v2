@@ -147,3 +147,28 @@ export { applyUndo, leavesStack, nextStack, undoSummary, undoTarget } from './un
 export type { LogEntry, UndoSummary, UndoableEntry, Undone } from './undo.ts';
 export { PLAYER_ACTION_TYPES, authorize, isPlayerAction } from './authorize.ts';
 export type { PlayerActionType } from './authorize.ts';
+export {
+  LINK_LIVE,
+  LINK_OFF,
+  PLAYER_CLOSED,
+  PLAYER_DROPPED,
+  PLAYER_PLAYING,
+  SHARING_TIMEOUTS,
+  closePlayer,
+  enterPlayer,
+  followClaims,
+  reissueLink,
+  shareLink,
+  streamIdle,
+  sweepLink,
+  sweepStream,
+  sweepWatching,
+} from './sharing.ts';
+export type {
+  ConnectedPlayer,
+  LinkState,
+  LinkSweep,
+  PlayerState,
+  SharingTimeouts,
+  StreamActivity,
+} from './sharing.ts';

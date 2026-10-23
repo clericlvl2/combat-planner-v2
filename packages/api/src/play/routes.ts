@@ -1,5 +1,5 @@
 import type { Combat, PlayerId, Viewer } from '@combat-planner/domain';
-import { actionSchema, project, ulidSchema } from '@combat-planner/domain';
+import { actionSchema, enterPlayer, project, ulidSchema } from '@combat-planner/domain';
 import { zValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
 import { Hono } from 'hono';
@@ -12,6 +12,7 @@ import { dispatch } from '../combats/dispatch.ts';
 import { NOT_FOUND, findCombatRow, nowIso } from '../combats/store.ts';
 import { signPlayerKey, verifyLink, verifyPlayerKey } from '../link/token.ts';
 import { streamCombatEvents } from '../live/sse.ts';
+import { insertPlayer, playerExists } from '../sharing/store.ts';
 import { dmLanguage, recordPlayer } from './store.ts';
 
 const PLAYER_ID_HEADER = 'X-Player-Id';
@@ -81,6 +82,9 @@ const resolvePlayer = (
   if (!verifyPlayerKey(given.playerKey, claims, c.get('env').linkSecret)) {
     return { status: 401, body: UNAUTHORIZED };
   }
+  if (!playerExists(c.get('db'), claims.combatId, claims.playerId)) {
+    return { status: 401, body: UNAUTHORIZED };
+  }
   return { ...resolved, viewer: { kind: 'player', playerId: playerId.data } };
 };
 
@@ -100,6 +104,7 @@ export const playApp = new Hono<ApiAppEnv>()
     if ('status' in resolved) return c.json(resolved.body, resolved.status);
     const { id: combatId, linkGeneration: generation } = resolved.combat;
     const playerId = ulid();
+    insertPlayer(c.get('db'), combatId, playerId, enterPlayer(null, nowIso()));
     const credentials: PlayerCredentials = {
       playerId,
       playerKey: signPlayerKey({ combatId, generation, playerId }, c.get('env').linkSecret),

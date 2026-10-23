@@ -735,6 +735,27 @@ describe('createHonoApiClient connection', () => {
     expect(client.connection.state()).toBe('offline');
   });
 
+  it('ends a player stream on dropped and opens no new stream by itself', async () => {
+    const { fetch } = stubFetch(200, null);
+    const client = createHonoApiClient({
+      baseUrl,
+      playerKeys: seededKeys(),
+      fetch,
+      eventSource: StubEventSource,
+    });
+    const ended = vi.fn();
+    client.play.subscribe(`${combatId}.2.signature`, () => {}, ended);
+    const source = StubEventSource.instances[0]!;
+    source.emit('open');
+    source.emit('dropped', JSON.stringify({ type: 'dropped' }));
+    expect(ended).toHaveBeenCalledWith({ type: 'dropped' });
+    expect(source.closed).toBe(true);
+    source.emit('error');
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(StubEventSource.instances).toHaveLength(1);
+    expect(client.connection.state()).toBe('offline');
+  });
+
   it('play.subscribe puts the token, the player id and the key into the stream URL', () => {
     const { fetch } = stubFetch(200, null);
     const client = createHonoApiClient({

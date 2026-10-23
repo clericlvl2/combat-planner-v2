@@ -4,6 +4,7 @@ import path from 'node:path';
 import { apiEnvSchema } from '@combat-planner/api';
 import { serve } from '@hono/node-server';
 import { createServerApp } from './app.ts';
+import { TEST_TIMERS_VARIABLE, sharingTimers } from './timers.ts';
 
 const rootEnvFile = path.join(import.meta.dirname, '../../../.env');
 if (existsSync(rootEnvFile)) process.loadEnvFile(rootEnvFile);
@@ -165,12 +166,21 @@ const env = apiEnvSchema.parse({
 const webDist = path.resolve(
   variable('STATIC_ROOT') ?? path.join(import.meta.dirname, '../../web/dist'),
 );
-const { app } = createServerApp({
+const { app, close } = createServerApp({
   databasePath,
   staticRoot: path.relative(process.cwd(), webDist),
   env,
+  timers: sharingTimers(variable(TEST_TIMERS_VARIABLE)),
 });
 
-serve({ fetch: app.fetch, port }, (info) => {
+const server = serve({ fetch: app.fetch, port }, (info) => {
   console.log(`server listening on http://localhost:${info.port}, database ${databasePath}`);
 });
+
+const shutDown = (): void => {
+  server.close();
+  close();
+  process.exit(0);
+};
+process.once('SIGTERM', shutDown);
+process.once('SIGINT', shutDown);

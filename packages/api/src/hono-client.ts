@@ -197,6 +197,7 @@ const streamEventSchema = <Document>(document: z.ZodType<Document>) =>
     }),
     z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
     z.object({ type: z.literal('linkRevoked') }),
+    z.object({ type: z.literal('dropped') }),
   ]);
 
 type StreamStatus = 'connecting' | 'open' | 'error' | 'reconnecting';
@@ -467,7 +468,7 @@ export function createHonoApiClient({
         }, RECONNECTING_AFTER_MS);
         probe();
       });
-      for (const type of ['message', 'document', 'deleted', 'linkRevoked']) {
+      for (const type of ['message', 'document', 'deleted', 'linkRevoked', 'dropped']) {
         next.addEventListener(type, handleEvent);
       }
       return next;

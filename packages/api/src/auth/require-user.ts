@@ -3,6 +3,7 @@ import type { UserAppEnv } from '../app.ts';
 
 export interface ResolvedSession {
   user: { id: string };
+  session?: { id: string };
 }
 
 export interface SessionResolver {
@@ -19,6 +20,7 @@ export const requireUser = createMiddleware<UserAppEnv>(async (c, next) => {
     const session = await c.get('auth')?.api.getSession({ headers: c.req.raw.headers });
     if (!session) return c.json(UNAUTHORIZED, 401);
     c.set('userId', session.user.id);
+    if (session.session !== undefined) c.set('sessionId', session.session.id);
   }
   await next();
 });

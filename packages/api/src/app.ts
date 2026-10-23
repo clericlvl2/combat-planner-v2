@@ -28,8 +28,8 @@ export const BODY_LIMIT_BYTES = 64 * 1024;
 
 const BODY_TOO_LARGE = { code: 'limit', message: 'Request body exceeds 64 KB' } as const;
 
-export type ApiAppEnv = { Variables: ApiAppDeps & { userId?: string } };
-export type UserAppEnv = { Variables: ApiAppDeps & { userId: string } };
+export type ApiAppEnv = { Variables: ApiAppDeps & { userId?: string; sessionId?: string } };
+export type UserAppEnv = { Variables: ApiAppDeps & { userId: string; sessionId?: string } };
 
 const userCombatsApp = new Hono<ApiAppEnv>()
   .use(requireUser)

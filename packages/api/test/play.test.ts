@@ -151,7 +151,18 @@ const playerRows = () =>
     .select({ playerId: players.playerId, displayName: players.displayName })
     .from(players)
     .where(eq(players.combatId, COMBAT_ID))
-    .all();
+    .all()
+    .filter((row) => row.displayName !== '');
+
+const seedPlayers = () => {
+  for (const playerId of [PLAYER_ID, SECOND_PLAYER]) {
+    opened.db
+      .insert(players)
+      .values({ combatId: COMBAT_ID, playerId, displayName: '' })
+      .onConflictDoNothing()
+      .run();
+  }
+};
 
 const tamper = (t: string): string => `${t.slice(0, -1)}${t.endsWith('A') ? 'B' : 'A'}`;
 
@@ -198,6 +209,7 @@ afterAll(() => {
 });
 
 beforeEach(() => {
+  seedPlayers();
   vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
 });
 
@@ -225,6 +237,22 @@ describe('POST /play/:id/join', () => {
     ).toBe(true);
     expect((await getPlay(token, credentials)).status).toBe(200);
     expect((await getPlay(token, { ...credentials, playerKey: other.playerKey })).status).toBe(401);
+  });
+
+  it('stores the new player as watching, and a key without its player row answers 401', async () => {
+    const credentials = playerCredentialsSchema.parse(await (await join(token)).json());
+    const row = opened.db
+      .select({ displayName: players.displayName, watchingSince: players.watchingSince })
+      .from(players)
+      .where(and(eq(players.combatId, COMBAT_ID), eq(players.playerId, credentials.playerId)))
+      .get();
+    expect(row?.displayName).toBe('');
+    expect(row?.watchingSince).toEqual(expect.any(String));
+    opened.db
+      .delete(players)
+      .where(and(eq(players.combatId, COMBAT_ID), eq(players.playerId, credentials.playerId)))
+      .run();
+    expect((await getPlay(token, credentials)).status).toBe(401);
   });
 
   it('answers 404 for a tampered token and 410 for a generation that is not the current one', async () => {
@@ -317,9 +345,10 @@ describe('POST /play/:id/actions', () => {
     ]);
   });
 
-  it('GET upserts the player row when the document already knows the name', async () => {
+  it('GET records the name the document already knows', async () => {
     opened.db
-      .delete(players)
+      .update(players)
+      .set({ displayName: '' })
       .where(and(eq(players.combatId, COMBAT_ID), eq(players.playerId, PLAYER_ID)))
       .run();
     expect(playerRows()).toEqual([{ playerId: SECOND_PLAYER, displayName: 'Bram' }]);
@@ -548,6 +577,9 @@ describe('GET /play/:id/events', () => {
       expect(old.status).toBe(401);
       expect(await old.json()).toMatchObject({ code: 'unauthorized' });
     }
+    expect(playerRows()).toEqual([]);
+    expect((await getPlay(token, PLAYER_ID)).status).toBe(401);
+    seedPlayers();
     expect((await getPlay(token, PLAYER_ID)).status).toBe(200);
   });
 

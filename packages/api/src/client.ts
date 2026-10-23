@@ -227,10 +227,11 @@ export const apiEventSchema = z.discriminatedUnion('type', [
   }),
   z.object({ type: z.literal('deleted'), title: combatTitleSchema }),
   z.object({ type: z.literal('linkRevoked') }),
+  z.object({ type: z.literal('dropped') }),
 ]);
 export type ApiEvent = z.infer<typeof apiEventSchema>;
 export type ApiEndEvent =
-  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' }>
+  | Extract<ApiEvent, { type: 'deleted' | 'linkRevoked' | 'dropped' }>
   | { type: 'unauthorized' };
 
 export type Unsubscribe = () => void;

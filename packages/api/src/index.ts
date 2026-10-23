@@ -20,8 +20,27 @@ export { tagsApp } from './tags/routes.ts';
 export { settingsApp } from './settings/routes.ts';
 export { createAccountApp } from './account/routes.ts';
 export type { LinkClaims, PlayerKeyClaims } from './link/token.ts';
-export { broadcast, broadcastDocument, subscribe, subscriberCount } from './live/registry.ts';
-export type { Audience, Subscriber } from './live/registry.ts';
+export {
+  broadcast,
+  broadcastDocument,
+  sendToPlayer,
+  subscribe,
+  subscriberCount,
+  subscriptions,
+} from './live/registry.ts';
+export type { Audience, Subscriber, Subscription } from './live/registry.ts';
+export { announceReissue, reissueGeneration } from './link/reissue.ts';
+export { findCombatRow } from './combats/store.ts';
+export {
+  lastActionAt,
+  listSharedCombats,
+  listWatchingPlayers,
+  removePlayer,
+  signedInSince,
+  writeLink,
+} from './sharing/store.ts';
+export type { PlayerRow, SharedCombat } from './sharing/store.ts';
+export { closeEndedDmStreams } from './sharing/streams.ts';
 export { HEARTBEAT_MS, streamCombatEvents } from './live/sse.ts';
 export type { StreamRequest } from './live/sse.ts';
 export { openDatabase } from './db/index.ts';

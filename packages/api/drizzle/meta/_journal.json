@@ -15,6 +15,13 @@
       "when": 1792443431162,
       "tag": "0001_13th_age_terms",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792759394747,
+      "tag": "0002_sharing_lifecycle",
+      "breakpoints": true
     }
   ]
 }

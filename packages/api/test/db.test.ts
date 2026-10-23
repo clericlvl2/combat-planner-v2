@@ -213,7 +213,7 @@ describe('migrated tables', () => {
       .from(players)
       .where(and(eq(players.combatId, combatId), eq(players.playerId, playerId)))
       .get();
-    expect(row).toEqual({ combatId, playerId, displayName: 'Ada' });
+    expect(row).toEqual({ combatId, playerId, displayName: 'Ada', watchingSince: null });
   });
 
   it('round-trips a preset', () => {

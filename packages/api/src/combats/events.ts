@@ -9,9 +9,11 @@ export const eventsApp = new Hono<UserAppEnv>().get('/:id/events', (c) => {
   const ownerId = c.get('userId');
   const combatId = c.req.param('id');
   if (!findOwnCombat(db, ownerId, combatId)) return c.json(NOT_FOUND, 404);
+  const sessionId = c.get('sessionId');
   return streamCombatEvents(c, {
     combatId,
     viewer: { kind: 'dm' },
+    ...(sessionId === undefined ? {} : { sessionId }),
     load: () => {
       const combat = findOwnCombat(db, ownerId, combatId);
       return combat && dmDocument(db, combat);
