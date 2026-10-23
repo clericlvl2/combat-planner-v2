@@ -126,12 +126,13 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
 
    `docker compose version` prints a version. Log in again as `deploy` for the group to apply.
 
-5. **Files.** The checkout is read-only on the server and always on `main`; only `deploy/.env` is
-   added. No other branch is checked out or pulled on the server: unreleased code runs only in a
-   separate test environment.
+5. **Files.** The checkout is read-only on the server and always on a release tag (detached
+   `HEAD`), the same tag as the app image; only `deploy/.env` is added. No branch is checked out
+   or pulled on the server: unreleased code runs only in a separate test environment.
+   `<tag>` is the latest release on https://github.com/clericlvl2/combat-planner-v2/releases.
 
    ```sh
-   git clone --branch main https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
+   git clone --branch <tag> https://github.com/clericlvl2/combat-planner-v2 /opt/combat-planner
    chown -R deploy:deploy /opt/combat-planner
    ```
 
@@ -144,8 +145,7 @@ Commands run as root: logged in as `root` until step 1 restarts SSH, afterwards 
    nano .env
    ```
 
-   In `nano`, set `APP_IMAGE` to the tag of the latest release on
-   https://github.com/clericlvl2/combat-planner-v2/releases, without the `v`.
+   In `nano`, set `APP_IMAGE` to `<tag>` without the `v`.
 
 6. **Registry check.** As `deploy`, in `/opt/combat-planner/deploy`:
 
@@ -223,31 +223,126 @@ page takes these steps before `docker compose up`. As `deploy`, in `/opt/combat-
 
 `https://<domain>/admin` asks for the login and password; without them it answers 401.
 
-## Update
+## Deploy
 
-Production runs released code only: the image tag of a release and the `deploy/` files from
-`main`, pulled after the release is created.
+A release deploys itself: the `release` workflow ends with the job `deploy`
+(`.github/workflows/deploy.yml`), which waits in the GitHub environment `production` until the
+owner presses "Review deployments" → "Approve and deploy" on the run. A manual run deploys any
+released tag, the current one (redeploy) or an older one (rollback):
+
+```sh
+gh workflow run deploy -f tag=<tag>
+```
+
+The run waits for the same approval. The job refuses a tag that is not `vX.Y.Z` or has no GitHub
+Release, then connects as `deploy` with the deploy key, which can run only `deploy/deploy.sh`
+([Deploy key](#deploy-key)). The script's output is the job log and its exit code the job's
+result. The script:
+
+1. Runs from a temporary copy of itself, refuses anything but `vX.Y.Z` and refuses to run while
+   another deploy holds `/opt/combat-planner/.deploy.lock`.
+2. Records the commit of the checkout and `APP_IMAGE` from `.env`, runs `git fetch --tags origin`
+   and refuses a tag without `deploy/deploy.sh`, which the next deploy could not run. Such a tag
+   is deployed by hand ([Manual deploy](#manual-deploy)).
+3. Checks out the tag (detached), pulls `ghcr.io/clericlvl2/combat-planner-v2:<version>` and
+   snapshots the database through the running app into the `data` volume,
+   `/data/backups/pre-<tag>-<UTC time>.db`; the newest 3 snapshots stay.
+4. Sets `APP_IMAGE` in `.env` (no other line changes), runs
+   `docker compose up -d --force-recreate --wait` and waits up to 60 s for
+   `<BETTER_AUTH_URL>/api/health` to answer 200.
+5. Success: drops dangling images (`docker image prune -f`; the previous release's image stays
+   for a rollback), prints the tag and commit, exits 0.
+6. Failure in step 3 or 4: checks out the previous commit, restores the previous `APP_IMAGE`,
+   recreates the containers and checks health again; prints `rolled back to <commit> (<image>)`
+   and exits 1. When the previous version is not healthy either, it exits 2 without touching the
+   database and prints the snapshot path and the commands of a [restore](#restore) to the moment
+   the deploy started.
+
+Images of older releases stay on the 10 GB disk; `docker image prune -af` while production runs
+drops every image no container uses, the previous release's included.
+
+Old code may not run on a schema migrated by a newer release: a rollback across a migration first
+restores the database to a moment before the newer release was deployed ([Restore](#restore),
+with `-timestamp`), then deploys the previous tag.
+
+## Deploy key
+
+One-time setup of the deploy button. The key is used only by the `deploy` workflow; its private
+half lives only on the operator's machine and in the GitHub secret, and is never printed or
+pasted anywhere. Prerequisite: the server runs a release that contains `deploy/deploy.sh`, deployed
+by hand ([Manual deploy](#manual-deploy)); `<tag>` below is that release.
+
+1. On the operator's machine, create the key:
+
+   ```sh
+   ssh-keygen -t ed25519 -N '' -C 'github-deploy' -f ~/.ssh/combat_planner_github_deploy
+   ```
+
+2. Allow it on the server for `deploy/deploy.sh` only: `command=` runs the script whatever the
+   client asks, with the requested command (the tag) in `SSH_ORIGINAL_COMMAND`; `restrict` turns
+   off port, agent and X11 forwarding and the PTY. On the operator's machine:
+
+   ```sh
+   printf 'command="/opt/combat-planner/deploy/deploy.sh",restrict %s\n' \
+     "$(cat ~/.ssh/combat_planner_github_deploy.pub)" \
+     | ssh -i ~/.ssh/<key> deploy@<server-ip> 'cat >> ~/.ssh/authorized_keys'
+   ```
+
+3. Read the server's host key and check it against the server's own:
+
+   ```sh
+   ssh-keyscan -t ed25519 <server-ip> > /tmp/combat_planner_known_hosts
+   ssh-keygen -lf /tmp/combat_planner_known_hosts
+   ssh -i ~/.ssh/<key> deploy@<server-ip> 'ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub'
+   ```
+
+   Both fingerprints are equal; otherwise stop.
+
+4. Create the GitHub environment `production` with the owner as its required reviewer, and its
+   three secrets:
+
+   ```sh
+   gh api -X PUT repos/clericlvl2/combat-planner-v2/environments/production --input - <<EOF
+   {"reviewers": [{"type": "User", "id": $(gh api user --jq .id)}]}
+   EOF
+   gh secret set DEPLOY_HOST --env production --repo clericlvl2/combat-planner-v2 --body '<server-ip>'
+   gh secret set DEPLOY_KNOWN_HOSTS --env production --repo clericlvl2/combat-planner-v2 < /tmp/combat_planner_known_hosts
+   gh secret set DEPLOY_SSH_KEY --env production --repo clericlvl2/combat-planner-v2 < ~/.ssh/combat_planner_github_deploy
+   rm /tmp/combat_planner_known_hosts
+   ```
+
+5. Test: `gh workflow run deploy -f tag=<tag>`, approve the run on GitHub; the same version
+   redeploys and the job ends green.
+
+To revoke the key, delete its line from `/home/deploy/.ssh/authorized_keys` on the server and the
+secret `DEPLOY_SSH_KEY` on GitHub.
+
+## Manual deploy
+
+For emergencies, e.g. when GitHub Actions is down, or for a tag without `deploy/deploy.sh`.
+Production runs released code only: the image and the `deploy/` files of the same release tag.
 
 As `deploy`, in `/opt/combat-planner/deploy`:
 
-1. `nano .env`: set the release tag in `APP_IMAGE`.
-2. Pull and restart the app, then drop every image no container uses, the previous release
-   included: the 10 GB disk holds only a few images.
+1. Check out the release's files:
 
    ```sh
-   docker compose pull app && docker compose up -d app && docker image prune -af
+   git fetch --tags origin && git checkout --detach <tag>
    ```
 
-3. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
+2. `nano .env`: set the release tag, without the `v`, in `APP_IMAGE`.
+3. Pull the image and recreate the containers: a bind-mounted file such as `Caddyfile` reaches
+   its container only when the container is recreated.
+
+   ```sh
+   docker compose pull app && docker compose up -d --force-recreate --wait
+   ```
+
+4. `docker compose ps` shows `app` healthy; `curl -fsS https://<domain>/api/health` prints
    `{"status":"ok"}`.
 
-A release that changes files in `deploy/` takes `git pull` before step 2 and
-`docker compose up -d --force-recreate` in step 2: a bind-mounted file such as `Caddyfile`
-reaches its container only when the container is recreated.
-
-Rollback is the same procedure with the previous tag, which is pulled again. Old code may not run
-on a schema migrated by a newer release: such a rollback first restores the database to a moment
-before the update ([Restore](#restore), with `-timestamp`), then starts the previous tag.
+Rollback is the same procedure with the previous tag; the rule on migrations under
+[Deploy](#deploy) applies.
 
 ## Restore drill
 
