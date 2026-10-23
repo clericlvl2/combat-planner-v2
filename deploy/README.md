@@ -11,7 +11,7 @@ HTTPS on a domain and a continuous SQLite backup to Yandex Object Storage.
   never the bucket key.
 - `caddy`: `caddy:2` on ports 80/tcp and 443/tcp+udp (HTTP/3), with automatic Let's Encrypt
   certificates for `DOMAIN` and `www.DOMAIN`, proxying `DOMAIN` to `app:3000` and redirecting
-  `www.DOMAIN` to `DOMAIN` (`Caddyfile`). It refuses a request body over 64 KB under `/api/`
+  `www.DOMAIN` to `DOMAIN` (`Caddyfile`). It refuses a request body over 64 KiB under `/api/`
   with 413 and sends no `Via` header.
 - `litestream`: `litestream/litestream:0.5`, replicating `/data/combat-planner.db` to the bucket
   every 10 s (`litestream.yml`). It runs as uid 1000, like `app`, because it writes beside the

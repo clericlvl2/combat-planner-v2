@@ -1,7 +1,7 @@
 {$DOMAIN} {
 	encode zstd gzip
 	request_body /api/* {
-		max_size 64KB
+		max_size 64KiB
 	}
 	header -Via
 	reverse_proxy app:3000
