@@ -142,6 +142,7 @@ describe('authorize', () => {
       'damage',
       'heal',
       'setTempHp',
+      'setMaxHp',
       'toggleCondition',
       'editNote',
       'claimUnit',
@@ -218,7 +219,7 @@ describe('Unit actions, Player on own Hero', () => {
 
   it('Save as preset', () => {
     expect(ACTION_TYPES).not.toContain('saveAsPreset');
-    expect(PLAYER_ACTION_TYPES.length).toBe(10);
+    expect(PLAYER_ACTION_TYPES.length).toBe(11);
   });
 
   it('Initiative popover: − / + stepper, Roll d20 + bonus', () => {
@@ -247,7 +248,9 @@ describe('Unit actions, Player on own Hero', () => {
   });
 
   it('Set max HP: calculator', () => {
-    expect(codeOf(table(), { type: 'setMaxHp', unitId: id(1), amount: 20 }, PLAYER)).toBe(
+    const set = ok(run(table(), { type: 'setMaxHp', unitId: id(1), amount: 20 }, PLAYER)).combat;
+    expect(u(set, 1).maxHp).toBe(20);
+    expect(codeOf(table(), { type: 'setMaxHp', unitId: id(4), amount: 20 }, PLAYER)).toBe(
       'forbidden',
     );
   });

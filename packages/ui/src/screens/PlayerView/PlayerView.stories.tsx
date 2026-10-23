@@ -221,7 +221,9 @@ export const DamageNumpad = meta.story({
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);
     const sheet = await openNumpad(canvas);
-    await expect(within(sheet).queryByRole('button', { name: t('NumpadSheet:setMax') })).toBeNull();
+    await expect(
+      within(sheet).getByRole('button', { name: t('NumpadSheet:setMax') }),
+    ).toBeDisabled();
     await userEvent.click(within(sheet).getByRole('button', { name: '7' }));
     await expect(within(sheet).getByRole('button', { name: t('HistoryRow:damage') })).toBeEnabled();
     await expect(sentBy(fakeApiOf(loaded))).toEqual([]);

@@ -41,6 +41,13 @@ interface Open {
 
 const RELEASE_CLAIM = 'releaseClaim';
 
+const hpActionTypes = {
+  damage: 'damage',
+  heal: 'heal',
+  temp: 'setTempHp',
+  max: 'setMaxHp',
+} as const satisfies Record<HpHistoryKind, Action['type']>;
+
 const noop = () => {};
 
 const toggledCondition = (
@@ -79,16 +86,9 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
     void dispatch(action);
   };
 
-  const hpAction = (unit: PlayerUnit, kind: Exclude<HpHistoryKind, 'max'>, amount: number) => {
-    if (kind === 'damage') return { ...target(unit), type: 'damage' as const, amount };
-    if (kind === 'heal') return { ...target(unit), type: 'heal' as const, amount };
-    return { ...target(unit), type: 'setTempHp' as const, amount };
-  };
-
   const applyHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number) => {
-    if (kind === 'max') return;
     close();
-    void dispatch(hpAction(unit, kind, amount)).then((result) => {
+    void dispatch({ ...target(unit), type: hpActionTypes[kind], amount }).then((result) => {
       if (!result.applied) return;
       setFlashId(unit.id);
       flash();
@@ -202,7 +202,6 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
       {numpadUnit ? (
         <NumpadSheet
           opened
-          viewer="player"
           name={numpadUnit.name}
           role={numpadUnit.role}
           initiative={numpadUnit.initiative}

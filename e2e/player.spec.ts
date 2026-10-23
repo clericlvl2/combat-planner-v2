@@ -102,7 +102,7 @@ test('a player damages their own hero and the DM sees it without a reload', asyn
   const ownRow = unitRows(player).filter({ hasText: 'Aria' });
   await ownRow.getByRole('button', { name: /^10 \/10/ }).click();
   const numpad = player.getByRole('dialog', { name: 'Aria' });
-  await expect(numpad.getByRole('button', { name: t('NumpadSheet:setMax') })).toHaveCount(0);
+  await expect(numpad.getByRole('button', { name: t('NumpadSheet:setMax') })).toBeDisabled();
   await numpad
     .getByRole('group', { name: t('NumpadSheet:keypad') })
     .getByRole('button', { name: '3' })

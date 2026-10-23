@@ -108,7 +108,6 @@ export const DamageOwnHero = meta.story({
     const vashti = await rowOf(canvas, ME);
     await userEvent.click(within(vashti).getByRole('button', { name: /^20 \/36/ }));
     const sheet = await canvas.findByRole('dialog', { name: ME });
-    await expect(within(sheet).queryByRole('button', { name: t('NumpadSheet:setMax') })).toBeNull();
     await expect(
       within(sheet).getByRole('button', { name: t('HistoryRow:damage') }),
     ).toBeDisabled();
@@ -123,6 +122,29 @@ export const DamageOwnHero = meta.story({
     const after = await rowOf(canvas, ME);
     await expect(after).toHaveAttribute('data-flash');
     await expect(within(after).getByRole('button', { name: /^15 \/36/ })).toBeVisible();
+  },
+});
+
+export const SetOwnMaxHp = meta.story({
+  name: 'Set Own Max HP',
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await userEvent.click(within(vashti).getByRole('button', { name: /^20 \/36/ }));
+    const sheet = await canvas.findByRole('dialog', { name: ME });
+    await userEvent.click(within(sheet).getByRole('button', { name: '4' }));
+    await userEvent.click(within(sheet).getByRole('button', { name: '0' }));
+    await userEvent.click(within(sheet).getByRole('button', { name: t('NumpadSheet:setMax') }));
+    await waitFor(() =>
+      expect(sentBy(api)).toEqual([
+        expect.objectContaining({ type: 'setMaxHp', unitId: unitIds.vashti, amount: 40 }),
+      ]),
+    );
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    const after = await rowOf(canvas, ME);
+    await expect(within(after).getByRole('button', { name: /^20 \/40/ })).toBeVisible();
   },
 });
 

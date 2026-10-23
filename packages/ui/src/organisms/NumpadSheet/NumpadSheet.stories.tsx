@@ -7,7 +7,6 @@ import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
 import { UnitRow } from '../UnitRow/UnitRow.tsx';
 import { NumpadSheet, hpAfter, useHpFlash } from './NumpadSheet.tsx';
-import type { NumpadViewer } from './NumpadSheet.tsx';
 import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 const at = '2026-10-15T18:00:00.000Z';
@@ -108,7 +107,6 @@ interface NumpadSheetCellProps {
   who?: Who;
   tempHp?: number;
   history?: HistorySet;
-  viewer?: NumpadViewer;
   onApply?: (kind: HpHistoryKind, amount: number) => void;
   onClose?: () => void;
 }
@@ -148,7 +146,6 @@ function NumpadSheetCell({
   who = 'orc',
   tempHp = 0,
   history = 'full',
-  viewer = 'dm',
   onApply,
   onClose,
 }: NumpadSheetCellProps) {
@@ -180,7 +177,6 @@ function NumpadSheetCell({
         maxHp={before.maxHp}
         tempHp={before.tempHp}
         history={histories[history]}
-        viewer={viewer}
         onApply={(kind, amount) => {
           onApply?.(kind, amount);
           setAfter({ ...before, ...hpAfter(before, kind, amount) });
@@ -347,24 +343,6 @@ export const HistoryExpandedLong = meta.story({
     await expect(canvas.getByRole('list', { name: t('HpHistory:title') })).toHaveAttribute(
       'data-long',
     );
-  },
-});
-
-export const PlayerView = meta.story({
-  tags: ['visual'],
-  args: { who: 'vashti', viewer: 'player' },
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'NumpadSheet');
-    await typeAmount(canvas, '7');
-    await expect(canvas.queryByRole('button', { name: t('setMax') })).toBeNull();
-    await expect(canvas.getByRole('button', { name: t('setTemp') })).toBeEnabled();
-    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('13/36');
-    const damage = canvas.getByRole('button', { name: t('damage') }).getBoundingClientRect();
-    const heal = canvas.getByRole('button', { name: t('heal') }).getBoundingClientRect();
-    const setTemp = canvas.getByRole('button', { name: t('setTemp') }).getBoundingClientRect();
-    await expect(heal.top).toBeGreaterThan(damage.bottom);
-    await expect(setTemp.top).toBe(heal.top);
-    await expect(damage.width).toBe(setTemp.right - heal.left);
   },
 });
 
@@ -561,7 +539,7 @@ const runFlow = async (
   t: TFunction,
 ) => {
   await sheetOf(canvas);
-  for (const key of step.args.viewer === 'player' ? actionKeys.slice(0, 3) : actionKeys) {
+  for (const key of actionKeys) {
     await expect(canvas.getByRole('button', { name: t(key) })).toBeDisabled();
   }
   await expect(numbersOf(canvasElement, 'after')).toHaveTextContent(step.now);

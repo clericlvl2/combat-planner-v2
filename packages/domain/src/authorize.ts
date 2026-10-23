@@ -9,6 +9,7 @@ export const PLAYER_ACTION_TYPES = [
   'damage',
   'heal',
   'setTempHp',
+  'setMaxHp',
   'toggleCondition',
   'editNote',
   'claimUnit',

@@ -17,8 +17,6 @@ import { HpHistory } from '../HpHistory/HpHistory.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import classes from './NumpadSheet.module.css';
 
-export type NumpadViewer = 'dm' | 'player';
-
 export interface NumpadHealth {
   hp: number;
   maxHp: number;
@@ -31,7 +29,6 @@ export interface NumpadSheetProps extends NumpadHealth {
   role: Role;
   initiative: number | null;
   history: readonly HpHistoryEntry[];
-  viewer?: NumpadViewer;
   onApply: (kind: HpHistoryKind, amount: number) => void;
   onClose: () => void;
   'data-tap'?: HpHistoryKind;
@@ -187,7 +184,6 @@ export function NumpadSheet({
   maxHp,
   tempHp,
   history,
-  viewer = 'dm',
   onApply,
   onClose,
   'data-tap': tap,
@@ -255,7 +251,6 @@ export function NumpadSheet({
     return () => document.removeEventListener('keydown', handleKeyDown, true);
   }, [opened, append, deleteDigit]);
 
-  const kinds = viewer === 'dm' ? actionKinds : actionKinds.filter((kind) => kind !== 'max');
   const now = { hp, maxHp, tempHp };
   const after = amount === null ? now : hpAfter(now, previewKind, amount);
   const enabled = (kind: HpHistoryKind) => amount !== null && (amount > 0 || kind === 'temp');
@@ -274,8 +269,8 @@ export function NumpadSheet({
       title={name}
       onClose={onClose}
       actions={
-        <div className={classes.actions} data-viewer={viewer}>
-          {kinds.map((kind) => (
+        <div className={classes.actions}>
+          {actionKinds.map((kind) => (
             <Button
               key={kind}
               className={classes.action}
