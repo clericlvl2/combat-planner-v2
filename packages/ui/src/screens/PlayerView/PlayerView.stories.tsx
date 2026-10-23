@@ -459,6 +459,18 @@ export const CantReachServer = meta.story({
   },
 });
 
+export const FullCombatAsksToRetry = meta.story({
+  tags: ['!dev'],
+  loaders: [firstLoadFails('limit')],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'PlayerView');
+    await expect(
+      await canvas.findByRole('heading', { name: t('MessageScreen:offlineTitle') }),
+    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toBeVisible();
+  },
+});
+
 export const DeletedOnFirstLoad = meta.story({
   tags: ['!dev'],
   loaders: [firstLoadFails('notFound')],

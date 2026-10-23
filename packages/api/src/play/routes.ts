@@ -1,5 +1,5 @@
 import type { Combat, PlayerId, Viewer } from '@combat-planner/domain';
-import { actionSchema, enterPlayer, project, ulidSchema } from '@combat-planner/domain';
+import { LIMITS, actionSchema, enterPlayer, project, ulidSchema } from '@combat-planner/domain';
 import { zValidator } from '@hono/zod-validator';
 import type { Context } from 'hono';
 import { Hono } from 'hono';
@@ -12,7 +12,7 @@ import { dispatch } from '../combats/dispatch.ts';
 import { NOT_FOUND, findCombatRow, nowIso } from '../combats/store.ts';
 import { signPlayerKey, verifyLink, verifyPlayerKey } from '../link/token.ts';
 import { streamCombatEvents } from '../live/sse.ts';
-import { insertPlayer, playerExists } from '../sharing/store.ts';
+import { insertPlayer, playerCount, playerExists } from '../sharing/store.ts';
 import { dmLanguage, recordPlayer } from './store.ts';
 
 const PLAYER_ID_HEADER = 'X-Player-Id';
@@ -22,6 +22,11 @@ const LINK_REVOKED = { code: 'linkRevoked', message: 'This link was reissued' } 
 const UNAUTHORIZED = {
   code: 'unauthorized',
   message: 'Join the combat to get a player key',
+} as const;
+
+const PLAYERS_FULL = {
+  code: 'limit',
+  message: `A combat admits at most ${LIMITS.playersPerCombat} players`,
 } as const;
 
 const tokenQuerySchema = z.object({ t: linkTokenSchema });
@@ -100,11 +105,20 @@ const rememberName = (c: Context<ApiAppEnv>, combat: Combat, playerId: PlayerId)
 
 export const playApp = new Hono<ApiAppEnv>()
   .post('/:id/join', zValidator('query', tokenQuerySchema), (c) => {
-    const resolved = resolveLink(c, c.req.valid('query').t);
+    const token = c.req.valid('query').t;
+    const resolved = resolveLink(c, token);
     if ('status' in resolved) return c.json(resolved.body, resolved.status);
     const { id: combatId, linkGeneration: generation } = resolved.combat;
-    const playerId = ulid();
-    insertPlayer(c.get('db'), combatId, playerId, enterPlayer(null, nowIso()));
+    const known = resolvePlayer(c, token, headerCredentials(c));
+    const playerId = 'status' in known ? ulid() : known.viewer.playerId;
+    if ('status' in known) {
+      const admitted = c.get('db').transaction((tx) => {
+        if (playerCount(tx, combatId) >= LIMITS.playersPerCombat) return false;
+        insertPlayer(tx, combatId, playerId, enterPlayer(null, nowIso()));
+        return true;
+      });
+      if (!admitted) return c.json(PLAYERS_FULL, 422);
+    }
     const credentials: PlayerCredentials = {
       playerId,
       playerKey: signPlayerKey({ combatId, generation, playerId }, c.get('env').linkSecret),

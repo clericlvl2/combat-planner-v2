@@ -255,6 +255,50 @@ describe('POST /play/:id/join', () => {
     expect((await getPlay(token, credentials)).status).toBe(401);
   });
 
+  it('admits at most 12 players and lets a player with a valid key join again', async () => {
+    const seeded = new Set<string>([PLAYER_ID, SECOND_PLAYER]);
+    const allRows = () =>
+      opened.db
+        .select({ playerId: players.playerId })
+        .from(players)
+        .where(eq(players.combatId, COMBAT_ID))
+        .all();
+    let filler = 0;
+    while (allRows().length < 12) {
+      opened.db
+        .insert(players)
+        .values({ combatId: COMBAT_ID, playerId: ulidAt(950 + filler++), displayName: '' })
+        .run();
+    }
+    try {
+      const refused = await join(token);
+      expect(refused.status).toBe(422);
+      expect(await refused.json()).toMatchObject({ code: 'limit' });
+      expect(allRows()).toHaveLength(12);
+      const again = await opened.app.request(
+        `/play/${COMBAT_ID}/join?t=${encodeURIComponent(token)}`,
+        { method: 'POST', headers: playerHeaders(PLAYER_ID) },
+      );
+      expect(again.status).toBe(200);
+      expect(playerCredentialsSchema.parse(await again.json())).toEqual(credentialsOf(PLAYER_ID));
+      expect(allRows()).toHaveLength(12);
+      opened.db
+        .delete(players)
+        .where(and(eq(players.combatId, COMBAT_ID), eq(players.playerId, ulidAt(950))))
+        .run();
+      expect((await join(token)).status).toBe(200);
+      expect(allRows()).toHaveLength(12);
+    } finally {
+      for (const { playerId } of allRows()) {
+        if (seeded.has(playerId)) continue;
+        opened.db
+          .delete(players)
+          .where(and(eq(players.combatId, COMBAT_ID), eq(players.playerId, playerId)))
+          .run();
+      }
+    }
+  });
+
   it('answers 404 for a tampered token and 410 for a generation that is not the current one', async () => {
     expect((await join(tamper(token))).status).toBe(404);
     const stale = signLink({ combatId: COMBAT_ID, generation: 7 }, secret);

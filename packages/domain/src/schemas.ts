@@ -27,6 +27,7 @@ export const LIMITS = {
   orphanedLinkMinutes: 15,
   watchingMinutes: 15,
   idleStreamHours: 2,
+  playersPerCombat: 12,
   hpHistory: 100,
 } as const;
 

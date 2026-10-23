@@ -90,7 +90,7 @@ export function PlayerView({ combatId, token, random }: PlayerViewProps) {
     if (error instanceof ApiError && error.code === 'notFound') {
       return <CombatDeleted combatTitle={seenTitle} />;
     }
-    if (error instanceof ApiError && error.code === 'network') {
+    if (error instanceof ApiError && (error.code === 'network' || error.code === 'limit')) {
       return <CantReachServer onRetry={reload} />;
     }
     return <UnexpectedError onReload={reload} />;

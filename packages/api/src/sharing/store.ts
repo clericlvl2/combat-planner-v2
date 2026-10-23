@@ -1,7 +1,7 @@
 import type { CombatId, ConnectedPlayer, LinkState, PlayerId } from '@combat-planner/domain';
 import { followClaims } from '@combat-planner/domain';
 import type { Combat } from '@combat-planner/domain';
-import { and, eq, gt, isNotNull } from 'drizzle-orm';
+import { and, count, eq, gt, isNotNull } from 'drizzle-orm';
 import type { DmCombat } from '../client.ts';
 import { dmDocument } from '../combats/log.ts';
 import type { Executor, Transaction } from '../combats/store.ts';
@@ -108,6 +108,10 @@ export const playerExists = (db: Executor, combatId: CombatId, playerId: PlayerI
     .from(players)
     .where(and(eq(players.combatId, combatId), eq(players.playerId, playerId)))
     .get() !== undefined;
+
+export const playerCount = (db: Executor, combatId: CombatId): number =>
+  db.select({ total: count() }).from(players).where(eq(players.combatId, combatId)).get()?.total ??
+  0;
 
 export const listWatchingPlayers = (db: Executor): PlayerRow[] =>
   db
