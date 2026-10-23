@@ -4,9 +4,10 @@ import { MessageScreen } from '../../organisms/MessageScreen/MessageScreen.tsx';
 
 export interface CombatNotFoundProps {
   onGoToCombats: () => void;
+  onHome: () => void;
 }
 
-export function CombatNotFound({ onGoToCombats }: CombatNotFoundProps) {
+export function CombatNotFound({ onGoToCombats, onHome }: CombatNotFoundProps) {
   const { t } = useTranslation('CombatNotFound');
   return (
     <MessageScreen
@@ -16,6 +17,7 @@ export function CombatNotFound({ onGoToCombats }: CombatNotFoundProps) {
       actionLabel={t('goToCombats')}
       actionVariant="primary"
       onAction={onGoToCombats}
+      onHome={onHome}
     />
   );
 }

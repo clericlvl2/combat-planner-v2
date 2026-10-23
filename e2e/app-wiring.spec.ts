@@ -105,4 +105,8 @@ test('Not found and Combat not found lead back to the combat list', async ({ pag
   ).toBeVisible();
   await page.getByRole('button', { name: t('CombatNotFound:goToCombats') }).click();
   await expect(page).toHaveURL(/\/combats$/);
+
+  await page.goto('/nowhere');
+  await page.getByRole('button', { name: t('MessageScreen:home') }).click();
+  await expect(page).toHaveURL(/\/combats$/);
 });

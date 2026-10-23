@@ -194,7 +194,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
 
   if (combats === undefined && error !== null) {
     if (signedOut) return null;
-    return <CantReachServer onRetry={() => void refetch()} />;
+    return <CantReachServer onRetry={() => void refetch()} onHome={() => void navigate('/')} />;
   }
 
   return (

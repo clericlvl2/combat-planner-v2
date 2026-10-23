@@ -18,6 +18,7 @@ export interface PlayerViewProps {
   combatId: CombatId;
   token: LinkToken;
   random?: () => number;
+  onHome: () => void;
 }
 
 type View = 'heroes' | 'turnOrder';
@@ -27,7 +28,7 @@ const PLAYER = { kind: 'player' } as const;
 const holdsHero = (combat: PlayerCombat): boolean =>
   combat.units.some((unit) => unit.mine === true);
 
-export function PlayerView({ combatId, token, random }: PlayerViewProps) {
+export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps) {
   const { combat, language, error, ended, dispatch, refetch } = useCombat(combatId, PLAYER, token);
   const { i18n } = useTranslation();
   const notify = usePlayerToasts();
@@ -79,21 +80,24 @@ export function PlayerView({ combatId, token, random }: PlayerViewProps) {
     void refetch();
   };
 
-  if (ended?.type === 'linkRevoked') return <LinkExpired />;
-  if (ended?.type === 'dropped') return <CantReachServer onRetry={reload} />;
+  if (ended?.type === 'linkRevoked') return <LinkExpired onHome={onHome} />;
+  if (ended?.type === 'dropped') return <CantReachServer onRetry={reload} onHome={onHome} />;
   if (ended?.type === 'deleted') {
-    return <CombatDeleted combatTitle={ended.title || (combat?.title ?? seenTitle)} />;
+    return (
+      <CombatDeleted combatTitle={ended.title || (combat?.title ?? seenTitle)} onHome={onHome} />
+    );
   }
   if (combat === undefined) {
     if (error === null) return null;
-    if (error instanceof ApiError && error.code === 'linkRevoked') return <LinkExpired />;
+    if (error instanceof ApiError && error.code === 'linkRevoked')
+      return <LinkExpired onHome={onHome} />;
     if (error instanceof ApiError && error.code === 'notFound') {
-      return <CombatDeleted combatTitle={seenTitle} />;
+      return <CombatDeleted combatTitle={seenTitle} onHome={onHome} />;
     }
     if (error instanceof ApiError && (error.code === 'network' || error.code === 'limit')) {
-      return <CantReachServer onRetry={reload} />;
+      return <CantReachServer onRetry={reload} onHome={onHome} />;
     }
-    return <UnexpectedError onReload={reload} />;
+    return <UnexpectedError onReload={reload} onHome={onHome} />;
   }
 
   return (

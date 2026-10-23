@@ -168,6 +168,8 @@ test('a player sees Combat deleted when the DM deletes the combat', async ({ pag
     player.getByRole('heading', { name: t('CombatDeleted:title', { title: 'Old keep' }) }),
   ).toBeVisible();
   await expect(player.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
+  await player.getByRole('button', { name: t('MessageScreen:home') }).click();
+  await expect(player).toHaveURL(/\/auth\/sign-in$/);
 });
 
 async function closeShare(page: Page): Promise<void> {

@@ -7,7 +7,7 @@ const meta = preview.meta({
   title: 'Screens/NotFound',
   component: NotFound,
   parameters: { phoneFrame: true },
-  args: { onGoToCombats: fn() },
+  args: { onGoToCombats: fn(), onHome: fn() },
 });
 
 export const Default = meta.story({
@@ -19,7 +19,12 @@ export const Default = meta.story({
       'data-variant',
       'primary',
     );
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:home') })).toHaveAttribute(
+      'data-variant',
+      'secondary',
+    );
     await expect(args.onGoToCombats).not.toHaveBeenCalled();
+    await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
 

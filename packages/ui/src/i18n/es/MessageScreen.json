@@ -5,5 +5,6 @@
   "combatDeletedBody": "El DM lo eliminó. Pídele un enlace nuevo.",
   "offlineTitle": "No se puede conectar con el servidor",
   "offlineBody": "Comprueba la conexión e inténtalo de nuevo.",
-  "tryAgain": "Reintentar"
+  "tryAgain": "Reintentar",
+  "home": "Ir al inicio"
 }

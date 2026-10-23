@@ -31,8 +31,12 @@ export function CombatPage() {
 
 export function PlayerPage() {
   const { combatId, token } = useLoaderData<PlayerRouteData>();
-  if (token === null) return <LinkExpired />;
-  return <PlayerView key={`${combatId}:${token}`} combatId={combatId} token={token} />;
+  const navigate = useNavigate();
+  const goHome = () => void navigate('/');
+  if (token === null) return <LinkExpired onHome={goHome} />;
+  return (
+    <PlayerView key={`${combatId}:${token}`} combatId={combatId} token={token} onHome={goHome} />
+  );
 }
 
 function SwipeDrawer() {
@@ -73,7 +77,9 @@ export function DmPages() {
 
 export function NotFoundPage() {
   const navigate = useNavigate();
-  return <NotFound onGoToCombats={() => void navigate('/combats')} />;
+  return (
+    <NotFound onGoToCombats={() => void navigate('/combats')} onHome={() => void navigate('/')} />
+  );
 }
 
 export interface RouteErrorProps {
@@ -81,6 +87,9 @@ export interface RouteErrorProps {
 }
 
 export function RouteError({ onShow }: RouteErrorProps) {
+  const navigate = useNavigate();
   useEffect(() => onShow(), [onShow]);
-  return <UnexpectedError onReload={() => window.location.reload()} />;
+  return (
+    <UnexpectedError onReload={() => window.location.reload()} onHome={() => void navigate('/')} />
+  );
 }

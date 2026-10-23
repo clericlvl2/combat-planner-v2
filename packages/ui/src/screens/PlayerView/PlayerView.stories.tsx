@@ -4,7 +4,7 @@ import type { ApiErrorCode } from '@combat-planner/api/client';
 import type { Action } from '@combat-planner/domain';
 import type { Loader } from '@storybook/react-vite';
 import { focusManager } from '@tanstack/react-query';
-import { expect, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
@@ -101,7 +101,7 @@ const refocus = () => {
 const meta = preview.meta({
   title: 'Screens/PlayerView',
   component: PlayerView,
-  args: { combatId: COMBAT_ID, token: TOKEN },
+  args: { combatId: COMBAT_ID, token: TOKEN, onHome: fn() },
   parameters: { phoneFrame: { overlay: true }, scenario: ownTurn },
 });
 
@@ -476,13 +476,14 @@ export const FullCombatAsksToRetry = meta.story({
 export const DeletedOnFirstLoad = meta.story({
   tags: ['!dev'],
   loaders: [firstLoadFails('notFound')],
-  play: async ({ canvas, globals }) => {
+  play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PlayerView');
     await expect(
       await canvas.findByRole('heading', { level: 1, name: t('MessageScreen:combatDeletedTitle') }),
     ).toBeVisible();
     await expect(canvas.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
-    await expect(canvas.queryByRole('button')).toBeNull();
+    await userEvent.click(canvas.getByRole('button', { name: t('MessageScreen:home') }));
+    await expect(args.onHome).toHaveBeenCalledOnce();
   },
 });
 

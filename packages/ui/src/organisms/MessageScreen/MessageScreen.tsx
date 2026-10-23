@@ -1,5 +1,6 @@
 import type { Icon } from '@tabler/icons-react';
 import type { HTMLAttributes, ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
 import classes from './MessageScreen.module.css';
 
@@ -13,6 +14,7 @@ export interface MessageScreenProps extends Omit<
   actionLabel?: string;
   actionVariant?: 'primary' | 'secondary';
   onAction?: () => void;
+  onHome?: () => void;
 }
 
 export function MessageScreen({
@@ -22,9 +24,12 @@ export function MessageScreen({
   actionLabel,
   actionVariant = 'secondary',
   onAction,
+  onHome,
   className,
   ...rest
 }: MessageScreenProps) {
+  const { t } = useTranslation('MessageScreen');
+  const withAction = actionLabel !== undefined && onAction !== undefined;
   return (
     <div
       {...rest}
@@ -36,11 +41,18 @@ export function MessageScreen({
       </span>
       <h1 className={classes.title}>{title}</h1>
       <p className={classes.body}>{body}</p>
-      {actionLabel !== undefined && onAction !== undefined ? (
-        <div className={classes.action}>
-          <Button variant={actionVariant} size="M" onClick={() => onAction()}>
-            {actionLabel}
-          </Button>
+      {withAction || onHome !== undefined ? (
+        <div className={classes.actions}>
+          {withAction ? (
+            <Button variant={actionVariant} size="M" onClick={() => onAction()}>
+              {actionLabel}
+            </Button>
+          ) : null}
+          {onHome !== undefined ? (
+            <Button variant="secondary" size="M" onClick={() => onHome()}>
+              {t('home')}
+            </Button>
+          ) : null}
         </div>
       ) : null}
     </div>

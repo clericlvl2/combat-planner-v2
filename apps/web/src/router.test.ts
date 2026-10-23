@@ -201,6 +201,7 @@ describe('router', () => {
     expect(html).toContain('Something went wrong');
     expect(html).toContain('Reload the page. Your last saved changes are safe.');
     expect(html).toContain('>Reload<');
+    expect(html).toContain('>Go home<');
   });
 
   it('shows RouteError as the root error page and hands it a callback for when it is shown', async () => {

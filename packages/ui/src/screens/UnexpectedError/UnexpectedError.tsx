@@ -4,9 +4,10 @@ import { MessageScreen } from '../../organisms/MessageScreen/MessageScreen.tsx';
 
 export interface UnexpectedErrorProps {
   onReload: () => void;
+  onHome: () => void;
 }
 
-export function UnexpectedError({ onReload }: UnexpectedErrorProps) {
+export function UnexpectedError({ onReload, onHome }: UnexpectedErrorProps) {
   const { t } = useTranslation('UnexpectedError');
   return (
     <MessageScreen
@@ -16,6 +17,7 @@ export function UnexpectedError({ onReload }: UnexpectedErrorProps) {
       actionLabel={t('reload')}
       actionVariant="primary"
       onAction={onReload}
+      onHome={onHome}
     />
   );
 }

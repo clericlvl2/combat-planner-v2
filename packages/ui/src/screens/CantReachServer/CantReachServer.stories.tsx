@@ -7,7 +7,7 @@ const meta = preview.meta({
   title: 'Screens/CantReachServer',
   component: CantReachServer,
   parameters: { phoneFrame: true },
-  args: { onRetry: fn() },
+  args: { onRetry: fn(), onHome: fn() },
 });
 
 export const Default = meta.story({
@@ -19,9 +19,14 @@ export const Default = meta.story({
     ).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toHaveAttribute(
       'data-variant',
+      'primary',
+    );
+    await expect(canvas.getByRole('button', { name: t('MessageScreen:home') })).toHaveAttribute(
+      'data-variant',
       'secondary',
     );
     await expect(args.onRetry).not.toHaveBeenCalled();
+    await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
 

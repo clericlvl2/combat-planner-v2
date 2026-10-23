@@ -4,9 +4,10 @@ import { MessageScreen } from '../../organisms/MessageScreen/MessageScreen.tsx';
 
 export interface CantReachServerProps {
   onRetry: () => void;
+  onHome: () => void;
 }
 
-export function CantReachServer({ onRetry }: CantReachServerProps) {
+export function CantReachServer({ onRetry, onHome }: CantReachServerProps) {
   const { t } = useTranslation('MessageScreen');
   return (
     <MessageScreen
@@ -14,7 +15,9 @@ export function CantReachServer({ onRetry }: CantReachServerProps) {
       title={t('offlineTitle')}
       body={t('offlineBody')}
       actionLabel={t('tryAgain')}
+      actionVariant="primary"
       onAction={onRetry}
+      onHome={onHome}
     />
   );
 }

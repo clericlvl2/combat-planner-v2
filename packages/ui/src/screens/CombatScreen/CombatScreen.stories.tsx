@@ -1127,6 +1127,19 @@ export const NotFoundGoesToCombats = meta.story({
   },
 });
 
+export const NotFoundGoesHome = meta.story({
+  tags: ['!dev'],
+  args: { combatId: MISSING_COMBAT_ID },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'CombatScreen');
+    await expect(
+      await canvas.findByRole('heading', { name: t('CombatNotFound:title') }),
+    ).toBeVisible();
+    await userEvent.click(canvas.getByRole('button', { name: t('MessageScreen:home') }));
+    await waitFor(() => expect(locationOf(canvasElement)).toBe('/'));
+  },
+});
+
 export const ExpiredSessionActionGoesToSignIn = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {

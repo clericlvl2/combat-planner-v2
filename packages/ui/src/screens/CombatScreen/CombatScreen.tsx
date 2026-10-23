@@ -236,16 +236,21 @@ export function CombatScreen({
     void navigate('/combats');
   };
 
-  if (ended?.type === 'deleted') return <CombatNotFound onGoToCombats={goToCombats} />;
+  const goHome = () => {
+    void navigate('/');
+  };
+
+  if (ended?.type === 'deleted')
+    return <CombatNotFound onGoToCombats={goToCombats} onHome={goHome} />;
   if (combat === undefined) {
     if (error === null || signedOut) return null;
     if (error instanceof ApiError && error.code === 'notFound') {
-      return <CombatNotFound onGoToCombats={goToCombats} />;
+      return <CombatNotFound onGoToCombats={goToCombats} onHome={goHome} />;
     }
     if (error instanceof ApiError && error.code === 'network') {
-      return <CantReachServer onRetry={reload} />;
+      return <CantReachServer onRetry={reload} onHome={goHome} />;
     }
-    return <UnexpectedError onReload={reload} />;
+    return <UnexpectedError onReload={reload} onHome={goHome} />;
   }
 
   const setup = combat.status === 'setup';

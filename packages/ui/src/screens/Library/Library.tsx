@@ -259,6 +259,7 @@ export function Library() {
     return (
       <CantReachServer
         onRetry={() => void queryClient.refetchQueries({ queryKey: queryKeys.presets })}
+        onHome={() => void navigate('/')}
       />
     );
   }
