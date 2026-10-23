@@ -198,7 +198,8 @@ test('a player sees Combat deleted when the DM deletes the combat', async ({ pag
   ).toBeVisible();
   await expect(player.getByText(t('MessageScreen:combatDeletedBody'))).toBeVisible();
   await player.getByRole('button', { name: t('MessageScreen:home') }).click();
-  await expect(player).toHaveURL(/\/auth\/sign-in$/);
+  await expect(player).toHaveURL(/\/$/);
+  await expect(player.getByRole('heading', { level: 1, name: t('Landing:title') })).toBeVisible();
 });
 
 async function closeShare(page: Page): Promise<void> {

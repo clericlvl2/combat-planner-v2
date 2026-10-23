@@ -3,6 +3,7 @@ import {
   Account,
   CombatList,
   FakeApiClient,
+  Landing,
   Library,
   Settings,
   SignIn,
@@ -119,6 +120,18 @@ describe('router', () => {
     expect(router.state.matches[1]?.route.element).toMatchObject({ type: DmPages });
   });
 
+  it('renders the landing on / without a session', async () => {
+    const router = await open('/', false);
+    expect(router.state.location.pathname).toBe('/');
+    expect(routeIds(router)).toEqual(['root', 'home']);
+    expect(leafElement(router).type).toBe(Landing);
+    expect(leafElement(router).props).toEqual({ sourceUrl: about.sourceUrl });
+    const html = render(router);
+    expect(html).toContain('A combat tracker for 13th Age');
+    expect(html).toContain('href="/auth/sign-up"');
+    expect(html).toContain('href="/auth/sign-in"');
+  });
+
   it('passes the build values to About', async () => {
     const router = await open('/about', true);
     expect(leafElement(router).props).toEqual(about);
@@ -131,19 +144,14 @@ describe('router', () => {
     expect(router.state.loaderData.combat).toEqual({ combatId: COMBAT_ID });
   });
 
-  it.each([
-    '/',
-    '/combats',
-    `/combats/${COMBAT_ID}`,
-    '/library',
-    '/settings',
-    '/account',
-    '/about',
-  ])('sends %s to sign-in without a session', async (path) => {
-    const router = await open(path, false);
-    expect(router.state.location.pathname).toBe('/auth/sign-in');
-    expect(leafElement(router).type).toBe(SignIn);
-  });
+  it.each(['/combats', `/combats/${COMBAT_ID}`, '/library', '/settings', '/account', '/about'])(
+    'sends %s to sign-in without a session',
+    async (path) => {
+      const router = await open(path, false);
+      expect(router.state.location.pathname).toBe('/auth/sign-in');
+      expect(leafElement(router).type).toBe(SignIn);
+    },
+  );
 
   it.each([
     ['/auth/sign-in', 'sign-in', SignIn],

@@ -1,0 +1,12 @@
+{
+  "name": "Combat Planner",
+  "title": "A combat tracker for 13th Age",
+  "tagline": "The DM runs the fight from a phone, players follow it through a link.",
+  "signUp": "Create account",
+  "signIn": "Sign in",
+  "players": "Players need no account: the DM shares a link to the combat.",
+  "about": "About",
+  "source": "Source code",
+  "dm": "DM",
+  "player": "Player"
+}

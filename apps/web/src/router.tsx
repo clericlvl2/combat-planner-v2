@@ -1,5 +1,14 @@
 import type { ApiClient, Session } from '@combat-planner/api/client';
-import { About, Account, CombatList, Library, Settings, SignIn, SignUp } from '@combat-planner/ui';
+import {
+  About,
+  Account,
+  CombatList,
+  Landing,
+  Library,
+  Settings,
+  SignIn,
+  SignUp,
+} from '@combat-planner/ui';
 import type { QueryClient } from '@tanstack/react-query';
 import { createBrowserRouter, redirect } from 'react-router';
 import type { DataRouter, LoaderFunctionArgs, RouteObject } from 'react-router';
@@ -109,7 +118,12 @@ export function createRoutes(
       path: '/',
       errorElement: <RouteError onShow={leaveDm} />,
       children: [
-        { id: 'home', index: true, loader: () => redirect(HOME_PATH) },
+        {
+          id: 'home',
+          index: true,
+          loader: requireGuest,
+          element: <Landing sourceUrl={about.sourceUrl} />,
+        },
         {
           id: 'dm',
           loader: requireSession,

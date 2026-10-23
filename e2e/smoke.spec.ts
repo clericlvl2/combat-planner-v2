@@ -9,7 +9,7 @@ test('a DM runs a combat and a player follows the turn order', async ({
   const email = `dm-${Date.now().toString(36)}@example.com`;
 
   await page.goto('/');
-  await expect(page).toHaveURL(/\/auth\/sign-in$/);
+  await expect(page.getByRole('heading', { level: 1, name: t('Landing:title') })).toBeVisible();
   await page.goto('/auth/sign-up');
   await page.getByLabel(t('SignUp:displayName')).fill('Dana');
   await page.getByLabel(t('SignUp:email')).fill(email);

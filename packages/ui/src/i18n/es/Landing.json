@@ -1,0 +1,12 @@
+{
+  "name": "Combat Planner",
+  "title": "Un gestor de combates para 13th Age",
+  "tagline": "El DM dirige el combate desde el móvil y los jugadores lo siguen con un enlace.",
+  "signUp": "Crear cuenta",
+  "signIn": "Iniciar sesión",
+  "players": "Los jugadores no necesitan cuenta: el DM comparte un enlace al combate.",
+  "about": "Acerca de",
+  "source": "Código fuente",
+  "dm": "DM",
+  "player": "Jugador"
+}

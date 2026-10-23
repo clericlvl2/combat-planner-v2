@@ -85,6 +85,7 @@ export { CombatList } from './screens/CombatList/CombatList.tsx';
 export { CombatNotFound } from './screens/CombatNotFound/CombatNotFound.tsx';
 export { CombatScreen } from './screens/CombatScreen/CombatScreen.tsx';
 export { Heroes } from './screens/Heroes/Heroes.tsx';
+export { Landing } from './screens/Landing/Landing.tsx';
 export { Library } from './screens/Library/Library.tsx';
 export { LinkExpired } from './screens/LinkExpired/LinkExpired.tsx';
 export { NotFound } from './screens/NotFound/NotFound.tsx';
