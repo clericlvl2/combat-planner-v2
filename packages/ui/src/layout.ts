@@ -25,4 +25,5 @@ export const layout = {
   toast: { inset: 12, aboveBar: 12, withoutBar: 24, bottom: 110 },
   drawer: { width: 300, padding: { top: 56, right: 12, bottom: 28, left: 12 } },
   tapTarget: 44,
+  scrollShadow: 12,
 } as const;

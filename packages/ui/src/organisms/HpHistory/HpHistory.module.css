@@ -78,6 +78,7 @@
 }
 
 .list {
+  composes: shadows from '../../scroll.module.css';
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-content: start;
@@ -111,17 +112,4 @@
   color: var(--cp-color-secondary);
   font-size: var(--mantine-font-size-small);
   line-height: var(--mantine-line-height-snug);
-}
-
-.fade {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  height: 40px;
-  background: linear-gradient(
-    color-mix(in srgb, var(--cp-color-surface) 0%, transparent),
-    var(--cp-color-surface)
-  );
-  pointer-events: none;
 }

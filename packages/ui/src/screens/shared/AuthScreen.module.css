@@ -12,11 +12,14 @@
 }
 
 .body {
+  composes: shadows from '../../scroll.module.css';
+  --cp-scroll-gap: 12px;
+
   box-sizing: border-box;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--cp-scroll-gap);
   min-height: 0;
   padding: 32px 28px 28px;
   overflow-y: auto;

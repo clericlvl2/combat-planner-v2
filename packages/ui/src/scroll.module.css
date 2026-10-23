@@ -1,0 +1,93 @@
+@property --cp-scroll-gap {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@keyframes appear {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes disappear {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.shadows {
+  scroll-timeline: --cp-scroll block;
+
+  &::before,
+  &::after {
+    --cp-scroll-gap: inherit;
+
+    content: '';
+    position: sticky;
+    z-index: 10;
+    display: block;
+    flex: none;
+    grid-column: 1 / -1;
+    align-self: stretch;
+    height: var(--cp-scroll-shadow);
+    border-image: var(--cp-scroll-shadow-fill) 0 fill / 0 / 0 64px;
+    opacity: 0;
+    pointer-events: none;
+    animation-name: appear;
+    animation-timing-function: linear;
+    animation-fill-mode: both;
+    animation-timeline: --cp-scroll;
+  }
+
+  &::before {
+    --cp-scroll-shadow-fill: linear-gradient(
+      color-mix(in srgb, var(--cp-color-ink) 18%, transparent),
+      transparent
+    );
+
+    top: 0;
+    margin-bottom: calc(-1 * (var(--cp-scroll-shadow) + var(--cp-scroll-gap)));
+    animation-range: 0 var(--cp-scroll-shadow);
+  }
+
+  &::after {
+    --cp-scroll-shadow-fill: linear-gradient(
+      transparent,
+      color-mix(in srgb, var(--cp-color-ink) 18%, transparent)
+    );
+
+    bottom: 0;
+    margin-top: calc(-1 * (var(--cp-scroll-shadow) + var(--cp-scroll-gap)));
+    animation-name: disappear;
+    animation-range: calc(100% - var(--cp-scroll-shadow)) 100%;
+  }
+}
+
+:global(:root[data-motion='off']) .shadows {
+  &::before,
+  &::after {
+    animation-name: appear !important;
+    animation-duration: auto !important;
+    animation-timing-function: linear !important;
+    animation-fill-mode: both !important;
+    animation-timeline: --cp-scroll !important;
+  }
+
+  &::before {
+    animation-range: 0 var(--cp-scroll-shadow) !important;
+  }
+
+  &::after {
+    animation-name: disappear !important;
+    animation-range: calc(100% - var(--cp-scroll-shadow)) 100% !important;
+  }
+}

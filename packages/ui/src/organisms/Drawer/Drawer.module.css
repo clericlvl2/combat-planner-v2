@@ -11,6 +11,9 @@
 }
 
 .panel {
+  composes: shadows from '../../scroll.module.css';
+  --cp-scroll-gap: 4px;
+
   position: fixed;
   top: 0;
   bottom: 0;
@@ -18,7 +21,7 @@
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--cp-scroll-gap);
   width: min(300px, var(--cp-layout-viewport-width, 100%) - 56px);
   padding: 56px 12px 28px;
   overflow-y: auto;

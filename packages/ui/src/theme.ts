@@ -190,7 +190,11 @@ export function paletteVariables(): Record<string, string> {
 }
 
 export const cssVariablesResolver: CSSVariablesResolver = () => ({
-  variables: { ...paletteVariables(), '--cp-tap-target': `${layout.tapTarget}px` },
+  variables: {
+    ...paletteVariables(),
+    '--cp-tap-target': `${layout.tapTarget}px`,
+    '--cp-scroll-shadow': `${layout.scrollShadow}px`,
+  },
   light: {},
   dark: {},
 });

@@ -325,7 +325,6 @@ export function UnitForm({
                   <span className={classes.emptyBody}>{emptyText}</span>
                 </div>
               )}
-              {listed.length > 4 ? <span className={classes.fade} aria-hidden="true" /> : null}
             </div>
           </>
         ) : (

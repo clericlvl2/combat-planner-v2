@@ -83,7 +83,6 @@ function HpHistoryList({ entries, maxHp, id, label, inset }: HpHistoryListProps)
           ))}
         </div>
       )}
-      {long ? <span className={classes.fade} data-fade="" aria-hidden="true" /> : null}
     </div>
   );
 }

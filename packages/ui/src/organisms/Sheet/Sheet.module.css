@@ -97,10 +97,13 @@
 }
 
 .content {
+  composes: shadows from '../../scroll.module.css';
+  --cp-scroll-gap: 12px;
+
   display: flex;
   flex: 0 1 auto;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--cp-scroll-gap);
   min-height: 0;
   margin: -6px;
   padding: 6px;

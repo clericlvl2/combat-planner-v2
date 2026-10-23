@@ -96,6 +96,7 @@
 }
 
 .list {
+  composes: shadows from '../../scroll.module.css';
   box-sizing: border-box;
   display: grid;
   flex: 1;
@@ -210,17 +211,6 @@ button.submit {
     text-align: center;
     white-space: normal;
   }
-}
-
-.fade {
-  position: absolute;
-  right: 2px;
-  bottom: 2px;
-  left: 2px;
-  height: 48px;
-  border-radius: 0 0 10px 10px;
-  background: linear-gradient(transparent, var(--cp-color-surface));
-  pointer-events: none;
 }
 
 .empty {

@@ -9,11 +9,14 @@
 }
 
 .body {
+  composes: shadows from '../../scroll.module.css';
+  --cp-scroll-gap: 16px;
+
   box-sizing: border-box;
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--cp-scroll-gap);
   min-height: 0;
   padding: 16px;
   overflow-y: auto;
