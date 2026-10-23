@@ -18,6 +18,7 @@ export interface RoleBlockProps extends Omit<HTMLAttributes<HTMLElement>, 'child
   dead?: boolean;
   disabled?: boolean;
   fill?: boolean;
+  tile?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -35,6 +36,7 @@ export function RoleBlock({
   dead = false,
   disabled = false,
   fill = false,
+  tile = false,
   onClick,
   className,
   ...rest
@@ -44,7 +46,6 @@ export function RoleBlock({
   const neutral = top?.kind === 'none';
   const content = (
     <>
-      {active ? <span className={classes.notch} data-notch="" aria-hidden="true" /> : null}
       {top === null ? (
         <span className={classes.die} role="img" aria-label={t('noInitiative')}>
           <IconDice5 size={20} stroke={2} aria-hidden="true" />
@@ -65,6 +66,7 @@ export function RoleBlock({
     'data-active': active || undefined,
     'data-inactive': dead || disabled || undefined,
     'data-fill': fill || undefined,
+    'data-tile': tile || undefined,
   };
   if (!onClick) {
     return (

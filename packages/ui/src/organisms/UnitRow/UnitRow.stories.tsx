@@ -220,7 +220,14 @@ export const ActiveTurnWounded = meta.story({
     await expect(
       canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` }),
     ).toBeVisible();
-    await expect(canvasElement.querySelector('[data-active] [data-notch]')).not.toBeNull();
+    const row = canvasElement.querySelector<HTMLElement>('[data-active]');
+    await expect(row).not.toBeNull();
+    const style = getComputedStyle(row as HTMLElement);
+    await expect(style.backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(style.borderTopWidth).toBe('1px');
+    await expect(style.boxShadow).not.toBe('none');
+    await expect(style.transform).not.toBe('none');
+    await expect(canvasElement.querySelector('[data-notch]')).toBeNull();
   },
 });
 

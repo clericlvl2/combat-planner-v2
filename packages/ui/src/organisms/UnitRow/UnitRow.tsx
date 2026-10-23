@@ -199,6 +199,7 @@ export function UnitRow({
         <RoleBlock
           className={classes.role}
           fill
+          tile
           unitRole={unit.role}
           top={unit.initiative === null ? null : { kind: 'initiative', value: unit.initiative }}
           active={active}

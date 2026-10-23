@@ -274,8 +274,13 @@ export const OwnHero = meta.story({
 export const OwnHeroActiveTurn = meta.story({
   args: { active: true },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector('[data-active][data-mine]')).not.toBeNull();
-    await expect(canvasElement.querySelector('[data-notch]')).not.toBeNull();
+    const row = canvasElement.querySelector<HTMLElement>('[data-active][data-mine]');
+    await expect(row).not.toBeNull();
+    const style = getComputedStyle(row as HTMLElement);
+    await expect(style.backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(style.boxShadow).not.toBe('none');
+    await expect(style.transform).not.toBe('none');
+    await expect(canvasElement.querySelector('[data-notch]')).toBeNull();
   },
 });
 
@@ -488,7 +493,7 @@ export const ChangedRowFlash = meta.story({
     await expect(canvas.getByTestId('own')).toHaveAttribute('data-flash');
     await expect(border('own')).not.toBe(border('still'));
     await expect(border('dead')).toBe(border('still'));
-    await expect(border('active')).toBe('rgb(35, 31, 28)');
+    await expect(border('active')).toBe('rgb(255, 231, 163)');
   },
 });
 export const TapRowExpandsAndCollapses = meta.story({
@@ -591,9 +596,8 @@ export const RoleFillsRow = meta.story({
       .closest('[data-unit-role]');
     const role = canvasElement.querySelector<HTMLElement>('[data-fill]');
     await expect(role).not.toBeNull();
-    const rowBox = row?.getBoundingClientRect();
-    const roleBox = role?.getBoundingClientRect();
-    await expect(roleBox?.height).toBe((rowBox?.height ?? 0) - 4);
+    const rowHeight = row instanceof HTMLElement ? row.offsetHeight : 0;
+    await expect(role?.offsetHeight).toBe(rowHeight - 10);
   },
 });
 

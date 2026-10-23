@@ -22,7 +22,7 @@ const fillOf = (canvasElement: HTMLElement) => {
   return block ? getComputedStyle(block).backgroundColor : null;
 };
 
-const states = ['default', 'active turn', 'editable', 'dead', 'focus', 'tap'] as const;
+const states = ['default', 'editable', 'dead', 'focus', 'tap'] as const;
 type State = (typeof states)[number];
 
 const row = (label: string, unitRole: UnitRole, value: number) => ({
@@ -31,7 +31,6 @@ const row = (label: string, unitRole: UnitRole, value: number) => ({
     <RoleBlock
       unitRole={unitRole}
       top={{ kind: 'initiative', value }}
-      active={state === 'active turn'}
       editable={state === 'editable' || state === 'focus' || state === 'tap'}
       dead={state === 'dead'}
       onClick={state === 'editable' || state === 'focus' || state === 'tap' ? fn() : undefined}
