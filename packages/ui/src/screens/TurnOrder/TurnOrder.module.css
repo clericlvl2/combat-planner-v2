@@ -43,10 +43,6 @@
   flex: none;
 }
 
-.row.row[data-flash] {
-  border-color: var(--cp-health-staggered);
-}
-
 .initiative {
   position: absolute;
   top: 56px;

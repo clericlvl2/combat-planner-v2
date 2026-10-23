@@ -17,7 +17,10 @@ import { Chip } from '../../atoms/Chip/Chip.tsx';
 import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
 import { DefenseLine } from '../../molecules/DefenseLine/DefenseLine.tsx';
+import type { HpChange } from '../../hooks/useHpChanges.ts';
+import { useHpMotionReduced } from '../../hooks/useHpChanges.ts';
 import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
+import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
 import { Menu } from '../Menu/Menu.tsx';
@@ -58,7 +61,7 @@ interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childre
   claimedByName?: string;
   active?: boolean;
   expanded?: boolean;
-  flash?: boolean;
+  hpChange?: HpChange;
   initiativeOpen?: boolean;
   conditionsOpen?: boolean;
   historyOpen?: boolean;
@@ -84,7 +87,7 @@ export function UnitRow({
   claimedByName,
   active = false,
   expanded: expandedProp = false,
-  flash = false,
+  hpChange,
   readOnly = false,
   initiativeOpen = false,
   conditionsOpen = false,
@@ -117,6 +120,7 @@ export function UnitRow({
 }: UnitRowProps) {
   const { t } = useTranslation('UnitRow');
   const detailsId = useId();
+  const reduced = useHpMotionReduced();
   const roleCellRef = useRef<HTMLDivElement>(null);
   const initiativeRef = useRef<HTMLDivElement>(null);
   const expanded = !readOnly && expandedProp;
@@ -192,7 +196,6 @@ export function UnitRow({
       data-expanded={expanded || undefined}
       data-dead={dead || undefined}
       data-disabled={disabled || undefined}
-      data-flash={flash || undefined}
       data-readonly={readOnly || undefined}
       data-unit-role={unit.role}
       onClick={handleClick}
@@ -276,10 +279,14 @@ export function UnitRow({
           role={unit.role}
           tempHp={unit.tempHp}
           disabled={disabled}
+          count={!reduced}
           data-tap={tapOf('hp')}
           onClick={readOnly ? undefined : () => onHp?.()}
         />
       </div>
+      {hpChange ? (
+        <HpChangeOverlay key={hpChange.key} change={hpChange} showNumber reduced={reduced} />
+      ) : null}
       {expanded ? (
         <div id={detailsId} className={classes.details} data-part="details">
           <div className={classes.triggers}>

@@ -2,6 +2,7 @@ import { ApiError } from '@combat-planner/api/client';
 import type { DmCombat, PresenceEvent } from '@combat-planner/api/client';
 import {
   LIMITS,
+  healthStatus,
   nextTurnBlockReason,
   nextTurnTarget,
   presetFromUnit,
@@ -39,6 +40,7 @@ import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useCombatLink } from '../../hooks/useCombatLink.ts';
 import { useConnection } from '../../hooks/useConnection.ts';
+import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { usePresets } from '../../hooks/usePresets.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
@@ -54,7 +56,7 @@ import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import type { DialogProps } from '../../organisms/Dialog/Dialog.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
-import { NumpadSheet, useHpFlash } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
+import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { ShareSheet } from '../../organisms/ShareSheet/ShareSheet.tsx';
 import { TurnBar } from '../../organisms/TurnBar/TurnBar.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
@@ -191,10 +193,8 @@ export function CombatScreen({
   const [form, setForm] = useState<Form | null>(null);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
-  const [flashId, setFlashId] = useState<UnitId | null>(null);
   const [busyUnitId, setBusyUnitId] = useState<UnitId | null>(null);
   const [undoing, setUndoing] = useState(false);
-  const { flashing, flash } = useHpFlash();
   const link = useCombatLink(combatId, shareOpen);
   const knownVersion = useRef(0);
   const previous = useRef<DmCombat | undefined>(undefined);
@@ -285,11 +285,6 @@ export function CombatScreen({
     showToast({ message, kind, action });
   };
 
-  const flashUnit = (unitId: UnitId) => {
-    setFlashId(unitId);
-    flash();
-  };
-
   const undoMessage = (summary: UndoSummary): string | null => {
     if (!isUndoable(summary.action)) return null;
     return undoLabel(summary.action, {
@@ -336,6 +331,15 @@ export function CombatScreen({
   const goToCombats = () => {
     void navigate('/combats');
   };
+
+  const hpChanges = useHpChanges(
+    (combat?.units ?? []).map((unit) => ({
+      id: unit.id,
+      hp: unit.hp,
+      tempHp: unit.tempHp,
+      healthStatus: healthStatus(unit.hp, unit.maxHp, unit.role),
+    })),
+  );
 
   const goHome = () => {
     void navigate('/');
@@ -394,14 +398,12 @@ export function CombatScreen({
   const applyHp = (unit: Unit, kind: HpHistoryKind, amount: number) => {
     close();
     void send({ type: hpActionTypes[kind], unitId: unit.id, amount });
-    flashUnit(unit.id);
   };
 
   const duplicate = (unit: Unit) => {
     close();
     const newUnitId = ulid();
     void send({ type: 'duplicateUnit', unitId: unit.id, newUnitId });
-    flashUnit(newUnitId);
   };
 
   const saveAsPreset = (unit: Unit) => {
@@ -556,11 +558,6 @@ export function CombatScreen({
   const historyUnit = panelUnit('history');
   const editing = form?.mode === 'edit' ? unitById(form.unitId) : undefined;
   const toast = toasts[0];
-  const refusedIds = new Set(
-    pending.flatMap((entry) =>
-      entry.refused === true && 'unitId' in entry.action ? [entry.action.unitId] : [],
-    ),
-  );
 
   return (
     <div className={classes.root}>
@@ -593,7 +590,7 @@ export function CombatScreen({
             claimedByName={unit.claimedBy === null ? undefined : combat.players[unit.claimedBy]}
             active={!setup && combat.activeUnitId === unit.id}
             expanded={expandedId === unit.id}
-            flash={flashing && flashId === unit.id && !refusedIds.has(unit.id)}
+            hpChange={hpChanges.get(unit.id)}
             initiativeOpen={isOpen('initiative', unit)}
             conditionsOpen={isOpen('conditions', unit)}
             historyOpen={isOpen('history', unit)}

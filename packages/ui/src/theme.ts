@@ -218,6 +218,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-scroll-shadow': `${layout.scrollShadow}px`,
     '--cp-scroll-shadow-color': `color-mix(in srgb, ${scrollShadow.color} ${scrollShadow.alpha}%, transparent)`,
     '--cp-turn-strip': `${layout.turnStrip}px`,
+    '--cp-hp-number-duration': `${layout.hpNumberMs}ms`,
     '--cp-list-inset-top': `${layout.listInset.top}px`,
     '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
     '--cp-card-gap': `${layout.cardGap}px`,

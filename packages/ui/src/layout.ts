@@ -33,4 +33,6 @@ export const layout = {
   scrollShadow: 12,
   scrollbar: 6,
   loadingDelay: 250,
+  hpNumberMs: 1000,
+  hpCountMs: 450,
 } as const;

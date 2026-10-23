@@ -25,10 +25,6 @@
     background: var(--cp-role-inactive-fill);
   }
 
-  &[data-flash]:not([data-dead], [data-disabled]) {
-    border-color: var(--cp-health-staggered);
-  }
-
   &[data-active] {
     --cp-state-tap-marker: var(--cp-color-ink);
 

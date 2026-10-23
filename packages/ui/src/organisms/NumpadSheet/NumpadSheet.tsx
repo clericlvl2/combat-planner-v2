@@ -34,8 +34,6 @@ export interface NumpadSheetProps extends NumpadHealth {
   'data-tap'?: HpHistoryKind;
 }
 
-export const hpFlashDuration = 2000;
-
 const previewId = '00000000000000000000000000';
 const previewAt = '1970-01-01T00:00:00.000Z';
 const amountDigits = String(LIMITS.amount.max).length;
@@ -112,22 +110,6 @@ export function hpAfter(health: NumpadHealth, kind: HpHistoryKind, amount: numbe
   if (!('combat' in result)) return health;
   const unit = result.combat.units[0];
   return unit ? { hp: unit.hp, maxHp: unit.maxHp, tempHp: unit.tempHp } : health;
-}
-
-export function useHpFlash(): { flashing: boolean; flash: () => void } {
-  const motion = useMotion();
-  const [flashing, setFlashing] = useState(false);
-  const [started, setStarted] = useState(0);
-  const flash = useCallback(() => {
-    setFlashing(true);
-    setStarted((count) => count + 1);
-  }, []);
-  useEffect(() => {
-    if (started === 0 || motion === 'off') return;
-    const timer = setTimeout(() => setFlashing(false), hpFlashDuration);
-    return () => clearTimeout(timer);
-  }, [started, motion]);
-  return { flashing, flash };
 }
 
 function formatNumber(value: number): string {

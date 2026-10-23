@@ -450,7 +450,7 @@ export const HpNumpad = meta.story({
   },
 });
 
-export const DamageStaggersAndFlashesRow = meta.story({
+export const DamageStaggersRow = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -463,9 +463,6 @@ export const DamageStaggersAndFlashesRow = meta.story({
         label.startsWith(`2 /40 ${t('HpBox:staggered')}`),
       ),
     ).toBeVisible();
-    await waitFor(async () =>
-      expect(await rowOf(canvasElement, names.orc)).toHaveAttribute('data-flash'),
-    );
   },
 });
 
@@ -704,7 +701,6 @@ export const DuplicateBelowOriginal = meta.story({
       names.vashti,
     ]);
     await expect(within(copy).getByRole('button', { name: /^40 \/40/ })).toBeVisible();
-    await waitFor(() => expect(copy).toHaveAttribute('data-flash'));
     await expect(dispatched(fakeApiOf(loaded))).toEqual([
       expect.objectContaining({ type: 'duplicateUnit', unitId: unitIds.orc }),
     ]);
@@ -906,7 +902,6 @@ export const RequestFailed = meta.story({
     await expect(await canvas.findByText(t('Toast:serverUnreachable'))).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('Toast:retry') })).toBeVisible();
     await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
-    await expect(await rowOf(canvasElement, names.orc)).not.toHaveAttribute('data-flash');
   },
 });
 
@@ -1321,9 +1316,6 @@ export const DocumentArrivesAfterPost = meta.story({
     await typeAmount(sheet, '5');
     await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
     await expect(await hpOf(canvasElement, names.vashti, /^15 \/36/)).toBeVisible();
-    await waitFor(async () =>
-      expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-flash'),
-    );
   },
 });
 

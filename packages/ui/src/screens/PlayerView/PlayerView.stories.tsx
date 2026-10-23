@@ -257,7 +257,6 @@ export const DamageDispatched = meta.story({
         name: (label: string) => label.startsWith(`13 /36 ${t('HpBox:staggered')}`),
       }),
     ).toBeVisible();
-    await expect(vashti).toHaveAttribute('data-flash');
   },
 });
 
@@ -662,7 +661,6 @@ export const HpChangeShowsAtOnce = meta.story({
     await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
     const vashti = await rowOf(canvas, ME);
     await expect(await within(vashti).findByRole('button', { name: /^13 \/36/ })).toBeVisible();
-    await expect(vashti).toHaveAttribute('data-flash');
   },
 });
 

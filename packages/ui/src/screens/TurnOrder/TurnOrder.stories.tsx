@@ -150,7 +150,6 @@ export const DamageOwnHero = meta.story({
     );
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     const after = await rowOf(canvas, ME);
-    await expect(after).toHaveAttribute('data-flash');
     await expect(within(after).getByRole('button', { name: /^15 \/36/ })).toBeVisible();
   },
 });
@@ -232,7 +231,7 @@ export const EditOwnHeroTypeLocked = meta.story({
   },
 });
 
-export const FailedDamageNoFlash = meta.story({
+export const FailedDamageRestoresHp = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
@@ -246,7 +245,6 @@ export const FailedDamageNoFlash = meta.story({
     await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:combatChanged'));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     const after = await rowOf(canvas, ME);
-    await expect(after).not.toHaveAttribute('data-flash');
     await expect(within(after).getByRole('button', { name: /^20 \/36/ })).toBeVisible();
   },
 });
@@ -351,5 +349,36 @@ export const StripTapScrollsToHero = meta.story({
     );
     await userEvent.click(canvas.getByRole('button', { name: t('youAreNext') }));
     await expectInView(canvasElement, vashti);
+  },
+});
+
+const hpChangeIn = (row: HTMLElement, part: 'number' | 'badge' | 'ribbon') =>
+  row.querySelector<HTMLElement>(`[data-hp-change="${part}"]`);
+
+export const RemoteChangeAnimates = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await expect(hpChangeIn(vashti, 'number')).toBeNull();
+    api.deferBroadcasts();
+    await actAsDm(api, { type: 'damage', unitId: unitIds.vashti, amount: 3 });
+    await waitFor(() => expect(hpChangeIn(vashti, 'number')).toHaveTextContent('−3'));
+    await expect(hpChangeIn(vashti, 'badge')).toBeNull();
+    await expect(await within(vashti).findByRole('button', { name: /^17 \/36/ })).toBeVisible();
+  },
+});
+
+export const ReducedMotionBadge = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await actAsDm(api, { type: 'damage', unitId: unitIds.vashti, amount: 3 });
+    await waitFor(() => expect(hpChangeIn(vashti, 'badge')).toHaveTextContent('−3'));
+    await expect(hpChangeIn(vashti, 'number')).toBeNull();
+    await expect(within(vashti).getByRole('button', { name: /^17 \/36/ })).toBeVisible();
+    await waitFor(() => expect(hpChangeIn(vashti, 'badge')).toBeNull(), { timeout: 3000 });
   },
 });

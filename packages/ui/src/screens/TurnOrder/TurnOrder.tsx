@@ -12,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
+import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
@@ -21,7 +22,7 @@ import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
 import { Menu } from '../../organisms/Menu/Menu.tsx';
-import { NumpadSheet, useHpFlash } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
+import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
@@ -72,8 +73,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   const { locale } = useLocaleChoice();
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Open | null>(null);
-  const [flashId, setFlashId] = useState<UnitId | null>(null);
-  const { flashing, flash } = useHpFlash();
+  const hpChanges = useHpChanges(combat.units);
   const [toggling, setToggling] = useState(0);
   const [releasingId, setReleasingId] = useState<UnitId | null>(null);
 
@@ -118,19 +118,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
 
   const applyHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number) => {
     const sent = dispatch({ ...target(unit), type: hpActionTypes[kind], amount });
-    if (kind === 'max') {
-      return sent.then((result) => {
-        if (!result.applied) return;
-        setFlashId(unit.id);
-        flash();
-      });
-    }
+    if (kind === 'max') return sent;
     close();
-    setFlashId(unit.id);
-    flash();
-    void sent.then((result) => {
-      if (!result.applied) setFlashId((current) => (current === unit.id ? null : current));
-    });
     return undefined;
   };
 
@@ -213,7 +202,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
             <div key={unit.id} className={classes.slot} data-unit-id={unit.id}>
               <PlayerRow
                 className={classes.row}
-                flash={flashing && flashId === unit.id}
+                hpChange={hpChanges.get(unit.id)}
                 unit={unit}
                 mine={mine}
                 expanded={mine && expandedId === unit.id}

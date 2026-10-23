@@ -8,7 +8,10 @@ import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { Chip } from '../../atoms/Chip/Chip.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
 import { DefenseLine } from '../../molecules/DefenseLine/DefenseLine.tsx';
+import type { HpChange } from '../../hooks/useHpChanges.ts';
+import { useHpMotionReduced } from '../../hooks/useHpChanges.ts';
 import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
+import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
 import classes from './PlayerRow.module.css';
 
@@ -26,7 +29,7 @@ export interface PlayerRowProps extends Omit<
   conditionsOpen?: boolean;
   moreOpen?: boolean;
   busy?: boolean;
-  flash?: boolean;
+  hpChange?: HpChange;
   onToggle: () => void;
   onInitiative: (event: MouseEvent<HTMLButtonElement>) => void;
   onHp: () => void;
@@ -49,7 +52,7 @@ export function PlayerRow({
   conditionsOpen = false,
   moreOpen = false,
   busy = false,
-  flash = false,
+  hpChange,
   onToggle,
   onInitiative,
   onHp,
@@ -65,6 +68,7 @@ export function PlayerRow({
 }: PlayerRowProps) {
   const { t } = useTranslation('PlayerRow');
   const detailsId = useId();
+  const reduced = useHpMotionReduced();
   const friendly = unit.role !== 'enemy';
   const mine = friendly && mineProp;
   const expanded = mine && expandedProp;
@@ -94,7 +98,6 @@ export function PlayerRow({
 
   return (
     <div
-      data-flash={flash || undefined}
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-mine={mine || undefined}
@@ -161,6 +164,7 @@ export function PlayerRow({
             role={unit.role}
             tempHp={numbers.tempHp}
             mine={mine}
+            count={!reduced}
             data-tap={tapOf('hp')}
             onClick={mine ? () => onHp() : undefined}
           />
@@ -168,6 +172,14 @@ export function PlayerRow({
           <HpBox viewer="player" status={unit.healthStatus} />
         )}
       </div>
+      {hpChange ? (
+        <HpChangeOverlay
+          key={hpChange.key}
+          change={hpChange}
+          showNumber={numbers !== null}
+          reduced={reduced}
+        />
+      ) : null}
       {expanded ? (
         <div id={detailsId} className={classes.details} data-part="details">
           <div className={classes.triggers}>
