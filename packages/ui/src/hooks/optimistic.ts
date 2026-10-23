@@ -86,7 +86,7 @@ export const pruneEntries = (entries: Entries, version: number): Entries =>
     : entries;
 
 const lastApplied = (document: CombatDocument): ActionId | undefined =>
-  'undo' in document ? document.undo?.action.id : undefined;
+  ('undo' in document ? document.undo?.action.id : document.lastActionId) ?? undefined;
 
 const liveEntries = (document: CombatDocument, entries: Entries): Entries => {
   const last = lastApplied(document);

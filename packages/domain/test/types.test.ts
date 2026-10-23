@@ -78,6 +78,7 @@ describe('types', () => {
       ...playerFields,
       myName: null,
       nextUnitId: null,
+      lastActionId: null,
       units: [
         {
           id: unit.id,

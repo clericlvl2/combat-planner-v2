@@ -81,6 +81,7 @@ const assertVisibility = (document: PlayerCombat, source: Combat) => {
       ),
       'myName',
       'nextUnitId',
+      'lastActionId',
     ].sort(),
   );
   const disabled = source.units.filter((unit) => unit.disabled).map((unit) => unit.id);
@@ -561,6 +562,31 @@ describe('GET /play/:id/events', () => {
       healthStatus: 'wounded',
     });
     await stream.cancel();
+    await settled();
+  });
+
+  it("carries the player's own latest action id in a relayed document, never another actor's", async () => {
+    const own = openSse(await openEvents(token, PLAYER_ID));
+    const other = openSse(await openEvents(token, SECOND_PLAYER));
+    expect((await own.event()).event).toMatchObject({ document: { lastActionId: null } });
+    await other.event();
+    const actionId = nextActionId();
+    const before = await fetchCombat(dm);
+    const posted = await postAction(token, PLAYER_ID, {
+      id: actionId,
+      version: before.version,
+      type: 'damage',
+      unitId: HERO_ID,
+      amount: 1,
+    });
+    expect(posted.status).toBe(200);
+    expect((await own.event()).event).toMatchObject({ document: { lastActionId: actionId } });
+    expect((await other.event()).event).toMatchObject({ document: { lastActionId: null } });
+    await dmAction({ type: 'damage', unitId: ENEMY_ID, amount: 1 });
+    expect((await own.event()).event).toMatchObject({ document: { lastActionId: actionId } });
+    expect((await other.event()).event).toMatchObject({ document: { lastActionId: null } });
+    await own.cancel();
+    await other.cancel();
     await settled();
   });
 

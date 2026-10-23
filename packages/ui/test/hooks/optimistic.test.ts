@@ -141,6 +141,16 @@ describe('overlay for a player', () => {
     });
   });
 
+  it('leaves out an entry whose action is the player’s last applied action', () => {
+    const document: PlayerCombat = { ...view(25), lastActionId: FIRST };
+    const entries: Entries = [
+      { action: damage(FIRST, 5, HERO_ID) },
+      { action: damage(SECOND, 3, HERO_ID) },
+    ];
+    expect(hpOf(overlay(document, entries, PLAYER, NOW), HERO_ID)).toBe(22);
+    expect(overlay(document, entries.slice(0, 1), PLAYER, NOW)).toBe(document);
+  });
+
   it('leaves a unit that is not the player’s own untouched', () => {
     const document = view(30);
     expect(overlay(document, [{ action: damage(FIRST, 5) }], PLAYER, NOW)).toBe(document);

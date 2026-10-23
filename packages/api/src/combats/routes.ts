@@ -13,7 +13,7 @@ import { z } from 'zod';
 import type { UserAppEnv } from '../app.ts';
 import { combatCreateInputSchema, combatPatchSchema } from '../client.ts';
 import { broadcast, broadcastDocument } from '../live/registry.ts';
-import { dmDocument } from './log.ts';
+import { dmDocument, lastActionsOf } from './log.ts';
 import type { Transaction } from './store.ts';
 import {
   NOT_FOUND,
@@ -118,7 +118,10 @@ export const combatsApp = new Hono<UserAppEnv>()
       return { version: next.version, document: dmDocument(tx, next) };
     });
     if (!updated) return c.json(NOT_FOUND, 404);
-    if (updated.document) broadcastDocument(updated.document.id, updated.document);
+    if (updated.document) {
+      const { id } = updated.document;
+      broadcastDocument(id, updated.document, undefined, lastActionsOf(c.get('db'), id));
+    }
     return c.json({ version: updated.version });
   })
   .delete('/:id', (c) => {
@@ -158,6 +161,6 @@ export const combatsApp = new Hono<UserAppEnv>()
       return dmDocument(tx, next);
     });
     if (!opened) return c.json(NOT_FOUND, 404);
-    broadcastDocument(opened.id, opened);
+    broadcastDocument(opened.id, opened, undefined, lastActionsOf(c.get('db'), opened.id));
     return c.json(opened);
   });

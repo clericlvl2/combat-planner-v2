@@ -261,6 +261,25 @@ export const DamageDispatched = meta.story({
   },
 });
 
+export const OwnChangeShowsOnce = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    const sheet = await openNumpad(canvas);
+    await userEvent.click(within(sheet).getByRole('button', { name: '3' }));
+    api.holdNextReply();
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
+    await waitFor(() => expect(sentBy(api)).toHaveLength(1));
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const vashti = await rowOf(canvas, ME);
+    await expect(within(vashti).getByRole('button', { name: /^17 \/36/ })).toBeVisible();
+    api.releaseReplies();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await expect(within(vashti).getByRole('button', { name: /^17 \/36/ })).toBeVisible();
+  },
+});
+
 export const OwnRowExpanded = meta.story({
   tags: ['visual'],
   play: async ({ canvas, parameters }) => {

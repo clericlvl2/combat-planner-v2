@@ -450,3 +450,10 @@ describe('nextUnitId', () => {
     expect(project({ ...combat, activeUnitId: null }, PLAYER).nextUnitId).toBeNull();
   });
 });
+
+describe('lastActionId', () => {
+  it('carries the given action id to the player and is null by default', () => {
+    expect(doc.lastActionId).toBeNull();
+    expect(project(combat, PLAYER, id(77)).lastActionId).toBe(id(77));
+  });
+});

@@ -1,7 +1,15 @@
 import { healthSegments, healthStatus } from './healthStatus.ts';
 import { nextTurnTarget } from './reduce.ts';
 import { turnOrder } from './sort.ts';
-import type { Combat, PlayerCombat, PlayerId, PlayerUnit, Unit, Viewer } from './types.ts';
+import type {
+  ActionId,
+  Combat,
+  PlayerCombat,
+  PlayerId,
+  PlayerUnit,
+  Unit,
+  Viewer,
+} from './types.ts';
 
 type DmViewer = Extract<Viewer, { kind: 'dm' }>;
 type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
@@ -57,9 +65,21 @@ const playerUnit = (
 };
 
 export function project(combat: Combat, viewer: DmViewer): Combat;
-export function project(combat: Combat, viewer: PlayerViewer): PlayerCombat;
-export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat;
-export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat {
+export function project(
+  combat: Combat,
+  viewer: PlayerViewer,
+  lastActionId?: ActionId | null,
+): PlayerCombat;
+export function project(
+  combat: Combat,
+  viewer: Viewer,
+  lastActionId?: ActionId | null,
+): Combat | PlayerCombat;
+export function project(
+  combat: Combat,
+  viewer: Viewer,
+  lastActionId: ActionId | null = null,
+): Combat | PlayerCombat {
   if (viewer.kind === 'dm') return combat;
   const visible = visibleUnits(combat);
   const activeVisible = visible.some((unit) => unit.id === combat.activeUnitId);
@@ -73,6 +93,7 @@ export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat {
     escalation: combat.escalation,
     activeUnitId: activeVisible ? combat.activeUnitId : null,
     nextUnitId: nextVisibleUnitId(combat),
+    lastActionId,
     lastPlayedAt: combat.lastPlayedAt,
     version: combat.version,
     myName: combat.players[viewer.playerId] ?? null,

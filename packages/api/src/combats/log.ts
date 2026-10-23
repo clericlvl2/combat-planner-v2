@@ -1,4 +1,11 @@
-import type { Combat, CombatId, LogEntry, UndoableEntry } from '@combat-planner/domain';
+import type {
+  ActionId,
+  Combat,
+  CombatId,
+  LogEntry,
+  PlayerId,
+  UndoableEntry,
+} from '@combat-planner/domain';
 import { LIMITS, leavesStack, nextStack, undoSummary } from '@combat-planner/domain';
 import { and, desc, eq, max, notInArray } from 'drizzle-orm';
 import type { DmCombat } from '../client.ts';
@@ -68,6 +75,22 @@ export const recordAction = (
       .run();
   }
   return next;
+};
+
+export type LastActions = Readonly<Record<PlayerId, ActionId>>;
+
+export const lastActionsOf = (db: Executor, combatId: CombatId): LastActions => {
+  const rows = db
+    .select({ actionId: actionLog.actionId, author: actionLog.author })
+    .from(actionLog)
+    .where(eq(actionLog.combatId, combatId))
+    .orderBy(desc(actionLog.seq))
+    .all();
+  const last: Record<PlayerId, ActionId> = {};
+  for (const { actionId, author } of rows) {
+    if (author.kind === 'player' && !(author.playerId in last)) last[author.playerId] = actionId;
+  }
+  return last;
 };
 
 export const dmDocument = (db: Executor, combat: Combat): DmCombat => ({

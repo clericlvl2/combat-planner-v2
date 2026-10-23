@@ -5,7 +5,7 @@ import type { AppDatabase } from '../db/index.ts';
 import { broadcastDocument } from '../live/registry.ts';
 import { followCombatClaims } from '../sharing/store.ts';
 import { countAction } from '../stats/store.ts';
-import { dmDocument, isLogged, readStack, recordAction } from './log.ts';
+import { dmDocument, isLogged, lastActionsOf, readStack, recordAction } from './log.ts';
 import type { Transaction } from './store.ts';
 import { findCombatRow, saveCombat } from './store.ts';
 
@@ -94,6 +94,13 @@ const run = (
 
 export function dispatch(db: AppDatabase, request: DispatchRequest): DispatchOutcome {
   const outcome = db.transaction((tx) => run(tx, request));
-  if (outcome.ok && !outcome.repeated) broadcastDocument(request.combatId, outcome.document);
+  if (outcome.ok && !outcome.repeated) {
+    broadcastDocument(
+      request.combatId,
+      outcome.document,
+      undefined,
+      lastActionsOf(db, request.combatId),
+    );
+  }
   return outcome;
 }
