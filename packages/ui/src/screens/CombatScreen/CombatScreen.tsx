@@ -104,6 +104,14 @@ type Confirm =
 
 const DM = { kind: 'dm' } as const;
 
+const settleOwnReleases = (marks: Map<UnitId, number>, before: DmCombat, after: DmCombat) => {
+  const claims = new Map(before.units.map((unit) => [unit.id, unit.claimedBy]));
+  for (const unit of after.units) {
+    if (claims.has(unit.id) && claims.get(unit.id) !== unit.claimedBy) marks.delete(unit.id);
+  }
+  for (const [unitId, until] of marks) if (until <= after.version) marks.delete(unitId);
+};
+
 const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit', 'rateLimited']);
 
 const hpActionTypes = {
@@ -177,7 +185,7 @@ export function CombatScreen({
   const link = useCombatLink(combatId, shareOpen);
   const knownVersion = useRef(0);
   const previous = useRef<DmCombat | undefined>(undefined);
-  const ownReleases = useRef(new Set<UnitId>());
+  const ownReleases = useRef(new Map<UnitId, number>());
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   const { session } = useAccount();
   const signedOut =
@@ -208,7 +216,7 @@ export function CombatScreen({
     previous.current = combat;
     if (before === undefined || combat === undefined || before === combat) return;
     for (const event of claimEvents(before, combat)) {
-      if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) continue;
+      if (event.kind === 'released' && ownReleases.current.has(event.unitId)) continue;
       announce(
         tToast(event.kind === 'claimed' ? 'playerClaimed' : 'playerReleased', {
           name: event.player,
@@ -216,6 +224,7 @@ export function CombatScreen({
         }),
       );
     }
+    settleOwnReleases(ownReleases.current, before, combat);
   }, [combat, announce, tToast]);
 
   const key = combatKey(combatId, DM);
@@ -267,6 +276,18 @@ export function CombatScreen({
       unitName: summary.unitName ?? undefined,
       condition: (condition: Condition) => tRow(condition),
     });
+  };
+
+  const releaseAsDm = async (unitIds: readonly UnitId[], run: () => Promise<number | boolean>) => {
+    const marks = ownReleases.current;
+    for (const unitId of unitIds) marks.set(unitId, Number.POSITIVE_INFINITY);
+    const outcome = await run();
+    const seen = previous.current?.version ?? 0;
+    for (const unitId of unitIds) {
+      if (marks.get(unitId) !== Number.POSITIVE_INFINITY || outcome === true) continue;
+      if (outcome === false || outcome <= seen) marks.delete(unitId);
+      else marks.set(unitId, outcome);
+    }
   };
 
   const undo = (pinned?: PinnedUndo) =>
@@ -382,7 +403,13 @@ export function CombatScreen({
     if (form === null) return;
     setForm(null);
     if (form.mode === 'edit') {
-      void send({ ...draft, type: 'editUnit', unitId: form.unitId });
+      const { unitId } = form;
+      const edit = () => send({ ...draft, type: 'editUnit', unitId });
+      if (draft.role !== 'hero' && unitById(unitId)?.claimedBy) {
+        void releaseAsDm([unitId], async () => (await edit())?.version ?? false);
+      } else {
+        void edit();
+      }
       return;
     }
     if (atCap) {
@@ -416,12 +443,6 @@ export function CombatScreen({
     setShareOpen(false);
     notify(tToast('linkCopied'), 'success');
     return true;
-  };
-
-  const releaseAsDm = async (unitIds: readonly UnitId[], run: () => Promise<boolean>) => {
-    for (const unitId of unitIds) ownReleases.current.add(unitId);
-    if (await run()) return;
-    for (const unitId of unitIds) ownReleases.current.delete(unitId);
   };
 
   const releaseEveryClaim = (run: () => Promise<unknown>) => {
@@ -580,8 +601,10 @@ export function CombatScreen({
             onSaveAsPreset={() => saveAsPreset(unit)}
             onReleaseClaim={() => {
               close();
-              void releaseAsDm([unit.id], async () =>
-                Boolean(await send({ type: 'releaseUnit', unitId: unit.id })),
+              void releaseAsDm(
+                [unit.id],
+                async () =>
+                  (await send({ type: 'releaseUnit', unitId: unit.id }))?.version ?? false,
               );
             }}
             onRemove={() => {

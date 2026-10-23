@@ -1051,6 +1051,31 @@ export const EditSavesUnit = meta.story({
   },
 });
 
+export const RoleChangeShowsNoToast = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const row = await expand(canvasElement, names.vashti);
+    await userEvent.click(within(row).getByRole('button', { name: t('CardActions:edit') }));
+    const form = await canvas.findByRole('dialog', { name: t('UnitForm:editTitle') });
+    await userEvent.click(within(form).getByRole('radio', { name: t('UnitForm:ally') }));
+    await userEvent.click(within(form).getByRole('button', { name: t('UnitForm:saveChanges') }));
+    await waitFor(async () =>
+      expect(within(await rowOf(canvasElement, names.vashti)).queryByText('@Mika')).toBeNull(),
+    );
+    await expect(
+      canvas.queryByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeNull();
+    await pickMenu(canvas, t('Toast:undo'), t);
+    await waitFor(async () =>
+      expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-unit-role', 'hero'),
+    );
+    await expect(
+      canvas.queryByText(t('Toast:playerClaimed', { name: 'Mika', hero: names.vashti })),
+    ).toBeNull();
+  },
+});
+
 export const UndoRestoresRemovedUnit = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
