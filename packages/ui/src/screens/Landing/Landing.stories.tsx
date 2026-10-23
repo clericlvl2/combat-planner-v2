@@ -1,6 +1,7 @@
 import preview from '#.storybook/preview';
 import { reactRouterParameters, withRouter } from 'storybook-addon-remix-react-router';
-import { expect } from 'storybook/test';
+import { expect, waitFor } from 'storybook/test';
+import { layout } from '../../layout.ts';
 import { scenario } from '../../api/scenarios.ts';
 import { storyT } from '../../storybook/storyT.ts';
 import { storyLocale } from '../../storybook/withLocale.tsx';
@@ -68,5 +69,16 @@ export const StageHiddenFromAssistiveTech = meta.story({
     await expect(stage).toHaveAttribute('aria-hidden', 'true');
     await expect(stage?.querySelectorAll(focusableSelector)).toHaveLength(0);
     await expect(stage?.querySelectorAll('[data-phone]')).toHaveLength(3);
+  },
+});
+
+export const FollowsLargeFrame = meta.story({
+  tags: ['!dev'],
+  globals: { frame: 'large' },
+  play: async ({ canvasElement }) => {
+    const { width, height } = layout.viewports.large;
+    const frame = canvasElement.querySelector('[data-phone-frame]');
+    await expect(frame?.getBoundingClientRect().width).toBe(width);
+    await waitFor(() => expect([window.innerWidth, window.innerHeight]).toEqual([width, height]));
   },
 });

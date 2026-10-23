@@ -11,7 +11,8 @@
     "test",
     ".storybook/main.ts",
     ".storybook/manager.ts",
-    ".storybook/preview.tsx"
+    ".storybook/preview.tsx",
+    ".storybook/vitest.setup.ts"
   ],
   "references": [{ "path": "../domain" }, { "path": "../api" }]
 }

@@ -11,6 +11,7 @@ import '@fontsource/noto-sans-jp/700.css';
 import addonDocs from '@storybook/addon-docs';
 import { definePreview } from '@storybook/react-vite';
 import { layout } from '../src/layout.ts';
+import { followFrameInTests } from '../src/storybook/frameViewport.ts';
 import { expectGeometry } from '../src/storybook/geometry.ts';
 import {
   frameGlobalType,
@@ -60,6 +61,9 @@ export default definePreview({
   },
   loaders: [apiLoader],
   decorators: [withDocsTheme, withPhoneFrame, withLocale, withApi],
+  beforeEach: async (context) => {
+    await followFrameInTests(context);
+  },
   afterEach: async ({ canvasElement, parameters }) => {
     await expectGeometry(canvasElement, parameters.geometry);
   },
