@@ -77,9 +77,7 @@ export function DmPages() {
 
 export function NotFoundPage() {
   const navigate = useNavigate();
-  return (
-    <NotFound onGoToCombats={() => void navigate('/combats')} onHome={() => void navigate('/')} />
-  );
+  return <NotFound onHome={() => void navigate('/')} />;
 }
 
 export interface RouteErrorProps {

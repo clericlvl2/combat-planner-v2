@@ -1114,19 +1114,6 @@ export const MenuNothingToUndo = meta.story({
   },
 });
 
-export const NotFoundGoesToCombats = meta.story({
-  tags: ['!dev'],
-  args: { combatId: MISSING_COMBAT_ID },
-  play: async ({ canvas, canvasElement, globals }) => {
-    const t = storyT(globals, 'CombatScreen');
-    await expect(
-      await canvas.findByRole('heading', { name: t('CombatNotFound:title') }),
-    ).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: t('CombatNotFound:goToCombats') }));
-    await waitFor(() => expect(locationOf(canvasElement)).toBe('/combats'));
-  },
-});
-
 export const NotFoundGoesHome = meta.story({
   tags: ['!dev'],
   args: { combatId: MISSING_COMBAT_ID },

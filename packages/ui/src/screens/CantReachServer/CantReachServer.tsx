@@ -4,7 +4,7 @@ import { MessageScreen } from '../../organisms/MessageScreen/MessageScreen.tsx';
 
 export interface CantReachServerProps {
   onRetry: () => void;
-  onHome: () => void;
+  onHome?: () => void;
 }
 
 export function CantReachServer({ onRetry, onHome }: CantReachServerProps) {

@@ -434,6 +434,7 @@ export const CantReachServer = meta.story({
       await canvas.findByRole('heading', { level: 1, name: t('MessageScreen:offlineTitle') }),
     ).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('MessageScreen:tryAgain') })).toBeVisible();
+    await expect(canvas.getAllByRole('button')).toHaveLength(1);
   },
 });
 

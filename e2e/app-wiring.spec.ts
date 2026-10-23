@@ -96,17 +96,13 @@ test('Not found and Combat not found lead back to the combat list', async ({ pag
 
   await page.goto('/nowhere');
   await expect(page.getByRole('heading', { level: 1, name: t('NotFound:title') })).toBeVisible();
-  await page.getByRole('button', { name: t('NotFound:goToCombats') }).click();
+  await page.getByRole('button', { name: t('MessageScreen:home') }).click();
   await expect(page).toHaveURL(/\/combats$/);
 
   await page.goto('/combats/01JCOMBATNOTFOUND000000000');
   await expect(
     page.getByRole('heading', { level: 1, name: t('CombatNotFound:title') }),
   ).toBeVisible();
-  await page.getByRole('button', { name: t('CombatNotFound:goToCombats') }).click();
-  await expect(page).toHaveURL(/\/combats$/);
-
-  await page.goto('/nowhere');
   await page.getByRole('button', { name: t('MessageScreen:home') }).click();
   await expect(page).toHaveURL(/\/combats$/);
 });

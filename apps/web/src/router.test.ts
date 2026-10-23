@@ -193,6 +193,13 @@ describe('router', () => {
     },
   );
 
+  it('renders NotFound with Go home as its only button', async () => {
+    const html = render(await open('/missing', false));
+    expect(html).toContain('Page not found');
+    expect(html.match(/<button/g)).toHaveLength(1);
+    expect(html).toContain('>Go home<');
+  });
+
   it('renders RouteError as UnexpectedError when a route throws', async () => {
     const router = await open('/throwing', true, [throwing]);
     expect(router.state.errors).toEqual({ root: new Error('route failed') });

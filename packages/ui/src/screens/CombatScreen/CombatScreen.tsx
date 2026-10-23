@@ -240,12 +240,11 @@ export function CombatScreen({
     void navigate('/');
   };
 
-  if (ended?.type === 'deleted')
-    return <CombatNotFound onGoToCombats={goToCombats} onHome={goHome} />;
+  if (ended?.type === 'deleted') return <CombatNotFound onHome={goHome} />;
   if (combat === undefined) {
     if (error === null || signedOut) return null;
     if (error instanceof ApiError && error.code === 'notFound') {
-      return <CombatNotFound onGoToCombats={goToCombats} onHome={goHome} />;
+      return <CombatNotFound onHome={goHome} />;
     }
     if (error instanceof ApiError && error.code === 'network') {
       return <CantReachServer onRetry={reload} onHome={goHome} />;
