@@ -38,3 +38,31 @@ test('/about opens without a session', async ({ page }) => {
   await expect(page.getByRole('heading', { level: 1, name: t('About:title') })).toBeVisible();
   await expect(page.getByText(t('About:legal'))).toBeVisible();
 });
+
+test.describe('on a desktop window', () => {
+  test.use({ viewport: { width: 1280, height: 844 } });
+
+  test('the landing language sheet dims the whole window and stays a centred column', async ({
+    page,
+  }) => {
+    await page.goto('/');
+    const signUpLink = page.getByRole('link', { name: t('Landing:signUp') });
+    await expect(signUpLink).toBeVisible();
+    const target = await signUpLink.boundingBox();
+    if (!target) throw new Error('the sign-up link has no box');
+    await page
+      .getByRole('button', { name: t('LanguageSheet:current', { name: 'Русский' }) })
+      .click();
+    const sheet = page.getByRole('dialog', { name: t('LanguageSheet:title') });
+    await expect(sheet).toBeVisible();
+    const box = await sheet.boundingBox();
+    if (!box) throw new Error('the language sheet has no box');
+    expect(box.width).toBeLessThanOrEqual(440);
+    expect(Math.abs(box.x + box.width / 2 - 640)).toBeLessThanOrEqual(1);
+    const scrim = await page.locator('[data-scrim]').boundingBox();
+    expect(scrim).toEqual({ x: 0, y: 0, width: 1280, height: 844 });
+    await page.mouse.click(target.x + target.width / 2, target.y + target.height / 2);
+    await expect(sheet).toBeHidden();
+    await expect(page).toHaveURL(/\/$/);
+  });
+});

@@ -64,13 +64,16 @@
   position: fixed;
   inset: 0;
   z-index: 200;
-  width: min(100%, 440px);
-  margin: 0 auto;
   contain: layout;
   pointer-events: none;
 
   & > * {
     pointer-events: auto;
+  }
+
+  & [data-scrim] + * {
+    width: min(100%, 440px);
+    margin-inline: auto;
   }
 }
 
