@@ -52,6 +52,9 @@ const MIKA = '01JC0000000000000000000MKA';
 const unitDefaults = {
   initiativeBonus: 0,
   tempHp: 0,
+  acMod: 0,
+  pdMod: 0,
+  mdMod: 0,
   note: '',
   disabled: false,
   claimedBy: null,

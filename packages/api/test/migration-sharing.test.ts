@@ -157,7 +157,13 @@ describe('migration 0003_release_claims', () => {
       [heroB, null],
       [enemy, null],
     ]);
-    expect(document.units[0]).toEqual({ ...played.units[0], claimedBy: null });
+    expect(document.units[0]).toEqual({
+      ...played.units[0],
+      claimedBy: null,
+      acMod: 0,
+      pdMod: 0,
+      mdMod: 0,
+    });
     expect(document.version).toBe(8);
     expect(combatRow(playedId).version).toBe(8);
     expect(documentOf(quietId).units).toEqual([]);

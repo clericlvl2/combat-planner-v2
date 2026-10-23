@@ -64,6 +64,9 @@ const FRIENDLY_COLUMNS = [
   'ac',
   'pd',
   'md',
+  'acMod',
+  'pdMod',
+  'mdMod',
 ];
 const OWN_COLUMNS = [...FRIENDLY_COLUMNS, 'initiativeBonus', 'note', 'hpHistory'];
 
@@ -433,6 +436,35 @@ describe('POST /play/:id/actions', () => {
       expect(await response.json()).toMatchObject({ code: 'forbidden' });
     }
     expect((await fetchCombat(dm)).version).toBe(combat.version);
+  });
+
+  it('sets defense modifiers on the own hero and refuses them on any other unit', async () => {
+    const before = await fetchCombat(dm);
+    for (const unitId of [SECOND_HERO, ENEMY_ID]) {
+      const response = await postAction(token, PLAYER_ID, {
+        id: nextActionId(),
+        version: before.version,
+        type: 'setDefenseMods',
+        unitId,
+        ac: 0,
+        pd: 0,
+        md: -2,
+      });
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ code: 'forbidden' });
+    }
+    const response = await postAction(token, PLAYER_ID, {
+      id: nextActionId(),
+      version: before.version,
+      type: 'setDefenseMods',
+      unitId: HERO_ID,
+      ac: 0,
+      pd: 0,
+      md: -2,
+    });
+    expect(response.status).toBe(200);
+    const hero = (await fetchCombat(dm)).units.find((unit) => unit.id === HERO_ID);
+    expect(hero).toMatchObject({ acMod: 0, pdMod: 0, mdMod: -2 });
   });
 
   it('answers 403 forbidden for a DM-only action', async () => {

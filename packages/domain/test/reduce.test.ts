@@ -1052,3 +1052,62 @@ describe('copyCombat', () => {
     expect(copy.units.map((unit) => unit.disabled)).toEqual([true, false]);
   });
 });
+
+describe('Defense modifiers', () => {
+  const mods = (unit: Unit) => [unit.acMod, unit.pdMod, unit.mdMod];
+
+  it('setDefenseMods sets all three modifiers and keeps the base defenses', () => {
+    const combat = one({ ac: 18, pd: 14, md: 12 });
+    const next = go(combat, { type: 'setDefenseMods', unitId: id(1), ac: 2, pd: -1, md: 0 });
+    expect(u(next, 1)).toMatchObject({ ac: 18, pd: 14, md: 12, acMod: 2, pdMod: -1, mdMod: 0 });
+  });
+
+  it('snapshots the previous modifiers for undo', () => {
+    const combat = one({ acMod: 1 });
+    const { patch } = ok(
+      run(combat, { type: 'setDefenseMods', unitId: id(1), ac: 3, pd: -2, md: 0 }),
+    );
+    expect(patch?.units).toEqual({ [id(1)]: { acMod: 1, pdMod: 0 } });
+  });
+
+  it('refuses an unknown unit', () => {
+    expect(codeOf(one(), { type: 'setDefenseMods', unitId: id(9), ac: 1, pd: 0, md: 0 })).toBe(
+      'notFound',
+    );
+  });
+
+  it('lets a player set modifiers on their claimed hero only', () => {
+    const combat = setup([
+      makeUnit({ id: id(1), role: 'hero', claimedBy: PLAYER_ID }),
+      makeUnit({ id: id(2), role: 'hero' }),
+    ]);
+    const player: Viewer = { kind: 'player', playerId: PLAYER_ID };
+    const own = go(combat, { type: 'setDefenseMods', unitId: id(1), ac: 0, pd: 0, md: -2 }, player);
+    expect(mods(u(own, 1))).toEqual([0, 0, -2]);
+    expect(
+      codeOf(combat, { type: 'setDefenseMods', unitId: id(2), ac: 0, pd: 0, md: -2 }, player),
+    ).toBe('forbidden');
+  });
+
+  it('restart resets the modifiers to 0', () => {
+    const combat = active([makeUnit({ id: id(1), initiative: 3, acMod: 2, pdMod: -1, mdMod: 4 })]);
+    expect(mods(u(go(combat, { type: 'restart' }), 1))).toEqual([0, 0, 0]);
+  });
+
+  it('a new unit, a duplicate and a preset carry the base defenses without modifiers', () => {
+    const combat = one({ ac: 18, acMod: 2, pdMod: -1, mdMod: 4 });
+    const added = go(combat, { type: 'addUnit', unitId: id(2), roll: 1, ...form });
+    expect(mods(u(added, 2))).toEqual([0, 0, 0]);
+    const copied = go(combat, { type: 'duplicateUnit', unitId: id(1), newUnitId: id(3) });
+    expect(u(copied, 3)).toMatchObject({ ac: 18, acMod: 0, pdMod: 0, mdMod: 0 });
+    const preset = presetFromUnit(u(combat, 1), id(700), NOW);
+    expect(preset.ac).toBe(18);
+    expect(presetSchema.parse(preset)).not.toHaveProperty('acMod');
+  });
+
+  it('an edit keeps the modifiers', () => {
+    const combat = one({ acMod: 2 });
+    const edited = go(combat, { type: 'editUnit', unitId: id(1), ...form, ac: 15 });
+    expect(u(edited, 1)).toMatchObject({ ac: 15, acMod: 2 });
+  });
+});

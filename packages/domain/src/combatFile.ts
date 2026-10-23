@@ -121,6 +121,9 @@ export const fromCombatFile = (file: CombatFile, ids: CombatFileIds, now: string
     units: units.map((unit) => ({
       ...unit,
       id: remap(unit.id),
+      acMod: 0,
+      pdMod: 0,
+      mdMod: 0,
       claimedBy: null,
       hpHistory: [],
     })),

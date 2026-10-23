@@ -27,6 +27,9 @@ const unit = (index: number) => ({
   ac: 15,
   pd: 12,
   md: 11,
+  acMod: 1,
+  pdMod: -1,
+  mdMod: 0,
   note: 'Hides in the reeds',
   conditions: ['dazed' as const],
   disabled: false,
@@ -92,7 +95,14 @@ describe('POST /combats/import', () => {
     expect(imported.units.map((each) => each.id)).not.toContain(ulidAt(1));
     expect(imported.activeUnitId).toBe(imported.units[1]?.id);
     expect(imported.units.map(({ id: _id, ...rest }) => rest)).toEqual(
-      source.units.map(({ id: _id, ...rest }) => ({ ...rest, claimedBy: null, hpHistory: [] })),
+      source.units.map(({ id: _id, ...rest }) => ({
+        ...rest,
+        acMod: 0,
+        pdMod: 0,
+        mdMod: 0,
+        claimedBy: null,
+        hpHistory: [],
+      })),
     );
     expect(await fetchCombat(dm, imported.id)).toMatchObject({ id: imported.id, undo: null });
     expect(

@@ -6,7 +6,7 @@ const base = { id: id(700), version: 3 };
 const ok = (action: unknown) => actionSchema.safeParse(action).success;
 
 describe('actionSchema', () => {
-  it('lists the 22 action types in brief order', () => {
+  it('lists the 23 action types in brief order', () => {
     expect(ACTION_TYPES).toEqual([
       'start',
       'nextTurn',
@@ -28,6 +28,7 @@ describe('actionSchema', () => {
       'setMaxHp',
       'toggleCondition',
       'editNote',
+      'setDefenseMods',
       'claimUnit',
       'releaseUnit',
     ]);
@@ -39,6 +40,22 @@ describe('actionSchema', () => {
     expect(ok({ type: 'nextTurn', id: id(1), version: 1.5 })).toBe(false);
     expect(ok({ type: 'nextTurn', id: id(1) })).toBe(false);
     expect(ok({ type: 'nextTurn', ...base })).toBe(true);
+  });
+
+  it('bounds each defense modifier to −20…20', () => {
+    const mods = (ac: number) => ({
+      type: 'setDefenseMods',
+      ...base,
+      unitId: id(1),
+      ac,
+      pd: 0,
+      md: 0,
+    });
+    expect(ok(mods(-20))).toBe(true);
+    expect(ok(mods(20))).toBe(true);
+    expect(ok(mods(21))).toBe(false);
+    expect(ok(mods(1.5))).toBe(false);
+    expect(ok({ type: 'setDefenseMods', ...base, unitId: id(1), ac: 1 })).toBe(false);
   });
 
   it('rejects an unknown type', () => {

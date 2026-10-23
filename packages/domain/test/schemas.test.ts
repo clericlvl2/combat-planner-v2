@@ -33,6 +33,7 @@ describe('LIMITS', () => {
       maxHp: { min: 1, max: 999 },
       hp: { min: -999, max: 999 },
       defense: { min: 0, max: 99 },
+      defenseMod: { min: -20, max: 20 },
       initiativeBonus: { min: -99, max: 99 },
       initiative: { min: -9, max: 99 },
     });
@@ -156,6 +157,20 @@ describe('Fields', () => {
     expect(unitOk({ ac: -1 })).toBe(false);
     expect(unitOk({ pd: 100 })).toBe(false);
     expect(unitOk({ md: 1.5 })).toBe(false);
+  });
+
+  it('AC, PD, MD modifiers', () => {
+    expect(unitOk({ acMod: -20, pdMod: 20, mdMod: 0 })).toBe(true);
+    expect(unitOk({ acMod: -21 })).toBe(false);
+    expect(unitOk({ pdMod: 21 })).toBe(false);
+    expect(unitOk({ mdMod: 0.5 })).toBe(false);
+  });
+
+  it('reads a stored unit without modifiers as modifiers 0', () => {
+    const { acMod: _ac, pdMod: _pd, mdMod: _md, ...stored } = makeUnit({ ac: 18 });
+    expect(unitSchema.parse(stored)).toMatchObject({ ac: 18, acMod: 0, pdMod: 0, mdMod: 0 });
+    const combat = combatSchema.parse({ ...makeCombat(), units: [stored] });
+    expect(combat.units[0]).toMatchObject({ acMod: 0, pdMod: 0, mdMod: 0 });
   });
 
   it('Conditions', () => {

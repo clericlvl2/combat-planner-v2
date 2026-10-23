@@ -135,6 +135,9 @@ const FRIENDLY_COLUMNS = [
   'ac',
   'pd',
   'md',
+  'acMod',
+  'pdMod',
+  'mdMod',
 ];
 const OWN_COLUMN = [...FRIENDLY_COLUMNS, 'initiativeBonus', 'note', 'hpHistory'];
 
@@ -455,5 +458,23 @@ describe('lastActionId', () => {
   it('carries the given action id to the player and is null by default', () => {
     expect(doc.lastActionId).toBeNull();
     expect(project(combat, PLAYER, id(77)).lastActionId).toBe(id(77));
+  });
+});
+
+describe('Defense modifiers for players', () => {
+  const modded = (unit: Unit): Unit => ({ ...unit, acMod: 2, pdMod: -1, mdMod: 3 });
+  const projected = project({ ...combat, units: combat.units.map((unit) => modded(unit)) }, PLAYER);
+
+  it('shows the modifiers of the own hero and of other friendly units', () => {
+    expect(pu(projected, 1)).toMatchObject({ ac: 15, acMod: 2, pdMod: -1, mdMod: 3 });
+    expect(pu(projected, 2)).toMatchObject({ acMod: 2, pdMod: -1, mdMod: 3 });
+    expect(pu(projected, 3)).toMatchObject({ acMod: 2, pdMod: -1, mdMod: 3 });
+  });
+
+  it('never sends the defenses or modifiers of an enemy', () => {
+    const goblin = pu(projected, 4);
+    for (const key of ['ac', 'pd', 'md', 'acMod', 'pdMod', 'mdMod']) {
+      expect(key in goblin).toBe(false);
+    }
   });
 });

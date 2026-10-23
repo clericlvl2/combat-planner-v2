@@ -51,6 +51,9 @@ const playerUnit = (
     ac: unit.ac,
     pd: unit.pd,
     md: unit.md,
+    acMod: unit.acMod,
+    pdMod: unit.pdMod,
+    mdMod: unit.mdMod,
   };
   if (unit.role === 'enemy') return everyColumn;
   if (unit.claimedBy === playerId) {

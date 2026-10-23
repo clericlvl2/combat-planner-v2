@@ -73,6 +73,9 @@ const PATCHED_UNIT_FIELDS = [
   'ac',
   'pd',
   'md',
+  'acMod',
+  'pdMod',
+  'mdMod',
   'note',
   'conditions',
   'disabled',
@@ -181,8 +184,11 @@ const changeHp = (
   return withEntry(next, kind, amount, absorbed, unit[HP_PREVIOUS[kind]], context);
 };
 
+const NO_DEFENSE_MODS = { acMod: 0, pdMod: 0, mdMod: 0 } as const satisfies Partial<Unit>;
+
 const restartedUnit = (unit: Unit): Unit => ({
   ...unit,
+  ...NO_DEFENSE_MODS,
   initiative: null,
   hp: unit.maxHp,
   tempHp: 0,
@@ -289,6 +295,7 @@ const addUnit = (combat: Combat, action: ActionOf<'addUnit'>): Step => {
     ac: action.ac,
     pd: action.pd,
     md: action.md,
+    ...NO_DEFENSE_MODS,
     note: action.note,
     conditions: [],
     disabled: false,
@@ -330,6 +337,7 @@ const duplicateUnit = (combat: Combat, action: ActionOf<'duplicateUnit'>): Step 
       source.name,
       combat.units.map((unit) => unit.name),
     ),
+    ...NO_DEFENSE_MODS,
     hp: source.maxHp,
     tempHp: 0,
     conditions: [],
@@ -442,6 +450,13 @@ const step = (
       return toggleCondition(combat, action);
     case 'editNote':
       return updateUnit(combat, action.unitId, (unit) => ({ ...unit, note: action.note }));
+    case 'setDefenseMods':
+      return updateUnit(combat, action.unitId, (unit) => ({
+        ...unit,
+        acMod: action.ac,
+        pdMod: action.pd,
+        mdMod: action.md,
+      }));
     case 'claimUnit':
       return claimUnit(combat, action, author);
     case 'releaseUnit':

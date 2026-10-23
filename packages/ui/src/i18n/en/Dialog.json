@@ -1,7 +1,7 @@
 {
   "cancel": "Cancel",
   "restartTitle": "Restart combat?",
-  "restartBody": "Units and claims stay. Initiative, HP, temp HP, conditions, disabled state, HP history, round and escalation die reset.",
+  "restartBody": "Units and claims stay. Initiative, HP, temp HP, conditions, defense modifiers, disabled state, HP history, round and escalation die reset.",
   "restart": "Restart",
   "clearTitle": "Clear combat?",
   "clearBody_one": "The only unit is removed and every player claim is released.",

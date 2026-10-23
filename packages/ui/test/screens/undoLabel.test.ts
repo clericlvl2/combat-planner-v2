@@ -66,6 +66,7 @@ const cases: [UndoableAction, string][] = [
     'Undid: [weakened] on Orc Berserker',
   ],
   [{ ...target, type: 'editNote', note: 'Hex' }, 'Undid: note on Orc Berserker'],
+  [{ ...target, type: 'setDefenseMods', ac: 2, pd: -1, md: 0 }, 'Undid: defenses of Orc Berserker'],
 ];
 
 describe('undoLabel', () => {
@@ -76,6 +77,12 @@ describe('undoLabel', () => {
   it('labels enabling a unit', () => {
     expect(labelOf({ ...target, type: 'setDisabled', disabled: false })).toBe(
       'Undid: Orc Berserker enabled',
+    );
+  });
+
+  it('labels a defense change in Russian', () => {
+    expect(labelOf({ ...target, type: 'setDefenseMods', ac: 2, pd: -1, md: 0 }, 'ru')).toBe(
+      'Отменено: защиты Orc Berserker',
     );
   });
 

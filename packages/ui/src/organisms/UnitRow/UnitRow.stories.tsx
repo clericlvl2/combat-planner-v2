@@ -18,6 +18,9 @@ type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp
 const unitDefaults = {
   initiativeBonus: 0,
   tempHp: 0,
+  acMod: 0,
+  pdMod: 0,
+  mdMod: 0,
   note: '',
   conditions: [],
   disabled: false,
