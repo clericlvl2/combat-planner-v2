@@ -44,8 +44,13 @@ type PlayerHpType = keyof typeof PLAYER_HP_KINDS;
 const isPlayerHp = (action: Action): action is Extract<Action, { type: PlayerHpType }> =>
   action.type in PLAYER_HP_KINDS;
 
+type DefenseModsAction = Extract<Action, { type: 'setDefenseMods' }>;
+
+const isDefenseMods = (action: Action): action is DefenseModsAction =>
+  action.type === 'setDefenseMods';
+
 export const isOptimistic = (action: Action, viewer: DmViewer | PlayerViewer): boolean =>
-  viewer.kind === 'dm' ? !DM_WAITS.has(action.type) : isPlayerHp(action);
+  viewer.kind === 'dm' ? !DM_WAITS.has(action.type) : isPlayerHp(action) || isDefenseMods(action);
 
 export const pendingKey = (id: CombatId, viewer: DmViewer | PlayerViewer): QueryKey => [
   ...combatKey(id, viewer),
@@ -121,15 +126,23 @@ const changeHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number): Player
   };
 };
 
+const changeDefenseMods = (unit: PlayerUnit, action: DefenseModsAction): PlayerUnit =>
+  unit.mine === true ? { ...unit, acMod: action.ac, pdMod: action.pd, mdMod: action.md } : unit;
+
+const overlayUnit = (unit: PlayerUnit, action: Action): PlayerUnit => {
+  if (isPlayerHp(action)) return changeHp(unit, PLAYER_HP_KINDS[action.type], action.amount);
+  if (isDefenseMods(action)) return changeDefenseMods(unit, action);
+  return unit;
+};
+
 const overlayPlayer = (document: PlayerCombat, entries: Entries): PlayerCombat => {
   let units = document.units;
   let changed = false;
   for (const { action } of entries) {
-    if (!isPlayerHp(action)) continue;
-    const kind = PLAYER_HP_KINDS[action.type];
+    if (!('unitId' in action)) continue;
     units = units.map((unit) => {
       if (unit.id !== action.unitId) return unit;
-      const next = changeHp(unit, kind, action.amount);
+      const next = overlayUnit(unit, action);
       changed ||= next !== unit;
       return next;
     });

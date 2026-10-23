@@ -20,6 +20,7 @@ import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { TurnStrip } from '../../molecules/TurnStrip/TurnStrip.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
+import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
 import { Menu } from '../../organisms/Menu/Menu.tsx';
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
@@ -40,7 +41,7 @@ export interface TurnOrderProps {
   random?: () => number;
 }
 
-type Panel = 'initiative' | 'more' | 'conditions' | 'history' | 'numpad' | 'edit';
+type Panel = 'initiative' | 'more' | 'conditions' | 'defenses' | 'history' | 'numpad' | 'edit';
 
 interface Open {
   panel: Panel;
@@ -150,6 +151,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   const numpadUnit = panelOf('numpad');
   const conditionsUnit = panelOf('conditions');
   const historyUnit = panelOf('history');
+  const defensesUnit = panelOf('defenses');
   const editUnit = panelOf('edit');
 
   return (
@@ -218,6 +220,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
                 onInitiative={mine ? () => show('initiative', unit) : noop}
                 onHp={mine ? () => show('numpad', unit) : noop}
                 onConditions={() => show('conditions', unit)}
+                onDefenses={mine ? () => show('defenses', unit) : undefined}
                 onHistory={() => show('history', unit)}
                 onNoteChange={(note) => send({ ...target(unit), type: 'editNote', note })}
                 onEdit={() => show('edit', unit)}
@@ -280,6 +283,20 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           onChange={(next) => changeConditions(conditionsUnit, next)}
           onClose={close}
           pending={toggling > 0}
+        />
+      ) : null}
+      {defensesUnit ? (
+        <DefenseSheet
+          opened
+          unitName={defensesUnit.name}
+          base={{ ac: defensesUnit.ac ?? 0, pd: defensesUnit.pd ?? 0, md: defensesUnit.md ?? 0 }}
+          mods={{
+            ac: defensesUnit.acMod ?? 0,
+            pd: defensesUnit.pdMod ?? 0,
+            md: defensesUnit.mdMod ?? 0,
+          }}
+          onChange={(mods) => send({ ...target(defensesUnit), type: 'setDefenseMods', ...mods })}
+          onClose={close}
         />
       ) : null}
       {historyUnit ? (

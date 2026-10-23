@@ -133,6 +133,7 @@ const readOnlyRow = {
   onInitiativeClose: noop,
   onHp: noop,
   onConditions: noop,
+  onDefenses: noop,
   onHistory: noop,
   onNoteChange: noop,
   onEdit: noop,

@@ -44,6 +44,7 @@ export interface UnitRowCallbacks {
   onInitiativeClose: () => void;
   onHp: () => void;
   onConditions: () => void;
+  onDefenses: () => void;
   onHistory: () => void;
   onNoteChange: (note: string) => void;
   onEdit: () => void;
@@ -103,6 +104,7 @@ export function UnitRow({
   onInitiativeClose,
   onHp,
   onConditions,
+  onDefenses,
   onHistory,
   onNoteChange,
   onEdit,
@@ -246,7 +248,15 @@ export function UnitRow({
             </>
           ) : null}
         </span>
-        <DefenseLine ac={unit.ac} pd={unit.pd} md={unit.md} />
+        <DefenseLine
+          ac={unit.ac}
+          pd={unit.pd}
+          md={unit.md}
+          acMod={unit.acMod}
+          pdMod={unit.pdMod}
+          mdMod={unit.mdMod}
+          onEdit={readOnly ? undefined : () => onDefenses?.()}
+        />
         {unit.conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
             {unit.conditions.map((condition) => (

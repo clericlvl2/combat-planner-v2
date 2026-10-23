@@ -32,6 +32,7 @@ const names = [
   'CombatCard',
   'CombatHeader',
   'ConditionPicker',
+  'DefenseSheet',
   'Dialog',
   'Drawer',
   'HpHistory',

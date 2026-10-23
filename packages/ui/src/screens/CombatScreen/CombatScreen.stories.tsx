@@ -756,6 +756,58 @@ export const UndoLastAction = meta.story({
   },
 });
 
+export const DefenseLineOpensSheet = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const row = await rowOf(canvasElement, names.orc);
+    await userEvent.click(within(row).getByRole('button', { name: t('DefenseLine:edit') }));
+    const sheet = await canvas.findByRole('dialog', {
+      name: t('DefenseSheet:title', { name: names.orc }),
+    });
+    const stepperOf = (stat: string) => {
+      const stepper = sheet.querySelector<HTMLElement>(`[data-stat="${stat}"]`);
+      if (!stepper) throw new Error(`${stat} row missing`);
+      return within(stepper);
+    };
+    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
+    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
+    await userEvent.click(stepperOf('pd').getByRole('button', { name: t('Stepper:decrease') }));
+    await expect(stepperOf('ac').getByText('20')).toBeVisible();
+    await expect(stepperOf('pd').getByText('15')).toBeVisible();
+    await expect(within(sheet).getAllByText(t('DefenseSheet:base', { value: 18 }))).toHaveLength(1);
+    const line = within(row).getByRole('button', { name: t('DefenseLine:edit') });
+    await waitFor(() =>
+      expect(line).toHaveAccessibleDescription(
+        `${t('DefenseLine:ac')}\u00A020\u00A0· ${t('DefenseLine:pd')}\u00A015\u00A0· ${t('DefenseLine:md')}\u00A012`,
+      ),
+    );
+    await expect(line.querySelector('[data-stat="ac"]')).toHaveAttribute('data-mod', 'up');
+    await expect(line.querySelector('[data-stat="pd"]')).toHaveAttribute('data-mod', 'down');
+    await userEvent.click(within(sheet).getByRole('button', { name: t('DefenseSheet:reset') }));
+    await waitFor(() => expect(line.querySelector('[data-mod]')).toBeNull());
+    await waitFor(() =>
+      expect(dispatched(fakeApiOf(loaded))).toEqual([
+        expect.objectContaining({ type: 'setDefenseMods', ac: 1, pd: 0, md: 0 }),
+        expect.objectContaining({ type: 'setDefenseMods', ac: 2, pd: 0, md: 0 }),
+        expect.objectContaining({ type: 'setDefenseMods', ac: 2, pd: -1, md: 0 }),
+        expect.objectContaining({ type: 'setDefenseMods', ac: 0, pd: 0, md: 0 }),
+      ]),
+    );
+    await userEvent.click(within(sheet).getByRole('button', { name: t('Sheet:close') }));
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await pickMenu(canvas, t('Toast:undo'), t);
+    await expect(
+      await canvas.findByText(
+        collapsedSpace(t('CombatScreen:undoSetDefenseMods', { name: names.orc })),
+      ),
+    ).toBeVisible();
+    await waitFor(() =>
+      expect(line.querySelector('[data-stat="pd"]')).toHaveAttribute('data-mod', 'down'),
+    );
+  },
+});
+
 export const ShareSheet = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals, loaded }) => {

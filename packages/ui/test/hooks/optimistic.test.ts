@@ -155,6 +155,26 @@ describe('overlay for a player', () => {
     const document = view(30);
     expect(overlay(document, [{ action: damage(FIRST, 5) }], PLAYER, NOW)).toBe(document);
   });
+
+  it('sets the claimed hero’s defense modifiers and nobody else’s', () => {
+    const mods = (id: string, unitId: string): Action => ({
+      id,
+      version: 0,
+      type: 'setDefenseMods',
+      unitId,
+      ac: 0,
+      pd: 0,
+      md: -2,
+    });
+    const document = view(30);
+    const shown = overlay(document, [{ action: mods(FIRST, HERO_ID) }], PLAYER, NOW);
+    expect(shown.units.find((unit) => unit.id === HERO_ID)).toMatchObject({
+      acMod: 0,
+      pdMod: 0,
+      mdMod: -2,
+    });
+    expect(overlay(document, [{ action: mods(SECOND, ENEMY_ID) }], PLAYER, NOW)).toBe(document);
+  });
 });
 
 describe('pending entries', () => {

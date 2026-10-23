@@ -38,3 +38,4 @@ DefenseLine.ac
 DesktopAside.title
 Landing.name
 Landing.dm
+DefenseSheet.base

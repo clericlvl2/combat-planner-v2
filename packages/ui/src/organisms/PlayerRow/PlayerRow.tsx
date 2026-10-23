@@ -34,6 +34,7 @@ export interface PlayerRowProps extends Omit<
   onInitiative: (event: MouseEvent<HTMLButtonElement>) => void;
   onHp: () => void;
   onConditions: () => void;
+  onDefenses?: () => void;
   onHistory: () => void;
   onNoteChange: (note: string) => void;
   onEdit: () => void;
@@ -57,6 +58,7 @@ export function PlayerRow({
   onInitiative,
   onHp,
   onConditions,
+  onDefenses,
   onHistory,
   onNoteChange,
   onEdit,
@@ -81,7 +83,14 @@ export function PlayerRow({
       : null;
   const defenses =
     friendly && unit.ac !== undefined && unit.pd !== undefined && unit.md !== undefined
-      ? { ac: unit.ac, pd: unit.pd, md: unit.md }
+      ? {
+          ac: unit.ac,
+          pd: unit.pd,
+          md: unit.md,
+          acMod: unit.acMod ?? 0,
+          pdMod: unit.pdMod ?? 0,
+          mdMod: unit.mdMod ?? 0,
+        }
       : null;
   const claimName = friendly ? (unit.claimedByName ?? undefined) : undefined;
   const note = mine ? (unit.note ?? '') : '';
@@ -132,7 +141,9 @@ export function PlayerRow({
             </>
           ) : null}
         </span>
-        {defenses ? <DefenseLine ac={defenses.ac} pd={defenses.pd} md={defenses.md} /> : null}
+        {defenses ? (
+          <DefenseLine {...defenses} onEdit={mine && onDefenses ? onDefenses : undefined} />
+        ) : null}
         {conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
             {conditions.map((condition) => (

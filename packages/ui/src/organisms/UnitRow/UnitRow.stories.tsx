@@ -193,6 +193,7 @@ const meta = preview.meta({
     onInitiativeClose: fn(),
     onHp: fn(),
     onConditions: fn(),
+    onDefenses: fn(),
     onHistory: fn(),
     onNoteChange: fn(),
     onEdit: fn(),
@@ -215,9 +216,10 @@ export const ActiveTurnWounded = meta.story({
       'false',
     );
     await expect(
-      canvas.getByRole('group', {
-        name: (name: string) =>
-          name.replace(/\s+/g, ' ') ===
+      canvas.getByRole('button', {
+        name: t('DefenseLine:edit'),
+        description: (description: string) =>
+          description.replace(/\s+/g, ' ') ===
           `${t('DefenseLine:ac')} 16 · ${t('DefenseLine:pd')} 14 · ${t('DefenseLine:md')} 19`,
       }),
     ).toBeVisible();
@@ -554,7 +556,7 @@ export const TapRowExpands = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitRow');
     const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
-    await userEvent.click(canvas.getByRole('group'));
+    await userEvent.click(canvas.getByText('Vashti the Hexer'));
     await expect(args.onToggle).toHaveBeenCalledOnce();
     await expect(name).toHaveAttribute('aria-expanded', 'true');
     await userEvent.click(canvas.getByRole('button', { name: t('hpHistory') }));
@@ -694,7 +696,7 @@ export const DisabledUnitOpensHp = meta.story({
 
 type KeyboardSpies = Pick<
   UnitRowProps,
-  'onInitiative' | 'onInitiativeClose' | 'onHp' | 'onToggle' | 'onConditions'
+  'onInitiative' | 'onInitiativeClose' | 'onHp' | 'onToggle' | 'onConditions' | 'onDefenses'
 >;
 
 async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: TFunction) {
@@ -714,6 +716,11 @@ async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: 
   await expect(args.onInitiativeClose).toHaveBeenCalledOnce();
   await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   await waitFor(() => expect(role).toHaveFocus());
+  await userEvent.tab();
+  const defenses = canvas.getByRole('button', { name: t('DefenseLine:edit') });
+  await waitFor(() => expect(defenses).toHaveFocus());
+  await userEvent.keyboard('{Enter}');
+  await expect(args.onDefenses).toHaveBeenCalledOnce();
   await userEvent.tab();
   await waitFor(() => expect(name).toHaveFocus());
   await userEvent.keyboard('{Enter}');

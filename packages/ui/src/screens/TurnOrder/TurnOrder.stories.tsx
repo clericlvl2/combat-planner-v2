@@ -154,6 +154,51 @@ export const DamageOwnHero = meta.story({
   },
 });
 
+export const PlayerEditsOwnDefenses = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await userEvent.click(within(vashti).getByRole('button', { name: t('DefenseLine:edit') }));
+    const sheet = await canvas.findByRole('dialog', {
+      name: t('DefenseSheet:title', { name: ME }),
+    });
+    const md = sheet.querySelector<HTMLElement>('[data-stat="md"]');
+    if (!md) throw new Error('md row missing');
+    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
+    await expect(within(md).getByText('13')).toBeVisible();
+    await waitFor(() =>
+      expect(sentBy(api)).toEqual([
+        expect.objectContaining({ type: 'setDefenseMods', unitId: unitIds.vashti, md: -1 }),
+        expect.objectContaining({ type: 'setDefenseMods', unitId: unitIds.vashti, md: -2 }),
+      ]),
+    );
+    const line = within(await rowOf(canvas, ME)).getByRole('button', {
+      name: t('DefenseLine:edit'),
+    });
+    await waitFor(() =>
+      expect(line.querySelector('[data-stat="md"]')).toHaveAttribute('data-mod', 'down'),
+    );
+    await expect(line).toHaveAccessibleDescription(
+      new RegExp(`${escapeRegExp(t('DefenseLine:md'))}\\s13$`),
+    );
+  },
+});
+
+export const PlayerCannotEditAlly = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const tomas = await rowOf(canvas, 'Brother Tomas of the Silver Lantern Order');
+    await expect(within(tomas).queryByRole('button', { name: t('DefenseLine:edit') })).toBeNull();
+    await expect(within(tomas).getByRole('group', { name: /17/ })).toBeVisible();
+    const vashti = await rowOf(canvas, ME);
+    await expect(within(vashti).getByRole('button', { name: t('DefenseLine:edit') })).toBeVisible();
+  },
+});
+
 export const SetOwnMaxHp = meta.story({
   name: 'Set Own Max HP',
   tags: ['!dev'],

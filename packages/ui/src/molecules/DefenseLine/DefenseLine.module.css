@@ -7,6 +7,47 @@
   font-variant-numeric: tabular-nums;
 }
 
+.chips {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 3px;
+}
+
+.edit {
+  position: relative;
+  align-self: flex-start;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--mantine-radius-full);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &::after {
+    position: absolute;
+    inset: min(0px, (100% - var(--cp-tap-target)) / 2);
+    content: '';
+  }
+
+  &:active .chip,
+  &[data-pressed] .chip {
+    background: var(--cp-color-soft);
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
 .chip {
   box-sizing: border-box;
   display: flex;
@@ -32,4 +73,12 @@
   font-size: var(--mantine-font-size-meta);
   font-weight: 700;
   color: var(--cp-color-ink);
+}
+
+.chip[data-mod='up'] .value {
+  color: var(--cp-hp-heal);
+}
+
+.chip[data-mod='down'] .value {
+  color: var(--cp-hp-damage);
 }

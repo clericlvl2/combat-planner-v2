@@ -53,6 +53,7 @@ import type {
   CombatMenuAction,
 } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
+import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import type { DialogProps } from '../../organisms/Dialog/Dialog.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
@@ -90,7 +91,7 @@ interface PinnedUndo {
   version: number;
 }
 
-type RowPanel = 'initiative' | 'menu' | 'conditions' | 'history' | 'numpad';
+type RowPanel = 'initiative' | 'menu' | 'conditions' | 'defenses' | 'history' | 'numpad';
 
 interface Panel {
   panel: RowPanel;
@@ -556,6 +557,7 @@ export function CombatScreen({
   const numpadUnit = panelUnit('numpad');
   const conditionsUnit = panelUnit('conditions');
   const historyUnit = panelUnit('history');
+  const defensesUnit = panelUnit('defenses');
   const editing = form?.mode === 'edit' ? unitById(form.unitId) : undefined;
   const toast = toasts[0];
 
@@ -613,6 +615,7 @@ export function CombatScreen({
             onInitiativeClose={close}
             onHp={() => show('numpad', unit)}
             onConditions={() => show('conditions', unit)}
+            onDefenses={() => show('defenses', unit)}
             onHistory={() => show('history', unit)}
             onNoteChange={(note) => {
               if (note !== unit.note) void send({ type: 'editNote', unitId: unit.id, note });
@@ -694,6 +697,18 @@ export function CombatScreen({
           unitName={conditionsUnit.name}
           value={conditionsUnit.conditions}
           onChange={(next) => changeConditions(conditionsUnit, next)}
+          onClose={close}
+        />
+      ) : null}
+      {defensesUnit ? (
+        <DefenseSheet
+          opened
+          unitName={defensesUnit.name}
+          base={{ ac: defensesUnit.ac, pd: defensesUnit.pd, md: defensesUnit.md }}
+          mods={{ ac: defensesUnit.acMod, pd: defensesUnit.pdMod, md: defensesUnit.mdMod }}
+          onChange={(mods) => {
+            void send({ type: 'setDefenseMods', unitId: defensesUnit.id, ...mods });
+          }}
           onClose={close}
         />
       ) : null}
