@@ -1,5 +1,4 @@
-import { healthStatus } from '@combat-planner/domain';
-import type { HealthStatus } from '@combat-planner/domain';
+import { healthSegments, healthStatus } from '@combat-planner/domain';
 import { IconChevronLeft, IconDots, IconNote } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import classes from './LandingPhone.module.css';
@@ -13,14 +12,6 @@ export interface LandingPhoneProps {
   viewer: LandingViewer;
   mine?: string;
 }
-
-const pipsOf: Record<HealthStatus, number> = {
-  full: 2,
-  wounded: 1,
-  staggered: 1,
-  unconscious: 0,
-  dead: 0,
-};
 
 const dieFaces: Record<number, readonly number[]> = {
   0: [],
@@ -99,7 +90,7 @@ interface HpProps {
 
 function Hp({ unit, viewer, mine, bump }: HpProps) {
   const status = healthStatus(unit.hp, unit.maxHp, unit.role);
-  const pips = pipsOf[status];
+  const pips = healthSegments(status);
   const off = status === 'dead';
   const numbers = viewer === 'dm' || unit.role !== 'enemy';
   return (
@@ -149,7 +140,6 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
       data-dead={dead || undefined}
     >
       <span className={classes.role} data-role={unit.role}>
-        <span className={classes.notch} />
         <span className={classes.roleValue} data-editable={viewer === 'dm' || mine || undefined}>
           {unit.initiative}
         </span>

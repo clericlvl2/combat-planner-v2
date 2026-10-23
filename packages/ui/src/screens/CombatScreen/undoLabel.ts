@@ -58,5 +58,7 @@ export function undoLabel(
       return t('undoToggleCondition', { name, condition: condition(action.condition) });
     case 'editNote':
       return t('undoEditNote', { name });
+    case 'setDefenseMods':
+      return t('undoSetDefenseMods', { name });
   }
 }

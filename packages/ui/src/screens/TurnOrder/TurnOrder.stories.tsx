@@ -1,5 +1,5 @@
 import preview from '#.storybook/preview';
-import type { Action } from '@combat-planner/domain';
+import type { Action, Combat } from '@combat-planner/domain';
 import { useState } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import type { FakeApiClient } from '../../api/FakeApiClient.ts';
@@ -10,6 +10,7 @@ import {
   ME,
   MIKA,
   TOKEN,
+  actAsDm,
   ferryCombat,
   playerScenario,
   unitIds,
@@ -41,6 +42,35 @@ const rowOf = async (canvas: Canvas, name: string): Promise<HTMLElement> => {
   const row = label.closest('[data-unit-role]');
   if (!(row instanceof HTMLElement)) throw new Error(`${name} has no row`);
   return row;
+};
+
+const crowded = (combat: Combat, initiative: number): Combat => {
+  const orc = combat.units.find((unit) => unit.id === unitIds.orc);
+  if (!orc) throw new Error('no orc');
+  const filler = Array.from({ length: 8 }, (_, index) => ({
+    ...orc,
+    id: `01JP00000000000000000000F${index}`,
+    name: `Orc Raider ${index + 1}`,
+    initiative,
+    conditions: [],
+  }));
+  return { ...combat, units: [...combat.units, ...filler] };
+};
+
+const listViewport = (canvasElement: HTMLElement): HTMLElement => {
+  const viewport = canvasElement.querySelector('[data-scroll-list] .mantine-ScrollArea-viewport');
+  if (!(viewport instanceof HTMLElement)) throw new Error('no list viewport');
+  return viewport;
+};
+
+const expectInView = async (canvasElement: HTMLElement, row: HTMLElement) => {
+  const viewport = listViewport(canvasElement);
+  await waitFor(async () => {
+    const frame = viewport.getBoundingClientRect();
+    const box = row.getBoundingClientRect();
+    await expect(box.top).toBeGreaterThanOrEqual(frame.top);
+    await expect(box.bottom).toBeLessThanOrEqual(frame.bottom);
+  });
 };
 
 const expandOwn = async (canvas: Canvas) => {
@@ -120,8 +150,59 @@ export const DamageOwnHero = meta.story({
     );
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     const after = await rowOf(canvas, ME);
-    await expect(after).toHaveAttribute('data-flash');
     await expect(within(after).getByRole('button', { name: /^15 \/36/ })).toBeVisible();
+  },
+});
+
+export const PlayerEditsOwnDefenses = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const api = fakeApiOf(loaded);
+    await expandOwn(canvas);
+    const vashti = await rowOf(canvas, ME);
+    await userEvent.click(within(vashti).getByRole('button', { name: t('PlayerRow:defenses') }));
+    const sheet = await canvas.findByRole('dialog', {
+      name: t('DefenseSheet:title', { name: ME }),
+    });
+    const md = sheet.querySelector<HTMLElement>('[data-stat="md"]');
+    if (!md) throw new Error('md row missing');
+    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
+    await expect(within(md).getByText('13')).toBeVisible();
+    await waitFor(() =>
+      expect(sentBy(api)).toEqual([
+        expect.objectContaining({ type: 'setDefenseMods', unitId: unitIds.vashti, md: -1 }),
+        expect.objectContaining({ type: 'setDefenseMods', unitId: unitIds.vashti, md: -2 }),
+      ]),
+    );
+    const line = (await rowOf(canvas, ME)).querySelector<HTMLElement>(
+      '[role="group"]:has(> [data-stat])',
+    );
+    if (!line) throw new Error('defense line missing');
+    await waitFor(() =>
+      expect(line.querySelector('[data-stat="md"]')).toHaveAttribute('data-mod', 'down'),
+    );
+    await expect(line).toHaveAccessibleName(
+      new RegExp(`${escapeRegExp(t('DefenseLine:md'))}\\s13$`),
+    );
+  },
+});
+
+export const PlayerCannotEditAlly = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const tomas = await rowOf(canvas, 'Brother Tomas of the Silver Lantern Order');
+    await userEvent.click(within(tomas).getByText('Brother Tomas of the Silver Lantern Order'));
+    await expect(tomas).not.toHaveAttribute('data-expanded');
+    await expect(within(tomas).queryByRole('button', { name: t('PlayerRow:defenses') })).toBeNull();
+    await expect(within(tomas).getByRole('group', { name: /17/ })).toBeVisible();
+    await expandOwn(canvas);
+    const vashti = await rowOf(canvas, ME);
+    await expect(
+      within(vashti).getByRole('button', { name: t('PlayerRow:defenses') }),
+    ).toBeVisible();
   },
 });
 
@@ -202,7 +283,7 @@ export const EditOwnHeroTypeLocked = meta.story({
   },
 });
 
-export const FailedDamageNoFlash = meta.story({
+export const FailedDamageRestoresHp = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'TurnOrder');
@@ -216,7 +297,6 @@ export const FailedDamageNoFlash = meta.story({
     await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:combatChanged'));
     await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
     const after = await rowOf(canvas, ME);
-    await expect(after).not.toHaveAttribute('data-flash');
     await expect(within(after).getByRole('button', { name: /^20 \/36/ })).toBeVisible();
   },
 });
@@ -255,5 +335,102 @@ export const OwnRowExpanded = meta.story({
     await expandOwn(canvas);
     await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
     await expect(canvas.getByText('Hex on Orc Berserker')).toBeVisible();
+  },
+});
+
+export const YouAreNext = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: playerScenario(ferryCombat({ active: 'orc' })) },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const strip = await canvas.findByRole('button', { name: t('youAreNext') });
+    await expect(strip).toBeVisible();
+    await expect(strip).toHaveAttribute('data-kind', 'next');
+    await expect(strip.getBoundingClientRect().height).toBe(44);
+  },
+});
+
+export const YourTurn = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const strip = await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) });
+    await expect(strip).toHaveAttribute('data-kind', 'turn');
+    await expect(canvas.queryByRole('button', { name: t('youAreNext') })).toBeNull();
+    const list = canvas.getByText(ME).closest('[data-scroll-list]');
+    await expect(list?.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      strip.getBoundingClientRect().bottom,
+    );
+  },
+});
+
+export const YourTurnScrollsToHero = meta.story({
+  tags: ['!dev'],
+  parameters: {
+    scenario: playerScenario(crowded(ferryCombat({ active: 'tomas', vashtiInitiative: 1 }), 16)),
+  },
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await expect(vashti.getBoundingClientRect().top).toBeGreaterThan(
+      listViewport(canvasElement).getBoundingClientRect().bottom,
+    );
+    await actAsDm(api, { type: 'nextTurn' });
+    await expect(
+      await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) }),
+    ).toBeVisible();
+    await expectInView(canvasElement, vashti);
+  },
+});
+
+export const StripTapScrollsToHero = meta.story({
+  tags: ['!dev'],
+  parameters: {
+    scenario: playerScenario(crowded(ferryCombat({ active: 'orc' }), 5)),
+  },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'TurnOrder');
+    const vashti = await rowOf(canvas, ME);
+    const viewport = listViewport(canvasElement);
+    viewport.scrollTo({ top: viewport.scrollHeight, behavior: 'instant' });
+    await waitFor(() =>
+      expect(vashti.getBoundingClientRect().bottom).toBeLessThan(
+        viewport.getBoundingClientRect().top,
+      ),
+    );
+    await userEvent.click(canvas.getByRole('button', { name: t('youAreNext') }));
+    await expectInView(canvasElement, vashti);
+  },
+});
+
+const hpChangeIn = (row: HTMLElement, part: 'number' | 'badge' | 'ribbon') =>
+  row.querySelector<HTMLElement>(`[data-hp-change="${part}"]`);
+
+export const RemoteChangeAnimates = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await expect(hpChangeIn(vashti, 'number')).toBeNull();
+    api.deferBroadcasts();
+    await actAsDm(api, { type: 'damage', unitId: unitIds.vashti, amount: 3 });
+    await waitFor(() => expect(hpChangeIn(vashti, 'number')).toHaveTextContent('−3'));
+    await expect(hpChangeIn(vashti, 'badge')).toBeNull();
+    await expect(await within(vashti).findByRole('button', { name: /^17 \/36/ })).toBeVisible();
+  },
+});
+
+export const ReducedMotionBadge = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    const vashti = await rowOf(canvas, ME);
+    await actAsDm(api, { type: 'damage', unitId: unitIds.vashti, amount: 3 });
+    await waitFor(() => expect(hpChangeIn(vashti, 'badge')).toHaveTextContent('−3'));
+    await expect(hpChangeIn(vashti, 'number')).toBeNull();
+    await expect(within(vashti).getByRole('button', { name: /^17 \/36/ })).toBeVisible();
+    await waitFor(() => expect(hpChangeIn(vashti, 'badge')).toBeNull(), { timeout: 3000 });
   },
 });

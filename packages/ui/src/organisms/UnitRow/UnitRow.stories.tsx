@@ -5,7 +5,9 @@ import type { Condition, Unit } from '@combat-planner/domain';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import type { HpChange } from '../../hooks/useHpChanges.ts';
 import { layout } from '../../layout.ts';
+import { fontSizes } from '../../theme.ts';
 import { UnitRow } from './UnitRow.tsx';
 import type { UnitRowCallbacks, UnitRowProps } from './UnitRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
@@ -16,6 +18,9 @@ type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp
 const unitDefaults = {
   initiativeBonus: 0,
   tempHp: 0,
+  acMod: 0,
+  pdMod: 0,
+  mdMod: 0,
   note: '',
   conditions: [],
   disabled: false,
@@ -188,6 +193,7 @@ const meta = preview.meta({
     onInitiativeClose: fn(),
     onHp: fn(),
     onConditions: fn(),
+    onDefenses: fn(),
     onHistory: fn(),
     onNoteChange: fn(),
     onEdit: fn(),
@@ -220,7 +226,14 @@ export const ActiveTurnWounded = meta.story({
     await expect(
       canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` }),
     ).toBeVisible();
-    await expect(canvasElement.querySelector('[data-active] [data-notch]')).not.toBeNull();
+    const row = canvasElement.querySelector<HTMLElement>('[data-active]');
+    await expect(row).not.toBeNull();
+    const style = getComputedStyle(row as HTMLElement);
+    await expect(style.backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(style.borderTopWidth).toBe('1px');
+    await expect(style.boxShadow).not.toBe('none');
+    await expect(style.transform).not.toBe('none');
+    await expect(canvasElement.querySelector('[data-notch]')).toBeNull();
   },
 });
 
@@ -507,23 +520,6 @@ export const MenuOpenDuplicateDisabled = meta.story({
   },
 });
 
-export const ChangedRowFlash = meta.story({
-  args: { active: false, flash: true },
-  render: (args) => (
-    <div style={{ ...screen, display: 'grid', gap: layout.listGap }}>
-      <UnitRow {...args} unit={unitOf(goblinSeed)} readOnly data-testid="dead" />
-      <UnitRow {...args} unit={shadowArcher} readOnly data-testid="disabled" />
-      <UnitRow {...args} unit={unitOf(orcSeed)} readOnly data-testid="alive" />
-    </div>
-  ),
-  play: async ({ canvas }) => {
-    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
-    await expect(border('dead')).toBe('rgb(226, 216, 198)');
-    await expect(border('disabled')).toBe('rgb(226, 216, 198)');
-    await expect(border('alive')).not.toBe('rgb(226, 216, 198)');
-  },
-});
-
 export const SetupNoInitiative = meta.story({
   args: { active: false, unit: unitOf({ ...vashtiSeed, initiative: null }) },
   play: async ({ args, canvas, globals }) => {
@@ -750,5 +746,85 @@ export const KeyboardWithMotionOn = meta.story({
     const t = storyT(globals, 'UnitRow');
     await keyboardWalk(canvasElement, args, t);
     await expect(args.onInitiativeSet).not.toHaveBeenCalled();
+  },
+});
+
+const frozenChange = (unit: Unit, change: Omit<HpChange, 'key' | 'unitId'>) => ({
+  active: false,
+  unit,
+  hpChange: { key: 1, unitId: unit.id, ...change },
+});
+
+const renderFrozen = (args: UnitRowCellProps) => (
+  <div data-motion-frozen="">
+    <UnitRowCell {...args} />
+  </div>
+);
+
+const numberOf = (canvasElement: HTMLElement) => {
+  const number = canvasElement.querySelector<HTMLElement>('[data-hp-change="number"]');
+  if (!number) throw new Error('no HP number');
+  return number;
+};
+
+export const DamageNumber = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 17 }), { kind: 'damage', amount: 3 }),
+  render: renderFrozen,
+  play: async ({ canvasElement }) => {
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent('−3');
+    const style = getComputedStyle(number);
+    await expect(style.color).toBe('rgb(180, 35, 42)');
+    await expect(style.fontSize).toBe(`${fontSizes.display}px`);
+    await expect(Number(style.opacity)).toBeGreaterThan(0.5);
+    await expect(getComputedStyle(number.parentElement as HTMLElement).pointerEvents).toBe('none');
+  },
+});
+
+export const HealNumber = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 30 }), { kind: 'heal', amount: 10 }),
+  render: renderFrozen,
+  play: async ({ canvasElement }) => {
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent('+10');
+    await expect(getComputedStyle(number).color).toBe('rgb(46, 122, 67)');
+  },
+});
+
+export const TempNumber = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, tempHp: 5 }), { kind: 'temp', amount: 5 }),
+  render: renderFrozen,
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent(t('temp', { amount: 5 }));
+    await expect(getComputedStyle(number).color).toBe('rgb(30, 95, 168)');
+  },
+});
+
+export const StaggeredRibbon = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 15 }), {
+    kind: 'damage',
+    amount: 5,
+    status: 'staggered',
+  }),
+  render: renderFrozen,
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    const ribbon = canvasElement.querySelector<HTMLElement>('[data-hp-change="ribbon"]');
+    await expect(ribbon).toHaveTextContent(t('staggered'));
+    const style = getComputedStyle(ribbon as HTMLElement);
+    await expect(style.textTransform).toBe('uppercase');
+    await expect(style.backgroundColor).toBe('rgb(179, 58, 10)');
+    await expect(style.color).toBe('rgb(255, 255, 255)');
+    await expect(numberOf(canvasElement)).toHaveTextContent('−5');
   },
 });

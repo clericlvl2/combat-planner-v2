@@ -19,6 +19,7 @@
   "undoSetMaxHp": "Undid: max HP {{amount}} on {{name}}",
   "undoToggleCondition": "Undid: {{condition}} on {{name}}",
   "undoEditNote": "Undid: note on {{name}}",
+  "undoSetDefenseMods": "Undid: defenses of {{name}}",
   "nextWrap": "{{name}} · round {{round}}",
   "presetFailed": "Couldn’t save the preset. Try again.",
   "linkFailed": "Couldn’t load the player link. Try again."

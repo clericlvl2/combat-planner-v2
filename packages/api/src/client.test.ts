@@ -177,7 +177,7 @@ function createMemoryClient() {
           combatId,
           playerId: combatId,
           language: settings.language,
-          combat: { ...fields, myName: null, units: [] },
+          combat: { ...fields, myName: null, nextUnitId: null, lastActionId: null, units: [] },
         };
       },
       dispatch: async (token, action) => {

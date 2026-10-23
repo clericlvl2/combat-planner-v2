@@ -12,8 +12,12 @@ export const layout = {
   ranges: { regularMinWidth: 384, tallMinHeight: 700 },
   column: { width: 440, height: 956 },
   statusBar: 44,
+  turnStrip: 44,
   contentEdge: 12,
   listGap: 8,
+  cardGap: 10,
+  activeScale: 1.03,
+  roleTile: { width: 41, inset: 4 },
   listInset: { top: 16, bottom: 44 },
   bottomBar: {
     height: 98,
@@ -28,4 +32,7 @@ export const layout = {
   tapTarget: 44,
   scrollShadow: 12,
   scrollbar: 6,
+  loadingDelay: 250,
+  hpNumberMs: 1000,
+  hpCountMs: 450,
 } as const;

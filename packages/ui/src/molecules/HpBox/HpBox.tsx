@@ -1,9 +1,11 @@
-import { healthStatus } from '@combat-planner/domain';
+import { healthSegments, healthStatus } from '@combat-planner/domain';
 import type { HealthStatus, Role } from '@combat-planner/domain';
 import { UnstyledButton, VisuallyHidden } from '@mantine/core';
 import { IconZzz } from '@tabler/icons-react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { HTMLAttributes, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
+import { layout } from '../../layout.ts';
 import classes from './HpBox.module.css';
 
 export type HpBoxViewer = 'dm' | 'player';
@@ -25,21 +27,42 @@ export type HpBoxProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'onClick
     viewer: HpBoxViewer;
     mine?: boolean;
     disabled?: boolean;
+    count?: boolean;
     onClick?: MouseEventHandler<HTMLButtonElement>;
   };
 
 const pipSlots = [0, 1] as const;
 
-const pipsOf: Record<HealthStatus, number> = {
-  full: 2,
-  wounded: 1,
-  staggered: 1,
-  unconscious: 0,
-  dead: 0,
-};
-
 function formatHp(value: number): string {
   return value < 0 ? `−${Math.abs(value)}` : String(value);
+}
+
+const easeOut = (progress: number) => 1 - (1 - progress) ** 3;
+
+function useCountedValue(value: number, enabled: boolean): number {
+  const [counting, setCounting] = useState<number | null>(null);
+  const shownRef = useRef(value);
+  useLayoutEffect(() => {
+    const from = shownRef.current;
+    if (!enabled || from === value) {
+      shownRef.current = value;
+      setCounting(null);
+      return;
+    }
+    setCounting(from);
+    const start = performance.now();
+    let frame = 0;
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - start) / layout.hpCountMs);
+      const next = progress < 1 ? Math.round(from + (value - from) * easeOut(progress)) : null;
+      shownRef.current = next ?? value;
+      setCounting(next);
+      if (next !== null) frame = requestAnimationFrame(step);
+    };
+    frame = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(frame);
+  }, [value, enabled]);
+  return counting ?? value;
 }
 
 export function HpBox({
@@ -52,11 +75,13 @@ export function HpBox({
   viewer,
   mine = false,
   disabled = false,
+  count = false,
   onClick,
   className,
   ...rest
 }: HpBoxProps) {
   const { t } = useTranslation('HpBox');
+  const counted = useCountedValue(hp ?? 0, count && hp !== undefined);
   const numbers =
     !preset && hp !== undefined && maxHp !== undefined && role !== undefined
       ? { hp, maxHp, role }
@@ -64,7 +89,7 @@ export function HpBox({
   const status = numbers
     ? healthStatus(numbers.hp, numbers.maxHp, numbers.role)
     : (statusProp ?? 'full');
-  const pips = pipsOf[status];
+  const pips = healthSegments(status);
   const dm = viewer === 'dm';
   const off = !preset && (status === 'dead' || disabled);
   const button = Boolean(onClick && numbers);
@@ -79,7 +104,7 @@ export function HpBox({
     <>
       {numbers ? (
         <span className={classes.numbers} data-part="numbers" data-editable={editable || undefined}>
-          <span className={classes.current}>{formatHp(numbers.hp)}</span>
+          <span className={classes.current}>{formatHp(counted)}</span>
           <span className={classes.max}>/{numbers.maxHp}</span>
         </span>
       ) : null}

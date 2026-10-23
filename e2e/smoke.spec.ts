@@ -68,7 +68,7 @@ test('a DM runs a combat and a player follows the turn order', async ({
       player.getByRole('banner').getByText(`${t('CombatHeader:round')} 2`, { exact: true }),
     ).toBeVisible();
     await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeHidden();
-    await expect(player.getByText('Aria')).toBeVisible();
+    await expect(player.getByText('Aria', { exact: true })).toBeVisible();
     await expect(player.getByText(t('RoleBlock:you'), { exact: true })).toBeVisible();
   } finally {
     await playerContext.close();

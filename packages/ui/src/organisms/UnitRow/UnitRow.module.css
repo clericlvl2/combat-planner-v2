@@ -2,13 +2,18 @@
   position: relative;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 84px;
+  grid-template-columns: 49px minmax(0, 1fr) 85px;
   min-height: 64px;
-  border: 2px solid var(--cp-color-border);
+  border: 1px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
   cursor: pointer;
 
   &[data-readonly] {
@@ -20,15 +25,14 @@
     background: var(--cp-role-inactive-fill);
   }
 
-  &[data-flash]:not([data-dead], [data-disabled]) {
-    border-color: var(--cp-health-staggered);
-  }
-
   &[data-active] {
     --cp-state-tap-marker: var(--cp-color-ink);
 
-    border-color: var(--cp-color-ink);
+    z-index: 1;
+    border-color: var(--cp-color-accent);
     background: var(--cp-color-accent);
+    box-shadow: var(--cp-active-shadow);
+    transform: scale(var(--cp-active-scale));
   }
 
   &:has(> .toggle:focus-visible),
@@ -44,14 +48,7 @@
   display: flex;
   align-items: stretch;
   min-height: 0;
-}
-
-.roleCell > .role {
-  border-radius: calc(var(--mantine-radius-card) - 2px) 0 0 calc(var(--mantine-radius-card) - 2px);
-}
-
-.root[data-expanded] .role {
-  border-bottom-left-radius: 0;
+  padding: var(--cp-role-tile-inset);
 }
 
 .initiative {
@@ -128,6 +125,12 @@
   }
 }
 
+.main [data-stat] {
+  .root[data-active] & {
+    background: var(--cp-color-surface);
+  }
+}
+
 .details {
   box-sizing: border-box;
   display: flex;
@@ -144,6 +147,10 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
+}
+
+.wideTrigger {
+  grid-column: 1 / -1;
 }
 
 .trigger {
@@ -196,4 +203,14 @@
   line-height: var(--mantine-line-height-snug);
   text-align: left;
   text-wrap: balance;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition: none;
+
+    &[data-active] {
+      transform: none;
+    }
+  }
 }

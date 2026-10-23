@@ -8,11 +8,14 @@ import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { Chip } from '../../atoms/Chip/Chip.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
 import { DefenseLine } from '../../molecules/DefenseLine/DefenseLine.tsx';
+import type { HpChange } from '../../hooks/useHpChanges.ts';
+import { useHpMotionReduced } from '../../hooks/useHpChanges.ts';
 import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
+import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
 import classes from './PlayerRow.module.css';
 
-export type PlayerRowTarget = 'initiative' | 'hp' | 'conditions' | 'history' | 'note';
+export type PlayerRowTarget = 'initiative' | 'hp' | 'conditions' | 'history' | 'defenses' | 'note';
 
 export interface PlayerRowProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -25,11 +28,13 @@ export interface PlayerRowProps extends Omit<
   setup?: boolean;
   conditionsOpen?: boolean;
   moreOpen?: boolean;
-  flash?: boolean;
+  busy?: boolean;
+  hpChange?: HpChange;
   onToggle: () => void;
   onInitiative: (event: MouseEvent<HTMLButtonElement>) => void;
   onHp: () => void;
   onConditions: () => void;
+  onDefenses?: () => void;
   onHistory: () => void;
   onNoteChange: (note: string) => void;
   onEdit: () => void;
@@ -47,11 +52,13 @@ export function PlayerRow({
   setup = false,
   conditionsOpen = false,
   moreOpen = false,
-  flash = false,
+  busy = false,
+  hpChange,
   onToggle,
   onInitiative,
   onHp,
   onConditions,
+  onDefenses,
   onHistory,
   onNoteChange,
   onEdit,
@@ -63,6 +70,7 @@ export function PlayerRow({
 }: PlayerRowProps) {
   const { t } = useTranslation('PlayerRow');
   const detailsId = useId();
+  const reduced = useHpMotionReduced();
   const friendly = unit.role !== 'enemy';
   const mine = friendly && mineProp;
   const expanded = mine && expandedProp;
@@ -75,7 +83,14 @@ export function PlayerRow({
       : null;
   const defenses =
     friendly && unit.ac !== undefined && unit.pd !== undefined && unit.md !== undefined
-      ? { ac: unit.ac, pd: unit.pd, md: unit.md }
+      ? {
+          ac: unit.ac,
+          pd: unit.pd,
+          md: unit.md,
+          acMod: unit.acMod ?? 0,
+          pdMod: unit.pdMod ?? 0,
+          mdMod: unit.mdMod ?? 0,
+        }
       : null;
   const claimName = friendly ? (unit.claimedByName ?? undefined) : undefined;
   const note = mine ? (unit.note ?? '') : '';
@@ -92,7 +107,6 @@ export function PlayerRow({
 
   return (
     <div
-      data-flash={flash || undefined}
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-mine={mine || undefined}
@@ -105,6 +119,7 @@ export function PlayerRow({
       <RoleBlock
         className={classes.role}
         fill
+        tile
         unitRole={unit.role}
         top={unit.initiative === null ? null : { kind: 'initiative', value: unit.initiative }}
         active={shownActive}
@@ -126,7 +141,7 @@ export function PlayerRow({
             </>
           ) : null}
         </span>
-        {defenses ? <DefenseLine ac={defenses.ac} pd={defenses.pd} md={defenses.md} /> : null}
+        {defenses ? <DefenseLine {...defenses} /> : null}
         {conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
             {conditions.map((condition) => (
@@ -158,6 +173,7 @@ export function PlayerRow({
             role={unit.role}
             tempHp={numbers.tempHp}
             mine={mine}
+            count={!reduced}
             data-tap={tapOf('hp')}
             onClick={mine ? () => onHp() : undefined}
           />
@@ -165,6 +181,14 @@ export function PlayerRow({
           <HpBox viewer="player" status={unit.healthStatus} />
         )}
       </div>
+      {hpChange ? (
+        <HpChangeOverlay
+          key={hpChange.key}
+          change={hpChange}
+          showNumber={numbers !== null}
+          reduced={reduced}
+        />
+      ) : null}
       {expanded ? (
         <div id={detailsId} className={classes.details} data-part="details">
           <div className={classes.triggers}>
@@ -196,9 +220,22 @@ export function PlayerRow({
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
               <IconChevronDown size={20} stroke={2} aria-hidden="true" />
             </UnstyledButton>
+            {onDefenses ? (
+              <UnstyledButton
+                component="button"
+                type="button"
+                className={`${classes.trigger} ${classes.wideTrigger}`}
+                aria-haspopup="dialog"
+                data-tap={tapOf('defenses')}
+                onClick={() => onDefenses()}
+              >
+                <span className={classes.triggerLabel}>{t('defenses')}</span>
+                <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+              </UnstyledButton>
+            ) : null}
           </div>
           <NoteField value={note} onChange={onNoteChange} data-tap={tapOf('note')} />
-          <CardActions open={moreOpen} onEdit={onEdit} onMore={onMore} />
+          <CardActions open={moreOpen} busy={busy} onEdit={onEdit} onMore={onMore} />
         </div>
       ) : null}
     </div>

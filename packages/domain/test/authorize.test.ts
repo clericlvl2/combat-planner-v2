@@ -94,6 +94,8 @@ const onUnit = (type: Payload['type'], unitId: string): Payload => {
       return { type, unitId, condition: 'dazed' };
     case 'editNote':
       return { type, unitId, note: 'n' };
+    case 'setDefenseMods':
+      return { type, unitId, ac: 2, pd: -1, md: 0 };
     case 'claimUnit':
       return { type, unitId, displayName: 'Ann' };
     case 'releaseUnit':
@@ -145,6 +147,7 @@ describe('authorize', () => {
       'setMaxHp',
       'toggleCondition',
       'editNote',
+      'setDefenseMods',
       'claimUnit',
       'releaseUnit',
     ]);
@@ -219,7 +222,7 @@ describe('Unit actions, Player on own Hero', () => {
 
   it('Save as preset', () => {
     expect(ACTION_TYPES).not.toContain('saveAsPreset');
-    expect(PLAYER_ACTION_TYPES.length).toBe(11);
+    expect(PLAYER_ACTION_TYPES.length).toBe(12);
   });
 
   it('Initiative popover: − / + stepper, Roll d20 + bonus', () => {

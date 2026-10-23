@@ -109,15 +109,15 @@ describe('POST /combats/:id/actions', () => {
     expect(logRows()).toHaveLength(1);
   });
 
-  it('refuses a retried action with 409 version and no second log entry', async () => {
+  it('answers a repeated action with the current version and changes nothing', async () => {
     const action = addUnitAction(nextActionId(), 2, ENEMY_ID, 'Goblin', 'enemy');
     const first = await post(action);
     expect(await first.json()).toEqual({ version: 3 });
     const { events, unsubscribe } = listen({ kind: 'dm' });
     const retry = await post(action);
     unsubscribe();
-    expect(retry.status).toBe(409);
-    expect(await retry.json()).toMatchObject({ code: 'version' });
+    expect(retry.status).toBe(200);
+    expect(await retry.json()).toEqual({ version: 3 });
     expect(events).toEqual([]);
     expect(logRows()).toHaveLength(2);
     expect((await fetchCombat(dm)).version).toBe(3);

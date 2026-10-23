@@ -43,7 +43,7 @@ describe('combatListActions', () => {
     ]);
   });
 
-  it('a network failure shows serverUnreachable with a Retry that resends the same request', async () => {
+  it('a network failure shows serverUnreachableNothingChanged with a Retry that resends the same request', async () => {
     const { actions, context, invalidate } = await setup();
     context.api.failNext('network');
     const removed = actions.remove(COMBAT_ID);
@@ -51,7 +51,7 @@ describe('combatListActions', () => {
     expect(invalidate).not.toHaveBeenCalled();
     const [toast] = context.toasts;
     expect(toast).toMatchObject({
-      message: 'serverUnreachable',
+      message: 'serverUnreachableNothingChanged',
       kind: 'error',
       action: { label: 'retry' },
     });

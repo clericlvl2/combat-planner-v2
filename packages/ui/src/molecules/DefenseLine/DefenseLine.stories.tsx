@@ -1,6 +1,6 @@
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
-import { base } from '../../theme.ts';
+import { base, hpActions } from '../../theme.ts';
 import { DefenseLine } from './DefenseLine.tsx';
 import type { DefenseLineProps } from './DefenseLine.tsx';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
@@ -52,12 +52,26 @@ const states: Record<DefenseLineState, Pick<DefenseLineProps, 'ac' | 'pd' | 'md'
   'Missing value': { ac: 16, pd: null, md: 19 },
 };
 
+const modifiers = {
+  Up: { acMod: 2, pdMod: 1, mdMod: 3 },
+  Down: { acMod: -2, pdMod: -1, mdMod: -3 },
+  Mixed: { acMod: 2, pdMod: -1, mdMod: 0 },
+} as const satisfies Record<string, Pick<DefenseLineProps, 'acMod' | 'pdMod' | 'mdMod'>>;
+
 export const AllStates = meta.story({
   tags: ['visual'],
   render: () => (
     <StateGrid
       columns={columns}
-      rows={[{ label: 'Chips', render: (state) => <DefenseLineCell {...states[state]} /> }]}
+      rows={[
+        { label: 'Chips', render: (state) => <DefenseLineCell {...states[state]} /> },
+        ...(Object.keys(modifiers) as (keyof typeof modifiers)[]).map((label) => ({
+          label,
+          render: (state: DefenseLineState) => (
+            <DefenseLineCell {...states[state]} {...modifiers[label]} />
+          ),
+        })),
+      ]}
     />
   ),
 });
@@ -78,8 +92,8 @@ export const LabelAndChips = meta.story({
     const style = getComputedStyle(chip);
     await expect(chip.getBoundingClientRect().height).toBe(22);
     await expect(style.borderTopWidth).toBe('1px');
-    await expect(style.borderTopColor).toBe(rgb(base.border));
-    await expect(style.backgroundColor).toBe(rgb(base.surface));
+    await expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
+    await expect(style.backgroundColor).toBe(rgb(base.background));
     const label = chip.firstElementChild;
     await expect(label && getComputedStyle(label).color).toBe(rgb(base.secondary));
     const value = chip.lastElementChild;
@@ -111,5 +125,33 @@ export const StaysOnOneLine = meta.story({
     const first = boxes.at(0);
     const last = boxes.at(-1);
     await expect(first && last && last.right - first.left).toBeLessThanOrEqual(NAME_COLUMN);
+  },
+});
+
+export const ModifiersShowTotals = meta.story({
+  tags: ['!dev'],
+  args: { ac: 18, pd: 16, md: 12, acMod: 2, pdMod: -1, mdMod: 0 },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'DefenseLine');
+    await expect(canvas.getByRole('group')).toHaveAttribute(
+      'aria-label',
+      `${t('ac')}\u00A020\u00A0· ${t('pd')}\u00A015\u00A0· ${t('md')}\u00A012`,
+    );
+    await expect(valuesOf(canvasElement)).toEqual(['20', '15', '12']);
+    const colourOf = (stat: string) => {
+      const value = canvasElement.querySelector(`[data-stat="${stat}"]`)?.lastElementChild;
+      return value ? getComputedStyle(value).color : null;
+    };
+    await expect(colourOf('ac')).toBe(rgb(hpActions.heal));
+    await expect(colourOf('pd')).toBe(rgb(hpActions.damage));
+    await expect(colourOf('md')).toBe(rgb(base.ink));
+  },
+});
+
+export const TotalStaysInRange = meta.story({
+  tags: ['!dev'],
+  args: { ac: 98, pd: 1, md: 12, acMod: 5, pdMod: -3 },
+  play: async ({ canvasElement }) => {
+    await expect(valuesOf(canvasElement)).toEqual(['99', '0', '12']);
   },
 });

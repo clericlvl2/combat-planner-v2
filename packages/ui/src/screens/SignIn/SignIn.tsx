@@ -25,7 +25,8 @@ export function SignIn({ onRedirect = assignLocation }: SignInProps) {
   const [wrong, setWrong] = useState(false);
   const [sending, setSending] = useState(false);
 
-  const ready = email.trim() !== '' && password !== '' && !sending;
+  const filled = email.trim() !== '' && password !== '';
+  const ready = filled && !sending;
 
   const submit = () => {
     if (!ready) return;
@@ -80,7 +81,14 @@ export function SignIn({ onRedirect = assignLocation }: SignInProps) {
         onBlur={() => setPasswordEmpty(password === '')}
         onKeyDown={onEnter}
       />
-      <Button variant="primary" size="M" fullWidth disabled={!ready} onClick={submit}>
+      <Button
+        variant="primary"
+        size="M"
+        fullWidth
+        disabled={!filled}
+        loading={sending}
+        onClick={submit}
+      >
         {t('submit')}
       </Button>
       <SocialButtons onRedirect={onRedirect} />

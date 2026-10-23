@@ -1,6 +1,7 @@
 {
   "conditions": "États",
   "hpHistory": "Historique des PV",
+  "defenses": "Bonus/malus de défense",
   "charmed": "charmé",
   "confused": "confus",
   "dazed": "hébété",

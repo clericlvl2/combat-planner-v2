@@ -38,7 +38,7 @@ const tagsDefault = { icon: IconTags, labelKey: 'tags' } as const;
 const tagsActiveCount = { icon: IconTags, labelKey: 'tags', count: 2, active: true } as const;
 const tagsIconCount = { icon: IconTags, ariaKey: 'tags', count: 2, active: true } as const;
 
-const states = ['default', 'pressed', 'disabled', 'focus'] as const;
+const states = ['default', 'pressed', 'disabled', 'focus', 'loading'] as const;
 type State = (typeof states)[number];
 
 const row = (label: string, props: ToolButtonCellProps) => ({
@@ -49,6 +49,7 @@ const row = (label: string, props: ToolButtonCellProps) => ({
       data-pressed={state === 'pressed' ? '' : undefined}
       data-focus={state === 'focus' ? '' : undefined}
       disabled={state === 'disabled'}
+      loading={state === 'loading'}
     />
   ),
 });

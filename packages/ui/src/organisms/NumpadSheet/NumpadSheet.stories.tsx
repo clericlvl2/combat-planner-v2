@@ -6,7 +6,7 @@ import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { layout } from '../../layout.ts';
 import { UnitRow } from '../UnitRow/UnitRow.tsx';
-import { NumpadSheet, hpAfter, useHpFlash } from './NumpadSheet.tsx';
+import { NumpadSheet, hpAfter } from './NumpadSheet.tsx';
 import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 const at = '2026-10-15T18:00:00.000Z';
@@ -52,6 +52,9 @@ const MIKA = '01JC0000000000000000000MKA';
 const unitDefaults = {
   initiativeBonus: 0,
   tempHp: 0,
+  acMod: 0,
+  pdMod: 0,
+  mdMod: 0,
   note: '',
   disabled: false,
   claimedBy: null,
@@ -130,6 +133,7 @@ const readOnlyRow = {
   onInitiativeClose: noop,
   onHp: noop,
   onConditions: noop,
+  onDefenses: noop,
   onHistory: noop,
   onNoteChange: noop,
   onEdit: noop,
@@ -152,20 +156,13 @@ function NumpadSheetCell({
   const before: Unit = { ...units[who], tempHp };
   const [opened, setOpened] = useState(true);
   const [after, setAfter] = useState<Unit | null>(null);
-  const { flashing, flash } = useHpFlash();
   const claimedByName = before.claimedBy ? 'Mika' : undefined;
   return (
     <div style={stage}>
       {after ? (
         <div style={resultList}>
           <UnitRow {...readOnlyRow} unit={before} claimedByName={claimedByName} />
-          <UnitRow
-            {...readOnlyRow}
-            unit={after}
-            claimedByName={claimedByName}
-            flash={flashing}
-            data-result=""
-          />
+          <UnitRow {...readOnlyRow} unit={after} claimedByName={claimedByName} data-result="" />
         </div>
       ) : null}
       <NumpadSheet
@@ -180,7 +177,6 @@ function NumpadSheetCell({
         onApply={(kind, amount) => {
           onApply?.(kind, amount);
           setAfter({ ...before, ...hpAfter(before, kind, amount) });
-          flash();
         }}
         onClose={() => {
           setOpened(false);
@@ -353,6 +349,7 @@ export const ThreeDigitHpWounded = meta.story({
     await typeAmount(canvas, '120');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('167/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('wounded'));
+    await expect(filledPips(canvasElement, 'after')).toBe(2);
   },
 });
 
@@ -551,7 +548,6 @@ const runFlow = async (
   await expect(args.onClose).toHaveBeenCalledOnce();
   await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   const result = canvasElement.querySelector('[data-result]');
-  await expect(result).toHaveAttribute('data-flash');
   await expect(result).toHaveTextContent(
     typeof step.result === 'string' ? step.result : step.result(t),
   );

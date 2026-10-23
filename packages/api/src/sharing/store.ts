@@ -9,7 +9,8 @@ import { followClaims } from '@combat-planner/domain';
 import type { Combat } from '@combat-planner/domain';
 import { and, count, eq, gt, isNotNull } from 'drizzle-orm';
 import type { DmCombat } from '../client.ts';
-import { dmDocument } from '../combats/log.ts';
+import { dmDocument, lastActionsOf } from '../combats/log.ts';
+import type { LastActions } from '../combats/log.ts';
 import type { Executor, Transaction } from '../combats/store.ts';
 import { findCombatRow, saveCombat } from '../combats/store.ts';
 import { combats, players, session } from '../db/schema.ts';
@@ -166,6 +167,7 @@ export const followCombatClaims = (db: Executor, combat: Combat, now: string): v
 export interface RemovedPlayer {
   name: DisplayName | undefined;
   document: DmCombat | undefined;
+  lastActions: LastActions;
 }
 
 export const removePlayer = (
@@ -177,7 +179,9 @@ export const removePlayer = (
   const combat = findCombatRow(tx, combatId)?.document;
   const name = combat?.players[playerId];
   const holdsHero = combat?.units.some((unit) => unit.claimedBy === playerId) === true;
-  if (!combat || (name === undefined && !holdsHero)) return { name, document: undefined };
+  if (!combat || (name === undefined && !holdsHero)) {
+    return { name, document: undefined, lastActions: {} };
+  }
   const next: Combat = {
     ...combat,
     units: combat.units.map((unit) =>
@@ -187,10 +191,13 @@ export const removePlayer = (
     version: combat.version + 1,
   };
   saveCombat(tx, next);
-  return { name, document: dmDocument(tx, next) };
+  return { name, document: dmDocument(tx, next), lastActions: lastActionsOf(tx, combatId) };
 };
 
-export const announceRemoval = (combatId: CombatId, { name, document }: RemovedPlayer): void => {
-  if (document) broadcastDocument(combatId, document);
+export const announceRemoval = (
+  combatId: CombatId,
+  { name, document, lastActions }: RemovedPlayer,
+): void => {
+  if (document) broadcastDocument(combatId, document, undefined, lastActions);
   if (name !== undefined) broadcast(combatId, { type: 'playerLeft', name }, 'dm');
 };

@@ -450,7 +450,7 @@ export const HpNumpad = meta.story({
   },
 });
 
-export const DamageStaggersAndFlashesRow = meta.story({
+export const DamageStaggersRow = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
@@ -463,9 +463,6 @@ export const DamageStaggersAndFlashesRow = meta.story({
         label.startsWith(`2 /40 ${t('HpBox:staggered')}`),
       ),
     ).toBeVisible();
-    await waitFor(async () =>
-      expect(await rowOf(canvasElement, names.orc)).toHaveAttribute('data-flash'),
-    );
   },
 });
 
@@ -704,7 +701,6 @@ export const DuplicateBelowOriginal = meta.story({
       names.vashti,
     ]);
     await expect(within(copy).getByRole('button', { name: /^40 \/40/ })).toBeVisible();
-    await waitFor(() => expect(copy).toHaveAttribute('data-flash'));
     await expect(dispatched(fakeApiOf(loaded))).toEqual([
       expect.objectContaining({ type: 'duplicateUnit', unitId: unitIds.orc }),
     ]);
@@ -757,6 +753,59 @@ export const UndoLastAction = meta.story({
       'damage',
       'undo',
     ]);
+  },
+});
+
+export const DefensesTriggerOpensSheet = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const row = await expand(canvasElement, names.orc);
+    await userEvent.click(within(row).getByRole('button', { name: t('UnitRow:defenses') }));
+    const sheet = await canvas.findByRole('dialog', {
+      name: t('DefenseSheet:title', { name: names.orc }),
+    });
+    const stepperOf = (stat: string) => {
+      const stepper = sheet.querySelector<HTMLElement>(`[data-stat="${stat}"]`);
+      if (!stepper) throw new Error(`${stat} row missing`);
+      return within(stepper);
+    };
+    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
+    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
+    await userEvent.click(stepperOf('pd').getByRole('button', { name: t('Stepper:decrease') }));
+    await expect(stepperOf('ac').getByText('20')).toBeVisible();
+    await expect(stepperOf('pd').getByText('15')).toBeVisible();
+    await expect(within(sheet).getAllByText(t('DefenseSheet:base', { value: 18 }))).toHaveLength(1);
+    const line = row.querySelector<HTMLElement>('[role="group"]:has(> [data-stat])');
+    if (!line) throw new Error('defense line missing');
+    await waitFor(() =>
+      expect(line).toHaveAccessibleName(
+        `${t('DefenseLine:ac')}\u00A020\u00A0· ${t('DefenseLine:pd')}\u00A015\u00A0· ${t('DefenseLine:md')}\u00A012`,
+      ),
+    );
+    await expect(line.querySelector('[data-stat="ac"]')).toHaveAttribute('data-mod', 'up');
+    await expect(line.querySelector('[data-stat="pd"]')).toHaveAttribute('data-mod', 'down');
+    await userEvent.click(within(sheet).getByRole('button', { name: t('DefenseSheet:reset') }));
+    await waitFor(() => expect(line.querySelector('[data-mod]')).toBeNull());
+    await waitFor(() =>
+      expect(dispatched(fakeApiOf(loaded))).toEqual([
+        expect.objectContaining({ type: 'setDefenseMods', ac: 1, pd: 0, md: 0 }),
+        expect.objectContaining({ type: 'setDefenseMods', ac: 2, pd: 0, md: 0 }),
+        expect.objectContaining({ type: 'setDefenseMods', ac: 2, pd: -1, md: 0 }),
+        expect.objectContaining({ type: 'setDefenseMods', ac: 0, pd: 0, md: 0 }),
+      ]),
+    );
+    await userEvent.click(within(sheet).getByRole('button', { name: t('Sheet:close') }));
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await pickMenu(canvas, t('Toast:undo'), t);
+    await expect(
+      await canvas.findByText(
+        collapsedSpace(t('CombatScreen:undoSetDefenseMods', { name: names.orc })),
+      ),
+    ).toBeVisible();
+    await waitFor(() =>
+      expect(line.querySelector('[data-stat="pd"]')).toHaveAttribute('data-mod', 'down'),
+    );
   },
 });
 
@@ -906,7 +955,6 @@ export const RequestFailed = meta.story({
     await expect(await canvas.findByText(t('Toast:serverUnreachable'))).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('Toast:retry') })).toBeVisible();
     await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
-    await expect(await rowOf(canvasElement, names.orc)).not.toHaveAttribute('data-flash');
   },
 });
 
@@ -927,7 +975,7 @@ export const RetryResendsSameAction = meta.story({
   },
 });
 
-export const NoChangeBeforeDocument = meta.story({
+export const ChangeShowsBeforeDocument = meta.story({
   tags: ['!dev'],
   loaders: [heldLoader],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
@@ -935,10 +983,46 @@ export const NoChangeBeforeDocument = meta.story({
     const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
     await typeAmount(sheet, '12');
     await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
-    await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
-    await expect(await rowOf(canvasElement, names.orc)).not.toHaveAttribute('data-flash');
-    releaseOf(loaded)();
     await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
+    await expect(dispatched(fakeApiOf(loaded))).toHaveLength(0);
+    releaseOf(loaded)();
+    await waitFor(() => expect(dispatched(fakeApiOf(loaded))).toHaveLength(1));
+    await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
+  },
+});
+
+export const RefusalRollsBack = meta.story({
+  tags: ['!dev'],
+  loaders: [heldLoader],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
+    await typeAmount(sheet, '12');
+    fakeApiOf(loaded).failNext('network');
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
+    await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
+    releaseOf(loaded)();
+    await expect(await canvas.findByText(t('Toast:serverUnreachable'))).toBeVisible();
+    await expect(await hpOf(canvasElement, names.orc, /^14 \/40/)).toBeVisible();
+  },
+});
+
+export const ForeignDocumentKeepsPending = meta.story({
+  tags: ['!dev'],
+  loaders: [heldLoader],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const api = fakeApiOf(loaded);
+    const sheet = await openNumpad(canvas, canvasElement, names.orc, /^14 \/40/);
+    await typeAmount(sheet, '12');
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
+    await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
+    await actAsPlayer(api, MIKA, { type: 'releaseUnit', unitId: unitIds.vashti });
+    await expect(
+      await canvas.findByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
+    ).toBeVisible();
+    await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
+    await expect(dispatched(api)).toHaveLength(0);
   },
 });
 
@@ -1285,9 +1369,6 @@ export const DocumentArrivesAfterPost = meta.story({
     await typeAmount(sheet, '5');
     await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
     await expect(await hpOf(canvasElement, names.vashti, /^15 \/36/)).toBeVisible();
-    await waitFor(async () =>
-      expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-flash'),
-    );
   },
 });
 
@@ -1398,7 +1479,7 @@ export const UndoRemovalBeforeDocument = meta.story({
     await expect(
       await canvas.findByText(t('Toast:unitRemoved', { name: 'Orc Berserker' })),
     ).toBeVisible();
-    await expect(await rowOf(canvasElement, names.orc)).toBeVisible();
+    await expect(orderOf(canvasElement, [names.orc])).not.toContain(names.orc);
     await userEvent.click(canvas.getByRole('button', { name: t('Toast:undo') }));
     await expect(
       await canvas.findByText(
@@ -1551,5 +1632,85 @@ export const DmReleaseShowsNoToast = meta.story({
     await expect(
       canvas.queryByText(t('Toast:playerReleased', { name: 'Mika', hero: names.vashti })),
     ).toBeNull();
+  },
+});
+
+const loadingLoader: Loader = ({ parameters }) => {
+  const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+  api.combats.open = () => new Promise(() => undefined);
+  api.combats.subscribe = () => () => {};
+  return { api };
+};
+
+export const Loading = meta.story({
+  tags: ['visual'],
+  loaders: [loadingLoader],
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'CombatScreen');
+    await expect(await canvas.findByRole('button', { name: t('PageHeader:back') })).toBeVisible();
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-card-skeleton]')?.children).toHaveLength(5),
+    );
+    await expect(rowsOf(canvasElement)).toHaveLength(0);
+  },
+});
+
+export const ShareWaitsForLink = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const menu = await openMenu(canvas, t);
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:share') }));
+    const busy = canvas.getByRole('button', { name: t('CombatHeader:menu') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+    await expect(canvas.queryByRole('dialog', { name: t('ShareSheet:title') })).toBeNull();
+  },
+});
+
+export const UndoWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    await damageOrc(canvas, canvasElement, '12', t);
+    const menu = await openMenu(canvas, t);
+    const undo = within(menu).getByRole('menuitem', { name: t('Toast:undo') });
+    await waitFor(() => expect(undo).toBeEnabled());
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(undo);
+    const busy = canvas.getByRole('button', { name: t('CombatHeader:menu') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+    await expect(await hpOf(canvasElement, names.orc, /^2 \/40/)).toBeVisible();
+  },
+});
+
+export const SaveAsPresetWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const menu = await openRowMenu(canvas, canvasElement, names.orc, t);
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(within(menu).getByRole('menuitem', { name: t('Menu:saveAsPreset') }));
+    const row = await rowOf(canvasElement, names.orc);
+    const busy = within(row).getByRole('button', { name: t('CardActions:more') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+  },
+});
+
+export const ReleaseWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const menu = await openRowMenu(canvas, canvasElement, names.vashti, t);
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(within(menu).getByRole('menuitem', { name: t('UnitRow:releaseClaim') }));
+    const row = await rowOf(canvasElement, names.vashti);
+    const busy = within(row).getByRole('button', { name: t('CardActions:more') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+    await expect(within(row).getByText('@Mika')).toBeVisible();
   },
 });

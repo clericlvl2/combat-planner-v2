@@ -111,3 +111,34 @@
 .label {
   white-space: nowrap;
 }
+
+.loader {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.root[data-loading] {
+  position: relative;
+  cursor: progress;
+
+  &[data-variant='primary'] {
+    background: var(--cp-color-ink);
+    color: var(--cp-color-surface);
+  }
+
+  &[data-variant='danger'] {
+    background: var(--cp-role-enemy);
+    color: var(--cp-color-surface);
+  }
+
+  &[data-variant='secondary'],
+  &[data-variant='ghost'] {
+    color: var(--cp-color-ink);
+  }
+
+  & .icon,
+  & .label {
+    visibility: hidden;
+  }
+}

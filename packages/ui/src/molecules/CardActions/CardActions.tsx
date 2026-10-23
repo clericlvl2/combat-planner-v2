@@ -14,6 +14,7 @@ export interface CardActionsProps extends Omit<ComponentPropsWithoutRef<'div'>, 
   moreLabel?: string;
   open?: boolean;
   disabled?: boolean;
+  busy?: boolean;
   'data-tap'?: CardActionsTarget;
 }
 
@@ -24,6 +25,7 @@ export function CardActions({
   moreLabel,
   open = false,
   disabled = false,
+  busy = false,
   'data-tap': tap,
   className,
   ...rest
@@ -51,6 +53,7 @@ export function CardActions({
         data-open={open || undefined}
         data-tap={tap === 'more' ? '' : undefined}
         disabled={disabled}
+        loading={busy}
         onClick={onMore}
       />
     </div>

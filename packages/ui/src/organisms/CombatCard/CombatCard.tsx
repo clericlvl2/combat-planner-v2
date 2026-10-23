@@ -33,6 +33,7 @@ export interface CombatCardProps extends Omit<
   lastPlayedDays?: number | null;
   expanded: boolean;
   menuOpen?: boolean;
+  busy?: boolean;
   duplicateDisabled?: boolean;
   onOpen: () => void;
   onToggle: () => void;
@@ -59,6 +60,7 @@ export function CombatCard({
   lastPlayedDays,
   expanded,
   menuOpen = false,
+  busy = false,
   duplicateDisabled = false,
   onOpen,
   onToggle,
@@ -150,6 +152,7 @@ export function CombatCard({
             target={
               <CardActions
                 open={menuOpen}
+                busy={busy}
                 data-tap={tap === 'edit' || tap === 'more' ? tap : undefined}
                 onEdit={() => onEdit()}
                 onMore={() => onMore()}

@@ -257,7 +257,25 @@ export const DamageDispatched = meta.story({
         name: (label: string) => label.startsWith(`13 /36 ${t('HpBox:staggered')}`),
       }),
     ).toBeVisible();
-    await expect(vashti).toHaveAttribute('data-flash');
+  },
+});
+
+export const OwnChangeShowsOnce = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    const sheet = await openNumpad(canvas);
+    await userEvent.click(within(sheet).getByRole('button', { name: '3' }));
+    api.holdNextReply();
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
+    await waitFor(() => expect(sentBy(api)).toHaveLength(1));
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    const vashti = await rowOf(canvas, ME);
+    await expect(within(vashti).getByRole('button', { name: /^17 \/36/ })).toBeVisible();
+    api.releaseReplies();
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await expect(within(vashti).getByRole('button', { name: /^17 \/36/ })).toBeVisible();
   },
 });
 
@@ -379,7 +397,7 @@ export const LeaveFailureStays = meta.story({
     const dialog = await openLeave(canvas, t);
     fakeApiOf(loaded).failNext('network');
     await userEvent.click(within(dialog).getByRole('button', { name: t('Dialog:leave') }));
-    await expect(await canvas.findByText(t('Toast:serverUnreachable'))).toBeVisible();
+    await expect(await canvas.findByText(t('Toast:serverUnreachableNothingChanged'))).toBeVisible();
     await expect(args.onHome).not.toHaveBeenCalled();
   },
 });
@@ -611,5 +629,115 @@ export const DmLanguage = meta.story({
   play: async ({ canvas }) => {
     await expect(await canvas.findByText('Vorbereitung')).toBeVisible();
     await expect(canvas.getByText('Warte, bis die Spielleitung den Kampf startet')).toBeVisible();
+  },
+});
+
+const loadingLoader: Loader = ({ parameters }) => {
+  const api = new FakeApiClient({ scenario: parameters.scenario as Scenario, delay: 0 });
+  api.play.get = () => new Promise(() => undefined);
+  api.play.subscribe = () => () => {};
+  return { api };
+};
+
+export const Loading = meta.story({
+  tags: ['visual'],
+  loaders: [loadingLoader],
+  play: async ({ canvasElement }) => {
+    await waitFor(() =>
+      expect(canvasElement.querySelector('[data-card-skeleton]')?.children).toHaveLength(5),
+    );
+    await expect(canvasElement.querySelector('[data-unit-role]')).toBeNull();
+  },
+});
+
+export const HpChangeShowsAtOnce = meta.story({
+  name: 'HP Change Shows At Once',
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const sheet = await openNumpad(canvas);
+    await userEvent.click(within(sheet).getByRole('button', { name: '7' }));
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(within(sheet).getByRole('button', { name: t('HistoryRow:damage') }));
+    const vashti = await rowOf(canvas, ME);
+    await expect(await within(vashti).findByRole('button', { name: /^13 \/36/ })).toBeVisible();
+  },
+});
+
+export const SetMaxWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const sheet = await openNumpad(canvas);
+    await userEvent.click(within(sheet).getByRole('button', { name: '4' }));
+    await userEvent.click(within(sheet).getByRole('button', { name: '0' }));
+    fakeApiOf(loaded).holdNext();
+    const setMax = within(sheet).getByRole('button', { name: t('NumpadSheet:setMax') });
+    await userEvent.click(setMax);
+    const busy = setMax;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+  },
+});
+
+export const ConditionWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await expandOwn(canvas);
+    await userEvent.click(canvas.getByRole('button', { name: t('PlayerRow:conditions') }));
+    const sheet = await canvas.findByRole('dialog', { name: t('PlayerRow:conditions') });
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(within(sheet).getByRole('checkbox', { name: t('Chip:weakened') }));
+    const busy = within(sheet).getByRole('button', { name: t('ConditionPicker:done') });
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+  },
+});
+
+export const ReleaseWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await expandOwn(canvas);
+    const more = canvas.getByRole('button', { name: t('CardActions:more') });
+    await userEvent.click(more);
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('Menu:releaseClaim') }));
+    const busy = more;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+  },
+});
+
+export const LeaveWaits = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ args, canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const dialog = await openLeave(canvas, t);
+    fakeApiOf(loaded).holdNext();
+    const confirm = within(dialog).getByRole('button', { name: t('Dialog:leave') });
+    await userEvent.click(confirm);
+    const busy = confirm;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
+    await expect(args.onHome).not.toHaveBeenCalled();
+  },
+});
+
+export const JoinWaits = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: joinScenario },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await typeName(canvas, t);
+    await userEvent.click(canvas.getByRole('checkbox', { name: ME }));
+    fakeApiOf(loaded).holdNext();
+    const join = canvas.getByRole('button', { name: t('Heroes:join') });
+    await userEvent.click(join);
+    const busy = join;
+    await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
+    await expect(busy).toBeDisabled();
   },
 });

@@ -24,6 +24,7 @@ export interface PresetCardProps extends Omit<ComponentPropsWithoutRef<'article'
   onEdit: () => void;
   onMore: () => void;
   menuOpened?: boolean;
+  busy?: boolean;
   duplicateDisabled?: boolean;
   onMenuClose?: () => void;
   onDuplicate?: () => void;
@@ -45,6 +46,7 @@ export function PresetCard({
   onEdit,
   onMore,
   menuOpened = false,
+  busy = false,
   duplicateDisabled = false,
   onMenuClose,
   onDuplicate,
@@ -75,7 +77,7 @@ export function PresetCard({
       data-expanded={expanded || undefined}
       onClick={handleClick}
     >
-      <RoleBlock className={classes.role} fill unitRole={preset.role} top={{ kind: 'none' }} />
+      <RoleBlock className={classes.role} fill tile unitRole={preset.role} top={{ kind: 'none' }} />
       <div className={classes.main}>
         <span className={classes.name} data-part="name">
           {preset.name}
@@ -118,6 +120,7 @@ export function PresetCard({
               <CardActions
                 className={classes.cardActions}
                 open={menuOpen}
+                busy={busy}
                 onEdit={onEdit}
                 onMore={() => onMore()}
               />

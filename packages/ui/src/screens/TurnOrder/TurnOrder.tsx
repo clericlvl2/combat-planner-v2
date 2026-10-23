@@ -7,23 +7,27 @@ import type {
   UnitId,
 } from '@combat-planner/domain';
 import { IconHourglass, IconUserOff, IconUsers } from '@tabler/icons-react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
+import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
+import { TurnStrip } from '../../molecules/TurnStrip/TurnStrip.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
+import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
 import { Menu } from '../../organisms/Menu/Menu.tsx';
-import { NumpadSheet, useHpFlash } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
+import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
+import { useMotion } from '../../provider.tsx';
 import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
@@ -37,7 +41,7 @@ export interface TurnOrderProps {
   random?: () => number;
 }
 
-type Panel = 'initiative' | 'more' | 'conditions' | 'history' | 'numpad' | 'edit';
+type Panel = 'initiative' | 'more' | 'conditions' | 'defenses' | 'history' | 'numpad' | 'edit';
 
 interface Open {
   panel: Panel;
@@ -70,11 +74,31 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   const { locale } = useLocaleChoice();
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Open | null>(null);
-  const [flashId, setFlashId] = useState<UnitId | null>(null);
-  const { flashing, flash } = useHpFlash();
+  const hpChanges = useHpChanges(combat.units);
+  const [toggling, setToggling] = useState(0);
+  const [releasingId, setReleasingId] = useState<UnitId | null>(null);
+
+  const motion = useMotion();
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   const setup = combat.status === 'setup';
   const own = (unit: PlayerUnit) => unit.role !== 'enemy' && unit.mine === true;
+  const ownById = (unitId: UnitId | null) =>
+    setup ? undefined : combat.units.find((unit) => unit.id === unitId && own(unit));
+  const turnHero = ownById(combat.activeUnitId);
+  const nextHero = turnHero ? undefined : ownById(combat.nextUnitId);
+  const turnHeroId = turnHero?.id ?? null;
+
+  const revealUnit = (unitId: UnitId) => {
+    const row = viewportRef.current?.querySelector(`[data-unit-id="${unitId}"]`);
+    row?.scrollIntoView({ block: 'center', behavior: motion === 'off' ? 'instant' : 'smooth' });
+  };
+  const revealRef = useRef(revealUnit);
+  revealRef.current = revealUnit;
+
+  useEffect(() => {
+    if (turnHeroId !== null) revealRef.current(turnHeroId);
+  }, [turnHeroId]);
   const openUnit = combat.units.find((unit) => unit.id === open?.unitId && own(unit));
   const panelOf = (panel: Panel): PlayerUnit | undefined =>
     open?.panel === panel ? openUnit : undefined;
@@ -94,17 +118,19 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   };
 
   const applyHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number) => {
+    const sent = dispatch({ ...target(unit), type: hpActionTypes[kind], amount });
+    if (kind === 'max') return sent;
     close();
-    void dispatch({ ...target(unit), type: hpActionTypes[kind], amount }).then((result) => {
-      if (!result.applied) return;
-      setFlashId(unit.id);
-      flash();
-    });
+    return undefined;
   };
 
   const changeConditions = (unit: PlayerUnit, next: Condition[]) => {
     const condition = toggledCondition(unit.conditions, next);
-    if (condition) send({ ...target(unit), type: 'toggleCondition', condition });
+    if (!condition) return;
+    setToggling((count) => count + 1);
+    void dispatch({ ...target(unit), type: 'toggleCondition', condition }).finally(() =>
+      setToggling((count) => count - 1),
+    );
   };
 
   const saveEdit = (unit: PlayerUnit, draft: UnitDraft) => {
@@ -114,13 +140,18 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
 
   const selectMore = (unit: PlayerUnit, id: string) => {
     if (id !== RELEASE_CLAIM) return;
-    send({ ...target(unit), type: 'releaseUnit' });
-    setExpandedId(null);
+    close();
+    setReleasingId(unit.id);
+    void dispatch({ ...target(unit), type: 'releaseUnit' }).finally(() => {
+      setReleasingId(null);
+      setExpandedId(null);
+    });
   };
 
   const numpadUnit = panelOf('numpad');
   const conditionsUnit = panelOf('conditions');
   const historyUnit = panelOf('history');
+  const defensesUnit = panelOf('defenses');
   const editUnit = panelOf('edit');
 
   return (
@@ -147,7 +178,20 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           onLeave?.();
         }}
       />
-      <ScrollList className={classes.list} contentClassName={classes.listContent}>
+      {turnHero ? (
+        <TurnStrip kind="turn" onClick={() => revealUnit(turnHero.id)}>
+          {t('yourTurn', { name: turnHero.name })}
+        </TurnStrip>
+      ) : nextHero ? (
+        <TurnStrip kind="next" onClick={() => revealUnit(nextHero.id)}>
+          {t('youAreNext')}
+        </TurnStrip>
+      ) : null}
+      <ScrollList
+        className={classes.list}
+        contentClassName={classes.listContent}
+        viewportRef={viewportRef}
+      >
         {setup && combat.units.length > 0 ? (
           <div className={classes.waiting} role="status">
             <IconHourglass size={20} stroke={2} aria-hidden="true" />
@@ -157,10 +201,10 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
         {combat.units.map((unit) => {
           const mine = own(unit);
           return (
-            <div key={unit.id} className={classes.slot}>
+            <div key={unit.id} className={classes.slot} data-unit-id={unit.id}>
               <PlayerRow
                 className={classes.row}
-                flash={flashing && flashId === unit.id}
+                hpChange={hpChanges.get(unit.id)}
                 unit={unit}
                 mine={mine}
                 expanded={mine && expandedId === unit.id}
@@ -168,6 +212,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
                 setup={setup}
                 conditionsOpen={isOpen('conditions', unit)}
                 moreOpen={isOpen('more', unit)}
+                busy={releasingId === unit.id}
                 onToggle={() => {
                   if (expandedId === unit.id) close();
                   setExpandedId((current) => (current === unit.id ? null : unit.id));
@@ -175,6 +220,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
                 onInitiative={mine ? () => show('initiative', unit) : noop}
                 onHp={mine ? () => show('numpad', unit) : noop}
                 onConditions={() => show('conditions', unit)}
+                onDefenses={mine ? () => show('defenses', unit) : undefined}
                 onHistory={() => show('history', unit)}
                 onNoteChange={(note) => send({ ...target(unit), type: 'editNote', note })}
                 onEdit={() => show('edit', unit)}
@@ -235,6 +281,21 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           unitName={conditionsUnit.name}
           value={conditionsUnit.conditions}
           onChange={(next) => changeConditions(conditionsUnit, next)}
+          onClose={close}
+          pending={toggling > 0}
+        />
+      ) : null}
+      {defensesUnit ? (
+        <DefenseSheet
+          opened
+          unitName={defensesUnit.name}
+          base={{ ac: defensesUnit.ac ?? 0, pd: defensesUnit.pd ?? 0, md: defensesUnit.md ?? 0 }}
+          mods={{
+            ac: defensesUnit.acMod ?? 0,
+            pd: defensesUnit.pdMod ?? 0,
+            md: defensesUnit.mdMod ?? 0,
+          }}
+          onChange={(mods) => send({ ...target(defensesUnit), type: 'setDefenseMods', ...mods })}
           onClose={close}
         />
       ) : null}

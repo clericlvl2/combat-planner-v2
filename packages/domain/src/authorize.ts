@@ -12,6 +12,7 @@ export const PLAYER_ACTION_TYPES = [
   'setMaxHp',
   'toggleCondition',
   'editNote',
+  'setDefenseMods',
   'claimUnit',
   'releaseUnit',
 ] as const satisfies readonly Action['type'][];

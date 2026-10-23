@@ -1,5 +1,7 @@
 {
   "waiting": "En attente du lancement du combat par le MJ",
   "noUnitsTitle": "Aucune unité pour l’instant",
-  "noUnitsBody": "Le MJ prépare le combat. Cette page se met à jour toute seule."
+  "noUnitsBody": "Le MJ prépare le combat. Cette page se met à jour toute seule.",
+  "youAreNext": "Vous êtes le prochain",
+  "yourTurn": "Votre tour · {{name}}"
 }

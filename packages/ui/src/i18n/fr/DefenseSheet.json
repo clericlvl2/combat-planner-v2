@@ -1,0 +1,5 @@
+{
+  "title": "Défenses de {{name}}",
+  "base": "base {{value}}",
+  "reset": "Réinitialiser"
+}

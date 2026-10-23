@@ -45,6 +45,9 @@ describe('types', () => {
       ac: 10,
       pd: 10,
       md: 10,
+      acMod: 0,
+      pdMod: 0,
+      mdMod: 0,
       note: '',
       conditions: [],
       disabled: false,
@@ -77,13 +80,15 @@ describe('types', () => {
     const projection: PlayerCombat = {
       ...playerFields,
       myName: null,
+      nextUnitId: null,
+      lastActionId: null,
       units: [
         {
           id: unit.id,
           name: unit.name,
           role: unit.role,
           healthStatus: 'full',
-          healthSegments: 4,
+          healthSegments: 2,
           conditions: [],
           position: 1,
           initiative: null,

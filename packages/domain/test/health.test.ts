@@ -32,27 +32,35 @@ describe('healthStatus', () => {
 });
 
 describe('healthSegments', () => {
-  it('HP segments: Full 4, Wounded 3, Staggered 2 when HP ≥ 25% of max else 1, Dead 0.', () => {
-    expect(healthSegments('full')).toBe(4);
-    expect(healthSegments('wounded')).toBe(3);
-    expect(healthSegments('staggered', 3, 10)).toBe(2);
-    expect(healthSegments('staggered', 25, 100)).toBe(2);
-    expect(healthSegments('staggered', 24, 100)).toBe(1);
-    expect(healthSegments('staggered', 1, 10)).toBe(1);
+  it('HP segments: Full and Wounded 2, Staggered 1, Unconscious and Dead 0.', () => {
+    expect(healthSegments('full')).toBe(2);
+    expect(healthSegments('wounded')).toBe(2);
+    expect(healthSegments('staggered')).toBe(1);
     expect(healthSegments('unconscious')).toBe(0);
     expect(healthSegments('dead')).toBe(0);
   });
 
-  it('shows 2 segments for a staggered unit whose HP is hidden', () => {
-    expect(healthSegments('staggered')).toBe(2);
+  const segmentsOf = (hp: number, maxHp: number, role: 'hero' | 'enemy') =>
+    healthSegments(healthStatus(hp, maxHp, role));
+
+  it.each(['hero', 'enemy'] as const)('keeps two segments down to half max HP for a %s', (role) => {
+    expect(segmentsOf(40, 40, role)).toBe(2);
+    expect(segmentsOf(39, 40, role)).toBe(2);
+    expect(segmentsOf(20, 40, role)).toBe(2);
+    expect(segmentsOf(19, 40, role)).toBe(1);
+    expect(segmentsOf(1, 40, role)).toBe(1);
   });
 
-  it('agrees with healthStatus on the boundaries', () => {
-    expect(healthSegments(healthStatus(10, 10, 'enemy'), 10, 10)).toBe(4);
-    expect(healthSegments(healthStatus(5, 10, 'enemy'), 5, 10)).toBe(3);
-    expect(healthSegments(healthStatus(4, 10, 'enemy'), 4, 10)).toBe(2);
-    expect(healthSegments(healthStatus(2, 10, 'enemy'), 2, 10)).toBe(1);
-    expect(healthSegments(healthStatus(0, 10, 'enemy'), 0, 10)).toBe(0);
-    expect(healthSegments(healthStatus(0, 10, 'hero'), 0, 10)).toBe(0);
+  it('rounds half of an odd max HP up', () => {
+    expect(segmentsOf(21, 41, 'enemy')).toBe(2);
+    expect(segmentsOf(20, 41, 'enemy')).toBe(1);
+  });
+
+  it('shows no segments at 0 HP and below', () => {
+    expect(segmentsOf(0, 40, 'hero')).toBe(0);
+    expect(segmentsOf(-5, 40, 'hero')).toBe(0);
+    expect(segmentsOf(-20, 40, 'hero')).toBe(0);
+    expect(segmentsOf(0, 40, 'enemy')).toBe(0);
+    expect(segmentsOf(-5, 40, 'enemy')).toBe(0);
   });
 });

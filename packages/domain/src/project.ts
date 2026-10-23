@@ -1,6 +1,15 @@
 import { healthSegments, healthStatus } from './healthStatus.ts';
+import { nextTurnTarget } from './reduce.ts';
 import { turnOrder } from './sort.ts';
-import type { Combat, PlayerCombat, PlayerId, PlayerUnit, Unit, Viewer } from './types.ts';
+import type {
+  ActionId,
+  Combat,
+  PlayerCombat,
+  PlayerId,
+  PlayerUnit,
+  Unit,
+  Viewer,
+} from './types.ts';
 
 type DmViewer = Extract<Viewer, { kind: 'dm' }>;
 type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
@@ -8,6 +17,11 @@ type PlayerViewer = Extract<Viewer, { kind: 'player' }>;
 const visibleUnits = (combat: Combat): Unit[] => {
   const order = combat.status === 'active' ? turnOrder(combat.units) : combat.units;
   return order.filter((unit) => !unit.disabled);
+};
+
+const nextVisibleUnitId = (combat: Combat): string | null => {
+  if (combat.status !== 'active' || combat.activeUnitId === null) return null;
+  return nextTurnTarget(combat)?.unitId ?? null;
 };
 
 const playerUnit = (
@@ -22,7 +36,7 @@ const playerUnit = (
     name: unit.name,
     role: unit.role,
     healthStatus: status,
-    healthSegments: healthSegments(status, unit.hp, unit.maxHp),
+    healthSegments: healthSegments(status),
     conditions: unit.conditions,
     position,
     initiative: unit.initiative,
@@ -37,6 +51,9 @@ const playerUnit = (
     ac: unit.ac,
     pd: unit.pd,
     md: unit.md,
+    acMod: unit.acMod,
+    pdMod: unit.pdMod,
+    mdMod: unit.mdMod,
   };
   if (unit.role === 'enemy') return everyColumn;
   if (unit.claimedBy === playerId) {
@@ -51,9 +68,21 @@ const playerUnit = (
 };
 
 export function project(combat: Combat, viewer: DmViewer): Combat;
-export function project(combat: Combat, viewer: PlayerViewer): PlayerCombat;
-export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat;
-export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat {
+export function project(
+  combat: Combat,
+  viewer: PlayerViewer,
+  lastActionId?: ActionId | null,
+): PlayerCombat;
+export function project(
+  combat: Combat,
+  viewer: Viewer,
+  lastActionId?: ActionId | null,
+): Combat | PlayerCombat;
+export function project(
+  combat: Combat,
+  viewer: Viewer,
+  lastActionId: ActionId | null = null,
+): Combat | PlayerCombat {
   if (viewer.kind === 'dm') return combat;
   const visible = visibleUnits(combat);
   const activeVisible = visible.some((unit) => unit.id === combat.activeUnitId);
@@ -66,6 +95,8 @@ export function project(combat: Combat, viewer: Viewer): Combat | PlayerCombat {
     round: combat.round,
     escalation: combat.escalation,
     activeUnitId: activeVisible ? combat.activeUnitId : null,
+    nextUnitId: nextVisibleUnitId(combat),
+    lastActionId,
     lastPlayedAt: combat.lastPlayedAt,
     version: combat.version,
     myName: combat.players[viewer.playerId] ?? null,

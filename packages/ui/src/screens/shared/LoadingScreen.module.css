@@ -1,0 +1,18 @@
+.root {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+.list {
+  flex: 1;
+  min-height: 0;
+}
+
+.listContent {
+  padding: var(--cp-list-inset-top) 12px var(--cp-list-inset-bottom);
+}

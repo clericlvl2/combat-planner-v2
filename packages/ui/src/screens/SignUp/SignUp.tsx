@@ -38,7 +38,8 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
   const emailValid = emailSchema.safeParse(address).success;
   const passwordValid = passwordSchema.safeParse(password).success;
   const taken = takenEmail !== null && takenEmail === address;
-  const ready = nameValid && emailValid && passwordValid && !taken && !sending;
+  const filled = nameValid && emailValid && passwordValid && !taken;
+  const ready = filled && !sending;
 
   const touch = (field: Field) => setTouched((current) => new Set(current).add(field));
 
@@ -116,7 +117,14 @@ export function SignUp({ onRedirect = assignLocation }: SignUpProps) {
         onBlur={() => touch('password')}
         onKeyDown={onEnter}
       />
-      <Button variant="primary" size="M" fullWidth disabled={!ready} onClick={submit}>
+      <Button
+        variant="primary"
+        size="M"
+        fullWidth
+        disabled={!filled}
+        loading={sending}
+        onClick={submit}
+      >
         {t('submit')}
       </Button>
       <SocialButtons onRedirect={onRedirect} />

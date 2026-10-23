@@ -25,9 +25,14 @@ export interface ToastProps {
   aboveBottomBar?: boolean;
 }
 
-export const toastDuration = { plain: 4000, withAction: 8000 } as const;
+export const toastDuration = { plain: 4000, withAction: 8000, error: 5000 } as const;
 
 export const toastExitDuration = 150;
+
+export const defaultDuration = (tone: ToastTone, hasAction: boolean): number => {
+  if (hasAction) return toastDuration.withAction;
+  return tone === 'error' ? toastDuration.error : toastDuration.plain;
+};
 
 const px = (value: number) => `${value}px`;
 
@@ -66,13 +71,7 @@ export function Toast({
     return () => clearTimeout(timer);
   }, [leaving]);
 
-  const hasAction = action !== undefined;
-  const delay =
-    duration === undefined
-      ? hasAction
-        ? toastDuration.withAction
-        : toastDuration.plain
-      : duration;
+  const delay = duration === undefined ? defaultDuration(tone, action !== undefined) : duration;
 
   useEffect(() => {
     if (delay === null || motion === 'off') return;
@@ -97,7 +96,7 @@ export function Toast({
       style={style}
     >
       <span className={classes.tone} aria-hidden="true">
-        <IconComponent size={20} stroke={2} />
+        <IconComponent size={16} stroke={2} />
       </span>
       <span className={classes.message}>{message}</span>
       {action ? (
@@ -121,7 +120,7 @@ export function Toast({
         aria-label={t('dismiss')}
         onClick={hide}
       >
-        <IconX size={20} stroke={2} aria-hidden="true" />
+        <IconX size={18} stroke={2} aria-hidden="true" />
       </UnstyledButton>
     </div>
   );

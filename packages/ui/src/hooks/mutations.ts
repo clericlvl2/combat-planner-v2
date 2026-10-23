@@ -62,7 +62,7 @@ export function mutation<Args extends unknown[], Result>(
               return;
             }
             let retried = false;
-            const toast = errorToast(error, context.t, () => {
+            const toast = errorToast(error, context.t, 'serverUnreachableNothingChanged', () => {
               retried = true;
               attempt();
             });

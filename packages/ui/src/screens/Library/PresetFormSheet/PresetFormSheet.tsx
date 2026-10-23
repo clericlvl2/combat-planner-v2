@@ -111,7 +111,7 @@ export function PresetFormSheet({
             data-sheet-action=""
             variant="primary"
             fullWidth
-            disabled={pending}
+            loading={pending}
             onClick={() => onSubmit({ ...draft, name: trimmed || fallbackName })}
           >
             {mode === 'create' ? t('create') : t('save')}

@@ -19,6 +19,7 @@
   "undoSetMaxHp": "Rückgängig: Max. TP {{amount}} für {{name}}",
   "undoToggleCondition": "Rückgängig: {{condition}} bei {{name}}",
   "undoEditNote": "Rückgängig: Notiz zu {{name}}",
+  "undoSetDefenseMods": "Rückgängig: Verteidigungen von {{name}}",
   "nextWrap": "{{name}} · Runde {{round}}",
   "presetFailed": "Vorlage konnte nicht gespeichert werden. Versuche es erneut.",
   "linkFailed": "Spielerlink konnte nicht geladen werden. Versuche es erneut."

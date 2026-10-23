@@ -14,6 +14,7 @@ export interface ConditionPickerProps {
   value: readonly Condition[];
   onChange: (value: Condition[]) => void;
   onClose: () => void;
+  pending?: boolean;
 }
 
 const gridStyle = {
@@ -26,6 +27,7 @@ export function ConditionPicker({
   value,
   onChange,
   onClose,
+  pending = false,
 }: ConditionPickerProps) {
   const { t, i18n } = useTranslation('ConditionPicker');
   const collator = new Intl.Collator(i18n.language);
@@ -45,7 +47,13 @@ export function ConditionPicker({
       subtitle={unitName}
       onClose={onClose}
       actions={
-        <Button variant="primary" fullWidth onClick={onClose} data-sheet-action="">
+        <Button
+          variant="primary"
+          fullWidth
+          loading={pending}
+          onClick={onClose}
+          data-sheet-action=""
+        >
           {t('done')}
         </Button>
       }

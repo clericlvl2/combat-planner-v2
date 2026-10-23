@@ -122,6 +122,7 @@ export const fontFamilies = {
 } as const;
 
 export const fontSizes = {
+  capsTile: 7,
   caps: 8,
   micro: 11,
   meta: 12,
@@ -144,6 +145,7 @@ export const spacing = [4, 8, 12, 16, 24, 32] as const;
 export const radius = {
   segment: 2,
   field: 12,
+  tile: 10,
   card: 16,
   sheet: 24,
   full: 9999,
@@ -158,6 +160,22 @@ export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as co
 export const tapMarker = { width: 3, color: interaction.tapMarker, offset: 2 } as const;
 
 const scrollShadow = { color: base.ink, alpha: 12 } as const;
+
+const activeShadow = {
+  color: base.ink,
+  layers: [
+    { y: 6, blur: 18, alpha: 16 },
+    { y: 1, blur: 3, alpha: 8 },
+  ],
+} as const;
+
+const shadowLayers = ({ color, layers }: typeof activeShadow) =>
+  layers
+    .map(
+      ({ y, blur, alpha }) =>
+        `0 ${y}px ${blur}px color-mix(in srgb, ${color} ${alpha}%, transparent)`,
+    )
+    .join(', ');
 
 const px = (value: number) => `${value}px`;
 
@@ -199,8 +217,15 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-tap-target': `${layout.tapTarget}px`,
     '--cp-scroll-shadow': `${layout.scrollShadow}px`,
     '--cp-scroll-shadow-color': `color-mix(in srgb, ${scrollShadow.color} ${scrollShadow.alpha}%, transparent)`,
+    '--cp-turn-strip': `${layout.turnStrip}px`,
+    '--cp-hp-number-duration': `${layout.hpNumberMs}ms`,
     '--cp-list-inset-top': `${layout.listInset.top}px`,
     '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
+    '--cp-card-gap': `${layout.cardGap}px`,
+    '--cp-active-scale': String(layout.activeScale),
+    '--cp-active-shadow': shadowLayers(activeShadow),
+    '--cp-role-tile-width': `${layout.roleTile.width}px`,
+    '--cp-role-tile-inset': `${layout.roleTile.inset}px`,
   },
   light: {},
   dark: {},
@@ -250,6 +275,7 @@ export const theme: MantineThemeOverride = createTheme({
     lg: px(fontSizes.number),
     xl: px(fontSizes.heading),
     caps: px(fontSizes.caps),
+    capsTile: px(fontSizes.capsTile),
     micro: px(fontSizes.micro),
     meta: px(fontSizes.meta),
     small: px(fontSizes.small),
@@ -284,6 +310,7 @@ export const theme: MantineThemeOverride = createTheme({
     lg: px(radius.sheet),
     xl: px(radius.full),
     segment: px(radius.segment),
+    tile: px(radius.tile),
     field: px(radius.field),
     card: px(radius.card),
     sheet: px(radius.sheet),

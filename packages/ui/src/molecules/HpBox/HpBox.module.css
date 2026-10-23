@@ -81,6 +81,7 @@
   font-family: var(--cp-font-display);
   font-size: var(--mantine-font-size-small);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--cp-color-ink);
 
   [data-off] & {

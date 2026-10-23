@@ -1,0 +1,5 @@
+{
+  "title": "Defenses of {{name}}",
+  "base": "base {{value}}",
+  "reset": "Reset"
+}

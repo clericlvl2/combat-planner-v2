@@ -1,6 +1,7 @@
 {
   "conditions": "Conditions",
   "hpHistory": "HP History",
+  "defenses": "Defense bonus/penalty",
   "charmed": "charmed",
   "confused": "confused",
   "dazed": "dazed",
