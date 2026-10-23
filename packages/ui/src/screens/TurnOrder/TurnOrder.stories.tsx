@@ -157,9 +157,10 @@ export const EditOwnHeroTypeLocked = meta.story({
       'true',
     );
     await expect(within(form).getByRole('radiogroup')).toHaveAttribute('aria-disabled', 'true');
-    await expect(
-      within(form).getByRole('spinbutton', { name: t('NumberField:maxHp') }),
-    ).toBeDisabled();
+    const maxHp = within(form).getByRole('spinbutton', { name: t('NumberField:maxHp') });
+    await expect(maxHp).toBeEnabled();
+    await userEvent.clear(maxHp);
+    await userEvent.type(maxHp, '40');
     const name = within(form).getByRole('textbox', { name: t('UnitForm:name') });
     await userEvent.clear(name);
     await userEvent.type(name, 'Vashti the Bold');
@@ -171,7 +172,7 @@ export const EditOwnHeroTypeLocked = meta.story({
           unitId: unitIds.vashti,
           name: 'Vashti the Bold',
           role: 'hero',
-          maxHp: 36,
+          maxHp: 40,
         }),
       ]),
     );

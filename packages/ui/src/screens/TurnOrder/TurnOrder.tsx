@@ -238,7 +238,6 @@ export function TurnOrder({ combat, dispatch, onHeroes, random }: TurnOrderProps
           opened
           mode="edit"
           lockRole
-          lockMaxHp
           value={{
             name: editUnit.name,
             role: 'hero',

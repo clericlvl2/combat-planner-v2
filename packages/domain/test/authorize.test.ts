@@ -252,14 +252,15 @@ describe('Unit actions, Player on own Hero', () => {
     );
   });
 
-  it("rejects a player's Edit that changes max HP", () => {
-    expect(codeOf(table(), { type: 'editUnit', unitId: id(1), ...form, maxHp: 12 }, PLAYER)).toBe(
+  it("accepts a player's Edit that changes max HP", () => {
+    const edited = ok(
+      run(table(), { type: 'editUnit', unitId: id(1), ...form, maxHp: 12 }, PLAYER),
+    ).combat;
+    expect(u(edited, 1).maxHp).toBe(12);
+    expect(verdict(table(), { type: 'editUnit', unitId: id(1), ...form }, PLAYER)).toBe(true);
+    expect(codeOf(table(), { type: 'editUnit', unitId: id(4), ...form, maxHp: 12 }, PLAYER)).toBe(
       'forbidden',
     );
-    expect(verdict(table(), { type: 'editUnit', unitId: id(1), ...form, maxHp: 12 }, DM)).toBe(
-      true,
-    );
-    expect(verdict(table(), { type: 'editUnit', unitId: id(1), ...form }, PLAYER)).toBe(true);
   });
 
   it('Toggle condition: picker', () => {
