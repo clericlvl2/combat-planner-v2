@@ -1,6 +1,15 @@
 import { LIMITS } from '@combat-planner/domain';
 import { Hono } from 'hono';
-import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vite-plus/test';
+import {
+  afterAll,
+  afterEach,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vite-plus/test';
 import { createAuth, createAuthApp } from '../src/auth/index.ts';
 import { sessionSchema } from '../src/client.ts';
 import type { ApiEnv } from '../src/env.ts';
@@ -23,7 +32,16 @@ afterAll(() => {
   opened.close();
 });
 
+let rateLimitWindow = Date.now();
+
+beforeEach(() => {
+  rateLimitWindow += 61_000;
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(rateLimitWindow);
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -555,5 +573,35 @@ describe('auth client over a Node HTTP transport', () => {
     } finally {
       configured.close();
     }
+  });
+});
+
+describe('auth rate limit', () => {
+  const fromIp = (ip: string, route: string, body: unknown) =>
+    opened.app.request(route, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'x-forwarded-for': ip },
+      body: JSON.stringify(body),
+    });
+
+  it('refuses the 6th email sign-in in a minute from one IP with 429', async () => {
+    const attempt = { email: 'nobody@example.com', password: PASSWORD };
+    for (let index = 0; index < 5; index += 1) {
+      expect((await fromIp('203.0.113.7', '/auth/sign-in/email', attempt)).status).toBe(401);
+    }
+    expect((await fromIp('203.0.113.7', '/auth/sign-in/email', attempt)).status).toBe(429);
+    expect((await fromIp('203.0.113.8', '/auth/sign-in/email', attempt)).status).toBe(401);
+  });
+
+  it('refuses the 4th email sign-up in a minute from one IP with 429', async () => {
+    const attempt = (index: number) => ({
+      name: 'Dana',
+      email: `burst-${index}@example.com`,
+      password: PASSWORD,
+    });
+    for (let index = 0; index < 3; index += 1) {
+      expect((await fromIp('203.0.113.9', '/auth/sign-up/email', attempt(index))).status).toBe(200);
+    }
+    expect((await fromIp('203.0.113.9', '/auth/sign-up/email', attempt(3))).status).toBe(429);
   });
 });

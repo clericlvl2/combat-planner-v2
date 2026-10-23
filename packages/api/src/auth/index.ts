@@ -41,7 +41,13 @@ const DISABLED_AUTH_PATHS = [
 ];
 
 const EMAIL_SIGN_UP = '/sign-up/email';
+const EMAIL_SIGN_IN = '/sign-in/email';
 const GET_SESSION = '/get-session';
+
+const AUTH_RATE_LIMITS = {
+  [EMAIL_SIGN_IN]: { window: 60, max: 5 },
+  [EMAIL_SIGN_UP]: { window: 60, max: 3 },
+};
 
 const EMAIL_TAKEN = {
   code: 'emailTaken',
@@ -96,7 +102,9 @@ export function createAuth({ db, env, originCheck }: CreateAuthOptions) {
     basePath: AUTH_BASE_PATH,
     trustedOrigins: env.trustedOrigins,
     disabledPaths: DISABLED_AUTH_PATHS,
+    rateLimit: { enabled: true, storage: 'memory', customRules: AUTH_RATE_LIMITS },
     advanced: {
+      ipAddress: { ipAddressHeaders: ['x-forwarded-for'] },
       disableOriginCheck: originCheck === undefined ? undefined : !originCheck,
       useSecureCookies: env.betterAuthUrl?.startsWith('https:') === true,
     },

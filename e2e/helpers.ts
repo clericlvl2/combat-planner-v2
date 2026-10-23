@@ -18,8 +18,14 @@ export function uniqueEmail(prefix = 'dm'): string {
   return `${prefix}-${Date.now().toString(36)}-${counter}-${random}@example.com`;
 }
 
+export function uniqueClientIp(): string {
+  const octet = () => Math.floor(Math.random() * 254) + 1;
+  return `198.18.${octet()}.${octet()}`;
+}
+
 export async function signUp(page: Page, displayName = 'Dana'): Promise<Credentials> {
   const credentials = { displayName, email: uniqueEmail(), password: PASSWORD };
+  await page.context().setExtraHTTPHeaders({ 'x-forwarded-for': uniqueClientIp() });
   await page.goto('/auth/sign-up');
   await page.getByLabel(t('SignUp:displayName')).fill(credentials.displayName);
   await page.getByLabel(t('SignUp:email')).fill(credentials.email);
