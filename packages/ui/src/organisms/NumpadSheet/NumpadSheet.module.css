@@ -258,6 +258,8 @@
 .actions > .action[data-kind] {
   min-width: 0;
   border-radius: var(--mantine-radius-field);
+  font-family: var(--cp-font-ui);
+  font-weight: 600;
 
   &[data-kind='damage'] {
     grid-column: 1 / -1;
