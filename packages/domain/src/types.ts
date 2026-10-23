@@ -40,7 +40,7 @@ export const CONDITIONS = [
 ] as const;
 export type Condition = (typeof CONDITIONS)[number];
 
-export const HEALTH_STATUSES = ['full', 'wounded', 'staggered', 'dead'] as const;
+export const HEALTH_STATUSES = ['full', 'wounded', 'staggered', 'unconscious', 'dead'] as const;
 export type HealthStatus = (typeof HEALTH_STATUSES)[number];
 
 export const HP_HISTORY_KINDS = ['damage', 'heal', 'temp', 'max'] as const;

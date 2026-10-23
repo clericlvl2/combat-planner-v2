@@ -30,6 +30,11 @@
     --hp-box-tint: var(--cp-health-tint-staggered);
   }
 
+  &[data-status='unconscious'] {
+    --hp-box-status: var(--cp-health-unconscious);
+    --hp-box-tint: var(--cp-health-tint-unconscious);
+  }
+
   &[data-status='dead'] {
     --hp-box-status: var(--cp-health-dead);
     --hp-box-tint: var(--cp-color-soft);
@@ -91,7 +96,13 @@
 
 .pips {
   display: flex;
+  align-items: center;
   gap: 3px;
+}
+
+.sleep {
+  flex: none;
+  color: var(--hp-box-status);
 }
 
 .pip {

@@ -196,6 +196,15 @@ describe('Transitions', () => {
     expect(wrapped.escalation).toBe(1);
   });
 
+  it('Next turn stops on an unconscious hero and passes a dead one', () => {
+    const units = [
+      makeUnit({ id: id(1), initiative: 20 }),
+      makeUnit({ id: id(2), initiative: 15, role: 'hero', maxHp: 30, hp: -15 }),
+      makeUnit({ id: id(3), initiative: 10, role: 'hero', maxHp: 30, hp: -14 }),
+    ];
+    expect(go(active(units), { type: 'nextTurn' }).activeUnitId).toBe(id(3));
+  });
+
   it('Next turn | active', () => {
     expect(codeOf(setup([makeUnit()]), { type: 'nextTurn' })).toBe('blocked');
   });

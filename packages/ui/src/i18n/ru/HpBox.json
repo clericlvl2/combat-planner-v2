@@ -2,6 +2,7 @@
   "full": "Невредим",
   "wounded": "Ранен",
   "staggered": "Шатается",
+  "unconscious": "Без сознания",
   "dead": "Мёртв",
   "temp": "+{{amount}} врем.",
   "hp": "ОЗ"

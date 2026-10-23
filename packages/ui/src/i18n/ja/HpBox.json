@@ -2,6 +2,7 @@
   "full": "無傷",
   "wounded": "負傷",
   "staggered": "よろめき",
+  "unconscious": "意識不明",
   "dead": "死亡",
   "temp": "+{{amount}}一時",
   "hp": "HP"

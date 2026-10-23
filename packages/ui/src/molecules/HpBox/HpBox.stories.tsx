@@ -1,5 +1,5 @@
 import { healthStatus } from '@combat-planner/domain';
-import type { HealthStatus } from '@combat-planner/domain';
+import type { HealthStatus, Role } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
 import type { TFunction } from 'i18next';
 import { expect, fn, userEvent } from 'storybook/test';
@@ -20,7 +20,7 @@ function HpBoxCell(props: HpBoxProps) {
 const meta = preview.meta({
   title: 'Molecules/HpBox',
   component: HpBoxCell,
-  args: { viewer: 'dm', hp: 40, maxHp: 40 },
+  args: { viewer: 'dm', hp: 40, maxHp: 40, role: 'enemy' },
 });
 
 const rgb = (hex: string) => {
@@ -36,22 +36,36 @@ const boxOf = (canvasElement: HTMLElement) => {
 
 const minus = (value: number) => (value < 0 ? `−${Math.abs(value)}` : String(value));
 
-const pipsOf: Record<HealthStatus, number> = { full: 2, wounded: 1, staggered: 1, dead: 0 };
+const pipsOf: Record<HealthStatus, number> = {
+  full: 2,
+  wounded: 1,
+  staggered: 1,
+  unconscious: 0,
+  dead: 0,
+};
 
 const boxFacts = (box: HTMLElement) => ({
   numbers: box.querySelector('[data-part="numbers"]')?.textContent ?? null,
   pips: box.querySelectorAll('[data-pip]').length,
   filled: box.querySelectorAll('[data-pip][data-filled]').length,
   status: box.querySelector('[data-part="status"]')?.textContent ?? null,
+  unconscious: box.querySelector('[data-part="unconscious"]') !== null,
 });
 
-const boxExpected = (t: TFunction, hp: number, maxHp: number, viewer: HpBoxViewer = 'dm') => {
-  const status = healthStatus(hp, maxHp);
+const boxExpected = (
+  t: TFunction,
+  hp: number,
+  maxHp: number,
+  viewer: HpBoxViewer = 'dm',
+  role: Role = 'enemy',
+) => {
+  const status = healthStatus(hp, maxHp, role);
   return {
     numbers: `${minus(hp)}/${maxHp}`,
     pips: 2,
     filled: pipsOf[status],
     status: viewer === 'dm' && status === 'full' ? null : t(status),
+    unconscious: status === 'unconscious',
   };
 };
 
@@ -83,20 +97,26 @@ const columns = ['DM', 'DM disabled', 'Player', 'Own hero', 'Enemy view'] as con
 
 type HpBoxState = (typeof columns)[number];
 
-const gridRows = [
-  { label: 'Full', hp: 40 },
-  { label: 'Wounded', hp: 24 },
-  { label: 'Staggered', hp: 14 },
-  { label: 'Dead', hp: -3 },
-].map(({ label, hp }) => ({
+const gridRows = (
+  [
+    { label: 'Full', hp: 40, role: 'enemy' },
+    { label: 'Wounded', hp: 24, role: 'enemy' },
+    { label: 'Staggered', hp: 14, role: 'enemy' },
+    { label: 'Unconscious', hp: -3, role: 'hero' },
+    { label: 'Dead', hp: -3, role: 'enemy' },
+  ] satisfies { label: string; hp: number; role: Role }[]
+).map(({ label, hp, role }) => ({
   label,
   render: (state: HpBoxState) => {
-    if (state === 'Enemy view') return <HpBox viewer="player" status={healthStatus(hp, 40)} />;
+    if (state === 'Enemy view') {
+      return <HpBox viewer="player" status={healthStatus(hp, 40, role)} />;
+    }
     return (
       <HpBox
         viewer={state === 'DM' || state === 'DM disabled' ? 'dm' : 'player'}
         hp={hp}
         maxHp={40}
+        role={role}
         disabled={state === 'DM disabled'}
         mine={state === 'Own hero'}
         onClick={state === 'DM' || state === 'DM disabled' ? fn() : undefined}
@@ -106,29 +126,29 @@ const gridRows = [
 }));
 
 const withTempHp: readonly HpBoxProps[] = [
-  { viewer: 'dm', hp: 30, maxHp: 30, tempHp: 5 },
-  { viewer: 'player', hp: 20, maxHp: 36, tempHp: 5, mine: true },
-  { viewer: 'dm', hp: 999, maxHp: 999, tempHp: 999 },
+  { viewer: 'dm', hp: 30, maxHp: 30, role: 'enemy', tempHp: 5 },
+  { viewer: 'player', hp: 20, maxHp: 36, role: 'hero', tempHp: 5, mine: true },
+  { viewer: 'dm', hp: 999, maxHp: 999, role: 'enemy', tempHp: 999 },
 ];
 
 const threeDigits: readonly HpBoxProps[] = [
-  { viewer: 'dm', hp: 287, maxHp: 320, onClick: fn() },
-  { viewer: 'dm', hp: 112, maxHp: 320, tempHp: 120 },
-  { viewer: 'dm', hp: -999, maxHp: 999 },
-  { viewer: 'dm', hp: 999, maxHp: 999 },
-  { viewer: 'dm', hp: -105, maxHp: 320 },
+  { viewer: 'dm', hp: 287, maxHp: 320, role: 'enemy', onClick: fn() },
+  { viewer: 'dm', hp: 112, maxHp: 320, role: 'enemy', tempHp: 120 },
+  { viewer: 'dm', hp: -999, maxHp: 999, role: 'enemy' },
+  { viewer: 'dm', hp: 999, maxHp: 999, role: 'enemy' },
+  { viewer: 'dm', hp: -105, maxHp: 320, role: 'enemy' },
 ];
 
 const dmCases: readonly HpBoxProps[] = [
-  { viewer: 'dm', hp: 14, maxHp: 40, tempHp: 5 },
-  { viewer: 'dm', hp: -3, maxHp: 18 },
-  { viewer: 'dm', hp: 18, maxHp: 18, disabled: true },
+  { viewer: 'dm', hp: 14, maxHp: 40, role: 'enemy', tempHp: 5 },
+  { viewer: 'dm', hp: -3, maxHp: 18, role: 'enemy' },
+  { viewer: 'dm', hp: 18, maxHp: 18, role: 'enemy', disabled: true },
 ];
 
 const playerCases: readonly HpBoxProps[] = [
-  { viewer: 'player', hp: 52, maxHp: 52 },
-  { viewer: 'player', hp: 24, maxHp: 40 },
-  { viewer: 'player', hp: 13, maxHp: 36, mine: true },
+  { viewer: 'player', hp: 52, maxHp: 52, role: 'hero' },
+  { viewer: 'player', hp: 24, maxHp: 40, role: 'hero' },
+  { viewer: 'player', hp: 13, maxHp: 36, role: 'hero', mine: true },
   { viewer: 'player', status: 'staggered' },
   { viewer: 'player', status: 'dead' },
 ];
@@ -253,6 +273,7 @@ export const PlayerTints = meta.story({
       pips: 2,
       filled: 1,
       status: t('staggered'),
+      unconscious: false,
     });
     await expect(getComputedStyle(enemy).backgroundColor).toBe(rgb(healthTints.staggered));
     const enemyDead = caseAt(canvasElement, 4);
@@ -261,19 +282,63 @@ export const PlayerTints = meta.story({
       pips: 2,
       filled: 0,
       status: t('dead'),
+      unconscious: false,
     });
     await expect(getComputedStyle(enemyDead).backgroundColor).toBe(rgb(base.soft));
   },
 });
 
+const unconsciousCases: readonly HpBoxProps[] = [
+  { viewer: 'dm', hp: 0, maxHp: 30, role: 'hero', onClick: fn() },
+  { viewer: 'dm', hp: -14, maxHp: 30, role: 'hero' },
+  { viewer: 'dm', hp: -15, maxHp: 30, role: 'hero' },
+  { viewer: 'player', hp: -499, maxHp: 999, role: 'hero', mine: true },
+  { viewer: 'player', status: 'unconscious' },
+];
+
+export const UnconsciousHero = meta.story({
+  tags: ['!dev'],
+  render: () => <HpBoxList boxes={unconsciousCases} />,
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    for (const [index, hp, maxHp] of [
+      [0, 0, 30],
+      [1, -14, 30],
+      [2, -15, 30],
+    ] as const) {
+      await expect(boxFacts(caseAt(canvasElement, index))).toEqual(
+        boxExpected(t, hp, maxHp, 'dm', 'hero'),
+      );
+    }
+    const down = caseAt(canvasElement, 1);
+    await expect(down).toHaveAttribute('data-status', 'unconscious');
+    await expect(down).not.toHaveAttribute('data-off');
+    await expect(getComputedStyle(down).backgroundColor).toBe(rgb(healthTints.unconscious));
+    const icon = down.querySelector<SVGElement>('[data-part="unconscious"]');
+    await expect(icon && getComputedStyle(icon).color).toBe(rgb(health.unconscious));
+    await expect(icon?.closest('[aria-hidden="true"]')).not.toBeNull();
+    await expect(caseAt(canvasElement, 2)).toHaveAttribute('data-status', 'dead');
+    const own = caseAt(canvasElement, 3);
+    await expect(boxFacts(own)).toEqual(boxExpected(t, -499, 999, 'player', 'hero'));
+    await expect(own.querySelector('[data-part="numbers"]')).toHaveAttribute('data-editable');
+    await expect(boxFacts(caseAt(canvasElement, 4))).toEqual({
+      numbers: null,
+      pips: 2,
+      filled: 0,
+      status: t('unconscious'),
+      unconscious: true,
+    });
+  },
+});
+
 export const DamageSteps = meta.story({
   tags: ['!dev'],
-  args: { viewer: 'dm', hp: 40, maxHp: 40 },
+  args: { viewer: 'dm', hp: 40, maxHp: 40, role: 'enemy' },
   render: () => (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, padding: 12 }}>
       {[40, 24, 14, 6, -3].map((hp) => (
         <div key={hp} data-step={hp}>
-          <HpBox viewer="dm" hp={hp} maxHp={40} />
+          <HpBox viewer="dm" hp={hp} maxHp={40} role="enemy" />
         </div>
       ))}
     </div>
@@ -284,13 +349,16 @@ export const DamageSteps = meta.story({
       full: rgb(healthTints.full),
       wounded: rgb(healthTints.full),
       staggered: rgb(healthTints.staggered),
+      unconscious: rgb(healthTints.unconscious),
       dead: 'rgba(0, 0, 0, 0)',
     };
     for (const hp of [40, 24, 14, 6, -3]) {
       const step = canvasElement.querySelector<HTMLElement>(`[data-step="${hp}"]`);
       if (!step) throw new Error(`step ${hp} not rendered`);
       await expect(boxFacts(boxOf(step))).toEqual(boxExpected(t, hp, 40));
-      await expect(getComputedStyle(boxOf(step)).backgroundColor).toBe(tints[healthStatus(hp, 40)]);
+      await expect(getComputedStyle(boxOf(step)).backgroundColor).toBe(
+        tints[healthStatus(hp, 40, 'enemy')],
+      );
     }
   },
 });
@@ -300,8 +368,8 @@ export const EditableIsUnderlined = meta.story({
   render: () => (
     <HpBoxList
       boxes={[
-        { viewer: 'dm', hp: 287, maxHp: 320, onClick: fn() },
-        { viewer: 'dm', hp: 287, maxHp: 320 },
+        { viewer: 'dm', hp: 287, maxHp: 320, role: 'enemy', onClick: fn() },
+        { viewer: 'dm', hp: 287, maxHp: 320, role: 'enemy' },
       ]}
     />
   ),
@@ -317,7 +385,7 @@ export const EditableIsUnderlined = meta.story({
 
 export const ClickOpensCalculator = meta.story({
   tags: ['!dev'],
-  args: { viewer: 'dm', hp: 14, maxHp: 40, onClick: fn() },
+  args: { viewer: 'dm', hp: 14, maxHp: 40, role: 'enemy', onClick: fn() },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'HpBox');
     await userEvent.click(canvas.getByRole('button', { name: `14 /40 ${t('staggered')}` }));
@@ -327,7 +395,14 @@ export const ClickOpensCalculator = meta.story({
 
 export const EnemyIsReadOnly = meta.story({
   tags: ['!dev'],
-  args: { viewer: 'player', status: 'wounded', hp: undefined, maxHp: undefined, onClick: fn() },
+  args: {
+    viewer: 'player',
+    status: 'wounded',
+    hp: undefined,
+    maxHp: undefined,
+    role: undefined,
+    onClick: fn(),
+  },
   play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'HpBox');
     await expect(canvas.queryByRole('button')).toBeNull();
@@ -339,7 +414,7 @@ export const EnemyIsReadOnly = meta.story({
 
 export const DisabledStillOpens = meta.story({
   tags: ['!dev'],
-  args: { viewer: 'dm', hp: 18, maxHp: 18, disabled: true, onClick: fn() },
+  args: { viewer: 'dm', hp: 18, maxHp: 18, role: 'enemy', disabled: true, onClick: fn() },
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button'));
     await expect(args.onClick).toHaveBeenCalledOnce();

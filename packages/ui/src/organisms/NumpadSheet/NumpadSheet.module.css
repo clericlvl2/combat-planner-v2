@@ -83,6 +83,10 @@
     --numpad-health: var(--cp-health-staggered);
   }
 
+  &[data-status='unconscious'] {
+    --numpad-health: var(--cp-health-unconscious);
+  }
+
   &[data-status='dead'] {
     --numpad-health: var(--cp-health-dead);
   }

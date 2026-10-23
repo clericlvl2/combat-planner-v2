@@ -256,6 +256,20 @@ export const Dead = meta.story({
   },
 });
 
+export const UnconsciousHero = meta.story({
+  tags: ['visual'],
+  args: { active: false, unit: unitOf({ ...vashtiSeed, hp: -17 }) },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const hp = canvas.getByRole('button', { name: `−17 /36 ${t('HpBox:unconscious')}` });
+    await expect(hp.querySelector('[data-part="unconscious"]')).not.toBeNull();
+    await expect(canvasElement.querySelector('[data-dead]')).toBeNull();
+    await expect(getComputedStyle(canvas.getByText('Vashti the Hexer')).textDecorationLine).toBe(
+      'none',
+    );
+  },
+});
+
 export const DisabledUnit = meta.story({
   args: { active: false, unit: shadowArcher },
   play: async ({ canvas, canvasElement }) => {

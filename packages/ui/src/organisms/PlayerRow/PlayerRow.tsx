@@ -155,6 +155,7 @@ export function PlayerRow({
             viewer="player"
             hp={numbers.hp}
             maxHp={numbers.maxHp}
+            role={unit.role}
             tempHp={numbers.tempHp}
             mine={mine}
             data-tap={tapOf('hp')}

@@ -2,6 +2,7 @@
   "full": "Indemne",
   "wounded": "Blessé",
   "staggered": "Chancelant",
+  "unconscious": "Inconscient",
   "dead": "Mort",
   "temp": "+{{amount}} temp.",
   "hp": "PV"

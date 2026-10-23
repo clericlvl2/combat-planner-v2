@@ -275,6 +275,8 @@ describe('Visibility for players', () => {
   it('Health status | Other Hero, Ally', () => {
     expect(otherUnit).toMatchObject({ healthStatus: 'wounded', healthSegments: 3 });
     expect(allyUnit).toMatchObject({ healthStatus: 'full', healthSegments: 4 });
+    const down = project({ ...combat, units: [{ ...other, hp: 0 }] }, PLAYER);
+    expect(pu(down, 2)).toMatchObject({ healthStatus: 'unconscious', healthSegments: 0 });
   });
 
   it('Health status | Enemy', () => {

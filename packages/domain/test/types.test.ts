@@ -28,7 +28,7 @@ describe('types', () => {
   it('lists the roles, combat statuses, health statuses and history kinds', () => {
     expect(ROLES).toEqual(['hero', 'enemy', 'ally']);
     expect(COMBAT_STATUSES).toEqual(['setup', 'active']);
-    expect(HEALTH_STATUSES).toEqual(['full', 'wounded', 'staggered', 'dead']);
+    expect(HEALTH_STATUSES).toEqual(['full', 'wounded', 'staggered', 'unconscious', 'dead']);
     expect(HP_HISTORY_KINDS).toEqual(['damage', 'heal', 'temp', 'max']);
   });
 

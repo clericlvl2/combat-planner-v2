@@ -382,6 +382,22 @@ export const EnemyDead = meta.story({
   },
 });
 
+export const OwnHeroUnconscious = meta.story({
+  tags: ['visual'],
+  args: { unit: playerUnit({ ...vashtiSeed, hp: -5 }) },
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'PlayerRow');
+    const hp = canvas.getByRole('button', { name: `−5 /36 ${t('HpBox:unconscious')}` });
+    await expect(hp.querySelector('[data-part="unconscious"]')).not.toBeNull();
+    await expect(canvasElement.querySelector('[data-dead]')).toBeNull();
+    await expect(getComputedStyle(canvas.getByText('Vashti the Hexer')).textDecorationLine).toBe(
+      'none',
+    );
+    await userEvent.click(hp);
+    await expect(args.onHp).toHaveBeenCalledOnce();
+  },
+});
+
 export const AllyTempHpLongName = meta.story({
   name: 'Ally Temp HP Long Name',
   args: { unit: tomas, mine: false },
@@ -438,10 +454,10 @@ export const FourConditions = meta.story({
 });
 
 export const OwnHeroDead = meta.story({
-  args: { unit: playerUnit({ ...vashtiSeed, hp: -4, conditions: [] }) },
+  args: { unit: playerUnit({ ...vashtiSeed, hp: -18, conditions: [] }) },
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'PlayerRow');
-    await expect(canvas.getByRole('button', { name: `−4 /36 ${t('HpBox:dead')}` })).toBeVisible();
+    await expect(canvas.getByRole('button', { name: `−18 /36 ${t('HpBox:dead')}` })).toBeVisible();
     await expect(canvas.getByText(t('RoleBlock:you'))).toBeVisible();
   },
 });

@@ -119,7 +119,7 @@ export function UnitRow({
   const initiativeRef = useRef<HTMLDivElement>(null);
   const expanded = !readOnly && expandedProp;
   const showInitiative = !readOnly && initiativeOpen;
-  const dead = healthStatus(unit.hp, unit.maxHp) === 'dead';
+  const dead = healthStatus(unit.hp, unit.maxHp, unit.role) === 'dead';
   const disabled = unit.disabled;
   const claimName = unit.claimedBy ? claimedByName : undefined;
 
@@ -270,6 +270,7 @@ export function UnitRow({
           viewer="dm"
           hp={unit.hp}
           maxHp={unit.maxHp}
+          role={unit.role}
           tempHp={unit.tempHp}
           disabled={disabled}
           data-tap={tapOf('hp')}

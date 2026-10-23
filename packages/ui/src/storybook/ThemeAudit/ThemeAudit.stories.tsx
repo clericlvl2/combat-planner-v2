@@ -52,6 +52,7 @@ export const Tokens = meta.story({
       (swatch) => swatch.dataset.hex,
     );
     await expect(fills).toEqual(expectedFills);
+    await expect(fills).toContain(health.unconscious);
     await expect(combatColors[7]).toBe('#8C8578');
     await expect(
       getComputedStyle(document.documentElement).getPropertyValue('--cp-combat-7').trim(),
