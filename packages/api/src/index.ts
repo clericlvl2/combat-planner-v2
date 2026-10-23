@@ -43,6 +43,15 @@ export {
 } from './sharing/store.ts';
 export type { PlayerRow, RemovedPlayer, SharedCombat } from './sharing/store.ts';
 export { closeEndedDmStreams } from './sharing/streams.ts';
+export { STATS_TIME_ZONE, dayOf } from './stats/day.ts';
+export {
+  STATS_RETENTION_DAYS,
+  USAGE_DAYS,
+  deleteOldStats,
+  lastSessionCreatedAt,
+  readUsage,
+} from './stats/store.ts';
+export type { DayUsage, Usage, UsageTotals } from './stats/store.ts';
 export { HEARTBEAT_MS, streamCombatEvents } from './live/sse.ts';
 export type { StreamRequest } from './live/sse.ts';
 export { openDatabase } from './db/index.ts';

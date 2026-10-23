@@ -3,15 +3,27 @@ import type { ApiEnv } from '@combat-planner/api';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
 import { secureHeaders } from 'hono/secure-headers';
+import type { CheckProbes } from './admin/checks.ts';
+import { startChecker } from './admin/checks.ts';
+import { createAdminApp } from './admin/routes.ts';
+import type { ServerProbes } from './admin/server-stats.ts';
 import { startSweeper } from './sweeper.ts';
 import type { SharingTimers } from './timers.ts';
 import { PRODUCTION_TIMERS } from './timers.ts';
+
+export interface AdminPageOptions {
+  version: string;
+  probes?: Partial<CheckProbes>;
+  serverProbes?: ServerProbes;
+  litestreamMetricsUrl?: string;
+}
 
 export interface ServerAppOptions {
   databasePath: string;
   staticRoot: string;
   env: ApiEnv;
   timers?: SharingTimers;
+  admin?: AdminPageOptions;
 }
 
 const SELF = "'self'";
@@ -40,18 +52,46 @@ export function createServerApp({
   staticRoot,
   env,
   timers = PRODUCTION_TIMERS,
+  admin,
 }: ServerAppOptions) {
   const opened = openDatabase(databasePath);
   runMigrations(opened.db);
-  const stopSweeper = startSweeper(opened.db, timers);
-  const app = new Hono()
-    .use(securityHeaders)
-    .route('/api', createApiApp({ db: opened.db, env }))
+  let lastSweepAt: Date | undefined;
+  const stopSweeper = startSweeper(opened.db, timers, (at) => {
+    lastSweepAt = at;
+  });
+  const started =
+    admin &&
+    startChecker({
+      db: opened.db,
+      env,
+      lastSweepAt: () => lastSweepAt,
+      probes: admin.probes,
+      litestreamMetricsUrl: admin.litestreamMetricsUrl,
+    });
+  const app = new Hono().use(securityHeaders).route('/api', createApiApp({ db: opened.db, env }));
+  if (admin && started) {
+    app.route(
+      '/admin',
+      createAdminApp({
+        db: opened.db,
+        databasePath,
+        checker: started.checker,
+        version: admin.version,
+        serverProbes: admin.serverProbes,
+      }),
+    );
+  }
+  app
+    .all('/admin', (c) => c.notFound())
+    .all('/admin/*', (c) => c.notFound())
     .use('/*', serveStatic({ root: staticRoot }))
     .get('/*', serveStatic({ root: staticRoot, path: 'index.html' }));
   return {
     app,
+    checker: started?.checker,
     close: () => {
+      started?.stop();
       stopSweeper();
       opened.close();
     },

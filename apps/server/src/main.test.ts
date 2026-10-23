@@ -3,6 +3,7 @@ import type { ChildProcess } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import {
   copyFileSync,
+  cpSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
@@ -39,6 +40,10 @@ const relocatedMain = (root: string): string => {
     symlinkSync(path.join(serverDirectory, name), path.join(root, 'apps', 'server', name));
   for (const name of ['main.ts', 'app.ts', 'sweeper.ts', 'timers.ts'])
     copyFileSync(path.join(import.meta.dirname, name), path.join(source, name));
+  cpSync(path.join(import.meta.dirname, 'admin'), path.join(source, 'admin'), {
+    recursive: true,
+    filter: (file) => !file.endsWith('.test.ts'),
+  });
   return path.join(source, 'main.ts');
 };
 
@@ -395,6 +400,27 @@ describe('server start', { concurrent: true, timeout: 30_000 }, () => {
       });
       expect(result.stdout).toMatch(LISTENING);
       expect(result.stdout.includes('sharing timers shortened for tests')).toBe(shortened);
+    },
+  );
+
+  it.for([
+    ['1', 200],
+    [undefined, 404],
+  ] as const)(
+    'with ADMIN_PAGE=%s answers %s on /admin',
+    async ([adminPage, status], { expect }) => {
+      const server = await start({
+        NODE_ENV: 'development',
+        ADMIN_PAGE: adminPage,
+        APP_VERSION: '4.5.6',
+      });
+      try {
+        const response = await fetch(`${server.url}/admin`);
+        expect(response.status).toBe(status);
+        if (status === 200) expect(await response.text()).toContain('Версия 4.5.6');
+      } finally {
+        await server.stop();
+      }
     },
   );
 

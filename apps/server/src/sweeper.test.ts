@@ -375,3 +375,17 @@ describe('sweep with a broken combat', () => {
     expect(errors).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('daily stats sweep', () => {
+  it('deletes the counters of days older than 30 days', () => {
+    sqlite
+      .prepare('insert into daily_stats (day, player_joins, actions) values (?, 1, 1), (?, 1, 1)')
+      .run('2026-09-15', '2026-09-16');
+    sweep(db, '2026-10-16T12:00:00.000Z', SHARING_TIMEOUTS);
+    const days = sqlite
+      .prepare("select day from daily_stats where day < '2026-10-01' order by day")
+      .pluck()
+      .all();
+    expect(days).toEqual(['2026-09-16']);
+  });
+});

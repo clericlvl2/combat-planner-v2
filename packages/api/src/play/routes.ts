@@ -20,6 +20,7 @@ import {
   playerExists,
   removePlayer,
 } from '../sharing/store.ts';
+import { countPlayerJoin } from '../stats/store.ts';
 import { dmLanguage, recordPlayer } from './store.ts';
 
 const PLAYER_ID_HEADER = 'X-Player-Id';
@@ -129,7 +130,9 @@ export const playApp = new Hono<ApiAppEnv>()
     if ('status' in known) {
       const admitted = c.get('db').transaction((tx) => {
         if (playerCount(tx, combatId) >= LIMITS.playersPerCombat) return false;
-        insertPlayer(tx, combatId, playerId, enterPlayer(null, nowIso()));
+        const now = nowIso();
+        insertPlayer(tx, combatId, playerId, enterPlayer(null, now));
+        countPlayerJoin(tx, now);
         return true;
       });
       if (!admitted) return c.json(PLAYERS_FULL, 422);

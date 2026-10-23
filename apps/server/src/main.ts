@@ -174,6 +174,7 @@ const { app, close } = createServerApp({
   staticRoot: path.relative(process.cwd(), webDist),
   env,
   timers,
+  admin: variable('ADMIN_PAGE') === '1' ? { version: variable('APP_VERSION') ?? 'dev' } : undefined,
 });
 
 const server = serve({ fetch: app.fetch, port }, (info) => {
