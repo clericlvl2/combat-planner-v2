@@ -12,7 +12,7 @@ import {
 import type { ApiAppEnv, ApiEvent, DmCombat, PlayerCredentials } from '@combat-planner/api';
 import { SHARING_TIMEOUTS } from '@combat-planner/domain';
 import { Hono } from 'hono';
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vite-plus/test';
 import { sweep } from './sweeper.ts';
 import { PRODUCTION_TIMERS, TEST_TIMERS, sharingTimers } from './timers.ts';
 
@@ -20,6 +20,8 @@ const DM_ID = 'dm-sweeper';
 const COMBAT_ID = '01ARZ3NDEKTSV4RRFFQ69G5SW0';
 const HERO_ID = '01ARZ3NDEKTSV4RRFFQ69G5SW1';
 const SECOND_HERO_ID = '01ARZ3NDEKTSV4RRFFQ69G5SW2';
+const OTHER_COMBAT_ID = '01ARZ3NDEKTSV4RRFFQ69G5SW3';
+const OTHER_DM_ID = 'dm-sweeper-other';
 const MINUTE = 60_000;
 
 const directory = mkdtempSync(path.join(tmpdir(), 'combat-planner-sweeper-'));
@@ -119,8 +121,8 @@ const watchingSince = (playerId: string): string | null | undefined =>
       .get(COMBAT_ID, playerId) as { watchingSince: string | null } | undefined
   )?.watchingSince;
 
-const linkColumns = () =>
-  sqlite.prepare('select linkShared, orphanedAt from combats where id = ?').get(COMBAT_ID) as {
+const linkColumns = (combatId = COMBAT_ID) =>
+  sqlite.prepare('select linkShared, orphanedAt from combats where id = ?').get(combatId) as {
     linkShared: number;
     orphanedAt: string | null;
   };
@@ -175,7 +177,8 @@ beforeEach(async () => {
 
 afterEach(() => {
   for (const unsubscribe of unsubscribes.splice(0)) unsubscribe();
-  sqlite.prepare('delete from user where id = ?').run(DM_ID);
+  sqlite.prepare('delete from user where id in (?, ?)').run(DM_ID, OTHER_DM_ID);
+  vi.restoreAllMocks();
 });
 
 afterAll(() => {
@@ -307,5 +310,60 @@ describe('player sweep', () => {
     expect(dmEvents).toEqual([]);
     expect(watchingSince(player.playerId)).toBeNull();
     expect((await getPlay(token, player)).status).toBe(200);
+  });
+});
+
+describe('sweep with a broken combat', () => {
+  const createOtherCombat = async () => {
+    const created = await asDm.request(
+      '/combats',
+      json({ id: OTHER_COMBAT_ID, title: 'Siege', description: '', color: 2 }),
+    );
+    expect(created.status).toBe(200);
+    const shared = await asDm.request(`/combats/${OTHER_COMBAT_ID}/link`);
+    expect(shared.status).toBe(200);
+  };
+
+  const breakCombat = (combatId: string) => {
+    sqlite.prepare("update combats set document = '{' where id = ?").run(combatId);
+  };
+
+  it('turns off the links of the other combats', async () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await shareToken();
+    await createOtherCombat();
+    const base = Date.now();
+    sweepAt(at(base, 0));
+    breakCombat(COMBAT_ID);
+    sweepAt(at(base, 15 * MINUTE));
+    expect(linkColumns(OTHER_COMBAT_ID)).toEqual({ linkShared: 0, orphanedAt: null });
+    expect(linkColumns(COMBAT_ID)).toEqual({ linkShared: 1, orphanedAt: at(base, 0) });
+    expect(errors).toHaveBeenCalledTimes(1);
+  });
+
+  it('still drops the watching players of the other combats', async () => {
+    const errors = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    await createOtherCombat();
+    const now = Date.now();
+    sqlite
+      .prepare('insert into user (id, name, email, createdAt, updatedAt) values (?, ?, ?, ?, ?)')
+      .run(OTHER_DM_ID, 'Olga', 'olga@example.com', now, now);
+    sqlite.prepare('update combats set ownerId = ? where id = ?').run(OTHER_DM_ID, OTHER_COMBAT_ID);
+    sqlite
+      .prepare(
+        'insert into players (combatId, playerId, displayName, watchingSince) values (?, ?, ?, ?)',
+      )
+      .run(OTHER_COMBAT_ID, 'broken-player', '', at(now, 0));
+    addSession(now);
+    const token = await shareToken();
+    const player = await join(token);
+    const events = listen({ kind: 'player', playerId: player.playerId });
+    const base = Date.now();
+    sweepAt(at(base, 0));
+    breakCombat(OTHER_COMBAT_ID);
+    sweepAt(at(base, 15 * MINUTE));
+    expect(events).toEqual([{ type: 'dropped' }]);
+    expect(watchingSince(player.playerId)).toBeUndefined();
+    expect(errors).toHaveBeenCalledTimes(2);
   });
 });
