@@ -55,6 +55,8 @@ describe('undo stack through dispatch', () => {
     | { type: 'damage' | 'heal'; unitId: string; amount: number }
     | { type: 'undo' }
     | { type: 'claimUnit'; unitId: string; displayName: string }
+    | { type: 'releaseUnit'; unitId: string }
+    | { type: 'removeUnit'; unitId: string }
     | ReturnType<typeof addUnitAction>;
 
   let opened: TestApp;
@@ -82,8 +84,8 @@ describe('undo stack through dispatch', () => {
     }
     const document = await fetchCombat(dm);
     expect(document.version).toBe(mirror.version);
-    expect(document.units.map(({ id, hp }) => ({ id, hp }))).toEqual(
-      mirror.units.map(({ id, hp }) => ({ id, hp })),
+    expect(document.units.map(({ id, hp, claimedBy }) => ({ id, hp, claimedBy }))).toEqual(
+      mirror.units.map(({ id, hp, claimedBy }) => ({ id, hp, claimedBy })),
     );
     expect(document.undo).toEqual(undoSummary(mirror, stack));
     expect(rowsOf(opened).map((row) => row.actionId)).toEqual(
@@ -138,13 +140,45 @@ describe('undo stack through dispatch', () => {
     expect(rowsOf(opened)).toEqual([]);
   });
 
-  it('an action without a patch empties the stack', async () => {
+  it('a claim and a release between DM actions keep the stack and the undo summary', async () => {
     await hits(3);
+    const before = rowsOf(opened);
+    const { undo } = await fetchCombat(dm);
     await step({ type: 'claimUnit', unitId: HERO_ID, displayName: 'Ada' }, PLAYER);
-    expect(rowsOf(opened)).toEqual([]);
-    expect(await undos(1)).toEqual([422]);
+    await step({ type: 'releaseUnit', unitId: HERO_ID }, PLAYER);
+    expect(rowsOf(opened)).toEqual(before);
+    expect((await fetchCombat(dm)).undo).toEqual(undo);
     await hits(2);
+    expect(await undos(6)).toEqual([...times(5, 200), 422]);
+  });
+
+  it('a link reissue keeps the stack', async () => {
+    await hits(2);
+    await step({ type: 'claimUnit', unitId: HERO_ID, displayName: 'Ada' }, PLAYER);
+    const before = rowsOf(opened);
+    const { undo } = await fetchCombat(dm);
+    expect((await call(dm, 'POST', `/combats/${COMBAT_ID}/link/reissue`)).status).toBe(200);
+    const { undo: after, ...reissued } = await fetchCombat(dm);
+    expect(reissued.units.every((unit) => unit.claimedBy === null)).toBe(true);
+    expect(rowsOf(opened)).toEqual(before);
+    expect(after).toEqual(undo);
+    mirror = reissued;
     expect(await undos(3)).toEqual([200, 200, 422]);
+  });
+
+  it('undo of a DM action after a claim keeps the claim', async () => {
+    await hits(1);
+    await step({ type: 'claimUnit', unitId: HERO_ID, displayName: 'Ada' }, PLAYER);
+    expect(await undos(1)).toEqual([200]);
+    expect((await fetchCombat(dm)).units.find((unit) => unit.id === HERO_ID)?.claimedBy).toBe(
+      PLAYER_ID,
+    );
+  });
+
+  it('undo restoring a removed hero returns it unclaimed', async () => {
+    await step({ type: 'removeUnit', unitId: HERO_ID });
+    await undos(1);
+    expect((await fetchCombat(dm)).units.find((unit) => unit.id === HERO_ID)?.claimedBy).toBe(null);
   });
 
   it('a retried undo is refused with 409 version and writes no row', async () => {
@@ -213,12 +247,13 @@ describe('a log written before the stack', () => {
     opened.close();
   });
 
-  it('shows the top of its stack and is trimmed to the stack on the next action', async () => {
+  it('shows the top of its stack, skips claims and is trimmed to the stack on the next action', async () => {
+    const damages = Array.from({ length: 6 }, (_, index) => damage(index));
     insert(
       { id: ulidAt(299), version: 2, type: 'claimUnit', unitId: HERO_ID, displayName: 'Ada' },
       null,
     );
-    const damages = Array.from({ length: 12 }, (_, index) => damage(index));
+    damages.push(...Array.from({ length: 6 }, (_, index) => damage(index + 6)));
     const undo: Action = { id: ulidAt(400), version: 2, type: 'undo' };
     opened.db
       .update(actionLog)

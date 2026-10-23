@@ -46,6 +46,13 @@ const undo = (state: State): State => dispatch(state, { type: 'undo' });
 
 const stable = ({ version: _version, updatedAt: _updatedAt, ...rest }: Combat) => rest;
 
+const unclaimedOutside = (before: Combat, after: Combat): Combat => ({
+  ...before,
+  units: before.units.map((unit) =>
+    after.units.some((kept) => kept.id === unit.id) ? unit : { ...unit, claimedBy: null },
+  ),
+});
+
 const hero = makeUnit({
   id: id(1),
   name: 'Анна',
@@ -152,7 +159,7 @@ describe('Undo', () => {
       const after = dispatch(before, payloadFor(type));
       expect(stable(after.combat)).not.toEqual(stable(before.combat));
       const undone = undo(after);
-      expect(stable(undone.combat)).toEqual(stable(before.combat));
+      expect(stable(undone.combat)).toEqual(stable(unclaimedOutside(before.combat, after.combat)));
       expect(undone.combat.version).toBe(after.combat.version + 1);
     }
   });
@@ -184,14 +191,66 @@ describe('Undo', () => {
     expect(codeOf(state, { type: 'undo' })).toBe('blocked');
   });
 
-  it('An action without a patch empties the stack.', () => {
+  it('Claim and release between DM actions leave the stack unchanged.', () => {
     const damaged = dispatch(setup(), { type: 'damage', unitId: id(2), amount: 4 });
     const claimed = dispatch(damaged, payloadFor('claimUnit'), PLAYER);
-    expect(claimed.log).toEqual([]);
-    expect(codeOf(claimed, { type: 'undo' })).toBe('blocked');
-    const healed = dispatch(claimed, { type: 'heal', unitId: id(2), amount: 1 });
-    expect(undo(healed).combat.units[1]?.hp).toBe(26);
-    expect(codeOf(undo(healed), { type: 'undo' })).toBe('blocked');
+    expect(claimed.log).toEqual(damaged.log);
+    const released = dispatch(claimed, { type: 'releaseUnit', unitId: id(1) });
+    expect(released.log).toEqual(damaged.log);
+    const healed = dispatch(released, { type: 'heal', unitId: id(2), amount: 1 });
+    expect(healed.log).toHaveLength(2);
+    const once = undo(healed);
+    expect(once.combat.units[1]?.hp).toBe(26);
+    const twice = undo(once);
+    expect(twice.combat.units[1]?.hp).toBe(30);
+    expect(twice.combat.units.map((unit) => unit.claimedBy)).toEqual([null, null, PLAYER_ID]);
+    expect(codeOf(twice, { type: 'undo' })).toBe('blocked');
+  });
+
+  it('An action without a patch empties the stack.', () => {
+    const damaged = dispatch(setup(), { type: 'damage', unitId: id(2), amount: 4 });
+    const barrier = build(damaged.combat, { type: 'heal', unitId: id(2), amount: 1 });
+    expect(nextStack(damaged.log, { action: barrier, author: DM, at: NOW, patch: null })).toEqual(
+      [],
+    );
+  });
+
+  it('Undo of a DM action after a claim keeps the claim.', () => {
+    const noted = dispatch(setup(), { type: 'editNote', unitId: id(3), note: 'Hex' });
+    const claimed = dispatch(noted, payloadFor('claimUnit'), PLAYER);
+    const undone = undo(claimed);
+    expect(undone.combat.units[2]).toMatchObject({ note: '', claimedBy: PLAYER_ID });
+    const removed = dispatch(claimed, { type: 'removeUnit', unitId: id(2) });
+    const restored = undo(removed);
+    expect(restored.combat.units.map((unit) => unit.claimedBy)).toEqual([
+      PLAYER_ID,
+      null,
+      PLAYER_ID,
+    ]);
+  });
+
+  it('A unit brought back by undo returns unclaimed.', () => {
+    const removed = dispatch(setup(), { type: 'removeUnit', unitId: id(1) });
+    expect(undo(removed).combat.units[0]).toMatchObject({ id: id(1), claimedBy: null });
+    const cleared = dispatch(setup(), { type: 'clear' });
+    expect(undo(cleared).combat.units.map((unit) => unit.claimedBy)).toEqual([null, null, null]);
+  });
+
+  it('An enemy made a hero and claimed returns to an unclaimed enemy on undo.', () => {
+    const promoted = dispatch(setup(), {
+      type: 'editUnit',
+      unitId: id(2),
+      ...form,
+      role: 'hero',
+      tempHp: 0,
+      maxHp: 30,
+    });
+    const claimed = dispatch(
+      promoted,
+      { type: 'claimUnit', unitId: id(2), displayName: 'Bob' },
+      PLAYER,
+    );
+    expect(undo(claimed).combat.units[1]).toMatchObject({ role: 'enemy', claimedBy: null });
   });
 
   it('Undo of an HP change at a full history restores the dropped entry.', () => {
@@ -258,7 +317,7 @@ describe('Action log', () => {
     });
   });
 
-  it('`claimUnit` and `releaseUnit` have no patch and are not stacked. Every other action is undoable.', () => {
+  it('`claimUnit` and `releaseUnit` have no patch and leave the stack. Every other action is undoable.', () => {
     for (const type of ['claimUnit', 'releaseUnit'] as const) {
       const result = apply(setup().combat, build(setup().combat, payloadFor(type)), PLAYER, NOW);
       if (result instanceof DomainError) throw new Error(result.message);
@@ -312,7 +371,9 @@ describe('applyUndo', () => {
   it('Удаление юнита с подтверждением и тостом с Undo. Тост Undo без Redo. Тост ошибки с Retry. 409 — тихий перезапрос и тост. SSE — тост «Reconnecting…».', () => {
     const removed = dispatch(setup(), { type: 'removeUnit', unitId: id(1) });
     const restored = undo(removed);
-    expect(stable(restored.combat)).toEqual(stable(setup().combat));
+    expect(stable(restored.combat)).toEqual(
+      stable(unclaimedOutside(setup().combat, removed.combat)),
+    );
     expect(ACTION_TYPES).not.toContain('redo');
     const stale: Action = { type: 'undo', id: id(999), version: removed.combat.version - 1 };
     expect((apply(removed.combat, stale, DM, NOW, removed.log) as DomainError).code).toBe(
@@ -332,7 +393,9 @@ describe('applyUndo', () => {
   it('reverts a cleared combat to its units, status, round and turn', () => {
     const cleared = dispatch(active(), { type: 'clear' });
     expect(cleared.combat).toMatchObject({ status: 'setup', units: [], activeUnitId: null });
-    expect(stable(undo(cleared).combat)).toEqual(stable(active().combat));
+    expect(stable(undo(cleared).combat)).toEqual(
+      stable(unclaimedOutside(active().combat, cleared.combat)),
+    );
   });
 
   it('bumps version and stamps updatedAt', () => {
@@ -379,14 +442,16 @@ describe('undoSummary', () => {
     expect(summaryOf(state)?.unitName).toBe('Анна');
   });
 
-  it('is null when the newest entry is a claim or a release', () => {
+  it('is unchanged by a claim or a release', () => {
     const damaged = dispatch(setup(), { type: 'damage', unitId: id(2), amount: 3 });
-    expect(summaryOf(dispatch(damaged, { type: 'releaseUnit', unitId: id(1) }))).toBeNull();
-    expect(
-      summaryOf(
-        dispatch(damaged, { type: 'claimUnit', unitId: id(3), displayName: 'Bob' }, PLAYER),
-      ),
-    ).toBeNull();
+    const released = dispatch(damaged, { type: 'releaseUnit', unitId: id(1) });
+    expect(summaryOf(released)).toEqual(summaryOf(damaged));
+    const claimed = dispatch(
+      released,
+      { type: 'claimUnit', unitId: id(3), displayName: 'Bob' },
+      PLAYER,
+    );
+    expect(summaryOf(claimed)).toEqual({ action: damaged.log[0]?.action, unitName: 'Goblin' });
   });
 
   it('moves to the previous entry after an undo and to null when everything is undone', () => {

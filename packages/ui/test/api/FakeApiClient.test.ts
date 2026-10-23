@@ -157,7 +157,7 @@ describe('FakeApiClient undo', () => {
     });
   });
 
-  it('is null after a release and after everything is undone, and never reaches a player', async () => {
+  it('is null after everything is undone, kept by a release, and never reaches a player', async () => {
     const client = seeded();
     const dm = watchDm(client);
     const player = watchPlayer(client);
@@ -172,8 +172,18 @@ describe('FakeApiClient undo', () => {
       type: 'releaseUnit',
       unitId: HERO_ID,
     });
-    expect(dm.documents.at(-1)?.undo).toBeNull();
+    expect(dm.documents.at(-1)?.undo?.action).toEqual(damage(3, ENEMY_ID, ACTION_3));
     expect(player.documents.every((document) => !('undo' in document))).toBe(true);
+  });
+
+  it('a link reissue keeps the undo', async () => {
+    const client = seeded();
+    const dm = watchDm(client);
+    await client.combats.dispatch(COMBAT_ID, damage(1));
+    await client.link.reissue(COMBAT_ID);
+    const latest = dm.documents.at(-1);
+    expect(latest?.units.every((unit) => unit.claimedBy === null)).toBe(true);
+    expect(latest?.undo?.action).toEqual(damage(1));
   });
 
   it('deferBroadcasts delivers the document after the dispatch resolves', async () => {

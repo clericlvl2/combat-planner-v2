@@ -1,5 +1,5 @@
 import type { Combat, CombatId, LogEntry, UndoableEntry } from '@combat-planner/domain';
-import { LIMITS, nextStack, undoSummary } from '@combat-planner/domain';
+import { LIMITS, leavesStack, nextStack, undoSummary } from '@combat-planner/domain';
 import { and, desc, eq, max, notInArray } from 'drizzle-orm';
 import type { DmCombat } from '../client.ts';
 import { actionLog } from '../db/schema.ts';
@@ -27,7 +27,7 @@ export const readStack = (db: Executor, combatId: CombatId): UndoableEntry[] => 
     .all();
   const stack: UndoableEntry[] = [];
   for (const { patch, undoneBy, ...entry } of rows) {
-    if (entry.action.type === 'undo' || undoneBy !== null) continue;
+    if (entry.action.type === 'undo' || leavesStack(entry.action) || undoneBy !== null) continue;
     if (patch === null || stack.length === LIMITS.undoDepth) break;
     stack.push({ ...entry, patch });
   }
@@ -41,6 +41,7 @@ export const recordAction = (
   entry: LogEntry,
 ): UndoableEntry[] => {
   const next = nextStack(stack, entry);
+  if (leavesStack(entry.action)) return next;
   const pushed = next.at(-1)?.action.id === entry.action.id;
   const kept = (pushed ? next.slice(0, -1) : next).map((item) => item.action.id);
   db.delete(actionLog)

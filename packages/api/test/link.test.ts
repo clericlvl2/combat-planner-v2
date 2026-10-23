@@ -128,8 +128,11 @@ describe('link routes', () => {
     expect((await fetchCombat(dm)).linkGeneration).toBe(0);
   });
 
-  it('reissue bumps the generation, releases every claim, empties the undo stack and broadcasts', async () => {
+  it('reissue bumps the generation, releases every claim, keeps the undo stack and broadcasts', async () => {
     const before = await fetchCombat(dm);
+    const rows = () =>
+      opened.db.select().from(actionLog).where(eq(actionLog.combatId, COMBAT_ID)).all();
+    const stack = rows();
     expect(before.units.filter((unit) => unit.claimedBy !== null)).toHaveLength(2);
     const dmStream = listen({ kind: 'dm' });
     const playerStream = listen({ kind: 'player', playerId: PLAYER_ID });
@@ -149,10 +152,8 @@ describe('link routes', () => {
       { type: 'document', version: after.version, document: after },
     ]);
     expect(playerStream.events).toEqual([{ type: 'linkRevoked' }]);
-    expect(after.undo).toBeNull();
-    expect(
-      opened.db.select().from(actionLog).where(eq(actionLog.combatId, COMBAT_ID)).all(),
-    ).toEqual([]);
+    expect(after.undo).toEqual(before.undo);
+    expect(rows()).toEqual(stack);
   });
 
   it('the old token no longer matches the combat after reissue', async () => {

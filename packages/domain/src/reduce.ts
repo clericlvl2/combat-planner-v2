@@ -76,7 +76,6 @@ const PATCHED_UNIT_FIELDS = [
   'note',
   'conditions',
   'disabled',
-  'claimedBy',
   'hpHistory',
 ] as const satisfies readonly (keyof Unit)[];
 

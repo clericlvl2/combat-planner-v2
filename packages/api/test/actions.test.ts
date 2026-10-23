@@ -217,7 +217,9 @@ describe('POST /combats/:id/actions', () => {
 });
 
 describe('player actions through dispatch', () => {
-  it('claims a hero as a player, empties the undo stack and records the name', () => {
+  it('claims a hero as a player, keeps the undo stack and records the name', () => {
+    const stack = logRows();
+    expect(stack).toHaveLength(2);
     const action: Action = {
       id: nextActionId(),
       version: 3,
@@ -235,7 +237,7 @@ describe('player actions through dispatch', () => {
     const combat = (outcome as { combat: Combat }).combat;
     expect(combat.units.find((unit) => unit.id === HERO_ID)?.claimedBy).toBe(PLAYER_ID);
     expect(combat.players).toEqual({ [PLAYER_ID]: 'Ada' });
-    expect(logRows()).toEqual([]);
+    expect(logRows()).toEqual(stack);
   });
 
   it('projects the player document with hidden enemy fields removed', async () => {
@@ -264,19 +266,21 @@ describe('undo through the route', () => {
     const before = await fetchCombat(dm);
     const damaged = before.units.find((unit) => unit.id === ENEMY_ID);
     expect(damaged?.hp).toBe(15);
-    expect(logRows()).toHaveLength(1);
+    const stack = logRows();
+    expect(stack).toHaveLength(3);
     const undo: Action = { id: nextActionId(), version: before.version, type: 'undo' };
     const response = await post(undo);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ version: before.version + 1 });
     const after = await fetchCombat(dm);
     expect(after.units.find((unit) => unit.id === ENEMY_ID)?.hp).toBe(20);
-    expect(logRows()).toEqual([]);
+    expect(logRows()).toEqual(stack.slice(0, -1));
   });
 
   it('answers 422 blocked when the stack is empty', async () => {
-    const combat = await fetchCombat(dm);
-    const response = await post({ id: nextActionId(), version: combat.version, type: 'undo' });
+    const combatId = ulidAt(301);
+    expect((await call(dm, 'POST', '/combats', combatInput(combatId))).status).toBe(200);
+    const response = await post({ id: nextActionId(), version: 1, type: 'undo' }, combatId);
     expect(response.status).toBe(422);
     expect(await response.json()).toEqual({ code: 'blocked', message: 'Nothing to undo' });
   });
@@ -284,7 +288,10 @@ describe('undo through the route', () => {
 
 describe('undo summary in the DM document', () => {
   it('names the newest undoable entry for get and the DM stream, never for a player', async () => {
-    expect((await fetchCombat(dm)).undo).toBeNull();
+    expect((await fetchCombat(dm)).undo).toMatchObject({
+      action: { type: 'addUnit' },
+      unitName: 'Goblin',
+    });
     const dmStream = listen({ kind: 'dm' });
     const playerStream = listen({ kind: 'player', playerId: PLAYER_ID });
     const before = await fetchCombat(dm);
@@ -333,8 +340,9 @@ describe('undo summary in the DM document', () => {
     });
   });
 
-  it('is null after a claim, also on open', async () => {
+  it('is kept after a release, also on open', async () => {
     const before = await fetchCombat(dm);
+    expect(before.undo).not.toBeNull();
     const outcome = dispatch(opened.db, {
       combatId: COMBAT_ID,
       viewer: { kind: 'player', playerId: PLAYER_ID },
@@ -343,6 +351,6 @@ describe('undo summary in the DM document', () => {
     });
     expect(outcome).toMatchObject({ ok: true });
     const response = await call(dm, 'POST', `/combats/${COMBAT_ID}/open`);
-    expect(((await response.json()) as { undo: unknown }).undo).toBeNull();
+    expect(((await response.json()) as { undo: unknown }).undo).toEqual(before.undo);
   });
 });

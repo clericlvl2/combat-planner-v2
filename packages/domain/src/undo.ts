@@ -29,7 +29,11 @@ export interface Undone {
 export const undoTarget = (stack: readonly UndoableEntry[]): UndoableEntry | DomainError =>
   stack.at(-1) ?? new DomainError('blocked', 'Nothing to undo');
 
+export const leavesStack = (action: Action): boolean =>
+  action.type === 'claimUnit' || action.type === 'releaseUnit';
+
 export const nextStack = (stack: readonly UndoableEntry[], entry: LogEntry): UndoableEntry[] => {
+  if (leavesStack(entry.action)) return [...stack];
   if (entry.action.type === 'undo') return stack.slice(0, -1);
   if (entry.patch === null) return [];
   return [...stack, { ...entry, patch: entry.patch }].slice(-LIMITS.undoDepth);
@@ -41,6 +45,12 @@ const revertUnits = (units: readonly Unit[], priors: Patch['units']): Unit[] =>
     if (prior === undefined) return [unit];
     if (prior === null) return [];
     return [{ ...unit, ...prior }];
+  });
+
+const keepClaims = (current: readonly Unit[], reverted: readonly Unit[]): Unit[] =>
+  reverted.map((unit) => {
+    const claimedBy = current.find((present) => present.id === unit.id)?.claimedBy ?? null;
+    return { ...unit, claimedBy: unit.role === 'hero' ? claimedBy : null };
   });
 
 export const applyUndo = (
@@ -55,7 +65,7 @@ export const applyUndo = (
   return {
     combat: {
       ...reverted,
-      units: revertUnits(reverted.units, target.patch.units),
+      units: keepClaims(combat.units, revertUnits(reverted.units, target.patch.units)),
       version: combat.version + 1,
       updatedAt: now,
     },
