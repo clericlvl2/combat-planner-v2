@@ -2,6 +2,7 @@ import {
   announceReissue,
   announceRemoval,
   closeEndedDmStreams,
+  deleteOldErrors,
   deleteOldStats,
   findCombatRow,
   lastActionAt,
@@ -94,6 +95,7 @@ export function sweep(db: AppDatabase, now: string, timeouts: SharingTimeouts): 
   attempt('idle streams', () => dropIdleStreams(db, now, timeouts));
   attempt('ended DM streams', () => closeEndedDmStreams(db, now));
   attempt('daily stats', () => deleteOldStats(db, now));
+  attempt('error reports', () => deleteOldErrors(db, now));
 }
 
 export function startSweeper(

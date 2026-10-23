@@ -1,6 +1,6 @@
-import type { Usage } from '@combat-planner/api';
+import type { ErrorReportRow, ErrorSource, Usage } from '@combat-planner/api';
 import type { RowStatus, StatusRow } from './format.ts';
-import { clockTime, duration } from './format.ts';
+import { clockTime, duration, shortDateTime } from './format.ts';
 
 export interface LiveCounts {
   players: number;
@@ -15,6 +15,7 @@ export interface AdminPageModel {
   usage: Usage;
   live: LiveCounts;
   checks: StatusRow[];
+  errors: ErrorReportRow[];
 }
 
 const STATUS_LABEL: Record<RowStatus, string> = {
@@ -22,6 +23,11 @@ const STATUS_LABEL: Record<RowStatus, string> = {
   problem: '❌ проблема',
   unknown: '⚪ нет данных',
   info: '—',
+};
+
+const SOURCE_LABEL: Record<ErrorSource, string> = {
+  client: 'браузер',
+  server: 'сервер',
 };
 
 const ESCAPES: Record<string, string> = {
@@ -47,6 +53,8 @@ td.number,th.number{text-align:right}
 tr.problem td{background:#fff5f5}
 .detail{color:#c92a2a;font-size:13px}
 .unknown .detail{color:#5c5f66}
+td.message{word-break:break-word}
+details pre{white-space:pre-wrap;word-break:break-all;font-size:12px;margin:4px 0 0}
 `;
 
 const statusTable = (rows: StatusRow[], heading: string): string => `
@@ -100,6 +108,28 @@ ${usage.days
 </tbody>
 </table>`;
 
+const optionalText = (text: string | null): string => (text === null ? '—' : escape(text));
+
+const errorsTable = ({ errors }: AdminPageModel): string =>
+  errors.length === 0
+    ? '<p class="meta">Ошибок нет.</p>'
+    : `
+<table>
+<thead><tr><th>Время</th><th>Источник</th><th>Сообщение</th><th>Путь</th><th>Версия</th></tr></thead>
+<tbody>
+${errors
+  .map(
+    (error) =>
+      `<tr><td>${shortDateTime(error.at)}</td><td>${SOURCE_LABEL[error.source]}</td><td class="message">${escape(error.message)}${
+        error.stack === null
+          ? ''
+          : `<details><summary>Стек</summary><pre>${escape(error.stack)}</pre></details>`
+      }</td><td>${optionalText(error.path)}</td><td>${optionalText(error.version)}</td></tr>`,
+  )
+  .join('\n')}
+</tbody>
+</table>`;
+
 export const renderAdminPage = (model: AdminPageModel): string => `<!doctype html>
 <html lang="ru">
 <head>
@@ -121,6 +151,8 @@ ${usageTable(model)}
 ${historyTable(model)}
 <h2>Проверки</h2>
 ${model.checks.length === 0 ? '<p class="meta">Первая проверка ещё идёт.</p>' : statusTable(model.checks, 'Проверка')}
+<h2>Последние ошибки</h2>
+${errorsTable(model)}
 </body>
 </html>
 `;

@@ -78,6 +78,7 @@ export {
   combatSummarySchema,
   dmCombatSchema,
   emailSchema,
+  errorReportSchema,
   isPresenceEvent,
   linkGenerationSchema,
   linkReissueResultSchema,
@@ -115,6 +116,7 @@ export type {
   CombatsApi,
   DmCombat,
   ConnectionApi,
+  ErrorReport,
   ConnectionListener,
   ConnectionState,
   DocumentListener,
@@ -147,3 +149,15 @@ export type {
   Unsubscribe,
   VersionResult,
 } from './client.ts';
+export { ERROR_REPORT_LIMITS, scrubErrorFields, scrubSecrets } from './errors/scrub.ts';
+export type { ErrorFields, ScrubbedErrorFields } from './errors/scrub.ts';
+export {
+  ERROR_RETENTION_DAYS,
+  MAX_ERROR_REPORTS,
+  RECENT_ERRORS,
+  countErrorsSince,
+  deleteOldErrors,
+  recentErrors,
+  recordError,
+} from './errors/store.ts';
+export type { ErrorCounts, ErrorReportRow, ErrorSource } from './errors/store.ts';

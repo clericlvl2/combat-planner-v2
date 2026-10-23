@@ -40,7 +40,7 @@ describe('server app', () => {
     const response = await app.request('/api/health');
     expect(response.status).toBe(200);
     close();
-    expect(appliedMigrations()).toBe(5);
+    expect(appliedMigrations()).toBe(6);
   });
 
   it('starts again on the same database without re-applying migrations', async () => {
@@ -48,7 +48,7 @@ describe('server app', () => {
     const response = await app.request('/api/health');
     expect(response.status).toBe(200);
     close();
-    expect(appliedMigrations()).toBe(5);
+    expect(appliedMigrations()).toBe(6);
   });
 
   it('serves index.html for client routes', async () => {

@@ -42,6 +42,8 @@ export const clockTime = (at: Date): string => timeFormat.format(at);
 
 export const dateTime = (at: Date): string => dateTimeFormat.format(at);
 
+export const shortDateTime = (at: Date): string => dateTimeFormat.format(at).replace(', ', ' ');
+
 export const calendarDate = (at: Date): string => dateFormat.format(at);
 
 export const megabytes = (bytes: number): string => `${(bytes / MB).toFixed(1)} МБ`;

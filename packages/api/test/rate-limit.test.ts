@@ -30,6 +30,7 @@ const limitedServer = () => {
 describe('bucketOf', () => {
   it.each([
     ['/health', null],
+    ['/errors', 'errors'],
     ['/combats/01J/events', 'events'],
     ['/play/token/events', 'events'],
     ['/play/token', 'actions'],

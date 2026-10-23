@@ -16,6 +16,7 @@ import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { RouterProvider } from 'react-router';
 import { aboutLinks } from './about.ts';
+import { createErrorReporter } from './errorReports.ts';
 import { browserStorage, playerKeysOf } from './playerId.ts';
 import { AppProviders } from './providers.tsx';
 import { BindLanguage, RouteLocale, languageBridge } from './routeLocale.ts';
@@ -28,6 +29,12 @@ const asideElement = document.getElementById('aside');
 const currentGuestLocale = () => guestLocale(browserStorage, navigator.languages);
 const locale = currentGuestLocale();
 const api = createHonoApiClient({ baseUrl: '/api', playerKeys: playerKeysOf(browserStorage) });
+const errorReporter = createErrorReporter({
+  send: (report) => api.reportError(report),
+  version: import.meta.env.VITE_APP_VERSION,
+  path: () => window.location.pathname,
+});
+errorReporter.listen(window);
 const queryClient = createQueryClient();
 const { language, bind } = languageBridge();
 const router = createAppRouter({
@@ -35,6 +42,7 @@ const router = createAppRouter({
   queryClient,
   about: aboutLinks(import.meta.env),
   language,
+  reportError: (error) => errorReporter.report(error),
 });
 
 createRoot(rootElement).render(

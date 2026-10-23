@@ -1,5 +1,5 @@
 import tls from 'node:tls';
-import { lastSessionCreatedAt } from '@combat-planner/api';
+import { countErrorsSince, lastSessionCreatedAt } from '@combat-planner/api';
 import type { ApiEnv, AppDatabase } from '@combat-planner/api';
 import type { StatusRow } from './format.ts';
 import { calendarDate, clockTime, dateTime, errorText } from './format.ts';
@@ -12,6 +12,9 @@ const MIN_CERTIFICATE_DAYS = 14;
 const MAX_SYNC_AGE_MS = 5 * 60_000;
 const MAX_SWEEP_AGE_MS = 3 * 60_000;
 const DAY_MS = 86_400_000;
+const HOUR_MS = 3_600_000;
+export const SERVER_ERRORS_ALERT = 1;
+export const CLIENT_ERRORS_ALERT = 10;
 const NO_HOST = 'BETTER_AUTH_URL не задан';
 
 export interface CheckProbes {
@@ -240,6 +243,20 @@ export function createChecker({
       : row(name, 'ok', value);
   };
 
+  const errorsLastHour = async () => {
+    const name = 'Ошибки за час';
+    const counts = countErrorsSince(db, new Date(now().getTime() - HOUR_MS));
+    const value = `браузер ${counts.client}, сервер ${counts.server}`;
+    return counts.server >= SERVER_ERRORS_ALERT || counts.client >= CLIENT_ERRORS_ALERT
+      ? row(
+          name,
+          'problem',
+          value,
+          `сервер от ${SERVER_ERRORS_ALERT} или браузер от ${CLIENT_ERRORS_ALERT} за час`,
+        )
+      : row(name, 'ok', value);
+  };
+
   const runAll = async () => {
     await Promise.all([
       external('health', 'Сайт отвечает (/api/health)', health('Сайт отвечает (/api/health)')),
@@ -250,6 +267,7 @@ export function createChecker({
       settle('litestream', 'Litestream', litestreamRow),
       signIn(),
       settle('sweeper', 'Очистка ссылок игроков', sweeper),
+      settle('errors', 'Ошибки за час', errorsLastHour),
     ]);
   };
 
@@ -264,6 +282,7 @@ export function createChecker({
     'google',
     'lastSignIn',
     'sweeper',
+    'errors',
   ];
 
   return {

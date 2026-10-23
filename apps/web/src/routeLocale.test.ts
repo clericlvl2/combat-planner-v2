@@ -67,6 +67,7 @@ async function start(
       queryClient,
       about: { version: '2.0.0', sourceUrl: 'https://s.example' },
       language: Promise.resolve(i18n),
+      reportError: () => undefined,
     },
     () => router,
   );

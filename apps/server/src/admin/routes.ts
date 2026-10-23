@@ -1,4 +1,4 @@
-import { readUsage, subscriptions } from '@combat-planner/api';
+import { readUsage, recentErrors, subscriptions } from '@combat-planner/api';
 import type { AppDatabase } from '@combat-planner/api';
 import { Hono } from 'hono';
 import type { Checker } from './checks.ts';
@@ -47,6 +47,7 @@ export const createAdminApp = ({
         usage: readUsage(db, renderedAt),
         live: liveCounts(),
         checks: checker.rows(),
+        errors: recentErrors(db),
       }),
     );
   });

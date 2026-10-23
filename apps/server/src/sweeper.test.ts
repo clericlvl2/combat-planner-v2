@@ -389,3 +389,23 @@ describe('daily stats sweep', () => {
     expect(days).toEqual(['2026-09-16']);
   });
 });
+
+describe('error reports sweep', () => {
+  it('keeps 14 days of error reports and at most the newest 500', () => {
+    const now = Date.parse('2026-10-16T12:00:00.000Z');
+    const insert = sqlite.prepare(
+      "insert into error_reports (at, source, message) values (?, 'client', ?)",
+    );
+    insert.run(now - 14 * 86_400_000 - 1, 'too old');
+    insert.run(now - 14 * 86_400_000 + 1, 'oldest kept');
+    for (let index = 0; index < 500; index += 1) insert.run(now - index, `recent ${index}`);
+    sweep(db, new Date(now).toISOString(), SHARING_TIMEOUTS);
+    const messages = sqlite
+      .prepare('select message from error_reports order by at desc')
+      .pluck()
+      .all();
+    expect(messages).toHaveLength(500);
+    expect(messages[0]).toBe('recent 0');
+    expect(messages.at(-1)).toBe('recent 499');
+  });
+});

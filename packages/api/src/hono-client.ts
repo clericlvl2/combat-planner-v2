@@ -770,5 +770,8 @@ export function createHonoApiClient({
       update: (patch) => json(() => client.account.$patch({ json: patch }), sessionSchema),
       remove: () => none(() => client.account.$delete()),
     },
+    reportError: (report) => {
+      void send(() => client.errors.$post({ json: report })).catch(() => undefined);
+    },
   };
 }

@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { openDatabase, runMigrations } from '@combat-planner/api';
+import { openDatabase, recordError, runMigrations } from '@combat-planner/api';
 import type { ApiEnv, OpenedDatabase } from '@combat-planner/api';
 import { afterEach, beforeEach, describe, expect, it } from 'vite-plus/test';
 import type { CheckProbes, CheckerOptions } from './checks.ts';
@@ -97,6 +97,33 @@ afterEach(() => {
 });
 
 describe('checker', () => {
+  it('turns the errors of the last hour red from 1 server or 10 browser errors', async () => {
+    const report = (source: 'client' | 'server', minutesAgo: number, index: number) =>
+      recordError(
+        opened.db,
+        source,
+        { message: `boom ${index}` },
+        new Date(START.getTime() - minutesAgo * MINUTE),
+      );
+    const errorsRow = async () => {
+      const subject = checker();
+      await subject.run();
+      return byName(subject.rows(), 'Ошибки за час');
+    };
+    for (let index = 0; index < 9; index += 1) report('client', 30, index);
+    report('server', 61, 9);
+    expect(await errorsRow()).toMatchObject({ status: 'ok', value: 'браузер 9, сервер 0' });
+    report('client', 59, 10);
+    expect(await errorsRow()).toMatchObject({
+      status: 'problem',
+      value: 'браузер 10, сервер 0',
+      detail: 'сервер от 1 или браузер от 10 за час',
+    });
+    opened.db.$client.exec("delete from error_reports where source = 'client'");
+    report('server', 1, 11);
+    expect(await errorsRow()).toMatchObject({ status: 'problem', value: 'браузер 0, сервер 1' });
+  });
+
   it('reports every part healthy with the time of the check', async () => {
     const subject = checker();
     await subject.run();
@@ -112,6 +139,7 @@ describe('checker', () => {
       'Вход через Google',
       'Последний вход',
       'Очистка ссылок игроков',
+      'Ошибки за час',
     ]);
     expect(rows.filter((row) => row.status !== 'ok').map((row) => row.name)).toEqual([
       'Последний вход',

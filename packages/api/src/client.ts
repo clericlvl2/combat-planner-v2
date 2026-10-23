@@ -185,6 +185,14 @@ export type Settings = z.infer<typeof settingsSchema>;
 export const accountPatchSchema = z.object({ displayName: displayNameSchema });
 export type AccountPatch = z.infer<typeof accountPatchSchema>;
 
+export const errorReportSchema = z.object({
+  message: z.string().min(1),
+  stack: z.string().optional(),
+  path: z.string().optional(),
+  version: z.string().optional(),
+});
+export type ErrorReport = z.infer<typeof errorReportSchema>;
+
 export const CONNECTION_STATES = ['connected', 'reconnecting', 'offline'] as const;
 export type ConnectionState = (typeof CONNECTION_STATES)[number];
 
@@ -336,4 +344,5 @@ export interface ApiClient {
   tags: TagsApi;
   settings: SettingsApi;
   account: AccountApi;
+  reportError(report: ErrorReport): void;
 }

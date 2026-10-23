@@ -6,6 +6,7 @@ export const RATE_LIMIT_BUDGETS = {
   actions: 120,
   events: 60,
   general: 300,
+  errors: 10,
 } as const;
 
 export type RateLimitBucket = keyof typeof RATE_LIMIT_BUDGETS;
@@ -18,6 +19,7 @@ const WILDCARD = '/*';
 
 export const bucketOf = (path: string): RateLimitBucket | null => {
   if (path === '/health') return null;
+  if (path === '/errors') return 'errors';
   if (path.endsWith('/events')) return 'events';
   if (path.startsWith('/play/') || ACTIONS_PATH.test(path)) return 'actions';
   return 'general';

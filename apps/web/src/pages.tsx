@@ -11,7 +11,7 @@ import {
   useAccount,
 } from '@combat-planner/ui';
 import { useEffect, useState } from 'react';
-import { Outlet, useLoaderData, useLocation, useNavigate } from 'react-router';
+import { Outlet, useLoaderData, useLocation, useNavigate, useRouteError } from 'react-router';
 import { watchEdgeSwipe } from './edgeSwipe.ts';
 import { sectionOf } from './sections.ts';
 import { swipeAllowed } from './swipeGuard.ts';
@@ -98,11 +98,14 @@ export function NotFoundPage() {
 
 export interface RouteErrorProps {
   onShow: () => void;
+  onReport: (error: unknown) => void;
 }
 
-export function RouteError({ onShow }: RouteErrorProps) {
+export function RouteError({ onShow, onReport }: RouteErrorProps) {
   const navigate = useNavigate();
+  const error = useRouteError();
   useEffect(() => onShow(), [onShow]);
+  useEffect(() => onReport(error), [onReport, error]);
   return (
     <UnexpectedError onReload={() => window.location.reload()} onHome={() => void navigate('/')} />
   );
