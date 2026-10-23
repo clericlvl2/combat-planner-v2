@@ -5,7 +5,7 @@ import type { AppDatabase } from '../db/index.ts';
 import { broadcastDocument } from '../live/registry.ts';
 import { followCombatClaims } from '../sharing/store.ts';
 import { countAction } from '../stats/store.ts';
-import { dmDocument, readStack, recordAction } from './log.ts';
+import { dmDocument, isLogged, readStack, recordAction } from './log.ts';
 import type { Transaction } from './store.ts';
 import { findCombatRow, saveCombat } from './store.ts';
 
@@ -31,6 +31,7 @@ export interface DispatchApplied {
   version: number;
   combat: Combat;
   document: DmCombat;
+  repeated: boolean;
 }
 
 export type DispatchOutcome = DispatchApplied | DispatchRejected;
@@ -60,6 +61,15 @@ const run = (
     return rejected('notFound', 'Combat not found');
   }
   const combat = row.document;
+  if (isLogged(tx, combatId, action.id)) {
+    return {
+      ok: true,
+      version: combat.version,
+      combat,
+      document: dmDocument(tx, combat),
+      repeated: true,
+    };
+  }
   if (action.version !== combat.version) {
     return rejected(
       'version',
@@ -78,11 +88,12 @@ const run = (
     version: result.combat.version,
     combat: result.combat,
     document: dmDocument(tx, result.combat),
+    repeated: false,
   };
 };
 
 export function dispatch(db: AppDatabase, request: DispatchRequest): DispatchOutcome {
   const outcome = db.transaction((tx) => run(tx, request));
-  if (outcome.ok) broadcastDocument(request.combatId, outcome.document);
+  if (outcome.ok && !outcome.repeated) broadcastDocument(request.combatId, outcome.document);
   return outcome;
 }
