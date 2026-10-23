@@ -4,7 +4,7 @@ import { Hono } from 'hono';
 import { ulid } from 'ulid';
 import type { UserAppEnv } from '../app.ts';
 import type { DmCombat } from '../client.ts';
-import { appendLogEntry, dmDocument, nextSeq } from '../combats/log.ts';
+import { dmDocument, readStack, recordAction } from '../combats/log.ts';
 import type { Transaction } from '../combats/store.ts';
 import { NOT_FOUND, findOwnCombat, nowIso, saveCombat } from '../combats/store.ts';
 import { broadcast, broadcastDocument } from '../live/registry.ts';
@@ -14,7 +14,7 @@ const DM: Viewer = { kind: 'dm' };
 
 const releaseEveryClaim = (tx: Transaction, source: Combat, now: string): Combat => {
   let combat = source;
-  let seq = nextSeq(tx, combat.id);
+  let stack = readStack(tx, combat.id);
   for (const unit of source.units) {
     if (unit.claimedBy === null) continue;
     const action: Action = {
@@ -26,14 +26,12 @@ const releaseEveryClaim = (tx: Transaction, source: Combat, now: string): Combat
     const result = apply(combat, action, DM, now);
     if (result instanceof DomainError) throw result;
     combat = result.combat;
-    appendLogEntry(tx, combat.id, seq, {
+    stack = recordAction(tx, combat.id, stack, {
       action,
       author: DM,
       at: now,
       patch: result.patch,
-      undoneBy: null,
     });
-    seq += 1;
   }
   return combat;
 };

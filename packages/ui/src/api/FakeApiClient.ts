@@ -21,7 +21,7 @@ import type {
   Combat,
   CombatId,
   DomainErrorCode,
-  LogEntry,
+  UndoableEntry,
   PlayerId,
   Preset,
   Tag,
@@ -34,6 +34,7 @@ import {
   authorize,
   copyCombat,
   duplicateName,
+  nextStack,
   normalizeTag,
   project,
   undoSummary,
@@ -53,7 +54,7 @@ export interface FakeCall {
 
 interface StoredCombat {
   combat: Combat;
-  log: LogEntry[];
+  log: UndoableEntry[];
 }
 
 interface DmSubscriber {
@@ -291,8 +292,6 @@ export class FakeApiClient implements ApiClient {
   }
 
   private dispatchAs(stored: StoredCombat, viewer: Viewer, action: Action): VersionResult {
-    const known = stored.log.find((entry) => entry.action.id === action.id);
-    if (known) return { version: known.action.version + 1 };
     const combat = stored.combat;
     if (action.version !== combat.version) {
       throw fail(
@@ -305,12 +304,7 @@ export class FakeApiClient implements ApiClient {
     const now = nowIso();
     const result = apply(combat, action, viewer, now, stored.log);
     if (result instanceof DomainError) throw fromDomain(result);
-    stored.log.push({ action, author: viewer, at: now, patch: result.patch, undoneBy: null });
-    if ('undone' in result) {
-      stored.log = stored.log.map((entry) =>
-        entry.action.id === result.undone ? { ...entry, undoneBy: action.id } : entry,
-      );
-    }
+    stored.log = nextStack(stored.log, { action, author: viewer, at: now, patch: result.patch });
     this.save(stored, result.combat);
     return { version: result.combat.version };
   }
@@ -547,7 +541,7 @@ export class FakeApiClient implements ApiClient {
           };
           const result = apply(combat, action, DM, now);
           if (result instanceof DomainError) throw fromDomain(result);
-          stored.log.push({ action, author: DM, at: now, patch: result.patch, undoneBy: null });
+          stored.log = nextStack(stored.log, { action, author: DM, at: now, patch: result.patch });
           combat = result.combat;
         }
         const next: Combat = {

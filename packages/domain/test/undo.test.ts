@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { ACTION_TYPES, DomainError, LIMITS, apply, undoSummary, undoTarget } from '../src/index.ts';
-import type { Action, Combat, LogEntry, Viewer } from '../src/index.ts';
+import {
+  ACTION_TYPES,
+  DomainError,
+  LIMITS,
+  apply,
+  nextStack,
+  undoSummary,
+  undoTarget,
+} from '../src/index.ts';
+import type { Action, Combat, UndoableEntry, Viewer } from '../src/index.ts';
 import { DM, LATER, NOW, PLAYER, PLAYER_ID, id, makeCombat, makeUnit } from './fixtures.ts';
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
@@ -8,7 +16,7 @@ type Payload = DistributiveOmit<Action, 'id' | 'version'>;
 
 interface State {
   combat: Combat;
-  log: LogEntry[];
+  log: UndoableEntry[];
 }
 
 let actionCounter = 100;
@@ -22,15 +30,9 @@ const dispatch = (state: State, payload: Payload, author: Viewer = DM, now = NOW
   const action = build(state.combat, payload);
   const result = apply(state.combat, action, author, now, state.log);
   if (result instanceof DomainError) throw new Error(`${result.code}: ${result.message}`);
-  const log =
-    'undone' in result
-      ? state.log.map((entry) =>
-          entry.action.id === result.undone ? { ...entry, undoneBy: action.id } : entry,
-        )
-      : state.log;
   return {
     combat: result.combat,
-    log: [...log, { action, author, at: now, patch: result.patch, undoneBy: null }],
+    log: nextStack(state.log, { action, author, at: now, patch: result.patch }),
   };
 };
 
@@ -155,18 +157,41 @@ describe('Undo', () => {
     }
   });
 
-  it('Depth: 10 steps back from the newest action.', () => {
+  it('Depth: a push beyond 10 drops the oldest action.', () => {
     let state = setup();
     for (let step = 0; step < LIMITS.undoDepth + 1; step += 1) {
       state = dispatch(state, { type: 'damage', unitId: id(2), amount: 1 });
     }
+    expect(state.log).toHaveLength(LIMITS.undoDepth);
     expect(state.combat.units[1]?.hp).toBe(30 - LIMITS.undoDepth - 1);
     for (let step = 0; step < LIMITS.undoDepth; step += 1) state = undo(state);
     expect(state.combat.units[1]?.hp).toBe(29);
+    expect(state.log).toEqual([]);
     expect(codeOf(state, { type: 'undo' })).toBe('blocked');
-    const target = undoTarget(state.log);
-    expect(target).toBeInstanceOf(DomainError);
-    expect((target as DomainError).message).toContain('10');
+    expect((undoTarget(state.log) as DomainError).message).toBe('Nothing to undo');
+  });
+
+  it('10 actions, 5 undone, 1 new action: 6 undoable.', () => {
+    let state = setup();
+    for (let step = 0; step < 10; step += 1) {
+      state = dispatch(state, { type: 'damage', unitId: id(2), amount: 1 });
+    }
+    for (let step = 0; step < 5; step += 1) state = undo(state);
+    state = dispatch(state, { type: 'heal', unitId: id(2), amount: 3 });
+    expect(state.log).toHaveLength(6);
+    for (let step = 0; step < 6; step += 1) state = undo(state);
+    expect(state.combat.units[1]?.hp).toBe(30);
+    expect(codeOf(state, { type: 'undo' })).toBe('blocked');
+  });
+
+  it('An action without a patch empties the stack.', () => {
+    const damaged = dispatch(setup(), { type: 'damage', unitId: id(2), amount: 4 });
+    const claimed = dispatch(damaged, payloadFor('claimUnit'), PLAYER);
+    expect(claimed.log).toEqual([]);
+    expect(codeOf(claimed, { type: 'undo' })).toBe('blocked');
+    const healed = dispatch(claimed, { type: 'heal', unitId: id(2), amount: 1 });
+    expect(undo(healed).combat.units[1]?.hp).toBe(26);
+    expect(codeOf(undo(healed), { type: 'undo' })).toBe('blocked');
   });
 
   it('Undo of an HP change at a full history restores the dropped entry.', () => {
@@ -203,7 +228,7 @@ describe('Undo', () => {
     expect(first.combat.units[0]?.hp).toBe(24);
     const second = undo(first);
     expect(second.combat.units[0]?.hp).toBe(30);
-    expect(second.log[0]?.undoneBy).toBe(second.log[3]?.action.id);
+    expect(second.log).toEqual([]);
   });
 
   it('Toast after undo: "Undid: <action>", no button.', () => {
@@ -230,15 +255,17 @@ describe('Action log', () => {
         fields: {},
         units: { [id(1)]: { hp: 30, hpHistory: [] } },
       },
-      undoneBy: null,
     });
   });
 
-  it('`claimUnit` and `releaseUnit` are logged without a patch. Every other action is undoable.', () => {
+  it('`claimUnit` and `releaseUnit` have no patch and are not stacked. Every other action is undoable.', () => {
+    for (const type of ['claimUnit', 'releaseUnit'] as const) {
+      const result = apply(setup().combat, build(setup().combat, payloadFor(type)), PLAYER, NOW);
+      if (result instanceof DomainError) throw new Error(result.message);
+      expect(result.patch).toBeNull();
+    }
     const claimed = dispatch(setup(), payloadFor('claimUnit'), PLAYER);
-    expect(claimed.log[0]?.patch).toBeNull();
-    const released = dispatch(claimed, payloadFor('releaseUnit'), PLAYER);
-    expect(released.log[1]?.patch).toBeNull();
+    expect(claimed.log).toEqual([]);
     for (const type of ACTION_TYPES) {
       if (WITHOUT_PATCH.has(type)) continue;
       const state = dispatch(NEEDS_ACTIVE.has(type) ? active() : setup(), payloadFor(type));
@@ -247,24 +274,15 @@ describe('Action log', () => {
     }
   });
 
-  it('`undo` is a log entry that points at a target entry. It applies the patch of the newest entry that is undoable and not already undone; it stops at an entry without a patch. Undone entries stay in the log.', () => {
+  it('`undo` pops the top action and reverts its patch; it is not stacked itself.', () => {
     const damaged = dispatch(setup(), { type: 'damage', unitId: id(1), amount: 4 });
     const healed = dispatch(damaged, { type: 'heal', unitId: id(1), amount: 2 });
     const first = undo(healed);
     expect(first.combat.units[0]?.hp).toBe(26);
-    expect(first.log).toHaveLength(3);
-    expect(first.log[1]?.undoneBy).toBe(first.log[2]?.action.id);
-    expect(first.log[2]).toMatchObject({ action: { type: 'undo' }, patch: null, undoneBy: null });
+    expect(first.log).toEqual([healed.log[0]]);
     const second = undo(first);
     expect(second.combat.units[0]?.hp).toBe(30);
-    expect(second.log[0]?.undoneBy).toBe(second.log[3]?.action.id);
-    const claimed = dispatch(
-      second,
-      { type: 'claimUnit', unitId: id(3), displayName: 'Bob' },
-      PLAYER,
-    );
-    expect(codeOf(claimed, { type: 'undo' })).toBe('blocked');
-    expect((undoTarget(claimed.log) as DomainError).message).toContain('claimUnit');
+    expect(second.log).toEqual([]);
   });
 });
 
@@ -277,7 +295,7 @@ describe('applyUndo', () => {
     expect(first.combat.units[0]?.note).toBe('one');
     const second = undo(first);
     expect(second.combat.units[0]?.note).toBe('');
-    expect(second.log.filter((entry) => entry.action.type === 'undo')).toHaveLength(2);
+    expect(second.log).toEqual([]);
     expect(codeOf(second, { type: 'undo' })).toBe('blocked');
   });
 
@@ -322,7 +340,7 @@ describe('applyUndo', () => {
     const undone = dispatch(state, { type: 'undo' }, DM, LATER);
     expect(undone.combat.version).toBe(state.combat.version + 1);
     expect(undone.combat.updatedAt).toBe(LATER);
-    expect(undone.log[1]?.patch).toBeNull();
+    expect(undone.log).toEqual([]);
   });
 
   it('answers blocked when the log is empty and when apply gets no log', () => {

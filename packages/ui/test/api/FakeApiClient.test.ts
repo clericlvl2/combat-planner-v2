@@ -77,11 +77,13 @@ describe('FakeApiClient dispatch', () => {
     expect(dm.documents.at(-1)?.units.find((unit) => unit.id === HERO_ID)?.hp).toBe(23);
   });
 
-  it('answers a repeated action id with the earlier version and applies it once', async () => {
+  it('refuses a retried action with version and applies it once', async () => {
     const client = seeded();
     const dm = watchDm(client);
     await client.combats.dispatch(COMBAT_ID, damage(1));
-    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).resolves.toEqual({ version: 2 });
+    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).rejects.toMatchObject({
+      code: 'version',
+    });
     expect(dm.documents).toHaveLength(2);
   });
 

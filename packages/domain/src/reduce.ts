@@ -18,7 +18,7 @@ import type {
   Viewer,
 } from './types.ts';
 import { applyUndo } from './undo.ts';
-import type { LogEntry, Undone } from './undo.ts';
+import type { UndoableEntry, Undone } from './undo.ts';
 
 export interface Patch {
   actionId: ActionId;
@@ -502,7 +502,7 @@ export const apply = (
   action: Action,
   author: Viewer,
   now: string,
-  log: readonly LogEntry[] = [],
+  stack: readonly UndoableEntry[] = [],
 ): ApplyResult => {
   const allowed = authorize(combat, action, author);
   if (allowed !== true) return allowed;
@@ -512,7 +512,7 @@ export const apply = (
       `Action version ${action.version} does not match combat version ${combat.version}`,
     );
   }
-  if (action.type === 'undo') return applyUndo(combat, action, now, log);
+  if (action.type === 'undo') return applyUndo(combat, action, now, stack);
   const next = step(combat, action, author, now);
   if (next instanceof DomainError) return next;
   return {

@@ -1,5 +1,5 @@
 import type { Action, Combat } from '@combat-planner/domain';
-import { asc, eq } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vite-plus/test';
 import type { ApiEvent } from '../src/client.ts';
 import { playerLinkSchema, linkReissueResultSchema } from '../src/client.ts';
@@ -128,7 +128,7 @@ describe('link routes', () => {
     expect((await fetchCombat(dm)).linkGeneration).toBe(0);
   });
 
-  it('reissue bumps the generation, releases every claim, logs them and broadcasts', async () => {
+  it('reissue bumps the generation, releases every claim, empties the undo stack and broadcasts', async () => {
     const before = await fetchCombat(dm);
     expect(before.units.filter((unit) => unit.claimedBy !== null)).toHaveLength(2);
     const dmStream = listen({ kind: 'dm' });
@@ -149,19 +149,10 @@ describe('link routes', () => {
       { type: 'document', version: after.version, document: after },
     ]);
     expect(playerStream.events).toEqual([{ type: 'linkRevoked' }]);
-    const releases = opened.db
-      .select({ action: actionLog.action, author: actionLog.author, patch: actionLog.patch })
-      .from(actionLog)
-      .where(eq(actionLog.combatId, COMBAT_ID))
-      .orderBy(asc(actionLog.seq))
-      .all()
-      .slice(-2);
-    expect(releases.map((row) => row.action.type)).toEqual(['releaseUnit', 'releaseUnit']);
-    expect(releases.map((row) => (row.action as { unitId: string }).unitId)).toEqual([
-      HERO_ID,
-      SECOND_HERO,
-    ]);
-    expect(releases.every((row) => row.author.kind === 'dm' && row.patch === null)).toBe(true);
+    expect(after.undo).toBeNull();
+    expect(
+      opened.db.select().from(actionLog).where(eq(actionLog.combatId, COMBAT_ID)).all(),
+    ).toEqual([]);
   });
 
   it('the old token no longer matches the combat after reissue', async () => {

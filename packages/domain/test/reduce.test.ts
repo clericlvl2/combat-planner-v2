@@ -936,7 +936,7 @@ describe('HP history', () => {
 });
 
 describe('Undo', () => {
-  it('Depth: 10 steps back from the newest action.', () => {
+  it('Depth: the stack holds the newest 10 actions.', () => {
     expect(LIMITS.undoDepth).toBe(10);
   });
 

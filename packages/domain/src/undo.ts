@@ -9,7 +9,6 @@ export interface LogEntry {
   author: Viewer;
   at: string;
   patch: Patch | null;
-  undoneBy: ActionId | null;
 }
 
 export interface UndoableEntry extends LogEntry {
@@ -27,22 +26,13 @@ export interface Undone {
   undone: ActionId;
 }
 
-const blocked = (message: string) => new DomainError('blocked', message);
+export const undoTarget = (stack: readonly UndoableEntry[]): UndoableEntry | DomainError =>
+  stack.at(-1) ?? new DomainError('blocked', 'Nothing to undo');
 
-const isUndoable = (entry: LogEntry): entry is UndoableEntry => entry.patch !== null;
-
-export const undoTarget = (log: readonly LogEntry[]): UndoableEntry | DomainError => {
-  let depth = 0;
-  for (const entry of log.toReversed()) {
-    if (entry.action.type === 'undo') continue;
-    if (!isUndoable(entry)) return blocked(`Undo stops at ${entry.action.type}`);
-    depth += 1;
-    if (depth > LIMITS.undoDepth) {
-      return blocked(`Undo reaches ${LIMITS.undoDepth} steps back from the newest action`);
-    }
-    if (entry.undoneBy === null) return entry;
-  }
-  return blocked('Nothing to undo');
+export const nextStack = (stack: readonly UndoableEntry[], entry: LogEntry): UndoableEntry[] => {
+  if (entry.action.type === 'undo') return stack.slice(0, -1);
+  if (entry.patch === null) return [];
+  return [...stack, { ...entry, patch: entry.patch }].slice(-LIMITS.undoDepth);
 };
 
 const revertUnits = (units: readonly Unit[], priors: Patch['units']): Unit[] =>
@@ -57,9 +47,9 @@ export const applyUndo = (
   combat: Combat,
   action: UndoAction,
   now: string,
-  log: readonly LogEntry[],
+  stack: readonly UndoableEntry[],
 ): Undone | DomainError => {
-  const target = undoTarget(log);
+  const target = undoTarget(stack);
   if (target instanceof DomainError) return target;
   const reverted: Combat = { ...combat, ...target.patch.fields };
   return {
@@ -82,8 +72,11 @@ const unitNameOf = (combat: Combat, entry: UndoableEntry): string | null => {
   return known.find((unit) => unit.id === action.unitId)?.name ?? null;
 };
 
-export const undoSummary = (combat: Combat, log: readonly LogEntry[]): UndoSummary | null => {
-  const target = undoTarget(log);
+export const undoSummary = (
+  combat: Combat,
+  stack: readonly UndoableEntry[],
+): UndoSummary | null => {
+  const target = undoTarget(stack);
   if (target instanceof DomainError) return null;
   return { action: target.action, unitName: unitNameOf(combat, target) };
 };

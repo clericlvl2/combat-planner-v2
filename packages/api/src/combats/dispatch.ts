@@ -3,14 +3,7 @@ import { DomainError, apply } from '@combat-planner/domain';
 import type { DmCombat } from '../client.ts';
 import type { AppDatabase } from '../db/index.ts';
 import { broadcastDocument } from '../live/registry.ts';
-import {
-  appendLogEntry,
-  dmDocument,
-  findLogEntry,
-  markUndone,
-  nextSeq,
-  undoWindow,
-} from './log.ts';
+import { dmDocument, readStack, recordAction } from './log.ts';
 import type { Transaction } from './store.ts';
 import { findCombatRow, saveCombat } from './store.ts';
 
@@ -35,7 +28,7 @@ export interface DispatchApplied {
   ok: true;
   version: number;
   combat: Combat;
-  document: DmCombat | null;
+  document: DmCombat;
 }
 
 export type DispatchOutcome = DispatchApplied | DispatchRejected;
@@ -64,10 +57,6 @@ const run = (
   if (!row || (ownerId !== undefined && row.ownerId !== ownerId)) {
     return rejected('notFound', 'Combat not found');
   }
-  const known = findLogEntry(tx, combatId, action.id);
-  if (known) {
-    return { ok: true, version: known.action.version + 1, combat: row.document, document: null };
-  }
   const combat = row.document;
   if (action.version !== combat.version) {
     return rejected(
@@ -75,18 +64,11 @@ const run = (
       `Action version ${action.version} does not match combat version ${combat.version}`,
     );
   }
-  const log = action.type === 'undo' ? undoWindow(tx, combatId) : [];
-  const result = apply(combat, action, viewer, now, log);
+  const stack = readStack(tx, combatId);
+  const result = apply(combat, action, viewer, now, stack);
   if (result instanceof DomainError) return rejected(result.code, result.message);
   saveCombat(tx, result.combat);
-  appendLogEntry(tx, combatId, nextSeq(tx, combatId), {
-    action,
-    author: viewer,
-    at: now,
-    patch: result.patch,
-    undoneBy: null,
-  });
-  if ('undone' in result) markUndone(tx, combatId, result.undone, action.id);
+  recordAction(tx, combatId, stack, { action, author: viewer, at: now, patch: result.patch });
   return {
     ok: true,
     version: result.combat.version,
@@ -97,6 +79,6 @@ const run = (
 
 export function dispatch(db: AppDatabase, request: DispatchRequest): DispatchOutcome {
   const outcome = db.transaction((tx) => run(tx, request));
-  if (outcome.ok && outcome.document) broadcastDocument(request.combatId, outcome.document);
+  if (outcome.ok) broadcastDocument(request.combatId, outcome.document);
   return outcome;
 }
