@@ -3,7 +3,7 @@ import { IconChevronLeft, IconDots, IconNote } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { iconSizes } from '../../theme.ts';
 import classes from './LandingPhone.module.css';
-import { nextUnit } from './landingStage.ts';
+import { STAGE_PLAYERS, nextUnit } from './landingStage.ts';
 import type {
   StageDelta,
   StageDeltaKind,
@@ -144,7 +144,17 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
         {mine ? <span className={classes.you}>{t('RoleBlock:you')}</span> : null}
       </span>
       <div className={classes.main}>
-        <span className={classes.name}>{stageName(unit.name)}</span>
+        <span className={classes.nameLine}>
+          <span className={classes.name}>{stageName(unit.name)}</span>
+          {unit.claimer ? (
+            <>
+              {' '}
+              <span className={classes.claimer}>
+                @{t(`Landing:${STAGE_PLAYERS[unit.claimer].nameKey}`)}
+              </span>
+            </>
+          ) : null}
+        </span>
         {showDefenses ? (
           <span className={classes.defenses}>
             {defenses.map((defense) => (
@@ -171,10 +181,12 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
             ))}
           </span>
         ) : null}
-        {mine && unit.note ? (
+        {(viewer === 'dm' || mine) && unit.note ? (
           <span className={classes.note}>
-            <IconNote size={iconSizes.S} stroke={2} />
-            {t(`Landing:${unit.note}`)}
+            <IconNote className={classes.noteIcon} size={iconSizes.S} stroke={2} />
+            <span className={classes.noteText} data-ellipsis="">
+              {t(`Landing:${unit.note}`)}
+            </span>
           </span>
         ) : null}
       </div>
