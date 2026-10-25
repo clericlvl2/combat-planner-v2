@@ -20,7 +20,6 @@
   "dmCleared": "Le MJ a vidé le combat",
   "dmReleased": "Le MJ a libéré {{hero}}. Choisissez un héros.",
   "dmRemoved": "Le MJ a retiré {{hero}}. Choisissez un héros.",
-  "heroTaken": "{{hero}} vient d’être pris",
   "presetAdded": "{{name}} ajouté à la Bibliothèque",
   "unitRemoved": "{{name}} retiré",
   "undo": "Annuler",

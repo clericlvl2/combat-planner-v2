@@ -20,7 +20,6 @@
   "dmCleared": "El DM vació el combate",
   "dmReleased": "El DM liberó a {{hero}}. Elige un héroe.",
   "dmRemoved": "El DM quitó a {{hero}}. Elige un héroe.",
-  "heroTaken": "Alguien acaba de elegir a {{hero}}",
   "presetAdded": "Se añadió {{name}} a la Biblioteca",
   "unitRemoved": "Se quitó a {{name}}",
   "undo": "Deshacer",

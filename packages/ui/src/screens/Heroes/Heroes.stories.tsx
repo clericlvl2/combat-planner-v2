@@ -124,29 +124,6 @@ export const PickAndJoin = meta.story({
   },
 });
 
-export const HeroTakenByAnotherPlayer = meta.story({
-  play: async ({ canvas, globals, loaded }) => {
-    const t = storyT(globals, 'Heroes');
-    const api = fakeApiOf(loaded);
-    await userEvent.type(await canvas.findByRole('textbox', { name: t('nameLabel') }), 'Mika');
-    await userEvent.click(canvas.getByRole('checkbox', { name: 'Vashti the Hexer' }));
-    await expect(canvas.getByRole('button', { name: t('join') })).toBeEnabled();
-    await claimAs(api, ALEX, 'Alex', unitIds.vashti);
-    const toast = await canvas.findByRole('status');
-    await expect(toast).toHaveTextContent(t('Toast:heroTaken', { hero: 'Vashti the Hexer' }));
-    const bar = canvas.getByRole('button', { name: t('join') }).parentElement!;
-    await expect(
-      Math.round(bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom),
-    ).toBe(12);
-    const vashti = canvas.getByRole('checkbox', { name: 'Vashti the Hexer' });
-    await expect(vashti).toBeDisabled();
-    await expect(vashti).not.toBeChecked();
-    await expect(canvas.getByText(t('playing', { name: 'Alex' }))).toBeVisible();
-    await expect(canvas.getByRole('button', { name: t('join') })).toBeDisabled();
-    await expect(sentBy(api, MIKA)).toEqual([]);
-  },
-});
-
 export const ReturningPlayer = meta.story({
   tags: ['visual'],
   parameters: { scenario: playerScenario(ferryCombat({ status: 'setup', ilse: true })) },

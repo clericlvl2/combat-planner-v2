@@ -9,14 +9,18 @@ import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import {
+  ALEX,
   COMBAT_ID,
   COMBAT_TITLE,
+  JONAS,
   ME,
   MIKA,
   TOKEN,
   actAsDm,
+  claimAs,
   ferryCombat,
   playerScenario,
+  releaseAs,
   unitIds,
 } from './PlayerView.scenarios.ts';
 import { PlayerView } from './PlayerView.tsx';
@@ -422,7 +426,53 @@ export const MenuOpensHeroPicker = meta.story({
     await expect(
       canvas.queryByText(t('Toast:dmReleased', { hero: 'Vashti the Hexer' })),
     ).toBeNull();
+    await expect(
+      canvas.queryByText(t('Toast:playerClaimed', { name: 'Mika', hero: 'Ilse the Bold' })),
+    ).toBeNull();
     await expect(canvas.getByRole('button', { name: t('Sheet:done') })).toBeEnabled();
+  },
+});
+
+export const HeroTakenByAnotherPlayer = meta.story({
+  parameters: { scenario: joinScenario },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    await typeName(canvas, t);
+    await userEvent.click(canvas.getByRole('checkbox', { name: ME }));
+    await expect(canvas.getByRole('button', { name: t('Heroes:join') })).toBeEnabled();
+    await claimAs(api, ALEX, 'Alex', unitIds.vashti);
+    const toast = await canvas.findByRole('status');
+    await expect(toast).toHaveTextContent(t('Toast:playerClaimed', { name: 'Alex', hero: ME }));
+    const bar = canvas.getByRole('button', { name: t('Heroes:join') }).parentElement!;
+    await expect(
+      Math.round(bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom),
+    ).toBe(12);
+    const vashti = canvas.getByRole('checkbox', { name: ME });
+    await expect(vashti).toBeDisabled();
+    await expect(vashti).not.toBeChecked();
+    await expect(canvas.getByText(t('Heroes:playing', { name: 'Alex' }))).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('Heroes:join') })).toBeDisabled();
+    await expect(sentBy(api)).toEqual([]);
+  },
+});
+
+export const OtherPlayerClaimsQueued = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: playerScenario(ferryCombat({ active: 'orc', ilse: true })) },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    await rowOf(canvas, ME);
+    await claimAs(api, JONAS, 'Jonas', unitIds.ilse);
+    await expect(
+      await canvas.findByText(t('Toast:playerClaimed', { name: 'Jonas', hero: 'Ilse the Bold' })),
+    ).toBeVisible();
+    await releaseAs(api, JONAS, unitIds.aldric);
+    const released = t('Toast:playerReleased', { name: 'Jonas', hero: 'Ser Aldric' });
+    await expect(canvas.queryByText(released)).toBeNull();
+    await userEvent.click(canvas.getByRole('button', { name: t('Toast:dismiss') }));
+    await expect(await canvas.findByText(released)).toBeVisible();
   },
 });
 

@@ -242,3 +242,13 @@ export async function claimAs(
     displayName,
   });
 }
+
+export async function releaseAs(
+  api: FakeApiClient,
+  playerId: string,
+  unitId: string,
+): Promise<void> {
+  const play = api.playAs(playerId);
+  const { combat } = await play.get(TOKEN);
+  await play.dispatch(TOKEN, { id: ulid(), version: combat.version, type: 'releaseUnit', unitId });
+}

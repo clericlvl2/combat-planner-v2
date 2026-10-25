@@ -20,7 +20,6 @@
   "dmCleared": "DMが戦闘をクリアしました",
   "dmReleased": "DMが{{hero}}の担当を解除しました。ヒーローを選んでください。",
   "dmRemoved": "DMが{{hero}}を削除しました。ヒーローを選んでください。",
-  "heroTaken": "{{hero}}は他のプレイヤーが選択しました",
   "presetAdded": "{{name}}をライブラリに追加しました",
   "unitRemoved": "{{name}}を削除しました",
   "undo": "元に戻す",

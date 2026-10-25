@@ -16,7 +16,7 @@ import { layout } from '../../layout.ts';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { PlayerHeader } from '../../organisms/PlayerHeader/PlayerHeader.tsx';
-import { PlayerToast, usePlayerToasts } from '../PlayerView/PlayerToast.tsx';
+import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
 import { playerEvents } from '../PlayerView/playerEvents.ts';
 import type { PlayerEvent } from '../PlayerView/playerEvents.ts';
 import { localeNames } from '../Settings/localeNames.ts';
@@ -48,7 +48,6 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
   const { locale } = useLocaleChoice();
   const [languageOpen, setLanguageOpen] = useState(false);
   const languageName = localeNames[locale];
-  const notify = usePlayerToasts();
   const storedName = combat.myName ?? undefined;
   const joined = storedName !== undefined;
   const [name, setName] = useState(storedName ?? '');
@@ -76,17 +75,16 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
     previous.current = combat;
     if (before === combat) return;
     const taken = playerEvents(before, combat).filter(
-      (event): event is Extract<PlayerEvent, { kind: 'taken' }> =>
-        event.kind === 'taken' && chosen.has(event.unitId),
+      (event): event is Extract<PlayerEvent, { kind: 'playerClaimed' }> =>
+        event.kind === 'playerClaimed' && chosen.has(event.unitId),
     );
     if (taken.length === 0) return;
-    for (const event of taken) notify('taken', event.name);
     setChosen((current) => {
       const next = new Set(current);
       for (const event of taken) next.delete(event.unitId);
       return next;
     });
-  }, [combat, chosen, notify]);
+  }, [combat, chosen]);
 
   const toggle = (unit: PlayerUnit, checked: boolean) => {
     const state = stateOf(unit);

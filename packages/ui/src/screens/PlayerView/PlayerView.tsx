@@ -82,17 +82,12 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     if (before === undefined || server === undefined || before === server) return;
     let lostHero = false;
     for (const event of playerEvents(before, server)) {
-      if (event.kind === 'taken') continue;
       if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) {
         lostHero = true;
         continue;
       }
-      if (event.kind === 'released' || event.kind === 'removed') {
-        lostHero = true;
-        notify(event.kind, event.name);
-      } else {
-        notify(event.kind);
-      }
+      if (event.kind === 'released' || event.kind === 'removed') lostHero = true;
+      notify(event);
     }
     if (lostHero && !holdsHero(server)) setView('heroes');
   }, [server, notify]);
