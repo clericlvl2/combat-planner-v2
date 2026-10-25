@@ -74,7 +74,7 @@
   white-space: nowrap;
 
   &[data-editable] {
-    border-bottom: 2px dashed var(--cp-color-ink);
+    border-bottom: var(--cp-border) dashed var(--cp-color-ink);
   }
 
   [data-preset] & {

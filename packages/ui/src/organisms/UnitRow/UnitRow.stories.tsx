@@ -342,7 +342,7 @@ export const ClaimedLongPlayerName = meta.story({
 export const Expanded = meta.story({
   tags: ['visual'],
   args: { unit: vashtiExpanded, expanded: true },
-  play: async ({ canvas, globals }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'UnitRow');
     await expect(canvas.getByRole('button', { name: 'Vashti the Hexer' })).toHaveAttribute(
       'aria-expanded',
@@ -357,6 +357,19 @@ export const Expanded = meta.story({
     ).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
     await expect(canvas.queryByRole('img', { name: t('NoteField:label') })).toBeNull();
+    const details = canvasElement.querySelector('[data-part="details"]');
+    await expect(details && getComputedStyle(details).borderTopWidth).toBe('1px');
+    for (const name of [
+      t('conditions'),
+      t('defenses'),
+      `${t('NoteField:label')}: ${hexNote}`,
+      t('CardActions:edit'),
+      t('CardActions:more'),
+    ]) {
+      await expect(getComputedStyle(canvas.getByRole('button', { name })).borderTopWidth).toBe(
+        '1px',
+      );
+    }
   },
 });
 

@@ -100,7 +100,7 @@
   margin: var(--cp-header-gap) var(--cp-content-edge) 0;
   padding: 0;
   border: none;
-  border-radius: var(--mantine-radius-field);
+  border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);

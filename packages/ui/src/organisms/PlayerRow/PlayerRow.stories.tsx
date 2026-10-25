@@ -300,7 +300,7 @@ export const OwnHeroActiveTurn = meta.story({
 export const OwnHeroExpanded = meta.story({
   tags: ['visual'],
   args: { expanded: true },
-  play: async ({ canvas, globals }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'PlayerRow');
     await expect(canvas.getByRole('button', { name: 'Vashti the Hexer' })).toHaveAttribute(
       'aria-expanded',
@@ -312,6 +312,18 @@ export const OwnHeroExpanded = meta.story({
       canvas.getByRole('button', { name: `${t('NoteField:label')}: Concentrating on Hex` }),
     ).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
+    const details = canvasElement.querySelector('[data-part="details"]');
+    await expect(details && getComputedStyle(details).borderTopWidth).toBe('1px');
+    for (const name of [
+      t('conditions'),
+      `${t('NoteField:label')}: Concentrating on Hex`,
+      t('CardActions:edit'),
+      t('CardActions:more'),
+    ]) {
+      await expect(getComputedStyle(canvas.getByRole('button', { name })).borderTopWidth).toBe(
+        '1px',
+      );
+    }
   },
 });
 

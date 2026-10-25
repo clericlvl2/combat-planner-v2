@@ -7,6 +7,7 @@ import { CombatHeader } from './CombatHeader.tsx';
 import type { CombatHeaderPanel, CombatHeaderProps } from './CombatHeader.tsx';
 import { PageHeader } from '../PageHeader/PageHeader.tsx';
 import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { radius } from '../../theme.ts';
 
 interface CombatHeaderCellProps extends Partial<
   Omit<CombatHeaderProps, 'round' | 'escalation' | 'open'>
@@ -100,6 +101,7 @@ export const Default = meta.story({
     await expect(menu).toHaveAttribute('aria-haspopup', 'menu');
     await expect(ticket.getBoundingClientRect().height).toBe(48);
     await expect(menu.getBoundingClientRect().height).toBe(48);
+    await expect(getComputedStyle(ticket).borderTopLeftRadius).toBe(`${radius.card}px`);
   },
 });
 
