@@ -84,6 +84,8 @@
   -webkit-tap-highlight-color: transparent;
 
   &[data-current] {
+    --cp-state-focus: var(--cp-color-ink);
+
     background: var(--cp-color-accent);
     font-weight: 700;
   }

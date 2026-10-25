@@ -74,6 +74,7 @@
   gap: 8px;
   min-width: 0;
   --numpad-health: var(--cp-health-full);
+  --numpad-health-text: var(--cp-health-text-full);
 
   &[data-side='after'] {
     align-items: flex-end;
@@ -81,18 +82,22 @@
 
   &[data-status='wounded'] {
     --numpad-health: var(--cp-health-wounded);
+    --numpad-health-text: var(--cp-health-text-wounded);
   }
 
   &[data-status='staggered'] {
     --numpad-health: var(--cp-health-staggered);
+    --numpad-health-text: var(--cp-health-staggered);
   }
 
   &[data-status='unconscious'] {
     --numpad-health: var(--cp-health-unconscious);
+    --numpad-health-text: var(--cp-health-unconscious);
   }
 
   &[data-status='dead'] {
     --numpad-health: var(--cp-health-dead);
+    --numpad-health-text: var(--cp-health-dead);
   }
 }
 
@@ -121,7 +126,7 @@
   }
 
   .reading[data-side='after'] > & {
-    color: var(--numpad-health);
+    color: var(--numpad-health-text);
   }
 }
 
@@ -146,7 +151,7 @@
   width: 32px;
   height: 7px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-color-disabled);
+  background: var(--cp-color-border);
 
   &[data-filled] {
     background: var(--numpad-health);

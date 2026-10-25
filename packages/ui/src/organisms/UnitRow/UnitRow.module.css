@@ -38,7 +38,9 @@
   }
 
   &[data-active] {
+    --cp-state-focus: var(--cp-color-ink);
     --cp-state-tap-marker: var(--cp-color-ink);
+    --cp-color-secondary: var(--cp-color-ink);
 
     z-index: 1;
     color: var(--cp-color-on-accent);
@@ -119,7 +121,7 @@
 }
 
 .claimer {
-  color: var(--cp-role-hero);
+  color: var(--cp-role-hero-text);
 
   .root[data-active] & {
     color: var(--cp-color-on-accent);

@@ -59,7 +59,7 @@
   }
 
   &[data-unit-role][data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
+    outline: 3px solid var(--cp-role-on);
     outline-offset: -3px;
   }
 }
@@ -110,7 +110,7 @@
   overflow: hidden;
   border-radius: var(--mantine-radius-full);
   background: var(--cp-color-surface);
-  color: var(--cp-role-hero);
+  color: var(--cp-role-hero-text);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: var(--mantine-line-height-tight);

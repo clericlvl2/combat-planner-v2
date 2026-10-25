@@ -110,7 +110,7 @@
   width: 24px;
   height: 5px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-color-disabled);
+  background: var(--cp-color-border);
 
   &[data-filled] {
     background: var(--hp-box-status);

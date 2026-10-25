@@ -135,7 +135,7 @@
 }
 
 .sub {
-  color: var(--cp-health-full);
+  color: var(--cp-hp-heal-text);
   font-size: var(--mantine-font-size-small);
   font-weight: 600;
 
@@ -145,7 +145,7 @@
   }
 
   .hero[data-state='own'] & {
-    color: var(--cp-role-hero);
+    color: var(--cp-role-hero-text);
   }
 }
 

@@ -35,9 +35,9 @@
 }
 
 .chip[data-mod='up'] .value {
-  color: var(--cp-hp-heal);
+  color: var(--cp-hp-heal-text);
 }
 
 .chip[data-mod='down'] .value {
-  color: var(--cp-hp-damage);
+  color: var(--cp-state-danger-text);
 }

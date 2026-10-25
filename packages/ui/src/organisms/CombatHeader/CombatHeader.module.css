@@ -17,6 +17,9 @@
 }
 
 .bar {
+  --cp-state-focus: var(--cp-color-on-chrome);
+  --cp-state-tap-marker: var(--cp-color-accent);
+
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -137,11 +140,13 @@
   &:focus-visible,
   &[data-focus] {
     outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
 
   &[data-open] {
-    background: var(--cp-state-tap-marker);
+    --cp-color-secondary: var(--cp-color-ink);
+
+    background: var(--cp-color-accent);
   }
 }
 

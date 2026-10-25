@@ -64,7 +64,7 @@
   -webkit-tap-highlight-color: transparent;
 
   &[data-tone='danger'] {
-    color: var(--cp-role-enemy);
+    color: var(--cp-state-danger-text);
   }
 
   &:active,

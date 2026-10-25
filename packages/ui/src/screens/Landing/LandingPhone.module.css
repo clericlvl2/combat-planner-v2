@@ -396,7 +396,7 @@
   padding: 1px 3px;
   border-radius: var(--mantine-radius-full);
   background: var(--cp-color-surface);
-  color: var(--cp-role-hero);
+  color: var(--cp-role-hero-text);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 1;
@@ -601,7 +601,7 @@
   width: 24px;
   height: 5px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-color-disabled);
+  background: var(--cp-color-border);
 
   &[data-filled] {
     background: var(--stage-hp-status);
@@ -691,7 +691,7 @@
 .turnNext {
   max-width: 100%;
   overflow: hidden;
-  color: var(--cp-color-disabled);
+  color: var(--cp-color-on-primary);
   font-size: var(--mantine-font-size-small);
   font-weight: 500;
   line-height: var(--mantine-line-height-snug);

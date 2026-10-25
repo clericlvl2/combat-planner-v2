@@ -17,6 +17,9 @@
 }
 
 .nav {
+  --cp-state-focus: var(--cp-color-on-chrome);
+  --cp-state-tap-marker: var(--cp-color-accent);
+
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
@@ -116,6 +119,9 @@
 }
 
 .tool {
+  --cp-state-focus: var(--cp-color-on-chrome);
+  --cp-state-tap-marker: var(--cp-color-accent);
+
   .root .tools & {
     min-width: var(--cp-control-m);
     height: var(--cp-control-m);
@@ -135,6 +141,8 @@
 
 .filters {
   --cp-color-border: var(--cp-color-chrome);
+  --cp-state-focus: var(--cp-color-on-chrome);
+  --cp-state-tap-marker: var(--cp-color-accent);
 
   display: flex;
   flex-wrap: wrap;

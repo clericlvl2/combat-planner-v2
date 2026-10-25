@@ -63,15 +63,17 @@ export const paperSteps = {
   background: { l: -6, c: 0.008 },
   field: { l: -9, c: 0.013 },
   disabled: { l: -12, c: 0.007 },
-  border: { l: -21, c: 0.018 },
+  border: { l: -32, c: 0.018 },
 } as const;
 
 export const conditionTone = {
-  fill: { l: 90, c: 0.05, neutralC: 0.013 },
-  text: { l: 38, c: 0.07, neutralC: 0.016 },
+  fill: { l: 94, c: 0.05, neutralC: 0.013 },
+  text: { l: 30, c: 0.07, neutralC: 0.016 },
 } as const;
 
 const onPaper = (fill: string) => on(fill, seeds.ink, seeds.paper);
+
+const brassFill = lighten(seeds.brass, 10);
 
 const paperStep = (step: keyof typeof paperSteps) =>
   lighten(seeds.paper, paperSteps[step].l, paperSteps[step].c);
@@ -82,13 +84,13 @@ export const base = {
   surface: seeds.paper,
   soft: paperStep('soft'),
   highlight: mix(seeds.brass, seeds.paper, 25),
-  accent: seeds.brass,
-  onAccent: onPaper(seeds.brass),
+  accent: brassFill,
+  onAccent: onPaper(brassFill),
   border: paperStep('border'),
   disabled: paperStep('disabled'),
   ink: seeds.ink,
   inkPressed: lighten(seeds.ink, 8),
-  secondary: lighten(seeds.ink, 22),
+  secondary: lighten(seeds.ink, 12),
   muted: lighten(seeds.ink, 36),
   chrome: seeds.moss,
   onChrome: onPaper(seeds.moss),
@@ -104,6 +106,7 @@ export const roles = {
   ally: seeds.ally,
   inactive: lighten(seeds.ink, 26),
   on: onPaper(seeds.hero),
+  heroText: lighten(seeds.hero, -12),
 };
 
 export const health = {
@@ -121,9 +124,15 @@ export const healthTints = {
   unconscious: tint(seeds.unconscious, 92, 0.05),
 };
 
+export const healthText = {
+  full: lighten(seeds.full, -6),
+  wounded: lighten(seeds.wounded, -6),
+};
+
 export const hpActions = {
   damage: seeds.enemy,
   heal: lighten(seeds.full, -8),
+  healText: lighten(seeds.full, -20),
   setTemp: seeds.hero,
   max: seeds.max,
   on: onPaper(seeds.enemy),
@@ -132,8 +141,9 @@ export const hpActions = {
 
 export const interaction = {
   focus: seeds.hero,
-  tapMarker: seeds.brass,
+  tapMarker: lighten(seeds.brass, -20),
   dangerPressed: lighten(seeds.enemy, -8),
+  dangerText: lighten(seeds.enemy, -20),
 };
 
 export const historyTemp = { text: lighten(seeds.hero, -5, -0.03) };
@@ -168,6 +178,7 @@ export const palette = {
   roles,
   health,
   healthTints,
+  healthText,
   hpActions,
   interaction,
   historyTemp,
@@ -182,8 +193,8 @@ export const fontFamilies = {
 
 export const fontSizes = {
   capsTile: 7,
-  caps: 8,
-  micro: 11,
+  caps: 12,
+  micro: 12,
   meta: 12,
   small: 14,
   body: 16,
@@ -252,6 +263,7 @@ export function paletteVariables(): Record<string, string> {
     role: roles,
     health,
     'health-tint': healthTints,
+    'health-text': healthText,
     hp: hpActions,
     'history-temp': historyTemp,
     state: interaction,

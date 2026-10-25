@@ -277,7 +277,7 @@ export const DmFacts = meta.story({
     await expect(filled?.getBoundingClientRect().width).toBe(24);
     await expect(filled?.getBoundingClientRect().height).toBe(5);
     const empty = staggered.querySelector<HTMLElement>('[data-pip]:not([data-filled])');
-    await expect(empty && getComputedStyle(empty).backgroundColor).toBe(rgb(base.disabled));
+    await expect(empty && getComputedStyle(empty).backgroundColor).toBe(rgb(base.border));
     const dead = caseAt(canvasElement, 1);
     await expect(boxFacts(dead)).toEqual(boxExpected(t, -3, 18));
     await expect(getComputedStyle(dead).backgroundColor).toBe('rgba(0, 0, 0, 0)');

@@ -125,6 +125,6 @@
 }
 
 .destructive[data-variant][data-size] {
-  color: var(--cp-role-enemy);
+  color: var(--cp-state-danger-text);
   font-size: var(--mantine-font-size-body);
 }

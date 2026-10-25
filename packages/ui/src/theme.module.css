@@ -28,7 +28,7 @@
 .error {
   font-size: var(--mantine-font-size-meta);
   font-weight: 600;
-  color: var(--cp-role-enemy);
+  color: var(--cp-state-danger-text);
 }
 
 .input {

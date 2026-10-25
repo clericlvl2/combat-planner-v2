@@ -64,7 +64,7 @@
 }
 
 .secondary {
-  color: var(--cp-color-disabled);
+  color: var(--cp-color-on-primary);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   font-weight: 500;

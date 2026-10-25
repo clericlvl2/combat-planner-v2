@@ -37,7 +37,7 @@
   font-variant-numeric: tabular-nums;
 
   &[data-over] {
-    color: var(--cp-role-enemy);
+    color: var(--cp-state-danger-text);
   }
 }
 
@@ -139,7 +139,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--cp-role-enemy);
+  color: var(--cp-state-danger-text);
   font-size: var(--mantine-font-size-small);
   font-weight: 600;
 }

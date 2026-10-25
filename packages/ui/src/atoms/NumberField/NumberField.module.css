@@ -82,7 +82,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--cp-role-enemy);
+  color: var(--cp-state-danger-text);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   font-weight: 600;

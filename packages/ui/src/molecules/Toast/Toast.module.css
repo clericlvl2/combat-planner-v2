@@ -6,6 +6,8 @@
 }
 
 .root {
+  --cp-state-focus: var(--cp-color-surface);
+
   position: absolute;
   right: var(--toast-inset);
   bottom: var(--toast-bottom);
@@ -87,7 +89,7 @@
   margin-left: auto;
   padding: 0 10px;
   border-radius: var(--mantine-radius-full);
-  color: var(--cp-color-accent);
+  color: var(--cp-color-highlight);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   font-weight: 700;
