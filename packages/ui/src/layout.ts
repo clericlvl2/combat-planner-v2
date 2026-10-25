@@ -12,6 +12,7 @@ export const layout = {
   ranges: { regularMinWidth: 384, tallMinHeight: 700 },
   column: { width: 440, height: 956 },
   statusBar: 44,
+  header: { padTop: 4, row: 48, gap: 8, secondRow: 48, padBottom: 16 },
   turnStrip: 44,
   contentEdge: 12,
   listGap: 8,

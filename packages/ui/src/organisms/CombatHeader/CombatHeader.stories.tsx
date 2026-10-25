@@ -1,10 +1,12 @@
 import preview from '#.storybook/preview';
+import { IconSortDescending } from '@tabler/icons-react';
 import type { TFunction } from 'i18next';
 import { useState } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { CombatHeader } from './CombatHeader.tsx';
 import type { CombatHeaderPopover, CombatHeaderProps } from './CombatHeader.tsx';
+import { PageHeader } from '../PageHeader/PageHeader.tsx';
 import { anyValue, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 interface CombatHeaderCellProps extends Partial<
@@ -541,5 +543,35 @@ export const MenuKeyboardMotionOn = meta.story({
     await expect(args.onClose).toHaveBeenCalledOnce();
     await expect(args.onMenuSelect).not.toHaveBeenCalled();
     await waitFor(() => expect(menu).toHaveFocus());
+  },
+});
+
+export const SameHeightAsPageHeader = meta.story({
+  tags: ['!dev'],
+  render: (args, { globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    return (
+      <>
+        <CombatHeaderCell {...args} data-testid="combat-header" />
+        <PageHeader
+          data-testid="page-header"
+          title={t('combats')}
+          onMenu={() => {}}
+          search={{ value: '', placeholder: t('searchCombats') }}
+          tools={[{ id: 'sort', icon: IconSortDescending, 'aria-label': t('sort') }]}
+        />
+      </>
+    );
+  },
+  play: async ({ canvas }) => {
+    const combat = canvas.getByTestId('combat-header');
+    const page = canvas.getByTestId('page-header');
+    const rowOf = (header: HTMLElement) => header.children[1]!.getBoundingClientRect().height;
+    const secondOf = (header: HTMLElement) => header.children[2]!.getBoundingClientRect();
+    const topOf = (header: HTMLElement) => header.getBoundingClientRect().top;
+    await expect(rowOf(combat)).toBe(rowOf(page));
+    await expect(secondOf(combat).height).toBe(secondOf(page).height);
+    await expect(secondOf(combat).top - topOf(combat)).toBe(secondOf(page).top - topOf(page));
+    await expect(combat.getBoundingClientRect().height).toBe(page.getBoundingClientRect().height);
   },
 });

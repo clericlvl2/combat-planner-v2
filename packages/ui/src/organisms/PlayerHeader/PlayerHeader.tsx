@@ -20,13 +20,11 @@ export function PlayerHeader({ title, round, escalation, className, ...rest }: P
     <header {...rest} className={className ? `${classes.root} ${className}` : classes.root}>
       <div className={classes.statusBar} aria-hidden="true" />
       <div className={classes.body}>
-        <div className={classes.text}>
-          <span className={classes.title} data-ellipsis="">
-            {title}
-          </span>
-          <h1 className={classes.main}>{setup ? t('setup') : t('round', { round })}</h1>
-        </div>
-        {setup ? null : <EscalationDie value={escalation} readOnly />}
+        <span className={classes.title} data-ellipsis="">
+          {title}
+        </span>
+        <h1 className={classes.main}>{setup ? t('setup') : t('round', { round })}</h1>
+        {setup ? null : <EscalationDie className={classes.die} value={escalation} readOnly />}
       </div>
     </header>
   );

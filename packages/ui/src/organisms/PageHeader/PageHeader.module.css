@@ -4,7 +4,7 @@
   flex: none;
   flex-direction: column;
   width: 100%;
-  padding-bottom: 16px;
+  padding-bottom: var(--cp-header-pad-bottom);
   border-bottom: 2px solid color-mix(in srgb, var(--cp-color-on-chrome) 25%, var(--cp-color-chrome));
   background: var(--cp-color-chrome);
   color: var(--cp-color-on-chrome);
@@ -22,8 +22,8 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 4px 12px 0 4px;
+  min-height: var(--cp-header-row);
+  padding: var(--cp-header-pad-top) 12px 0 4px;
 }
 
 .back,
@@ -70,7 +70,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 8px 12px 0;
+  margin: var(--cp-header-gap) 12px 0;
 }
 
 .search {
