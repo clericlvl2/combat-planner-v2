@@ -34,7 +34,6 @@ export { Chip } from './atoms/Chip/Chip.tsx';
 export { EscalationDie } from './atoms/EscalationDie/EscalationDie.tsx';
 export { IconButton } from './atoms/IconButton/IconButton.tsx';
 export { Logo } from './atoms/Logo/Logo.tsx';
-export { NumberField } from './atoms/NumberField/NumberField.tsx';
 export { Radio } from './atoms/Radio/Radio.tsx';
 export { RoleBlock } from './atoms/RoleBlock/RoleBlock.tsx';
 export { SearchField } from './atoms/SearchField/SearchField.tsx';

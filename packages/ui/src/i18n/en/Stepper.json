@@ -1,9 +1,6 @@
 {
-  "decrease": "Decrease",
-  "increase": "Increase",
   "decreaseField": "Decrease {{label}}",
   "increaseField": "Increase {{label}}",
-  "value": "Value",
   "maxHp": "Max HP",
   "initBonus": "Init bonus"
 }

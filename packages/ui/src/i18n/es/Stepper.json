@@ -1,9 +1,6 @@
 {
-  "decrease": "Reducir",
-  "increase": "Aumentar",
   "decreaseField": "Reducir {{label}}",
   "increaseField": "Aumentar {{label}}",
-  "value": "Valor",
   "maxHp": "PG máx.",
   "initBonus": "Bono de iniciativa"
 }

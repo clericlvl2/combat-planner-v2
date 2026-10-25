@@ -7,7 +7,6 @@ const names = [
   'Chip',
   'EscalationDie',
   'IconButton',
-  'NumberField',
   'Radio',
   'RoleBlock',
   'SearchField',
