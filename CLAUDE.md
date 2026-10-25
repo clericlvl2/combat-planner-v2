@@ -204,8 +204,8 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
 
 ## Versions
 
-- `vite-plus` 1.3.0 provides the one binary `vp`. `vite` is overridden to
-  `npm:@voidzero-dev/vite-plus-core@1.3.0` and `vitest` to 5.0.5 in `pnpm-workspace.yaml`. Test
+- `vite-plus` 1.4.0 provides the one binary `vp`. `vite` is overridden to
+  `npm:@voidzero-dev/vite-plus-core@1.4.0` and `vitest` to 5.0.5 in `pnpm-workspace.yaml`. Test
   code imports from `vite-plus/test` and `vite-plus/test/browser`.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
   `viewport` global, so the test viewport is set in `preview.tsx` (`initialGlobals` `locale: 'ru'`,
