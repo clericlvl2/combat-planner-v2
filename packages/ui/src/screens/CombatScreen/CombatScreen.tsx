@@ -47,6 +47,7 @@ import { useToasts } from '../../hooks/useToasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
+import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import type {
   CombatHeaderPopover,
@@ -584,10 +585,12 @@ export function CombatScreen({
         onMenuSelect={selectMenu}
       />
       <ScrollList className={classes.list} contentClassName={classes.listContent}>
+        <TurnBracket activeId={setup ? null : combat.activeUnitId} />
         {units.map((unit) => (
           <UnitRow
             key={unit.id}
             className={classes.row}
+            data-unit-id={unit.id}
             unit={unit}
             claimedByName={unit.claimedBy === null ? undefined : combat.players[unit.claimedBy]}
             active={!setup && combat.activeUnitId === unit.id}

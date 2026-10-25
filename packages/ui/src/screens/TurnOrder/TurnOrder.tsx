@@ -17,6 +17,7 @@ import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
+import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
 import { TurnStrip } from '../../molecules/TurnStrip/TurnStrip.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
@@ -192,6 +193,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
         contentClassName={classes.listContent}
         viewportRef={viewportRef}
       >
+        <TurnBracket activeId={setup ? null : combat.activeUnitId} />
         {setup && combat.units.length > 0 ? (
           <div className={classes.waiting} role="status">
             <IconHourglass size={20} stroke={2} aria-hidden="true" />

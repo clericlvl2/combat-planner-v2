@@ -17,6 +17,8 @@ export const layout = {
   listGap: 8,
   cardGap: 10,
   activeLift: 3,
+  turnBracket: { width: 5, gap: 4, height: 0.6 },
+  turnSpring: { stiffness: 832, damping: 39, mass: 1 },
   roleTile: { width: 41, inset: 4 },
   listInset: { top: 16, bottom: 44 },
   bottomBar: {

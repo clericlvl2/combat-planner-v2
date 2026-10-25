@@ -434,3 +434,22 @@ export const ReducedMotionBadge = meta.story({
     await waitFor(() => expect(hpChangeIn(vashti, 'badge')).toBeNull(), { timeout: 3000 });
   },
 });
+
+export const BracketOnPlayerList = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement }) => {
+    const bar = canvasElement.querySelector('[data-turn-bracket]');
+    if (!(bar instanceof HTMLElement)) throw new Error('The turn bracket is missing');
+    const vashti = await rowOf(canvas, ME);
+    await expect(vashti).toHaveAttribute('data-active');
+    await waitFor(async () => {
+      await expect(bar).toBeVisible();
+      const box = bar.getBoundingClientRect();
+      const card = vashti.getBoundingClientRect();
+      await expect(
+        Math.abs(box.top + box.height / 2 - (card.top + card.height / 2)),
+      ).toBeLessThanOrEqual(1);
+      await expect(box.right).toBeLessThan(card.left);
+    });
+  },
+});

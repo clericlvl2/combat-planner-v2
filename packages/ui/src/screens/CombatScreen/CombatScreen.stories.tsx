@@ -255,6 +255,19 @@ const dismissToast = async (canvas: Canvas, t: TFunction) => {
   await userEvent.click(canvas.getByRole('button', { name: t('Toast:dismiss') }));
 };
 
+const expectBracketOn = (canvasElement: HTMLElement, row: HTMLElement) =>
+  waitFor(async () => {
+    const bar = canvasElement.querySelector('[data-turn-bracket]');
+    if (!(bar instanceof HTMLElement)) throw new Error('The turn bracket is missing');
+    await expect(bar).toBeVisible();
+    const box = bar.getBoundingClientRect();
+    const card = row.getBoundingClientRect();
+    await expect(
+      Math.abs(box.top + box.height / 2 - (card.top + card.height / 2)),
+    ).toBeLessThanOrEqual(1);
+    await expect(box.right).toBeLessThan(card.left);
+  });
+
 const setupRolls = [19, 17, 12, 12, 7];
 
 const meta = preview.meta({
@@ -386,6 +399,30 @@ export const NextTurnPassesToNextUnit = meta.story({
     await expect(
       canvas.getByRole('button', { name: t('CombatHeader:editRound', { round: 3 }) }),
     ).toBeVisible();
+  },
+});
+
+export const BracketFollowsNextTurn = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'CombatScreen');
+    await expectBracketOn(canvasElement, await rowOf(canvasElement, names.vashti));
+    await userEvent.click(await nextTurnButton(canvas, t));
+    const tomas = await rowOf(canvasElement, names.tomas);
+    await waitFor(() => expect(tomas).toHaveAttribute('data-active'));
+    await expectBracketOn(canvasElement, tomas);
+  },
+});
+
+export const BracketFollowsExpand = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvasElement }) => {
+    const vashti = await rowOf(canvasElement, names.vashti);
+    await expectBracketOn(canvasElement, vashti);
+    const before = vashti.getBoundingClientRect().top;
+    await expand(canvasElement, names.aldric);
+    await waitFor(() => expect(vashti.getBoundingClientRect().top).toBeGreaterThan(before));
+    await expectBracketOn(canvasElement, vashti);
   },
 });
 

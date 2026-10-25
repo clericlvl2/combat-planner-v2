@@ -18,6 +18,7 @@
 }
 
 .listContent {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--cp-card-gap);
