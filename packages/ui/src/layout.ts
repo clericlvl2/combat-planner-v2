@@ -34,6 +34,8 @@ export const layout = {
   sheetCloseRatio: 0.3,
   sheetFlickVelocity: 0.5,
   sheetRubberBand: 12,
+  drawerEnterMs: 220,
+  drawerExitMs: 180,
   dialog: { inset: 24, padding: 16 },
   toast: { inset: 12, aboveBar: 12, withoutBar: 24, bottom: 110 },
   drawer: { width: 300, padding: { top: 56, right: 12, bottom: 28, left: 12 } },
