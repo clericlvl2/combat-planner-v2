@@ -17,8 +17,6 @@
 }
 
 .bar {
-  --cp-state-focus: var(--cp-color-on-chrome);
-
   box-sizing: border-box;
   display: flex;
   align-items: center;
@@ -31,6 +29,8 @@
   flex: none;
 
   .bar & {
+    --cp-state-focus: var(--cp-color-on-chrome);
+
     width: var(--cp-control-m);
     height: var(--cp-control-m);
     color: var(--cp-color-on-chrome);
@@ -55,6 +55,8 @@
 }
 
 .menu {
+  --cp-state-focus: var(--cp-color-on-chrome);
+
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -70,7 +72,6 @@
   color: var(--cp-color-on-chrome);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed],
@@ -78,11 +79,7 @@
     background: color-mix(in srgb, var(--cp-color-on-chrome) 24%, transparent);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .ticket {
@@ -108,20 +105,16 @@
 .ticket:is(button) {
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
     background: var(--cp-color-soft);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: -2px;
-  }
+  @mixin focus-ring;
 
   &[data-open] {
+    --cp-state-focus: var(--cp-color-ink);
     --cp-color-secondary: var(--cp-color-ink);
 
     background: var(--cp-color-accent);

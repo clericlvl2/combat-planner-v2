@@ -13,10 +13,12 @@
     border-color: var(--cp-color-ink);
   }
 
-  &:has(.open:focus-visible),
+  &:has(.open:focus-visible) {
+    @mixin focus-ring-keyboard;
+  }
+
   &:has(.open[data-focus]) {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+    @mixin focus-ring-outline;
   }
 }
 
@@ -42,7 +44,6 @@
   text-align: start;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:focus-visible,
   &[data-focus] {
@@ -99,7 +100,6 @@
   color: var(--cp-color-secondary);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   .root[data-expanded] & {
     color: var(--cp-color-ink);
@@ -110,11 +110,7 @@
     background: var(--cp-color-soft);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: -4px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

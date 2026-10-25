@@ -42,7 +42,6 @@
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &[data-role='hero'] {
     --segment-fill: var(--cp-role-hero);
@@ -62,6 +61,8 @@
   }
 
   &[data-selected] {
+    --cp-state-focus: var(--cp-color-surface);
+
     border: none;
     background: var(--segment-fill);
     color: var(--cp-color-surface);
@@ -72,15 +73,13 @@
     cursor: not-allowed;
 
     &[data-selected] {
+      --cp-state-focus: inherit;
+
       background: var(--cp-color-disabled);
     }
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

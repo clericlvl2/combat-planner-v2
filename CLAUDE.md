@@ -156,6 +156,13 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
   their own reply.
 - Visual states come from real pseudo-classes and `data-*` attributes (`&:active, &[data-pressed]`),
   never from a `state` prop.
+- Focus rings come from the `postcss-preset-mantine` mixins in `postcss.config.cjs`:
+  `@mixin focus-ring;` on the focusable control; for a ring drawn on another element,
+  `@mixin focus-ring-keyboard;` under the keyboard-focus selector and `@mixin focus-ring-outline;`
+  under the `[data-focus]` selector. The ring is 2 px of `--cp-state-focus` inside the control and
+  shows on `:focus-visible` only under `(hover: hover) and (pointer: fine)`; on touch the pressed
+  state is the only feedback. A control on a non-paper fill sets `--cp-state-focus` to its label
+  colour. `-webkit-tap-highlight-color: transparent` is set once on `:root` in `theme.module.css`.
 - Screen stories seed state through `FakeApiClient` scenarios and play only their own interaction.
   `UiProvider` takes `motion: 'off'` in Storybook.
 - Geometry invariants run after every story (`packages/ui/.storybook/preview.tsx` → `expectGeometry`):

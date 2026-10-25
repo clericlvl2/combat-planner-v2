@@ -59,6 +59,8 @@
 }
 
 .copy {
+  --cp-state-focus: var(--cp-color-on-primary);
+
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -74,7 +76,6 @@
   color: var(--cp-color-on-primary);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
@@ -85,11 +86,7 @@
     background: var(--cp-health-full);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

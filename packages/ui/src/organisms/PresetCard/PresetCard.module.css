@@ -15,10 +15,12 @@
     border-color: var(--cp-color-ink);
   }
 
-  &:has(> .toggle:focus-visible),
+  &:has(> .toggle:focus-visible) {
+    @mixin focus-ring-keyboard;
+  }
+
   &:has(> .toggle[data-focus]) {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+    @mixin focus-ring-outline;
   }
 }
 
@@ -53,7 +55,6 @@
   border: none;
   background: none;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
     outline: none;

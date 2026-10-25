@@ -42,7 +42,6 @@
   color: var(--cp-color-ink);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
@@ -50,16 +49,14 @@
   }
 
   &[data-selected] {
+    --cp-state-focus: var(--cp-color-surface);
+
     border-color: var(--cp-color-ink);
     background: var(--cp-color-ink);
     color: var(--cp-color-surface);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

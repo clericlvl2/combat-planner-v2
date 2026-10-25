@@ -4,7 +4,7 @@ import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { EscalationDie } from './EscalationDie.tsx';
 import type { EscalationDieProps, EscalationValue } from './EscalationDie.tsx';
-import { base, interaction } from '../../theme.ts';
+import { base } from '../../theme.ts';
 
 const rgb = (hex: string) => {
   const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
@@ -100,7 +100,7 @@ export const FocusRing = meta.story({
   render: (args: EscalationDieProps) => <EscalationDie {...args} data-focus="" />,
   play: async ({ canvasElement }) => {
     const tile = tileOf(canvasElement);
-    await expect(tile && getComputedStyle(tile).outlineColor).toBe(rgb(interaction.focus));
+    await expect(tile && getComputedStyle(tile).outlineColor).toBe(rgb(base.surface));
   },
 });
 

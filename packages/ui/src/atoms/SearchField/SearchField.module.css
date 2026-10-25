@@ -104,13 +104,8 @@
   background: transparent;
   color: var(--cp-color-ink);
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

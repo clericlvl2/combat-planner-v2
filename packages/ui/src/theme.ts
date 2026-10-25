@@ -220,7 +220,7 @@ export const iconSizes = { S: 16, M: 20, L: 24, XL: 32 } as const;
 
 export const borderWidth = { card: 1, control: 2 } as const;
 
-export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as const;
+export const focusRing = { width: 2, color: interaction.focus, offset: -2 } as const;
 
 const scrollShadow = { color: base.ink, alpha: 12 } as const;
 

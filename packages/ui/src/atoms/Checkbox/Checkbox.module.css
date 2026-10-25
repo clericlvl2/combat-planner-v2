@@ -12,7 +12,6 @@
   line-height: 1.25;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:has(.label) {
     min-height: var(--cp-tap-target);
@@ -64,6 +63,8 @@
   }
 
   &:has(.input:checked) {
+    --cp-state-focus: var(--cp-color-surface);
+
     border-color: var(--checkbox-on, var(--cp-color-ink));
     background: var(--checkbox-on, var(--cp-color-ink));
   }
@@ -76,10 +77,12 @@
     background: var(--cp-color-disabled);
   }
 
-  &:has(.input:focus-visible),
+  &:has(.input:focus-visible) {
+    @mixin focus-ring-keyboard;
+  }
+
   .root[data-focus] & {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+    @mixin focus-ring-outline;
   }
 }
 

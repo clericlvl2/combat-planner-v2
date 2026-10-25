@@ -49,6 +49,10 @@
   box-shadow: none;
 }
 
+:global(:root) {
+  -webkit-tap-highlight-color: transparent;
+}
+
 :global(:root[data-motion='off']) {
   & *,
   & *::before,

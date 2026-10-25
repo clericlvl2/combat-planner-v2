@@ -57,10 +57,12 @@
     }
   }
 
-  &:has(> .toggle:focus-visible),
+  &:has(> .toggle:focus-visible) {
+    @mixin focus-ring-keyboard;
+  }
+
   &:has(> .toggle[data-focus]) {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+    @mixin focus-ring-outline;
   }
 }
 
@@ -102,7 +104,6 @@
   border: none;
   background: none;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
   &:focus-visible {
     outline: none;
@@ -198,7 +199,6 @@
   font-weight: 600;
   line-height: 1;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
   & > svg {
     flex: none;
@@ -213,11 +213,7 @@
     background: var(--cp-color-soft);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .triggerLabel {

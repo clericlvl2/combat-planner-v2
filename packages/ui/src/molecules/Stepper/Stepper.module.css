@@ -53,7 +53,6 @@
   color: var(--cp-color-ink);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:active:not(:disabled),
   &[data-pressed] {
@@ -66,11 +65,7 @@
     cursor: not-allowed;
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';
@@ -98,10 +93,10 @@
   text-align: left;
   appearance: none;
 
-  &:focus,
+  @mixin focus-ring;
+
   .root[data-focus] & {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+    @mixin focus-ring-outline;
   }
 
   &:disabled {

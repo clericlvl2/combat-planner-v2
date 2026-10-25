@@ -30,7 +30,6 @@
   text-align: start;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   & > svg {
     flex: none;
@@ -38,11 +37,7 @@
     height: 20px;
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: -3px;
-  }
+  @mixin focus-ring;
 }
 
 .heading {

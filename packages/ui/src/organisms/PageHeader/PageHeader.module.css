@@ -17,8 +17,6 @@
 }
 
 .nav {
-  --cp-state-focus: var(--cp-color-on-chrome);
-
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
@@ -31,6 +29,8 @@
 .back,
 .menu {
   .root .nav & {
+    --cp-state-focus: var(--cp-color-on-chrome);
+
     width: var(--cp-control-m);
     height: var(--cp-control-m);
     color: var(--cp-color-on-chrome);
@@ -69,6 +69,8 @@
 }
 
 .more {
+  --cp-state-focus: var(--cp-color-on-chrome);
+
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -84,7 +86,6 @@
   color: var(--cp-color-on-chrome);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed],
@@ -92,11 +93,7 @@
     background: color-mix(in srgb, var(--cp-color-on-chrome) 24%, transparent);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .tools {
@@ -114,8 +111,6 @@
 }
 
 .tool {
-  --cp-state-focus: var(--cp-color-on-chrome);
-
   .root .tools & {
     min-width: var(--cp-control-m);
     height: var(--cp-control-m);
@@ -124,6 +119,8 @@
 
 .clear {
   .root .filters & {
+    --cp-state-focus: var(--cp-color-on-chrome);
+
     color: var(--cp-color-on-chrome);
   }
 
@@ -135,7 +132,6 @@
 
 .filters {
   --cp-color-border: var(--cp-color-chrome);
-  --cp-state-focus: var(--cp-color-on-chrome);
 
   display: flex;
   flex-wrap: wrap;

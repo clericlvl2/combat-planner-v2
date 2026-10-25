@@ -226,7 +226,6 @@
   line-height: 1;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &[data-kind] {
     background: var(--cp-color-disabled);
@@ -242,11 +241,7 @@
     background: var(--cp-color-border);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .actions {
@@ -260,6 +255,8 @@
 }
 
 .actions > .action[data-kind] {
+  --cp-state-focus: var(--cp-hp-on);
+
   min-width: 0;
   border-radius: var(--mantine-radius-field);
   font-family: var(--cp-font-ui);

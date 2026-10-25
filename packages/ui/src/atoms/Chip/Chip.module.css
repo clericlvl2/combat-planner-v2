@@ -17,7 +17,6 @@
   white-space: nowrap;
   vertical-align: top;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:is(button) {
     cursor: pointer;
@@ -51,6 +50,8 @@
   }
 
   &[data-variant='tag'][data-selected]:not(:disabled, [data-disabled]) {
+    --cp-state-focus: var(--cp-color-surface);
+
     border-color: var(--cp-color-ink);
     background: var(--cp-color-ink);
     color: var(--cp-color-surface);
@@ -68,6 +69,8 @@
   }
 
   &[data-variant='condition'] {
+    --cp-state-focus: var(--chip-text);
+
     background: var(--chip-fill);
     color: var(--chip-text);
   }
@@ -78,6 +81,8 @@
     font-weight: 700;
 
     &[data-selected]:not(:disabled, [data-disabled]) {
+      --cp-state-focus: var(--cp-color-ink);
+
       background: var(--cp-color-accent);
       color: var(--cp-color-ink);
     }
@@ -111,11 +116,7 @@
     }
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .icon {

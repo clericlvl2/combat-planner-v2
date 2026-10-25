@@ -25,9 +25,10 @@
   font-size: var(--mantine-font-size-body);
   font-weight: 600;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
   &[data-kind='turn'] {
+    --cp-state-focus: var(--cp-color-on-primary);
+
     border-bottom-color: var(--cp-color-primary);
     background: var(--cp-color-primary);
     color: var(--cp-color-on-primary);
@@ -35,11 +36,7 @@
     animation: slideIn 200ms ease-out;
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: -2px;
-  }
+  @mixin focus-ring;
 }
 
 .label {

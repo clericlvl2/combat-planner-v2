@@ -1,4 +1,6 @@
 .root {
+  --cp-state-focus: var(--cp-color-on-primary);
+
   box-sizing: border-box;
   display: inline-flex;
   flex: none;
@@ -20,7 +22,6 @@
   text-decoration: none;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &[data-size='S'] {
     height: var(--cp-control-m);
@@ -53,17 +54,23 @@
   }
 
   &[data-variant='secondary'] {
+    --cp-state-focus: inherit;
+
     border: 2px solid var(--cp-color-border);
     background: var(--cp-color-surface);
     color: var(--cp-color-ink);
   }
 
   &[data-variant='danger'] {
+    --cp-state-focus: var(--cp-role-on);
+
     background: var(--cp-role-enemy);
     color: var(--cp-role-on);
   }
 
   &[data-variant='ghost'] {
+    --cp-state-focus: inherit;
+
     background: transparent;
     color: var(--cp-color-ink);
   }
@@ -84,6 +91,8 @@
 
   &:disabled,
   &[data-disabled] {
+    --cp-state-focus: inherit;
+
     background: var(--cp-color-disabled);
     color: var(--cp-color-muted);
     cursor: not-allowed;
@@ -102,11 +111,7 @@
     }
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .icon {

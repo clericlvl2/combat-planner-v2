@@ -19,7 +19,6 @@
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:is(button) {
     cursor: pointer;
@@ -45,11 +44,7 @@
     background: var(--cp-color-soft);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .numbers {
