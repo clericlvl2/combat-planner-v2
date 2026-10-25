@@ -3,6 +3,7 @@ import { IconMinus, IconPlus } from '@tabler/icons-react';
 import { useId, useState } from 'react';
 import type { ComponentPropsWithoutRef, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { iconSizes } from '../../theme.ts';
 import classes from './Stepper.module.css';
 
 export type StepperSize = 'S' | 'M' | 'L';
@@ -17,7 +18,7 @@ export interface StepperProps extends Omit<
   max: number;
   step?: number;
   signed?: boolean;
-  label?: string;
+  label: string;
   size?: StepperSize;
   disabled?: boolean;
 }
@@ -90,64 +91,55 @@ export function Stepper({
     commit(base + (event.key === 'ArrowUp' ? step : -step));
   };
 
-  const field = (
-    <input
-      id={inputId}
-      className={classes.field}
-      type="text"
-      role="spinbutton"
-      inputMode={min < 0 ? 'text' : 'numeric'}
-      autoComplete="off"
-      aria-label={label ? undefined : t('value')}
-      aria-valuemin={min}
-      aria-valuemax={max}
-      aria-valuenow={value ?? undefined}
-      value={draft ?? format(value, signed)}
-      disabled={disabled}
-      onChange={(event) => handleText(event.currentTarget.value)}
-      onBlur={handleBlur}
-      onKeyDown={handleKeyDown}
-    />
-  );
-
   return (
     <div
       {...rest}
       className={className ? `${classes.root} ${className}` : classes.root}
       data-size={size}
       data-disabled={disabled || undefined}
-      data-labelled={label ? '' : undefined}
     >
-      {label ? (
-        <div className={classes.column}>
-          <label className={classes.label} htmlFor={inputId}>
-            {label}
-          </label>
-          {field}
-        </div>
-      ) : null}
+      <div className={classes.column}>
+        <label className={classes.label} htmlFor={inputId}>
+          {label}
+        </label>
+        <input
+          id={inputId}
+          className={classes.field}
+          type="text"
+          role="spinbutton"
+          inputMode={min < 0 ? 'text' : 'numeric'}
+          autoComplete="off"
+          aria-valuemin={min}
+          aria-valuemax={max}
+          aria-valuenow={value ?? undefined}
+          value={draft ?? format(value, signed)}
+          disabled={disabled}
+          onChange={(event) => handleText(event.currentTarget.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+        />
+      </div>
       <UnstyledButton
         component="button"
         type="button"
         className={classes.key}
-        aria-label={label ? t('decreaseField', { label }) : t('decrease')}
+        aria-label={t('decreaseField', { label })}
         aria-controls={inputId}
         disabled={atMin}
         onClick={() => commit(base - step)}
       >
-        <IconMinus size={20} stroke={2} aria-hidden="true" />
+        <IconMinus size={iconSizes.M} stroke={2} aria-hidden="true" />
       </UnstyledButton>
-      {label ? null : field}
       <UnstyledButton
         component="button"
         type="button"
         className={classes.key}
-        aria-label={label ? t('increaseField', { label }) : t('increase')}
+        aria-label={t('increaseField', { label })}
         aria-controls={inputId}
         disabled={atMax}
         onClick={() => commit(base + step)}
       >
-        <IconPlus size={20} stroke={2} aria-hidden="true" />
+        <IconPlus size={iconSizes.M} stroke={2} aria-hidden="true" />
       </UnstyledButton>
     </div>
   );

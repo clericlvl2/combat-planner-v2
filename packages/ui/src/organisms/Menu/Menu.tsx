@@ -2,14 +2,8 @@ import { Popover, UnstyledButton } from '@mantine/core';
 import type { Icon } from '@tabler/icons-react';
 import { useMergedRef } from '@mantine/hooks';
 import { cloneElement, Fragment, useCallback, useEffect, useRef } from 'react';
-import type {
-  HTMLAttributes,
-  KeyboardEvent,
-  MouseEvent,
-  ReactElement,
-  ReactNode,
-  Ref,
-} from 'react';
+import type { KeyboardEvent, MouseEvent, ReactElement, Ref } from 'react';
+import { iconSizes } from '../../theme.ts';
 import classes from './Menu.module.css';
 
 export type MenuItemTone = 'ink' | 'danger';
@@ -39,42 +33,9 @@ export interface MenuProps {
   'aria-label'?: string;
 }
 
-export interface PopoverFrameProps extends Omit<HTMLAttributes<HTMLDivElement>, 'title'> {
-  title?: string;
-  sub?: string;
-  width?: number;
-  children: ReactNode;
-}
-
 const MENU_WIDTH = 260;
 
 const ITEM_SELECTOR = '[role="menuitem"]:not(:disabled)';
-
-export function PopoverFrame({
-  title,
-  sub,
-  width,
-  children,
-  className,
-  style,
-  ...rest
-}: PopoverFrameProps) {
-  return (
-    <div
-      {...rest}
-      className={className ? `${classes.popover} ${className}` : classes.popover}
-      style={width === undefined ? style : { ...style, width }}
-    >
-      {title ? (
-        <span className={classes.title}>
-          {title}
-          {sub ? <span className={classes.sub}> · {sub}</span> : null}
-        </span>
-      ) : null}
-      {children}
-    </div>
-  );
-}
 
 function enabledItems(panel: HTMLElement | null): HTMLElement[] {
   return panel ? [...panel.querySelectorAll<HTMLElement>(ITEM_SELECTOR)] : [];
@@ -221,7 +182,7 @@ export function Menu({
               onClick={() => handleSelect(item.id)}
             >
               <span className={classes.iconCircle} aria-hidden="true">
-                <ItemIcon size={20} stroke={2} />
+                <ItemIcon size={iconSizes.M} stroke={2} />
               </span>
               <span className={classes.label}>{item.label}</span>
               {item.hint ? <span className={classes.hint}>{item.hint}</span> : null}

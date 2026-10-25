@@ -13,7 +13,9 @@ import {
 import { containsT, escapeRegExp, startsWithT, t } from './t.ts';
 
 const editRoundAny = new RegExp(
-  `^${escapeRegExp(t('CombatHeader:editRound', { round: '\u0000' })).replace('\u0000', '\\d+')}$`,
+  `^${escapeRegExp(
+    t('CombatHeader:editRoundAndEscalation', { round: '\u0000', value: '\u0000' }),
+  ).replaceAll('\u0000', '\\d+')}$`,
 );
 
 test('a DM builds a combat from new units, a duplicate and a Library preset', async ({ page }) => {
@@ -76,10 +78,9 @@ test('Start shows the turn order and Next turn wraps into round 2 with escalatio
 
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: t('CombatHeader:setEscalation', { value: 0 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 1, value: 0 }),
+    }),
   ).toBeVisible();
   await expect(page.getByRole('button', { name: containsT('TurnBar:startCombat') })).toBeHidden();
 
@@ -99,24 +100,24 @@ test('Start shows the turn order and Next turn wraps into round 2 with escalatio
   await expect(unitRow(page, names[2] ?? '')).toHaveAttribute('data-active', 'true');
   await expect(nextTurn).toContainText(t('CombatScreen:nextWrap', { name: names[0], round: 2 }));
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 1, value: 0 }),
+    }),
   ).toBeVisible();
 
   await nextTurn.click();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 2 }) }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: t('CombatHeader:setEscalation', { value: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 2, value: 1 }),
+    }),
   ).toBeVisible();
   await expect(unitRow(page, names[0] ?? '')).toHaveAttribute('data-active', 'true');
 
   await page.reload();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 2 }) }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: t('CombatHeader:setEscalation', { value: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 2, value: 1 }),
+    }),
   ).toBeVisible();
 });
 
@@ -127,7 +128,9 @@ test('Undo reverts the last action and shows the Undid toast', async ({ page }) 
   await addUnit(page, 'Grak', 'enemy');
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 1, value: 0 }),
+    }),
   ).toBeVisible();
   await expect(unitRows(page).first()).toHaveAttribute('data-active', 'true');
   const names = await unitNames(page);
@@ -135,19 +138,17 @@ test('Undo reverts the last action and shows the Undid toast', async ({ page }) 
   await nextTurn.click();
   await nextTurn.click();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 2 }) }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: t('CombatHeader:setEscalation', { value: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 2, value: 1 }),
+    }),
   ).toBeVisible();
 
   await openCombatMenu(page, t('CombatHeader:undo'));
   await expect(page.getByRole('status').getByText(t('CombatScreen:undoNextTurn'))).toBeVisible();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
-  ).toBeVisible();
-  await expect(
-    page.getByRole('button', { name: t('CombatHeader:setEscalation', { value: 0 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 1, value: 0 }),
+    }),
   ).toBeVisible();
   await expect(unitRow(page, names[1] ?? '')).toHaveAttribute('data-active', 'true');
 
@@ -162,7 +163,9 @@ test('Undo reverts the last action and shows the Undid toast', async ({ page }) 
   await page.reload();
   await expect(unitRows(page)).toHaveCount(2);
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 1, value: 0 }),
+    }),
   ).toBeVisible();
 });
 

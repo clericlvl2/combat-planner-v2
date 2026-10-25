@@ -2,10 +2,14 @@ import { ApiError } from '@combat-planner/api/client';
 import type { LinkToken } from '@combat-planner/api/client';
 import type { Action, CombatId, PlayerCombat, UnitId } from '@combat-planner/domain';
 import { IconLogout } from '@tabler/icons-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../api/ApiProvider.tsx';
+import { combatKey } from '../../hooks/combat.ts';
+import type { CombatEntry } from '../../hooks/combat.ts';
 import { overlay } from '../../hooks/optimistic.ts';
+import { createSendQueue } from '../../hooks/sendQueue.ts';
 import { errorToast } from '../../hooks/toasts.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
@@ -45,7 +49,9 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     dispatch,
     refetch,
     pending,
+    tracker,
   } = useCombat(combatId, PLAYER, token);
+  const queryClient = useQueryClient();
   const combat = useMemo(() => server && overlay(server, pending, PLAYER), [server, pending]);
   const { i18n } = useTranslation();
   const { chosen } = useLocaleChoice();
@@ -58,6 +64,8 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
   const [departing, setDeparting] = useState(false);
   const [seenTitle, setSeenTitle] = useState<string | null>(null);
   const ownReleases = useRef(new Set<UnitId>());
+  const knownVersion = useRef(0);
+  const [enqueue] = useState(createSendQueue);
   const previous = useRef<PlayerCombat | undefined>(undefined);
 
   if (combat && view === null) setView(holdsHero(combat) ? 'turnOrder' : 'heroes');
@@ -93,11 +101,20 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     async (action: Action) => {
       const ownRelease = action.type === 'releaseUnit' ? action.unitId : null;
       if (ownRelease !== null) ownReleases.current.add(ownRelease);
-      const result = await dispatch(action);
+      if (tracker.optimistic(action)) tracker.add(action);
+      const result = await enqueue(async (release) => {
+        const cached = queryClient.getQueryData<CombatEntry<PlayerCombat>>(
+          combatKey(combatId, PLAYER),
+        )?.document.version;
+        const version = Math.max(action.version, cached ?? 0, knownVersion.current);
+        const sent = await dispatch({ ...action, version }, release);
+        if (sent.applied) knownVersion.current = Math.max(knownVersion.current, sent.version);
+        return sent;
+      });
       if (ownRelease !== null && !result.applied) ownReleases.current.delete(ownRelease);
       return result;
     },
-    [dispatch],
+    [dispatch, tracker, enqueue, queryClient, combatId],
   );
 
   const reload = () => {

@@ -3,6 +3,7 @@ import type { Icon } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useDelayed } from '../../hooks/useDelayed.ts';
+import { iconSizes } from '../../theme.ts';
 import classes from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -17,6 +18,7 @@ export interface ButtonProps extends Omit<
   size?: ButtonSize;
   icon?: Icon;
   fullWidth?: boolean;
+  stacked?: boolean;
   disabled?: boolean;
   loading?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
@@ -24,13 +26,14 @@ export interface ButtonProps extends Omit<
   children: ReactNode;
 }
 
-const loaderSize: Record<ButtonSize, number> = { S: 18, M: 22, L: 22 };
+const loaderSize: Record<ButtonSize, number> = { S: iconSizes.S, M: iconSizes.M, L: iconSizes.M };
 
 export function Button({
   variant = 'primary',
   size = 'M',
   icon: IconComponent,
   fullWidth = false,
+  stacked = false,
   disabled = false,
   loading = false,
   onClick,
@@ -39,7 +42,7 @@ export function Button({
   className,
   ...rest
 }: ButtonProps) {
-  const heavy = (variant === 'primary' || variant === 'danger') && size !== 'S';
+  const heavy = (variant === 'primary' || variant === 'danger') && size !== 'S' && !stacked;
   const spinning = useDelayed(loading);
   const content = (
     <>
@@ -47,7 +50,7 @@ export function Button({
         <Loader className={classes.loader} size={loaderSize[size]} color="currentColor" />
       ) : null}
       {IconComponent ? (
-        <IconComponent className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+        <IconComponent className={classes.icon} size={iconSizes.M} stroke={2} aria-hidden="true" />
       ) : null}
       <span className={classes.label}>{children}</span>
     </>
@@ -61,6 +64,7 @@ export function Button({
         data-size={size}
         data-heavy={heavy || undefined}
         data-full-width={fullWidth || undefined}
+        data-stacked={stacked || undefined}
       >
         {content}
       </Link>
@@ -76,6 +80,7 @@ export function Button({
       data-size={size}
       data-heavy={heavy || undefined}
       data-full-width={fullWidth || undefined}
+      data-stacked={stacked || undefined}
       data-loading={spinning || undefined}
       aria-busy={spinning || undefined}
       disabled={disabled || spinning}

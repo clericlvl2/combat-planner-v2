@@ -40,11 +40,15 @@ test('a DM runs a combat and a player follows the turn order', async ({
 
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 1, value: 0 }),
+    }),
   ).toBeVisible();
   await page.getByRole('button', { name: containsT('TurnBar:nextTurn') }).click();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 2 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 2, value: 1 }),
+    }),
   ).toBeVisible();
 
   await page.getByRole('button', { name: t('CombatHeader:menu'), exact: true }).click();

@@ -36,7 +36,7 @@ function TurnBracketSample({ heights, active: initial }: TurnBracketSampleProps)
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
-        gap: layout.cardGap,
+        gap: layout.listGap,
         padding: `${layout.listInset.top}px ${layout.contentEdge}px`,
         background: 'var(--cp-color-soft)',
       }}

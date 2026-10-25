@@ -125,6 +125,21 @@ export const actionLog = sqliteTable(
   ],
 );
 
+export const appliedActions = sqliteTable(
+  'applied_actions',
+  {
+    combatId: text('combatId')
+      .notNull()
+      .references(() => combats.id, { onDelete: 'cascade' }),
+    seq: integer('seq').notNull(),
+    actionId: text('actionId').notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.combatId, table.actionId] }),
+    index('applied_actions_combatId_seq_idx').on(table.combatId, table.seq),
+  ],
+);
+
 export const players = sqliteTable(
   'players',
   {

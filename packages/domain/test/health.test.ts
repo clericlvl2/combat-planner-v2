@@ -15,13 +15,13 @@ describe('healthStatus', () => {
     expect(healthStatus(1, 1, 'enemy')).toBe('full');
   });
 
-  it('A hero at 0 HP or below is unconscious and dies at negative half max HP, rounded up', () => {
+  it('A hero at 0 HP or below is unconscious, never dead', () => {
     expect(healthStatus(1, 30, 'hero')).toBe('staggered');
     expect(healthStatus(0, 30, 'hero')).toBe('unconscious');
     expect(healthStatus(-14, 30, 'hero')).toBe('unconscious');
-    expect(healthStatus(-15, 30, 'hero')).toBe('dead');
-    expect(healthStatus(-15, 31, 'hero')).toBe('unconscious');
-    expect(healthStatus(-16, 31, 'hero')).toBe('dead');
+    expect(healthStatus(-15, 30, 'hero')).toBe('unconscious');
+    expect(healthStatus(-30, 30, 'hero')).toBe('unconscious');
+    expect(healthStatus(-16, 31, 'hero')).toBe('unconscious');
   });
 
   it('An enemy or an ally dies at 0 HP', () => {

@@ -7,7 +7,7 @@
   gap: 8px;
   width: 100%;
   min-width: 0;
-  height: 48px;
+  height: var(--cp-control-m);
   padding: 0 8px 0 12px;
   border: 2px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-field);
@@ -18,12 +18,12 @@
   cursor: text;
 
   &[data-size='S'] {
-    height: 40px;
+    height: var(--cp-control-s);
     font-size: var(--mantine-font-size-small);
   }
 
   &[data-size='L'] {
-    height: 56px;
+    height: var(--cp-control-l);
     font-size: var(--mantine-font-size-number);
   }
 

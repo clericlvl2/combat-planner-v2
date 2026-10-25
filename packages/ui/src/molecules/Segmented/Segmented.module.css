@@ -1,5 +1,5 @@
 .root {
-  --segment-height: 44px;
+  --segment-height: var(--cp-control-m);
   --segment-font: var(--mantine-font-size-body);
 
   box-sizing: border-box;
@@ -9,12 +9,12 @@
   min-width: 0;
 
   &[data-size='S'] {
-    --segment-height: 36px;
+    --segment-height: var(--cp-control-s);
     --segment-font: var(--mantine-font-size-small);
   }
 
   &[data-size='L'] {
-    --segment-height: 52px;
+    --segment-height: var(--cp-control-l);
     --segment-font: var(--mantine-font-size-number);
   }
 }

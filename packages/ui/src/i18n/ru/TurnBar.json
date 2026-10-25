@@ -1,7 +1,6 @@
 {
   "nextTurn": "Следующий ход",
   "startCombat": "Начать бой",
-  "rollsMissingInitiative": "Бросает недостающую инициативу",
   "everyUnitDisabled": "Все юниты отключены",
   "lastRound": "Раунд {{round}} — последний",
   "addUnitFirst": "Сначала добавьте юнит"

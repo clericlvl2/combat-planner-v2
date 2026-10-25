@@ -91,6 +91,24 @@ export function contrast(a: string, b: string): number {
   return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
 }
 
+function apcaY(hex: string): number {
+  const [r, g, b] = channels(hex).map((channel) => channel ** 2.4) as [number, number, number];
+  const y = 0.2126729 * r + 0.7151522 * g + 0.072175 * b;
+  return y > 0.022 ? y : y + (0.022 - y) ** 1.414;
+}
+
+export function apcaLc(text: string, background: string): number {
+  const textY = apcaY(text);
+  const backgroundY = apcaY(background);
+  if (Math.abs(backgroundY - textY) < 0.0005) return 0;
+  if (backgroundY > textY) {
+    const sapc = (backgroundY ** 0.56 - textY ** 0.57) * 1.14;
+    return sapc < 0.1 ? 0 : (sapc - 0.027) * 100;
+  }
+  const sapc = (backgroundY ** 0.65 - textY ** 0.62) * 1.14;
+  return sapc > -0.1 ? 0 : (sapc + 0.027) * 100;
+}
+
 export function on(fill: string, dark: string, light: string): string {
   return contrast(dark, fill) >= contrast(light, fill) ? dark : light;
 }

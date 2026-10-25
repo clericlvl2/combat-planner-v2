@@ -21,6 +21,8 @@ import { playerEvents } from '../PlayerView/playerEvents.ts';
 import type { PlayerEvent } from '../PlayerView/playerEvents.ts';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
+import { StatusStrip } from '../shared/StatusStrip.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './Heroes.module.css';
 
 export interface HeroesProps {
@@ -160,84 +162,88 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
 
   return (
     <div className={classes.root}>
-      <PlayerHeader
-        title={combat.title}
-        round={combat.status === 'active' ? combat.round : null}
-        escalation={combat.escalation as EscalationValue}
-      />
-      <ScrollList className={classes.body} contentClassName={classes.bodyContent}>
-        <div className={classes.heading}>
-          <h2 className={classes.title}>{t('title')}</h2>
-          <Button
-            className={classes.language}
-            variant="ghost"
-            size="S"
-            icon={IconLanguage}
-            aria-label={tLanguage('current', { name: languageName })}
-            aria-haspopup="dialog"
-            onClick={() => setLanguageOpen(true)}
-          >
-            {languageName}
-          </Button>
-        </div>
-        <TextField
-          label={t('nameLabel')}
-          placeholder={t('namePlaceholder')}
-          value={name}
-          maxLength={LIMITS.displayName}
-          error={nameTouched && displayName === null ? t('nameError') : undefined}
-          autoComplete="nickname"
-          onChange={setName}
-          onBlur={() => setNameTouched(true)}
+      <StatusStrip />
+      <ScrollList className={classes.body} contentClassName={classes.scrollContent}>
+        <PlayerHeader
+          title={combat.title}
+          round={combat.status === 'active' ? combat.round : null}
+          escalation={combat.escalation as EscalationValue}
+          statusBar={false}
         />
-        <div className={classes.section}>
-          <span className={classes.sectionLabel} id="heroes-label">
-            {t('heroesLabel')}
-          </span>
-          <div className={classes.list} role="group" aria-labelledby="heroes-label">
-            {heroes.map((unit) => {
-              const state = stateOf(unit);
-              return (
-                <Checkbox
-                  key={unit.id}
-                  className={classes.hero}
-                  data-state={state}
-                  checked={state === 'own' || state === 'chosen'}
-                  disabled={state === 'taken'}
-                  aria-label={unit.name}
-                  onChange={(checked) => toggle(unit, checked)}
-                  label={
-                    <>
-                      {state === 'own' ? (
-                        <RoleBlock
-                          className={classes.role}
-                          tile
-                          unitRole="hero"
-                          top={
-                            unit.initiative === null
-                              ? null
-                              : { kind: 'initiative', value: unit.initiative }
-                          }
-                          mine
-                        />
-                      ) : (
-                        <span className={classes.tile} aria-hidden="true">
-                          {state === 'taken' ? (
-                            <IconLock size={20} stroke={2} />
-                          ) : (
-                            <IconShield size={20} stroke={2} />
-                          )}
+        <div className={classes.bodyContent}>
+          <div className={classes.heading}>
+            <h2 className={classes.title}>{t('title')}</h2>
+            <Button
+              className={classes.language}
+              variant="ghost"
+              size="S"
+              icon={IconLanguage}
+              aria-label={tLanguage('current', { name: languageName })}
+              aria-haspopup="dialog"
+              onClick={() => setLanguageOpen(true)}
+            >
+              {languageName}
+            </Button>
+          </div>
+          <TextField
+            label={t('nameLabel')}
+            placeholder={t('namePlaceholder')}
+            value={name}
+            maxLength={LIMITS.displayName}
+            error={nameTouched && displayName === null ? t('nameError') : undefined}
+            autoComplete="nickname"
+            onChange={setName}
+            onBlur={() => setNameTouched(true)}
+          />
+          <div className={classes.section}>
+            <span className={classes.sectionLabel} id="heroes-label">
+              {t('heroesLabel')}
+            </span>
+            <div className={classes.list} role="group" aria-labelledby="heroes-label">
+              {heroes.map((unit) => {
+                const state = stateOf(unit);
+                return (
+                  <Checkbox
+                    key={unit.id}
+                    className={classes.hero}
+                    data-state={state}
+                    checked={state === 'own' || state === 'chosen'}
+                    disabled={state === 'taken'}
+                    aria-label={unit.name}
+                    onChange={(checked) => toggle(unit, checked)}
+                    label={
+                      <>
+                        {state === 'own' ? (
+                          <RoleBlock
+                            className={classes.role}
+                            tile
+                            unitRole="hero"
+                            top={
+                              unit.initiative === null
+                                ? null
+                                : { kind: 'initiative', value: unit.initiative }
+                            }
+                            mine
+                          />
+                        ) : (
+                          <span className={classes.tile} aria-hidden="true">
+                            {state === 'taken' ? (
+                              <IconLock size={iconSizes.M} stroke={2} />
+                            ) : (
+                              <IconShield size={iconSizes.M} stroke={2} />
+                            )}
+                          </span>
+                        )}
+                        <span className={classes.text}>
+                          <span className={classes.name}>{unit.name}</span>
+                          <span className={classes.sub}>{subOf(unit, state)}</span>
                         </span>
-                      )}
-                      <span className={classes.text}>
-                        <span className={classes.name}>{unit.name}</span>
-                        <span className={classes.sub}>{subOf(unit, state)}</span>
-                      </span>
-                    </>
-                  }
-                />
-              );
-            })}
+                      </>
+                    }
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </ScrollList>

@@ -7,6 +7,7 @@ import { Logo } from '../../atoms/Logo/Logo.tsx';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './Landing.module.css';
 import { LandingTable } from './LandingTable.tsx';
 import type { LandingSize } from './LandingTable.tsx';
@@ -82,11 +83,11 @@ export function Landing({ sourceUrl }: LandingProps) {
       <footer className={classes.footer}>
         <div className={classes.links}>
           <Link className={classes.link} to="/about">
-            <IconInfoCircle size={18} stroke={2} aria-hidden="true" />
+            <IconInfoCircle size={iconSizes.S} stroke={2} aria-hidden="true" />
             {t('Landing:about')}
           </Link>
           <a className={classes.link} href={sourceUrl} target="_blank" rel="noopener noreferrer">
-            <IconBrandGithub size={18} stroke={2} aria-hidden="true" />
+            <IconBrandGithub size={iconSizes.S} stroke={2} aria-hidden="true" />
             {t('Landing:source')}
           </a>
         </div>

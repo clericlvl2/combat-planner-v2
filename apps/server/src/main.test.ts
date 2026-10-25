@@ -38,7 +38,7 @@ const relocatedMain = (root: string): string => {
   mkdirSync(source, { recursive: true });
   for (const name of ['package.json', 'node_modules'])
     symlinkSync(path.join(serverDirectory, name), path.join(root, 'apps', 'server', name));
-  for (const name of ['main.ts', 'app.ts', 'sweeper.ts', 'timers.ts'])
+  for (const name of ['main.ts', 'app.ts', 'landing.ts', 'sweeper.ts', 'timers.ts'])
     copyFileSync(path.join(import.meta.dirname, name), path.join(source, name));
   cpSync(path.join(import.meta.dirname, 'admin'), path.join(source, 'admin'), {
     recursive: true,

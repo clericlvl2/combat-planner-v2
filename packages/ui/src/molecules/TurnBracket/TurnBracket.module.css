@@ -3,7 +3,7 @@
   top: 0;
   left: 0;
   display: block;
-  border-radius: 999px;
+  border-radius: var(--mantine-radius-full);
   background: var(--cp-color-ink);
   pointer-events: none;
   will-change: transform;

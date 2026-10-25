@@ -14,6 +14,7 @@ import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
 import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
 import { Reveal } from '../../motion/Reveal.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './PlayerRow.module.css';
 
 export type PlayerRowTarget = 'initiative' | 'hp' | 'conditions' | 'history' | 'defenses' | 'note';
@@ -207,9 +208,9 @@ export function PlayerRow({
             >
               <span className={classes.triggerLabel}>{t('conditions')}</span>
               {conditionsOpen ? (
-                <IconChevronUp size={20} stroke={2} aria-hidden="true" />
+                <IconChevronUp size={iconSizes.M} stroke={2} aria-hidden="true" />
               ) : (
-                <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+                <IconChevronDown size={iconSizes.M} stroke={2} aria-hidden="true" />
               )}
             </UnstyledButton>
             <UnstyledButton
@@ -221,7 +222,7 @@ export function PlayerRow({
               onClick={() => onHistory()}
             >
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
-              <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+              <IconChevronDown size={iconSizes.M} stroke={2} aria-hidden="true" />
             </UnstyledButton>
             {onDefenses ? (
               <UnstyledButton
@@ -233,7 +234,7 @@ export function PlayerRow({
                 onClick={() => onDefenses()}
               >
                 <span className={classes.triggerLabel}>{t('defenses')}</span>
-                <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+                <IconChevronDown size={iconSizes.M} stroke={2} aria-hidden="true" />
               </UnstyledButton>
             ) : null}
           </div>

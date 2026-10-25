@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { HTTPException } from 'hono/http-exception';
 import { authProvidersApp, createAuth, createAuthApp } from './auth/index.ts';
+import type { AuthInstance } from './auth/index.ts';
 import { requireUser } from './auth/require-user.ts';
 import type { SessionResolver } from './auth/require-user.ts';
 import { BODY_LIMIT_BYTES } from './client.ts';
@@ -25,6 +26,7 @@ export interface ApiAppDeps {
   db: AppDatabase;
   env: ApiEnv;
   auth?: SessionResolver;
+  instance?: AuthInstance;
   rateLimit?: boolean;
 }
 
@@ -42,8 +44,8 @@ const userCombatsApp = new Hono<ApiAppEnv>()
   .route('/', eventsApp)
   .route('/', linkApp);
 
-export function createApiApp({ db, env, auth, rateLimit = true }: ApiAppDeps) {
-  const instance = createAuth({ db, env });
+export function createApiApp({ db, env, auth, instance: given, rateLimit = true }: ApiAppDeps) {
+  const instance = given ?? createAuth({ db, env });
   return new Hono<ApiAppEnv>()
     .use(rateLimit ? createRateLimiter() : (_c, next) => next())
     .use(

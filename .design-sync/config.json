@@ -40,9 +40,6 @@
       "cardMode": "single",
       "viewport": "900x930"
     },
-    "NumberField": {
-      "cardMode": "column"
-    },
     "CardActions": {
       "cardMode": "column"
     },

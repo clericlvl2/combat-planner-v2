@@ -16,7 +16,6 @@ import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { useRetained } from '../../hooks/useRetained.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
-import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
 import { TurnStrip } from '../../molecules/TurnStrip/TurnStrip.tsx';
@@ -24,6 +23,7 @@ import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
 import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
+import { InitiativeSheet } from '../../organisms/InitiativeSheet/InitiativeSheet.tsx';
 import { Menu } from '../../organisms/Menu/Menu.tsx';
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
@@ -33,6 +33,8 @@ import { useMotion } from '../../provider.tsx';
 import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
+import { StatusStrip } from '../shared/StatusStrip.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './TurnOrder.module.css';
 
 export interface TurnOrderProps {
@@ -150,11 +152,13 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
     });
   };
 
+  const initiativeOpen = panelOf('initiative');
   const numpadOpen = panelOf('numpad');
   const conditionsOpen = panelOf('conditions');
   const historyOpen = panelOf('history');
   const defensesOpen = panelOf('defenses');
   const editOpen = panelOf('edit');
+  const initiativeUnit = useRetained(initiativeOpen);
   const numpadUnit = useRetained(numpadOpen);
   const conditionsUnit = useRetained(conditionsOpen);
   const historyUnit = useRetained(historyOpen);
@@ -163,112 +167,123 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
 
   return (
     <div className={classes.root}>
-      <CombatHeader
-        viewer="player"
-        title={combat.title}
-        round={setup ? null : combat.round}
-        escalation={combat.escalation as EscalationValue}
-        open={menuOpen ? 'menu' : null}
-        onMenu={() => setMenuOpen((value) => !value)}
-        onClose={() => setMenuOpen(false)}
-        onHeroes={() => {
-          setMenuOpen(false);
-          onHeroes();
-        }}
-        languageName={localeNames[locale]}
-        onLanguage={() => {
-          setMenuOpen(false);
-          setLanguageOpen(true);
-        }}
-        onLeave={() => {
-          setMenuOpen(false);
-          onLeave?.();
-        }}
-      />
-      {turnHero ? (
-        <TurnStrip kind="turn" onClick={() => revealUnit(turnHero.id)}>
-          {t('yourTurn', { name: turnHero.name })}
-        </TurnStrip>
-      ) : nextHero ? (
-        <TurnStrip kind="next" onClick={() => revealUnit(nextHero.id)}>
-          {t('youAreNext')}
-        </TurnStrip>
-      ) : null}
+      <StatusStrip />
       <ScrollList
         className={classes.list}
-        contentClassName={classes.listContent}
+        contentClassName={classes.scrollContent}
         viewportRef={viewportRef}
       >
-        <TurnBracket activeId={setup ? null : combat.activeUnitId} />
-        {setup && combat.units.length > 0 ? (
-          <div className={classes.waiting} role="status">
-            <IconHourglass size={20} stroke={2} aria-hidden="true" />
-            {t('waiting')}
+        <CombatHeader
+          viewer="player"
+          title={combat.title}
+          round={setup ? null : combat.round}
+          escalation={combat.escalation as EscalationValue}
+          open={menuOpen ? 'menu' : null}
+          onMenu={() => setMenuOpen((value) => !value)}
+          onClose={() => setMenuOpen(false)}
+          onHeroes={() => {
+            setMenuOpen(false);
+            onHeroes();
+          }}
+          languageName={localeNames[locale]}
+          onLanguage={() => {
+            setMenuOpen(false);
+            setLanguageOpen(true);
+          }}
+          onLeave={() => {
+            setMenuOpen(false);
+            onLeave?.();
+          }}
+          statusBar={false}
+        />
+        {turnHero ? (
+          <div className={classes.strip}>
+            <TurnStrip kind="turn" onClick={() => revealUnit(turnHero.id)}>
+              {t('yourTurn', { name: turnHero.name })}
+            </TurnStrip>
+          </div>
+        ) : nextHero ? (
+          <div className={classes.strip}>
+            <TurnStrip kind="next" onClick={() => revealUnit(nextHero.id)}>
+              {t('youAreNext')}
+            </TurnStrip>
           </div>
         ) : null}
-        {combat.units.map((unit) => {
-          const mine = own(unit);
-          return (
-            <div key={unit.id} className={classes.slot} data-unit-id={unit.id}>
-              <PlayerRow
-                className={classes.row}
-                hpChange={hpChanges.get(unit.id)}
-                unit={unit}
-                mine={mine}
-                expanded={mine && expandedId === unit.id}
-                active={combat.activeUnitId === unit.id}
-                setup={setup}
-                conditionsOpen={isOpen('conditions', unit)}
-                moreOpen={isOpen('more', unit)}
-                busy={releasingId === unit.id}
-                onToggle={() => {
-                  if (expandedId === unit.id) close();
-                  setExpandedId((current) => (current === unit.id ? null : unit.id));
-                }}
-                onInitiative={mine ? () => show('initiative', unit) : noop}
-                onHp={mine ? () => show('numpad', unit) : noop}
-                onConditions={() => show('conditions', unit)}
-                onDefenses={mine ? () => show('defenses', unit) : undefined}
-                onHistory={() => show('history', unit)}
-                onNoteChange={(note) => send({ ...target(unit), type: 'editNote', note })}
-                onEdit={() => show('edit', unit)}
-                onMore={() => (isOpen('more', unit) ? close() : show('more', unit))}
-              />
-              {mine ? (
-                <InitiativePopover
-                  className={classes.initiative}
-                  open={isOpen('initiative', unit)}
-                  value={unit.initiative}
-                  bonus={unit.initiativeBonus ?? 0}
-                  random={random}
-                  onSet={(initiative) =>
-                    send({ ...target(unit), type: 'setInitiative', initiative })
-                  }
-                  onRoll={(_initiative, roll) => {
-                    send({ ...target(unit), type: 'rollInitiative', roll });
-                    close();
-                  }}
-                  onClose={close}
-                />
-              ) : null}
-              {mine && expandedId === unit.id ? (
-                <div className={classes.more}>
-                  <Menu
-                    opened={isOpen('more', unit)}
-                    aria-label={tMenu('menuLabel')}
-                    items={[{ id: RELEASE_CLAIM, icon: IconUserOff, label: tMenu('releaseClaim') }]}
-                    onSelect={(id) => selectMore(unit, id)}
-                    onClose={close}
-                  />
-                </div>
-              ) : null}
+        <div className={classes.listContent}>
+          <TurnBracket activeId={setup ? null : combat.activeUnitId} />
+          {setup && combat.units.length > 0 ? (
+            <div className={classes.waiting} role="status">
+              <IconHourglass size={iconSizes.M} stroke={2} aria-hidden="true" />
+              {t('waiting')}
             </div>
-          );
-        })}
-        {combat.units.length === 0 ? (
-          <EmptyState icon={IconUsers} title={t('noUnitsTitle')} body={t('noUnitsBody')} />
-        ) : null}
+          ) : null}
+          {combat.units.map((unit) => {
+            const mine = own(unit);
+            return (
+              <div key={unit.id} className={classes.slot} data-unit-id={unit.id}>
+                <PlayerRow
+                  className={classes.row}
+                  hpChange={hpChanges.get(unit.id)}
+                  unit={unit}
+                  mine={mine}
+                  expanded={mine && expandedId === unit.id}
+                  active={combat.activeUnitId === unit.id}
+                  setup={setup}
+                  conditionsOpen={isOpen('conditions', unit)}
+                  moreOpen={isOpen('more', unit)}
+                  busy={releasingId === unit.id}
+                  onToggle={() => {
+                    if (expandedId === unit.id) close();
+                    setExpandedId((current) => (current === unit.id ? null : unit.id));
+                  }}
+                  onInitiative={mine ? () => show('initiative', unit) : noop}
+                  onHp={mine ? () => show('numpad', unit) : noop}
+                  onConditions={() => show('conditions', unit)}
+                  onDefenses={mine ? () => show('defenses', unit) : undefined}
+                  onHistory={() => show('history', unit)}
+                  onNoteChange={(note) => send({ ...target(unit), type: 'editNote', note })}
+                  onEdit={() => show('edit', unit)}
+                  onMore={() => (isOpen('more', unit) ? close() : show('more', unit))}
+                />
+                {mine && expandedId === unit.id ? (
+                  <div className={classes.more}>
+                    <Menu
+                      opened={isOpen('more', unit)}
+                      aria-label={tMenu('menuLabel')}
+                      items={[
+                        { id: RELEASE_CLAIM, icon: IconUserOff, label: tMenu('releaseClaim') },
+                      ]}
+                      onSelect={(id) => selectMore(unit, id)}
+                      onClose={close}
+                    />
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+          {combat.units.length === 0 ? (
+            <EmptyState icon={IconUsers} title={t('noUnitsTitle')} body={t('noUnitsBody')} />
+          ) : null}
+        </div>
       </ScrollList>
+      {initiativeUnit ? (
+        <InitiativeSheet
+          key={`initiative-${initiativeUnit.id}`}
+          opened={initiativeOpen !== null}
+          unitName={initiativeUnit.name}
+          value={initiativeUnit.initiative}
+          bonus={initiativeUnit.initiativeBonus ?? 0}
+          random={random}
+          onSet={(initiative) =>
+            send({ ...target(initiativeUnit), type: 'setInitiative', initiative })
+          }
+          onRoll={(_initiative, roll) => {
+            send({ ...target(initiativeUnit), type: 'rollInitiative', roll });
+            close();
+          }}
+          onClose={close}
+        />
+      ) : null}
       {numpadUnit ? (
         <NumpadSheet
           key={`numpad-${numpadUnit.id}`}

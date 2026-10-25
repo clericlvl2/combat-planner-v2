@@ -19,7 +19,7 @@ import type { RouteObject } from 'react-router';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import { AppProviders } from './providers.tsx';
-import { createRoutes, withViewTransitions } from './router.tsx';
+import { GUEST_BOOT, createRoutes, withViewTransitions } from './router.tsx';
 
 const COMBAT_ID = '01JA0000000000000000000001';
 const about = {
@@ -131,6 +131,35 @@ describe('router', () => {
     expect(html).toContain('A combat tracker for 13th Age');
     expect(html).toContain('href="/auth/sign-up"');
     expect(html).toContain('href="/auth/sign-in"');
+  });
+
+  it('renders the landing at once when the page boots as a guest', async () => {
+    const api = new FakeApiClient({ scenario: scenario() });
+    const routes = createRoutes(
+      {
+        api,
+        queryClient: createQueryClient(),
+        about,
+        language: Promise.resolve(createI18n('en')),
+        reportError,
+        guestAtBoot: true,
+      },
+      () => router,
+    );
+    const router: MemoryRouter = createMemoryRouter(routes, {
+      initialEntries: ['/'],
+      hydrationData: GUEST_BOOT,
+    });
+    routers.push(router);
+    expect(router.state.initialized).toBe(true);
+    expect(routeIds(router)).toEqual(['root', 'home']);
+    expect(leafElement(router).type).toBe(Landing);
+    expect(render(router)).toContain('A combat tracker for 13th Age');
+    expect(api.calls.map(({ method }) => method)).not.toContain('auth.session');
+    await router.navigate('/about');
+    await router.navigate('/');
+    expect(router.state.location.pathname).toBe('/combats');
+    expect(leafElement(router).type).toBe(CombatList);
   });
 
   it.each([true, false])('renders About with the build values, signed in: %s', async (signedIn) => {

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { HistoryRow } from '../../molecules/HistoryRow/HistoryRow.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './HpHistory.module.css';
 
 export const HP_HISTORY_VISIBLE_ROWS = 6;
@@ -122,7 +123,7 @@ function HpHistoryInline({
         {!expanded && entries.length > 0 ? (
           <span className={classes.count}>{t('count', { count: entries.length })}</span>
         ) : null}
-        <Chevron size={20} stroke={2} aria-hidden="true" />
+        <Chevron size={iconSizes.M} stroke={2} aria-hidden="true" />
       </UnstyledButton>
       {expanded ? (
         <HpHistoryList

@@ -50,6 +50,13 @@
       "when": 1792789766703,
       "tag": "0006_defense_mods",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1792936162162,
+      "tag": "0007_applied_actions",
+      "breakpoints": true
     }
   ]
 }

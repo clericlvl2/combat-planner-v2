@@ -115,7 +115,11 @@ const overlayDm = (document: DmCombat, entries: Entries, now: string): DmCombat 
 
 const changeHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number): PlayerUnit => {
   if (unit.mine !== true || unit.hp === undefined || unit.maxHp === undefined) return unit;
-  const next = applyHp({ hp: unit.hp, tempHp: unit.tempHp ?? 0, maxHp: unit.maxHp }, kind, amount);
+  const next = applyHp(
+    { hp: unit.hp, tempHp: unit.tempHp ?? 0, maxHp: unit.maxHp, role: unit.role },
+    kind,
+    amount,
+  );
   const status = healthStatus(next.hp, next.maxHp, unit.role);
   return {
     ...unit,

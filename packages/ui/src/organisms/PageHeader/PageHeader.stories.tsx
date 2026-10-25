@@ -1,8 +1,8 @@
 import preview from '#.storybook/preview';
-import { IconSortDescending, IconTags } from '@tabler/icons-react';
+import { IconFileImport, IconSortDescending, IconTags } from '@tabler/icons-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { expect, fn, userEvent } from 'storybook/test';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import type en from '../../i18n/en/PageHeader.json';
 import { PageHeader } from './PageHeader.tsx';
 import type { PageHeaderFilter, PageHeaderProps, PageHeaderTool } from './PageHeader.tsx';
@@ -14,7 +14,7 @@ type ToolSpec = 'sort' | 'sortActive' | 'tags';
 
 interface PageHeaderCellProps extends Omit<
   PageHeaderProps,
-  'title' | 'search' | 'tools' | 'filters' | 'action'
+  'title' | 'search' | 'tools' | 'filters' | 'action' | 'menu'
 > {
   titleKey?: LabelKey;
   title?: string;
@@ -31,6 +31,9 @@ interface PageHeaderCellProps extends Omit<
   actionKey?: LabelKey;
   actionDisabled?: boolean;
   onAction?: () => void;
+  withMenu?: boolean;
+  menuBusy?: boolean;
+  onMenuSelect?: (id: string) => void;
 }
 
 function PageHeaderCell({
@@ -49,6 +52,9 @@ function PageHeaderCell({
   actionKey,
   actionDisabled = false,
   onAction,
+  withMenu = false,
+  menuBusy = false,
+  onMenuSelect,
   onMenu,
   onBack,
   onSearch,
@@ -94,6 +100,15 @@ function PageHeaderCell({
           ? { label: t(actionKey), disabled: actionDisabled, onClick: () => onAction?.() }
           : undefined
       }
+      menu={
+        withMenu
+          ? {
+              items: [{ id: 'import', icon: IconFileImport, label: t('CombatList:import') }],
+              onSelect: (id) => onMenuSelect?.(id),
+              busy: menuBusy,
+            }
+          : undefined
+      }
     />
   );
 }
@@ -110,6 +125,7 @@ const meta = preview.meta({
     onRemoveFilter: fn(),
     onClearFilters: fn(),
     onAction: fn(),
+    onMenuSelect: fn(),
   },
 });
 
@@ -222,6 +238,41 @@ export const HeaderButtonDisabled = meta.story({
     await expect(args.onAction).not.toHaveBeenCalled();
   },
 });
+export const WithMenu = meta.story({
+  tags: ['visual'],
+  args: { ...combats, withMenu: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    const more = canvas.getByRole('button', { name: t('actions') });
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(more);
+    const menu = await canvas.findByRole('menu', { name: t('actions') });
+    await expect(more).toHaveAttribute('aria-expanded', 'true');
+    const item = canvas.getByRole('menuitem', { name: t('CombatList:import') });
+    await expect(item).toBeEnabled();
+    await userEvent.click(item);
+    await expect(args.onMenuSelect).toHaveBeenCalledOnce();
+    await expect(args.onMenuSelect).toHaveBeenCalledWith('import');
+    await waitFor(() => expect(menu).not.toBeInTheDocument());
+    await expect(more).toHaveAttribute('aria-expanded', 'false');
+  },
+});
+
+export const MenuBusy = meta.story({
+  tags: ['!dev'],
+  args: { ...combats, withMenu: true, menuBusy: true },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'PageHeader');
+    const more = canvas.getByRole('button', { name: t('actions') });
+    await expect(more).toBeDisabled();
+    await expect(more).toHaveAttribute('aria-busy', 'true');
+    await expect(more.querySelector('.mantine-Loader-root')).not.toBeNull();
+    await userEvent.click(more, { pointerEventsCheck: 0 });
+    await expect(canvas.queryByRole('menu')).toBeNull();
+    await expect(args.onMenuSelect).not.toHaveBeenCalled();
+  },
+});
+
 export const SearchWithQuery = meta.story({
   args: { ...combats, query: 'Засада' },
   play: async ({ canvas, globals }) => {

@@ -1,5 +1,5 @@
 .root {
-  --field-height: 48px;
+  --field-height: var(--cp-control-m);
   --field-font-size: var(--mantine-font-size-body);
 
   display: flex;
@@ -9,12 +9,12 @@
   font-family: var(--cp-font-ui);
 
   &[data-size='S'] {
-    --field-height: 40px;
+    --field-height: var(--cp-control-s);
     --field-font-size: var(--mantine-font-size-small);
   }
 
   &[data-size='L'] {
-    --field-height: 56px;
+    --field-height: var(--cp-control-l);
     --field-font-size: var(--mantine-font-size-number);
   }
 }
@@ -37,7 +37,7 @@
   font-variant-numeric: tabular-nums;
 
   &[data-over] {
-    color: var(--cp-role-enemy);
+    color: var(--cp-state-danger-text);
   }
 }
 
@@ -139,7 +139,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: var(--cp-role-enemy);
+  color: var(--cp-state-danger-text);
   font-size: var(--mantine-font-size-small);
   font-weight: 600;
 }

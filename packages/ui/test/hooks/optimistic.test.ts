@@ -115,6 +115,27 @@ describe('overlay for a player', () => {
     expect(shown.version).toBe(view(30).version);
   });
 
+  it('heals the claimed hero from below 0 starting at 0', () => {
+    const shown = overlay(
+      view(-4),
+      [{ action: { id: FIRST, version: 0, type: 'heal', unitId: HERO_ID, amount: 5 } }],
+      PLAYER,
+      NOW,
+    );
+    expect(shown.units.find((unit) => unit.id === HERO_ID)).toMatchObject({
+      hp: 5,
+      healthStatus: 'staggered',
+    });
+  });
+
+  it('keeps the claimed hero unconscious at any HP below 0', () => {
+    const shown = overlay(view(10), [{ action: damage(FIRST, 40, HERO_ID) }], PLAYER, NOW);
+    expect(shown.units.find((unit) => unit.id === HERO_ID)).toMatchObject({
+      hp: -30,
+      healthStatus: 'unconscious',
+    });
+  });
+
   it('applies heal and temp HP, and ignores other actions', () => {
     const shown = overlay(
       view(10),

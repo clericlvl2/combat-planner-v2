@@ -2,6 +2,7 @@ import { LIMITS } from '@combat-planner/domain';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useId } from 'react';
 import type { ChangeEvent, ComponentPropsWithoutRef, CSSProperties } from 'react';
+import { iconSizes } from '../../theme.ts';
 import classes from './TextArea.module.css';
 
 export interface TextAreaProps extends Omit<
@@ -86,7 +87,12 @@ export function TextArea({
       </div>
       {error ? (
         <span id={errorId} className={classes.error}>
-          <IconAlertCircle className={classes.errorIcon} size={16} stroke={2} aria-hidden="true" />
+          <IconAlertCircle
+            className={classes.errorIcon}
+            size={iconSizes.S}
+            stroke={2}
+            aria-hidden="true"
+          />
           {error}
         </span>
       ) : null}

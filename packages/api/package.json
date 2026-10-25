@@ -5,7 +5,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./client": "./src/client.ts",
-    "./hono-client": "./src/hono-client.ts"
+    "./hono-client": "./src/hono-client.ts",
+    "./contract": "./src/contract/apiClientContract.ts"
   },
   "dependencies": {
     "@combat-planner/domain": "workspace:*",

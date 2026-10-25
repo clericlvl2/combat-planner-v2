@@ -14,6 +14,7 @@ import { Chip } from '../../atoms/Chip/Chip.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
 import { Menu } from '../Menu/Menu.tsx';
 import type { MenuItem } from '../Menu/Menu.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './CombatCard.module.css';
 
 export type CombatCardAction = 'duplicate' | 'export' | 'delete';
@@ -136,7 +137,7 @@ export function CombatCard({
           data-tap={tap === 'chevron' ? '' : undefined}
           onClick={() => onToggle()}
         >
-          <Chevron size={24} stroke={2} aria-hidden="true" />
+          <Chevron size={iconSizes.L} stroke={2} aria-hidden="true" />
         </UnstyledButton>
       </div>
       {expanded ? (

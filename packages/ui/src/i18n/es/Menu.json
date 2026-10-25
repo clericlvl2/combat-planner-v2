@@ -12,7 +12,5 @@
   "releaseClaim": "Liberar héroe",
   "remove": "Quitar",
   "heroes": "Héroes",
-  "delete": "Eliminar",
-  "round": "Ronda",
-  "roundHint": "{{min}}–{{max}}. Cambiar la ronda no mueve el turno."
+  "delete": "Eliminar"
 }

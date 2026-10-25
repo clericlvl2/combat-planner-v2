@@ -16,6 +16,6 @@
 .listContent {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: var(--cp-list-inset-top) 12px var(--cp-list-inset-bottom);
+  gap: var(--cp-list-gap);
+  padding: var(--cp-list-inset-top) var(--cp-content-edge) var(--cp-list-inset-bottom);
 }

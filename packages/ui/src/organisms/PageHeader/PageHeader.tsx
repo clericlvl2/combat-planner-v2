@@ -1,5 +1,7 @@
-import { IconChevronLeft, IconMenu2 } from '@tabler/icons-react';
+import { Loader, UnstyledButton } from '@mantine/core';
+import { IconChevronLeft, IconDots, IconMenu2 } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
+import { useState } from 'react';
 import type { ComponentPropsWithoutRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
@@ -7,6 +9,9 @@ import { Chip } from '../../atoms/Chip/Chip.tsx';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { SearchField } from '../../atoms/SearchField/SearchField.tsx';
 import { ToolButton } from '../../atoms/ToolButton/ToolButton.tsx';
+import { Menu } from '../Menu/Menu.tsx';
+import type { MenuItem } from '../Menu/Menu.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './PageHeader.module.css';
 
 export interface PageHeaderAction {
@@ -36,6 +41,12 @@ export interface PageHeaderFilter {
   label: string;
 }
 
+export interface PageHeaderMenu {
+  items: readonly MenuItem[];
+  onSelect: (id: string) => void;
+  busy?: boolean;
+}
+
 export interface PageHeaderProps extends Omit<
   ComponentPropsWithoutRef<'header'>,
   'children' | 'title'
@@ -44,6 +55,7 @@ export interface PageHeaderProps extends Omit<
   onMenu?: () => void;
   onBack?: () => void;
   action?: PageHeaderAction;
+  menu?: PageHeaderMenu;
   search?: PageHeaderSearch;
   onSearch?: (value: string) => void;
   tools?: readonly PageHeaderTool[];
@@ -58,6 +70,7 @@ export function PageHeader({
   onMenu,
   onBack,
   action,
+  menu,
   search,
   onSearch,
   tools = [],
@@ -70,6 +83,8 @@ export function PageHeader({
 }: PageHeaderProps) {
   const { t } = useTranslation('PageHeader');
   const back = onBack !== undefined;
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuBusy = menu?.busy === true;
   return (
     <header {...rest} className={className ? `${classes.root} ${className}` : classes.root}>
       <div className={classes.statusBar} aria-hidden="true" />
@@ -96,6 +111,38 @@ export function PageHeader({
             {action.label}
           </Button>
         ) : null}
+        {menu ? (
+          <Menu
+            opened={menuOpen}
+            width={240}
+            aria-label={t('actions')}
+            items={menu.items}
+            onSelect={(id) => {
+              setMenuOpen(false);
+              menu.onSelect(id);
+            }}
+            onClose={() => setMenuOpen(false)}
+            target={
+              <UnstyledButton
+                component="button"
+                type="button"
+                className={classes.more}
+                aria-label={t('actions')}
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-busy={menuBusy || undefined}
+                disabled={menuBusy}
+                onClick={() => setMenuOpen((open) => !open)}
+              >
+                {menuBusy ? (
+                  <Loader size={iconSizes.L} color="currentColor" />
+                ) : (
+                  <IconDots size={iconSizes.L} stroke={2} aria-hidden="true" />
+                )}
+              </UnstyledButton>
+            }
+          />
+        ) : null}
       </div>
       {search || tools.length > 0 ? (
         <div className={classes.tools}>
@@ -111,6 +158,7 @@ export function PageHeader({
           {tools.map((tool) => (
             <ToolButton
               key={tool.id}
+              className={classes.tool}
               size="M"
               icon={tool.icon}
               label={tool.label}

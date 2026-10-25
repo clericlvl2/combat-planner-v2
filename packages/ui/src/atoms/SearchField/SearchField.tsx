@@ -3,11 +3,16 @@ import { IconSearch, IconX } from '@tabler/icons-react';
 import { useRef } from 'react';
 import type { ComponentPropsWithoutRef, MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
+import { iconSizes } from '../../theme.ts';
 import classes from './SearchField.module.css';
 
 export type SearchFieldSize = 'S' | 'M' | 'L';
 
-const iconSize: Record<SearchFieldSize, number> = { S: 16, M: 20, L: 24 };
+const iconSize: Record<SearchFieldSize, number> = {
+  S: iconSizes.S,
+  M: iconSizes.M,
+  L: iconSizes.L,
+};
 
 export interface SearchFieldProps extends Omit<
   ComponentPropsWithoutRef<'div'>,
@@ -82,7 +87,7 @@ export function SearchField({
           aria-label={t('clear')}
           onClick={clear}
         >
-          <IconX size={20} stroke={2} aria-hidden="true" />
+          <IconX size={iconSizes.M} stroke={2} aria-hidden="true" />
         </UnstyledButton>
       ) : null}
     </div>

@@ -11,7 +11,7 @@ Shape `storybook`. Reference Storybook: `.design-sync/sb-reference` (built from 
 
 ## Fixes [GENERAL]
 
-- `.design-sync/ui-entry.ts` re-exports `src/index.ts` plus story-only helpers (`PopoverFrame`, `hpAfter`, `combatSorts`, `presetSorts`). Stories import them by relative path, which resolves to the DS global; without the export they are undefined.
+- `.design-sync/ui-entry.ts` re-exports `src/index.ts` plus story-only helpers (`hpAfter`, `combatSorts`, `presetSorts`). Stories import them by relative path, which resolves to the DS global; without the export they are undefined.
 - `cfg.extraEntries`: `react-router`, `@tanstack/react-query`, `react-i18next`. Each must be one instance with the DS: router context, `QueryClient` instanceof in `withApi`, and `useTranslation` in stories reading the `UiProvider` i18n.
 - `overrides/source-storybook.mjs` (fork):
   - the decorator bundle loads `.woff`/`.woff2`/`.ttf` as empty;

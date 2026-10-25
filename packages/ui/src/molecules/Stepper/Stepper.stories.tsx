@@ -44,7 +44,7 @@ function StepperCell({
         {...props}
         min={range.min}
         max={range.max}
-        label={label ?? (labelKey ? t(labelKey) : undefined)}
+        label={label ?? t(labelKey ?? 'maxHp')}
         value={value}
         onChange={(next) => {
           setValue(next);
@@ -67,11 +67,9 @@ type StepperState = (typeof columns)[number];
 
 const gridRows = (
   [
-    { label: 'With label', labelKey: 'maxHp', range: LIMITS.maxHp, value: 40 },
-    { label: 'No label', range: LIMITS.defense, value: 15 },
-    { label: 'S', range: LIMITS.defense, value: 15, size: 'S', width: 240 },
-    { label: 'M', range: LIMITS.defense, value: 15, size: 'M', width: 240 },
-    { label: 'L', range: LIMITS.defense, value: 15, size: 'L', width: 240 },
+    { label: 'S', labelKey: 'maxHp', range: LIMITS.maxHp, value: 40, size: 'S', width: 240 },
+    { label: 'M', labelKey: 'maxHp', range: LIMITS.maxHp, value: 40, size: 'M', width: 240 },
+    { label: 'L', labelKey: 'maxHp', range: LIMITS.maxHp, value: 40, size: 'L', width: 240 },
   ] as const
 ).map(({ label, value, ...row }) => ({
   label,
@@ -91,14 +89,14 @@ export const AllStates = meta.story({
   parameters: {
     geometry: {
       tapTargets: {
-        reason: 'size S keeps its 36 px input; no screen uses Stepper S',
+        reason: 'size S keeps its 36 px keys; no screen uses Stepper S',
         except: '[data-size="S"] *',
       },
     },
   },
   render: () => <StateGrid rows={gridRows} columns={columns} />,
   play: async ({ canvasElement }) => {
-    const field = canvasElement.querySelector('[data-labelled][data-focus] input');
+    const field = canvasElement.querySelector('[data-focus] input');
     await expect(field).not.toBeNull();
     await expect(getComputedStyle(field as Element).outlineStyle).toBe('solid');
   },
@@ -211,21 +209,25 @@ export const KeysStepByOne = meta.story({
 
 export const ClampsAtMinAndMax = meta.story({
   tags: ['!dev'],
-  args: { range: LIMITS.round, value: 98 },
+  args: { labelKey: 'maxHp', range: LIMITS.round, value: 98 },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'Stepper');
-    const increase = canvas.getByRole('button', { name: t('increase') });
+    const increase = canvas.getByRole('button', {
+      name: t('increaseField', { label: t('maxHp') }),
+    });
     await userEvent.click(increase);
     await expect(args.onChange).toHaveBeenLastCalledWith(99);
     await expect(increase).toBeDisabled();
-    const field = canvas.getByRole('spinbutton', { name: t('value') });
+    const field = canvas.getByRole('spinbutton', { name: t('maxHp') });
     await expect(field).toHaveAttribute('inputmode', 'numeric');
     await userEvent.clear(field);
     await userEvent.type(field, '0');
     await userEvent.tab();
     await expect(args.onChange).toHaveBeenLastCalledWith(1);
     await expect(field).toHaveValue('1');
-    await expect(canvas.getByRole('button', { name: t('decrease') })).toBeDisabled();
+    await expect(
+      canvas.getByRole('button', { name: t('decreaseField', { label: t('maxHp') }) }),
+    ).toBeDisabled();
     await userEvent.clear(field);
     await userEvent.type(field, '250');
     await expect(args.onChange).toHaveBeenCalledTimes(2);

@@ -28,12 +28,12 @@ CombatCard.round
 PlayerHeader.round
 HistoryRow.round
 CombatHeader.round
-Menu.round
 CombatScreen.nextWrap
 PageHeader.combats
+PageHeader.actions
 Drawer.combats
 CombatList.title
-InitiativePopover.title
+InitiativeSheet.title
 DefenseLine.ac
 DesktopAside.title
 Landing.name

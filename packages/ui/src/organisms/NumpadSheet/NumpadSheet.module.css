@@ -74,25 +74,21 @@
   gap: 8px;
   min-width: 0;
   --numpad-health: var(--cp-health-full);
+  --numpad-health-text: var(--cp-health-text-full);
 
   &[data-side='after'] {
     align-items: flex-end;
   }
 
-  &[data-status='wounded'] {
-    --numpad-health: var(--cp-health-wounded);
-  }
-
   &[data-status='staggered'] {
     --numpad-health: var(--cp-health-staggered);
+    --numpad-health-text: var(--cp-health-staggered);
   }
 
-  &[data-status='unconscious'] {
-    --numpad-health: var(--cp-health-unconscious);
-  }
-
+  &[data-status='unconscious'],
   &[data-status='dead'] {
-    --numpad-health: var(--cp-health-dead);
+    --numpad-health: var(--cp-color-border);
+    --numpad-health-text: var(--cp-color-secondary);
   }
 }
 
@@ -121,7 +117,7 @@
   }
 
   .reading[data-side='after'] > & {
-    color: var(--numpad-health);
+    color: var(--numpad-health-text);
   }
 }
 
@@ -146,7 +142,7 @@
   width: 32px;
   height: 7px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-color-disabled);
+  background: var(--cp-color-border);
 
   &[data-filled] {
     background: var(--numpad-health);
@@ -258,8 +254,8 @@
   flex: none;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  margin: 0 -14px;
-  padding: 12px 14px 0;
+  margin: 0 calc(-1 * var(--cp-sheet-padding));
+  padding: 12px var(--cp-sheet-padding) 0;
   border-top: 2px solid var(--cp-color-border);
 }
 

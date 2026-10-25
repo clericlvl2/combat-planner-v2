@@ -5,11 +5,11 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  height: 58px;
+  height: var(--cp-bottom-button);
   min-width: 0;
   padding: 0 24px;
   border: none;
-  border-radius: 29px;
+  border-radius: var(--mantine-radius-full);
   background: var(--cp-color-primary);
   color: var(--cp-color-on-primary);
   font-family: var(--cp-font-ui);
@@ -23,7 +23,7 @@
   -webkit-tap-highlight-color: transparent;
 
   &[data-size='S'] {
-    height: 48px;
+    height: var(--cp-control-m);
     padding: 0 16px;
     border-radius: var(--mantine-radius-field);
     font-size: var(--mantine-font-size-small);
@@ -32,6 +32,18 @@
   &[data-heavy] {
     font-family: var(--cp-font-display);
     font-size: var(--mantine-font-size-number);
+    font-weight: 700;
+  }
+
+  &[data-stacked] {
+    flex-direction: column;
+    gap: 2px;
+    width: var(--cp-control-m);
+    height: var(--cp-control-m);
+    padding: 0;
+    border-radius: var(--mantine-radius-field);
+    font-family: var(--cp-font-ui);
+    font-size: var(--mantine-font-size-meta);
     font-weight: 700;
   }
 

@@ -1,10 +1,12 @@
 import preview from '#.storybook/preview';
-import { IconDice5, IconPlus, IconUserX } from '@tabler/icons-react';
+import { IconPlus, IconUserX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import type en from '../../i18n/en/Button.json';
+import { IconDiceD20 } from '../icons/IconDiceD20.ts';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { layout } from '../../layout.ts';
 import { Button } from './Button.tsx';
 import type { ButtonProps } from './Button.tsx';
 
@@ -12,11 +14,12 @@ type LabelKey = keyof typeof en;
 
 interface ButtonCellProps extends Omit<ButtonProps, 'children'> {
   labelKey?: LabelKey;
+  caption?: string;
 }
 
-function ButtonCell({ labelKey = 'save', ...props }: ButtonCellProps) {
+function ButtonCell({ labelKey = 'save', caption, ...props }: ButtonCellProps) {
   const { t } = useTranslation('Button');
-  return <Button {...props}>{t(labelKey)}</Button>;
+  return <Button {...props}>{caption ?? t(labelKey)}</Button>;
 }
 
 const meta = preview.meta({
@@ -46,7 +49,7 @@ export const AllStates = meta.story({
     <StateGrid
       columns={states}
       rows={[
-        row('Primary S', { variant: 'primary', size: 'S', icon: IconDice5, labelKey: 'rollD20' }),
+        row('Primary S', { variant: 'primary', size: 'S', icon: IconDiceD20, labelKey: 'rollD20' }),
         row('Primary M', { variant: 'primary', size: 'M', labelKey: 'save' }),
         row('Primary L', { variant: 'primary', size: 'L', labelKey: 'save' }),
         row('Primary L with icon', {
@@ -58,6 +61,12 @@ export const AllStates = meta.story({
         row('Secondary M', { variant: 'secondary', size: 'M', labelKey: 'cancel' }),
         row('Danger M', { variant: 'danger', size: 'M', labelKey: 'delete' }),
         row('Ghost S', { variant: 'ghost', size: 'S', labelKey: 'clear' }),
+        row('Primary stacked', {
+          variant: 'primary',
+          stacked: true,
+          icon: IconDiceD20,
+          caption: '+3',
+        }),
       ]}
     />
   ),
@@ -121,5 +130,18 @@ export const LoadingIgnoresClick = meta.story({
     await expect(args.onClick).not.toHaveBeenCalled();
     await waitFor(() => expect(button).toHaveAttribute('aria-busy', 'true'));
     await expect(button).toBeDisabled();
+  },
+});
+
+export const StackedIsSquare = meta.story({
+  tags: ['!dev'],
+  args: { variant: 'primary', stacked: true, icon: IconDiceD20, caption: '+3' },
+  play: async ({ canvas }) => {
+    const button = canvas.getByRole('button', { name: '+3' });
+    const box = button.getBoundingClientRect();
+    await expect([box.width, box.height]).toEqual([layout.control.M, layout.control.M]);
+    const icon = button.querySelector('svg')?.getBoundingClientRect();
+    const caption = canvas.getByText('+3').getBoundingClientRect();
+    await expect(icon && icon.bottom <= caption.top).toBe(true);
   },
 });

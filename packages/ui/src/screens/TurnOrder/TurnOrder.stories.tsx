@@ -167,8 +167,16 @@ export const PlayerEditsOwnDefenses = meta.story({
     });
     const md = sheet.querySelector<HTMLElement>('[data-stat="md"]');
     if (!md) throw new Error('md row missing');
-    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
-    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(
+      within(md).getByRole('button', {
+        name: t('Stepper:decreaseField', { label: t('DefenseLine:md') }),
+      }),
+    );
+    await userEvent.click(
+      within(md).getByRole('button', {
+        name: t('Stepper:decreaseField', { label: t('DefenseLine:md') }),
+      }),
+    );
     await expect(within(md).getByText('13')).toBeVisible();
     await waitFor(() =>
       expect(sentBy(api)).toEqual([
@@ -260,7 +268,7 @@ export const EditOwnHeroTypeLocked = meta.story({
       'true',
     );
     await expect(within(form).getByRole('radiogroup')).toHaveAttribute('aria-disabled', 'true');
-    const maxHp = within(form).getByRole('spinbutton', { name: t('NumberField:maxHp') });
+    const maxHp = within(form).getByRole('spinbutton', { name: t('UnitForm:maxHp') });
     await expect(maxHp).toBeEnabled();
     await userEvent.clear(maxHp);
     await userEvent.type(maxHp, '40');
@@ -312,10 +320,10 @@ export const InitiativeBonus = meta.story({
         name: (label: string) => label.endsWith(t('RoleBlock:you')),
       }),
     );
-    const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
+    const sheet = await canvas.findByRole('dialog', { name: ME });
     await expect(
-      within(popover).getByRole('button', {
-        name: (label: string) => label.startsWith(t('InitiativePopover:roll', { bonus: '+2' })),
+      within(sheet).getByRole('button', {
+        name: (label: string) => label.startsWith(t('InitiativeSheet:roll', { bonus: '+2' })),
       }),
     ).toBeVisible();
   },
@@ -352,14 +360,20 @@ export const YouAreNext = meta.story({
 
 export const YourTurn = meta.story({
   tags: ['visual'],
-  play: async ({ canvas, globals }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'TurnOrder');
     const strip = await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) });
     await expect(strip).toHaveAttribute('data-kind', 'turn');
     await expect(canvas.queryByRole('button', { name: t('youAreNext') })).toBeNull();
-    const list = canvas.getByText(ME).closest('[data-scroll-list]');
-    await expect(list?.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-      strip.getBoundingClientRect().bottom,
+    const header = canvas.getByRole('banner');
+    await waitFor(() =>
+      expect(strip.getBoundingClientRect().top).toBeCloseTo(
+        Math.max(
+          header.getBoundingClientRect().bottom,
+          listViewport(canvasElement).getBoundingClientRect().top,
+        ),
+        0,
+      ),
     );
   },
 });
@@ -377,10 +391,13 @@ export const YourTurnScrollsToHero = meta.story({
       listViewport(canvasElement).getBoundingClientRect().bottom,
     );
     await actAsDm(api, { type: 'nextTurn' });
-    await expect(
-      await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) }),
-    ).toBeVisible();
+    const strip = await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) });
     await expectInView(canvasElement, vashti);
+    await expect(strip).toBeVisible();
+    await expect(strip.getBoundingClientRect().top).toBeCloseTo(
+      listViewport(canvasElement).getBoundingClientRect().top,
+      0,
+    );
   },
 });
 

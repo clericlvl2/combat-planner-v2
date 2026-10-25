@@ -10,6 +10,7 @@
   flex: 1;
   min-width: 0;
   padding: 0 12px;
+  border-width: var(--cp-border);
 
   & > span {
     overflow: hidden;
@@ -18,8 +19,7 @@
 }
 
 .root .more {
-  width: 48px;
-  height: 48px;
+  border-width: var(--cp-border);
   border-radius: var(--mantine-radius-field);
 
   &[data-open] {

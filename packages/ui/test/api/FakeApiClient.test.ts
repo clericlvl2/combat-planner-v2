@@ -77,13 +77,32 @@ describe('FakeApiClient dispatch', () => {
     expect(dm.documents.at(-1)?.units.find((unit) => unit.id === HERO_ID)?.hp).toBe(23);
   });
 
-  it('refuses a retried action with version and applies it once', async () => {
+  it('holdNextExchange holds the reply and the documents until releaseReplies', async () => {
+    const client = seeded();
+    const order: string[] = [];
+    client.combats.subscribe(
+      COMBAT_ID,
+      (document) => order.push(`document ${document.version}`),
+      () => undefined,
+    );
+    client.holdNextExchange();
+    const reply = client.combats.dispatch(COMBAT_ID, damage(1)).then((result) => {
+      order.push(`reply ${result.version}`);
+      return result;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(order).toEqual(['document 1']);
+    expect((await client.combats.get(COMBAT_ID)).version).toBe(2);
+    client.releaseReplies();
+    await expect(reply).resolves.toEqual({ version: 2 });
+    expect(order).toEqual(['document 1', 'document 2', 'reply 2']);
+  });
+
+  it('answers a repeated action with the current version and applies it once', async () => {
     const client = seeded();
     const dm = watchDm(client);
     await client.combats.dispatch(COMBAT_ID, damage(1));
-    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).rejects.toMatchObject({
-      code: 'version',
-    });
+    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).resolves.toEqual({ version: 2 });
     expect(dm.documents).toHaveLength(2);
   });
 
@@ -394,7 +413,7 @@ describe('FakeApiClient REST groups', () => {
     await client.tags.create({ id: '01ARZ3NDEKTSV4RRFFQ69G5FE0', name: 'Undead' });
     await expect(
       client.tags.create({ id: '01ARZ3NDEKTSV4RRFFQ69G5FE1', name: 'undead' }),
-    ).rejects.toMatchObject({ code: 'invalid', status: 422 });
+    ).rejects.toMatchObject({ code: 'invalid', status: 409 });
   });
 
   it('lists summaries with the round of an active combat and the creation time', async () => {

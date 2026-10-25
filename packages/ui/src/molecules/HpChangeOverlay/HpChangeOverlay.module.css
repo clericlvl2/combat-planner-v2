@@ -153,11 +153,11 @@
   animation: fade var(--cp-hp-number-duration) linear both;
 
   &[data-kind='damage'] {
-    color: var(--cp-hp-damage);
+    color: var(--cp-state-danger-text);
   }
 
   &[data-kind='heal'] {
-    color: var(--cp-hp-heal);
+    color: var(--cp-hp-heal-text);
   }
 
   &[data-kind='temp'] {

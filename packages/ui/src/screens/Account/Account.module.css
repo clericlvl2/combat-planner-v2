@@ -62,7 +62,7 @@
   -webkit-tap-highlight-color: transparent;
 
   &[data-tone='danger'] {
-    color: var(--cp-role-enemy);
+    color: var(--cp-state-danger-text);
   }
 
   &:active,
@@ -74,7 +74,7 @@
   &[data-focus] {
     outline: 2px solid var(--cp-state-focus);
     outline-offset: -4px;
-    border-radius: 14px;
+    border-radius: var(--mantine-radius-field);
   }
 }
 

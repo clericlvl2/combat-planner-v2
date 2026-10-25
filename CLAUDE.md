@@ -19,14 +19,18 @@ from the repository root.
 - `pnpm check`: `vp check` (Oxfmt format check, Oxlint, type check), `tsc -b`, then
   `scripts/check-{stories,i18n,comments}.mjs`.
 - `pnpm exec vp check --fix`: format and apply lint fixes.
-- `pnpm test`: Vitest projects `unit` (Node) and `storybook` (every story once with its `play`,
+- `pnpm test`: Vitest projects `unit` (Node; `packages/*/src`, `packages/*/test`, `apps/*/src`
+  `*.test.ts` and `scripts/*.test.mjs`) and `storybook` (every story once with its `play`,
   headless Chromium, locale `ru`, the `narrow` frame and viewport, 320×568).
 - One file: `pnpm exec vp test --project unit <path>` or `pnpm exec vp test --project storybook <path>`.
 - `pnpm e2e`: Playwright at 320×568 against the real server and a temporary database; port from
-  `E2E_PORT`, default 3000. `e2e/layout.spec.ts` runs at 440×956.
+  `E2E_PORT`, default 3000. `e2e/sharing.spec.ts` runs against a second server on `E2E_PORT + 1`
+  with `COMBAT_PLANNER_TEST_TIMERS=1` (shortened sharing timeouts). `e2e/layout.spec.ts` runs at
+  440×956.
 - `pnpm build`: the web bundle into `apps/web/dist`.
 - `pnpm storybook` (port 6006), `pnpm storybook:build`.
-- `node scripts/test/run.mjs`: proves each check script fails on its fixtures in `scripts/test/`.
+- `node scripts/test/run.mjs`: proves `check-stories` and `check-i18n` fail on their fixtures in
+  `scripts/test/`.
 - `docker compose up --build`: the production image on port 3000.
 
 ## Architecture
@@ -34,39 +38,87 @@ from the repository root.
 - `packages/domain`: pure combat model. `types.ts` (units, roles, conditions, health statuses),
   `schemas.ts` (Zod, `LIMITS`), `actions.ts` and `reduce.ts` (every combat change is an action
   reduced into a patch), `undo.ts`, `sort.ts` (turn order), `authorize.ts` (what a DM or a player
-  may do). No I/O.
+  may do), `project.ts` (the player's view of a combat), `sharing.ts` (link and player states and
+  their sweep timeouts), `combatFile.ts` (`toCombatFile` exports the combat as `restartedCombat`
+  leaves it; `fromCombatFile` imports it under new ids). No I/O.
 - `packages/api`: the Hono app and its client.
-  - `app.ts` mounts sub-apps: `auth` (Better Auth, email plus optional Google/GitHub), `combats`
-    (CRUD, `actions` dispatch, `events` SSE), `link` (signed player links), `play` (player view
-    and hero claims), `presets`, `tags`, `settings`, `account`, `health`.
-  - `db/` is Drizzle over better-sqlite3; migrations in `drizzle/`.
+  - `app.ts` mounts sub-apps: `auth` (Better Auth, email plus optional Google/GitHub),
+    `auth-providers` (the configured social sign-ins), `combats` behind `requireUser` (CRUD,
+    `actions` dispatch, `events` SSE, and `link`: `/combats/:id/link`, `/link/reissue`,
+    `/link/stop` for signed player links), `play` (player view and hero claims), `presets`,
+    `tags`, `settings`, `account`, `health`, `errors` (`POST /api/errors`, client error reports).
+    `onError` stores unhandled server errors through `errors/store.ts` `recordError`.
+    `rate-limit.ts` budgets requests per minute and address (`actions`, `events`, `general`,
+    `errors`).
+  - `sharing/` holds link and connected-player state and closes DM streams of ended sessions;
+    `stats/` the daily usage counts (`Europe/Moscow` days) read by the admin page.
+  - `db/` is Drizzle over better-sqlite3; migrations in `drizzle/`. `action_log` holds the undo
+    stack only; `applied_actions` (`combats/applied.ts`) holds the ids of the last
+    `LIMITS.repeatWindow` applied actions of a combat, including claims, releases and undos, so a
+    repeated action id answers 200 with the current version and changes nothing.
   - `live/` holds the per-combat subscriber registry and the SSE stream.
   - `client.ts` defines the `ApiClient` interface and its Zod schemas; `hono-client.ts` implements
     it over HTTP and SSE, including reconnect and refetch repair.
+  - `contract/apiClientContract.ts`, exported as `@combat-planner/api/contract`:
+    `describeApiClientContract`, one `ApiClient` suite run against `createHonoApiClient` over the
+    in-process app (`test/contract.test.ts`, `test/inProcess.ts`) and against `FakeApiClient`
+    (`packages/ui/test/api/FakeApiClient.contract.test.ts`). The server is the reference: a case
+    failing on Fake is fixed in Fake.
 - `packages/ui`: every component and screen, built on Mantine.
   - `atoms/`, `molecules/`, `organisms/`, `screens/`; `hooks/` wrap TanStack Query around
-    `ApiClient`.
+    `ApiClient` and hold `useSheetDrag` (drag a sheet down to close) and `useRetained` (the last
+    non-null value, for content of a closing overlay). `motion/Reveal.tsx` expands and collapses
+    rows. `organisms/Drawer` is Mantine `Drawer`.
   - `api/FakeApiClient.ts` and `scenarios.ts` seed screen stories without a server.
   - `theme.ts` and `layout.ts` hold the tokens; `cssVariablesResolver` publishes them as CSS
-    variables (e.g. `--cp-tap-target`).
+    variables (e.g. `--cp-tap-target`). Colours derive in OKLCH from `seeds` through `color.ts`;
+    `paletteVariables()` publishes them in groups (`--cp-color-*`, `--cp-role-*`, `--cp-health-*`,
+    `--cp-health-tint-*`, `--cp-hp-*`, `--cp-history-temp-*`, `--cp-state-*`,
+    `--cp-condition-*`, `--cp-combat-*`); `test/palette.test.ts` checks derivation, contrast and
+    colour-vision separation, `storybook/ThemeAudit` shows every token. `layout.header` and its
+    `--cp-header-*` variables size `PageHeader`, `CombatHeader` and `PlayerHeader` alike.
   - `i18n/<locale>/<Namespace>.json` for `en de es fr ja ru`.
   - `storybook/` holds the decorators (`PhoneFrame`, `withApi`, `withLocale`, `withDocsTheme`) and
     `geometry.ts`.
 - `apps/web`: the SPA. `router.tsx` (React Router data mode, session loaders, DM language
-  follower), `providers.tsx`, `pages.tsx`.
-  - `root.css` makes `#root` the phone column: at most 440×956, centered on `--cp-color-soft`,
-    the size container `screen` and, like `.phone` in Storybook, the containing block of the
-    fixed overlays; screen roots stay direct children of `#root`. A window wider than 440 shows
-    the column as a white phone frame (`box-shadow` rings, height `min(100dvh - 64px, 956px)`) on
-    a dotted `--cp-color-soft` field; from 1180 wide `main.tsx` portals `DesktopAside` into
-    `#aside`, left of the column.
+  follower; `withViewTransitions` makes every navigation a view transition), `providers.tsx`,
+  `pages.tsx`, `errorReports.ts` (uncaught errors and rejections to `POST /api/errors`, each
+  message once, at most 5 per page load, never an `ApiError`).
+  - `main.tsx` passes `guestAtBoot` when `<html>` carries `data-boot="guest"`; `router.tsx` then
+    hydrates the `home` route with `GUEST_BOOT`, so the landing renders on the first frame. In
+    `pnpm dev` the `guestBoot` plugin in `apps/web/vite.config.ts` answers `GET /` like
+    `apps/server/src/landing.ts`.
+  - `root.css` makes `#root` the phone column: at most 440×956, the size container `screen` and,
+    like `.phone` in Storybook, the containing block of the fixed overlays; screen roots stay
+    direct children of `#root`. A window wider than 440 shows the column as a phone frame
+    (`box-shadow` rings in `--cp-color-border` and `--cp-color-surface`, height
+    `min(100dvh - 64px, 956px)`) on a dotted `--cp-color-field` field. `main.tsx` always portals
+    `DesktopAside` into `#aside`; `root.css` shows it from 1180 wide, left of the column. A
+    screen root with `data-landing` fills the window, without frame or aside. During a view
+    transition a pinned screen header (`PageHeader`, a direct child of the screen root) takes
+    `view-transition-name: header` unless a `[data-scrim]` is open; `CombatHeader` and
+    `PlayerHeader` sit inside the screen's `ScrollList` under a fixed `StatusStrip`
+    (`screens/shared/StatusStrip.tsx`) and cross-fade with the page. Transitions run on
+    `--cp-page-transition-duration` / `-easing` and are off under `prefers-reduced-motion`.
 - `apps/server`: Node entry. It loads `.env`, creates or reads `secrets.json` next to the
   database, serves the API under `/api` and the built web app. It runs TypeScript through Node type
   stripping, with no build step.
+  - `landing.ts`: `GET /` answers a signed-in session with 302 to `/combats` and a guest with
+    `index.html` marked `data-boot="guest"`, both with `Cache-Control: no-store` and
+    `Vary: Cookie`.
+  - `sweeper.ts` runs every minute (`timers.ts`): marks a player link orphaned while its owner
+    has no live session and turns it off after `LIMITS.orphanedLinkMinutes`; drops players
+    watching without a hero past `LIMITS.watchingMinutes` and player streams without an action
+    for `LIMITS.idleStreamHours`; closes DM streams of ended sessions; deletes daily stats and
+    error reports past retention.
+  - With `ADMIN_PAGE=1`: the status page `/admin` (`src/admin/`, version from `APP_VERSION`,
+    default `dev`) and `GET /api/health/checks` (200 while no check is red, else 503); without
+    it both answer 404. `/admin` has no login of its own.
 - `e2e/`: Playwright specs.
 
-Internal packages are imported from source (`@combat-planner/*` → `./src/index.ts`) through
-workspace links and TS project references. Relative imports carry the `.ts`/`.tsx` extension.
+Internal packages are imported from source (`@combat-planner/*` → `./src/index.ts`, plus
+`@combat-planner/api/client` and `@combat-planner/api/hono-client`) through workspace links and TS
+project references. Relative imports carry the `.ts`/`.tsx` extension.
 
 ## Conventions
 
@@ -99,7 +151,9 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   the attributes the CSS reads (`data-pressed`, `data-focus`, `data-tap`, `data-open`,
   `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag (inert, see below).
 - `FakeApiClient.failNext(code)` rejects the next call; `holdNext()` leaves it pending, for loading
-  states.
+  states; `holdNextExchange()` applies the next call at once but holds its reply and every document
+  it broadcasts until `releaseReplies()`, which delivers the documents first, for sends that race
+  their own reply.
 - Visual states come from real pseudo-classes and `data-*` attributes (`&:active, &[data-pressed]`),
   never from a `state` prop.
 - Screen stories seed state through `FakeApiClient` scenarios and play only their own interaction.
@@ -133,8 +187,13 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
 - Commits: Conventional Commits whose subject states the user-visible result, e.g.
   `fix(ui): the ru restart label fits its button`. Types `feat`, `fix`, `perf`, `revert` show in
   the release notes; `docs`, `chore`, `test`, `refactor`, `ci`, `build` do not.
-- Branches: short-lived branches from `main`, merged into `main` through a pull request; a release
-  is a manual run of the `release` workflow on `main`.
+- Branches: short-lived branches from `main`, merged into `main` through a pull request. The `ci`
+  workflow runs `pnpm check`, `pnpm test` and `pnpm build` on pushes to `main` and pull requests
+  into `main`, plus `pnpm e2e` on those pull requests. A release is a manual run of the `release`
+  workflow on `main`: it refuses a commit without a green `ci` check, computes the version and
+  notes with `scripts/release.mjs` (bump `auto` from Conventional Commits, or `patch`, `minor`,
+  `major`), creates the tag and GitHub Release, then runs `docker` and `deploy` (GitHub
+  environment `production`, waits for the required reviewer's approval).
 
 ## Versions
 
@@ -157,9 +216,12 @@ workspace links and TS project references. Relative imports carry the `.ts`/`.ts
   its turn. A combat is in `setup` until it starts, then `active`.
 - **Escalation die**: 0–6, heroes add it to attacks. It rises by one each time the turn order wraps
   to a new round, and the DM can set it directly.
-- **AC / PD / MD**: Armor Class, Physical Defense, Mental Defense.
+- **AC / PD / MD**: Armor Class, Physical Defense, Mental Defense. Temporary modifiers `acMod`,
+  `pdMod`, `mdMod` are set by the action `setDefenseMods` and cleared on restart.
 - **HP, temp HP**: hit points and temporary hit points; every change is recorded in the HP history.
-- **Health statuses** (`healthStatus.ts`): `full`, `wounded`, `staggered` (below half max HP), `dead`.
+- **Health statuses** (`healthStatus.ts`): `full`, `wounded`, `staggered` (below half max HP),
+  `unconscious` (a hero at 0 HP or below; the app never shows a hero as dead), `dead` (any other
+  unit at 0 HP or below). Healing a hero below 0 HP counts from 0.
 - **Conditions**: charmed, confused, dazed, fear, helpless, hampered, shocked, stuck, stunned,
   vulnerable, weakened.
 - **Player link**: a signed URL (and QR) for one combat. A player opens it and **claims** their hero.

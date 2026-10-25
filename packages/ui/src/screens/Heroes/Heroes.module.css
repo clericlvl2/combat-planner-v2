@@ -14,8 +14,14 @@
   min-height: 0;
 }
 
+.scrollContent {
+  display: flex;
+  flex-direction: column;
+}
+
 .bodyContent {
   display: flex;
+  flex: 1 0 auto;
   flex-direction: column;
   gap: 16px;
   padding: 16px;
@@ -54,7 +60,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--cp-card-gap);
+  gap: var(--cp-list-gap);
 }
 
 .hero {
@@ -66,7 +72,7 @@
   min-height: 64px;
   padding: 12px;
   overflow: hidden;
-  border: 1px solid var(--cp-color-border);
+  border: var(--cp-border) solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
 
@@ -135,7 +141,7 @@
 }
 
 .sub {
-  color: var(--cp-health-full);
+  color: var(--cp-hp-heal-text);
   font-size: var(--mantine-font-size-small);
   font-weight: 600;
 
@@ -145,7 +151,7 @@
   }
 
   .hero[data-state='own'] & {
-    color: var(--cp-role-hero);
+    color: var(--cp-role-hero-text);
   }
 }
 

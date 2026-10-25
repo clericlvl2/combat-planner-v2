@@ -19,13 +19,6 @@ const nextSeq = (db: Executor, combatId: CombatId): number =>
     .where(eq(actionLog.combatId, combatId))
     .get()?.last ?? 0) + 1;
 
-export const isLogged = (db: Executor, combatId: CombatId, actionId: string): boolean =>
-  db
-    .select({ seq: actionLog.seq })
-    .from(actionLog)
-    .where(and(eq(actionLog.combatId, combatId), eq(actionLog.actionId, actionId)))
-    .get() !== undefined;
-
 export const readStack = (db: Executor, combatId: CombatId): UndoableEntry[] => {
   const rows = db
     .select({

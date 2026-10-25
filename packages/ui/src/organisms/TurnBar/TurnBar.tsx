@@ -27,8 +27,8 @@ export function TurnBar({
 }: TurnBarProps) {
   const { t } = useTranslation('TurnBar');
   const title = mode === 'start' ? t('startCombat') : t('nextTurn');
-  const hint = disabled && reason ? reason : mode === 'start' ? t('rollsMissingInitiative') : null;
-  const secondary = hint ?? nextName;
+  const hint = disabled && reason ? reason : null;
+  const secondary = hint ?? (mode === 'next' ? nextName : null);
   return (
     <div className={classes.root}>
       <UnstyledButton

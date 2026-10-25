@@ -7,6 +7,7 @@ import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { IconButton } from './IconButton.tsx';
 import type { IconButtonProps } from './IconButton.tsx';
+import { layout } from '../../layout.ts';
 import { base } from '../../theme.ts';
 
 const rgb = (hex: string) => {
@@ -158,7 +159,7 @@ export const CircleAndIconSizes = meta.story({
     const buttons = canvas.getAllByRole('button', { name: t('openNavigation') });
     const circles = buttons.map((button) => button.getBoundingClientRect().width);
     const icons = buttons.map((button) => button.querySelector('svg')?.getAttribute('width'));
-    await expect(circles).toEqual([36, 44, 52]);
+    await expect(circles).toEqual([layout.control.S, layout.control.M, layout.control.L]);
     await expect(icons).toEqual(['16', '24', '24']);
   },
 });

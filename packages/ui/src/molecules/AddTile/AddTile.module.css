@@ -1,0 +1,72 @@
+.root {
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  min-height: var(--cp-unit-row);
+  margin: 0;
+  padding: 8px 12px;
+  border: 2px dashed var(--cp-color-border);
+  border-radius: var(--mantine-radius-card);
+  background: transparent;
+  color: var(--cp-color-secondary);
+  font-family: var(--cp-font-ui);
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active:not(:disabled),
+  &[data-pressed] {
+    background: var(--cp-color-soft);
+  }
+
+  &:disabled {
+    color: var(--cp-color-muted);
+    cursor: not-allowed;
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-tap] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.icon {
+  flex: none;
+}
+
+.label {
+  min-width: 0;
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  text-wrap: balance;
+}
+
+.hint {
+  max-width: 100%;
+  color: var(--cp-color-secondary);
+  font-size: var(--mantine-font-size-small);
+  font-weight: 600;
+  line-height: var(--mantine-line-height-snug);
+  text-wrap: balance;
+}

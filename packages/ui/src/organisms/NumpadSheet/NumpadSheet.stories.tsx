@@ -8,6 +8,7 @@ import { layout } from '../../layout.ts';
 import { UnitRow } from '../UnitRow/UnitRow.tsx';
 import { NumpadSheet, hpAfter } from './NumpadSheet.tsx';
 import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { base, healthText } from '../../theme.ts';
 
 const at = '2026-10-15T18:00:00.000Z';
 
@@ -109,6 +110,7 @@ type Who = keyof typeof units;
 interface NumpadSheetCellProps {
   who?: Who;
   tempHp?: number;
+  hp?: number;
   history?: HistorySet;
   onApply?: (kind: HpHistoryKind, amount: number) => void;
   onClose?: () => void;
@@ -125,12 +127,9 @@ const resultList: CSSProperties = {
 const noop = () => {};
 
 const readOnlyRow = {
-  readOnly: true,
+  readOnly: true as const,
   onToggle: noop,
   onInitiative: noop,
-  onInitiativeSet: noop,
-  onInitiativeRoll: noop,
-  onInitiativeClose: noop,
   onHp: noop,
   onConditions: noop,
   onDefenses: noop,
@@ -149,11 +148,12 @@ const readOnlyRow = {
 function NumpadSheetCell({
   who = 'orc',
   tempHp = 0,
+  hp,
   history = 'full',
   onApply,
   onClose,
 }: NumpadSheetCellProps) {
-  const before: Unit = { ...units[who], tempHp };
+  const before: Unit = { ...units[who], tempHp, ...(hp === undefined ? {} : { hp }) };
   const [opened, setOpened] = useState(true);
   const [after, setAfter] = useState<Unit | null>(null);
   const claimedByName = before.claimedBy ? 'Mika' : undefined;
@@ -176,7 +176,7 @@ function NumpadSheetCell({
         history={histories[history]}
         onApply={(kind, amount) => {
           onApply?.(kind, amount);
-          setAfter({ ...before, ...hpAfter(before, kind, amount) });
+          setAfter({ ...before, ...hpAfter(before, before.role, kind, amount) });
         }}
         onClose={() => {
           setOpened(false);
@@ -217,6 +217,16 @@ const readingOf = (canvasElement: HTMLElement, side: 'now' | 'after') => {
 
 const numbersOf = (canvasElement: HTMLElement, side: 'now' | 'after') =>
   readingOf(canvasElement, side).querySelector('[data-part="numbers"]');
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
+
+const afterColor = (canvasElement: HTMLElement) => {
+  const numbers = numbersOf(canvasElement, 'after');
+  return numbers && getComputedStyle(numbers).color;
+};
 
 const screenOf = (canvasElement: HTMLElement) => {
   const frame = canvasElement.ownerDocument.querySelector<HTMLElement>('[data-phone-frame]');
@@ -350,6 +360,7 @@ export const ThreeDigitHpWounded = meta.story({
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('167/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('wounded'));
     await expect(filledPips(canvasElement, 'after')).toBe(2);
+    await expect(afterColor(canvasElement)).toBe(rgb(healthText.full));
   },
 });
 
@@ -361,6 +372,37 @@ export const OverkillDead = meta.story({
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−113/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('dead'));
     await expect(filledPips(canvasElement, 'after')).toBe(0);
+    await expect(afterColor(canvasElement)).toBe(rgb(base.secondary));
+  },
+});
+
+export const HeroOverkillUnconscious = meta.story({
+  tags: ['!dev'],
+  args: { who: 'vashti' },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await typeAmount(canvas, '99');
+    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−36/36');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('unconscious'));
+    await expect(filledPips(canvasElement, 'after')).toBe(0);
+    await expect(afterColor(canvasElement)).toBe(rgb(base.secondary));
+  },
+});
+
+export const HeroHealFromBelowZero = meta.story({
+  tags: ['!dev'],
+  args: { who: 'vashti', hp: -4 },
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await typeAmount(canvas, '5');
+    await previewAction(canvas, t('heal'));
+    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('5/36');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('staggered'));
+    await userEvent.click(canvas.getByRole('button', { name: t('heal') }));
+    await expect(args.onApply).toHaveBeenCalledOnce();
+    await expect(args.onApply).toHaveBeenCalledWith('heal', 5);
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await expect(canvasElement.querySelector('[data-result]')).toHaveTextContent('5/36');
   },
 });
 

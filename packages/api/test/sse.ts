@@ -17,7 +17,7 @@ export interface SseReader {
   cancel(): Promise<void>;
 }
 
-const parseBlock = (raw: string): SseBlock => {
+export const parseSseBlock = (raw: string): SseBlock => {
   const block: SseBlock = { comment: false, data: '' };
   const dataLines: string[] = [];
   for (const line of raw.split('\n')) {
@@ -53,7 +53,7 @@ export const openSse = (response: Response): SseReader => {
       if (boundary !== -1) {
         const raw = buffer.slice(0, boundary);
         buffer = buffer.slice(boundary + 2);
-        return parseBlock(raw);
+        return parseSseBlock(raw);
       }
       if (done) return null;
       const chunk = await reader.read();

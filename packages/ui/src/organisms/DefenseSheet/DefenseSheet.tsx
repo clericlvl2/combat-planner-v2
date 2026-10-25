@@ -1,5 +1,4 @@
 import { LIMITS } from '@combat-planner/domain';
-import { useId } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { defenseTotal, modDirection } from '../../molecules/DefenseLine/DefenseLine.tsx';
@@ -40,27 +39,23 @@ function DefenseRow({
 }) {
   const { t } = useTranslation('DefenseSheet');
   const { t: tLine } = useTranslation('DefenseLine');
-  const labelId = useId();
+  const label = tLine(stat);
   return (
-    <div className={classes.row} data-stat={stat} role="group" aria-labelledby={labelId}>
-      <div className={classes.reading}>
-        <span id={labelId} className={classes.label}>
-          {tLine(stat)}
-        </span>
-        <span className={classes.total} data-mod={modDirection(mod)}>
-          {defenseTotal(base, mod)}
-        </span>
-        <span className={classes.base}>{t('base', { value: base })}</span>
-      </div>
+    <div className={classes.stat} data-stat={stat} role="group" aria-label={label}>
       <Stepper
-        className={classes.stepper}
+        label={label}
         value={mod}
         onChange={onChange}
         min={LIMITS.defenseMod.min}
         max={LIMITS.defenseMod.max}
         signed
-        size="M"
       />
+      <div className={classes.reading}>
+        <span className={classes.total} data-mod={modDirection(mod)}>
+          {defenseTotal(base, mod)}
+        </span>
+        <span className={classes.base}>{t('base', { value: base })}</span>
+      </div>
     </div>
   );
 }
@@ -98,7 +93,7 @@ export function DefenseSheet({
         </>
       }
     >
-      <div className={classes.rows}>
+      <div className={classes.stats}>
         {STATS.map((stat) => (
           <DefenseRow
             key={stat}

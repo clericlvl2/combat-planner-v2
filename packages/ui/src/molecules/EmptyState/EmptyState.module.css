@@ -17,7 +17,7 @@
   justify-content: center;
   width: 72px;
   height: 72px;
-  border-radius: 20px;
+  border-radius: var(--mantine-radius-card);
   background: var(--cp-color-soft);
   color: var(--cp-color-ink);
 }
@@ -38,8 +38,4 @@
   font-size: var(--mantine-font-size-body);
   line-height: var(--mantine-line-height-body);
   text-wrap: pretty;
-}
-
-.action {
-  padding-top: 6px;
 }

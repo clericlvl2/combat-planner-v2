@@ -63,15 +63,17 @@ export const paperSteps = {
   background: { l: -6, c: 0.008 },
   field: { l: -9, c: 0.013 },
   disabled: { l: -12, c: 0.007 },
-  border: { l: -21, c: 0.018 },
+  border: { l: -32, c: 0.018 },
 } as const;
 
 export const conditionTone = {
-  fill: { l: 90, c: 0.05, neutralC: 0.013 },
-  text: { l: 38, c: 0.07, neutralC: 0.016 },
+  fill: { l: 94, c: 0.05, neutralC: 0.013 },
+  text: { l: 30, c: 0.07, neutralC: 0.016 },
 } as const;
 
 const onPaper = (fill: string) => on(fill, seeds.ink, seeds.paper);
+
+const brassFill = lighten(seeds.brass, 10);
 
 const paperStep = (step: keyof typeof paperSteps) =>
   lighten(seeds.paper, paperSteps[step].l, paperSteps[step].c);
@@ -82,13 +84,13 @@ export const base = {
   surface: seeds.paper,
   soft: paperStep('soft'),
   highlight: mix(seeds.brass, seeds.paper, 25),
-  accent: seeds.brass,
-  onAccent: onPaper(seeds.brass),
+  accent: brassFill,
+  onAccent: onPaper(brassFill),
   border: paperStep('border'),
   disabled: paperStep('disabled'),
   ink: seeds.ink,
   inkPressed: lighten(seeds.ink, 8),
-  secondary: lighten(seeds.ink, 22),
+  secondary: lighten(seeds.ink, 12),
   muted: lighten(seeds.ink, 36),
   chrome: seeds.moss,
   onChrome: onPaper(seeds.moss),
@@ -104,11 +106,11 @@ export const roles = {
   ally: seeds.ally,
   inactive: lighten(seeds.ink, 26),
   on: onPaper(seeds.hero),
+  heroText: lighten(seeds.hero, -12),
 };
 
 export const health = {
   full: seeds.full,
-  wounded: seeds.wounded,
   staggered: seeds.staggered,
   unconscious: seeds.unconscious,
   dead: lighten(seeds.ink, 19, -0.02),
@@ -116,14 +118,17 @@ export const health = {
 
 export const healthTints = {
   full: tint(seeds.full, 92, 0.05),
-  wounded: tint(seeds.wounded, 92, 0.05),
   staggered: tint(seeds.staggered, 92, 0.05),
-  unconscious: tint(seeds.unconscious, 92, 0.05),
+};
+
+export const healthText = {
+  full: lighten(seeds.full, -6),
 };
 
 export const hpActions = {
   damage: seeds.enemy,
   heal: lighten(seeds.full, -8),
+  healText: lighten(seeds.full, -20),
   setTemp: seeds.hero,
   max: seeds.max,
   on: onPaper(seeds.enemy),
@@ -132,8 +137,9 @@ export const hpActions = {
 
 export const interaction = {
   focus: seeds.hero,
-  tapMarker: seeds.brass,
+  tapMarker: lighten(seeds.brass, -20),
   dangerPressed: lighten(seeds.enemy, -8),
+  dangerText: lighten(seeds.enemy, -20),
 };
 
 export const historyTemp = { text: lighten(seeds.hero, -5, -0.03) };
@@ -168,6 +174,7 @@ export const palette = {
   roles,
   health,
   healthTints,
+  healthText,
   hpActions,
   interaction,
   historyTemp,
@@ -182,8 +189,8 @@ export const fontFamilies = {
 
 export const fontSizes = {
   capsTile: 7,
-  caps: 8,
-  micro: 11,
+  caps: 12,
+  micro: 12,
   meta: 12,
   small: 14,
   body: 16,
@@ -210,9 +217,9 @@ export const radius = {
   full: 9999,
 } as const;
 
-export const iconSizes = [16, 20, 24, 32] as const;
+export const iconSizes = { S: 16, M: 20, L: 24, XL: 32 } as const;
 
-export const borderWidth = { default: 2, divider: 1 } as const;
+export const borderWidth = { card: 1, control: 2 } as const;
 
 export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as const;
 
@@ -238,6 +245,9 @@ const shadowLayers = ({ color, layers }: typeof activeShadow) =>
 
 const px = (value: number) => `${value}px`;
 
+const box = ({ top, right, bottom, left }: Record<'top' | 'right' | 'bottom' | 'left', number>) =>
+  [top, right, bottom, left].map(px).join(' ');
+
 function kebab(name: string): string {
   return name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
 }
@@ -249,6 +259,7 @@ export function paletteVariables(): Record<string, string> {
     role: roles,
     health,
     'health-tint': healthTints,
+    'health-text': healthText,
     hp: hpActions,
     'history-temp': historyTemp,
     state: interaction,
@@ -278,7 +289,12 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-scroll-shadow': `${layout.scrollShadow}px`,
     '--cp-scroll-shadow-color': `color-mix(in srgb, ${scrollShadow.color} ${scrollShadow.alpha}%, transparent)`,
     '--cp-turn-strip': `${layout.turnStrip}px`,
-    '--cp-header-pad-top': `${layout.header.padTop}px`,
+    '--cp-status-bar': px(layout.statusBar),
+    '--cp-content-edge': px(layout.contentEdge),
+    '--cp-border': px(borderWidth.card),
+    '--cp-control-s': px(layout.control.S),
+    '--cp-control-m': px(layout.control.M),
+    '--cp-control-l': px(layout.control.L),
     '--cp-header-row': `${layout.header.row}px`,
     '--cp-header-gap': `${layout.header.gap}px`,
     '--cp-header-second-row': `${layout.header.secondRow}px`,
@@ -288,11 +304,24 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-card-expand-easing': layout.cardExpandEasing,
     '--cp-list-inset-top': `${layout.listInset.top}px`,
     '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
-    '--cp-card-gap': `${layout.cardGap}px`,
+    '--cp-list-gap': px(layout.listGap),
     '--cp-active-lift': `${layout.activeLift}px`,
     '--cp-active-shadow': shadowLayers(activeShadow),
     '--cp-role-tile-width': `${layout.roleTile.width}px`,
     '--cp-role-tile-inset': `${layout.roleTile.inset}px`,
+    '--cp-unit-row': `${layout.unitRow}px`,
+    '--cp-bottom-bar-height': px(layout.bottomBar.height),
+    '--cp-bottom-bar-padding': box(layout.bottomBar.padding),
+    '--cp-bottom-bar-border': px(layout.bottomBar.borderTop),
+    '--cp-bottom-button': px(layout.bottomButton.height),
+    '--cp-sheet-inset': px(layout.sheet.inset),
+    '--cp-sheet-border': px(layout.sheet.border),
+    '--cp-sheet-padding': px(layout.sheet.padding),
+    '--cp-sheet-header-top': px(layout.sheet.headerTop),
+    '--cp-dialog-inset': px(layout.dialog.inset),
+    '--cp-dialog-padding': px(layout.dialog.padding),
+    '--cp-drawer-width': px(layout.drawer.width),
+    '--cp-drawer-padding': box(layout.drawer.padding),
     '--cp-page-transition-duration': `${layout.pageTransitionMs}ms`,
     '--cp-page-transition-easing': layout.sheetEasing,
   },
@@ -391,7 +420,12 @@ export const theme: MantineThemeOverride = createTheme({
     InputWrapper: { classNames: { label: classes.label, error: classes.error } },
     Paper: { defaultProps: { radius: 'card', shadow: 'none' } },
     Modal: {
-      defaultProps: { radius: 'sheet', centered: true, padding: 16, shadow: 'none' },
+      defaultProps: {
+        radius: 'sheet',
+        centered: true,
+        padding: layout.dialog.padding,
+        shadow: 'none',
+      },
       classNames: { content: classes.overlaySurface },
     },
     Popover: {
@@ -402,6 +436,6 @@ export const theme: MantineThemeOverride = createTheme({
       defaultProps: { radius: 'card', shadow: 'none' },
       classNames: { dropdown: classes.overlaySurface },
     },
-    Drawer: { defaultProps: { size: 300, position: 'left', shadow: 'none' } },
+    Drawer: { defaultProps: { size: layout.drawer.width, position: 'left', shadow: 'none' } },
   },
 });

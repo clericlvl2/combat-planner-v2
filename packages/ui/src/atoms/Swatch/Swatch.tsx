@@ -2,7 +2,7 @@ import { LIMITS } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
 import { IconCheck } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
-import { palette } from '../../theme.ts';
+import { iconSizes, palette } from '../../theme.ts';
 import classes from './Swatch.module.css';
 
 type UpTo<N extends number, Acc extends number[] = []> = Acc['length'] extends N
@@ -25,7 +25,7 @@ export interface SwatchProps extends Omit<
   'aria-label': string;
 }
 
-const checkSize: Record<SwatchSize, number> = { S: 16, M: 20, L: 24 };
+const checkSize: Record<SwatchSize, number> = { S: iconSizes.S, M: iconSizes.M, L: iconSizes.L };
 
 export function Swatch({
   color,

@@ -64,7 +64,7 @@ export const OwnHero = meta.story({
     const t = storyT(globals, 'RoleBlock');
     const chip = canvas.getByText(t('you'));
     await expect(chip).toBeVisible();
-    await expect(getComputedStyle(chip).color).toBe(rgb(roles.hero));
+    await expect(getComputedStyle(chip).color).toBe(rgb(roles.heroText));
     await expect(getComputedStyle(chip).backgroundColor).toBe(rgb(base.surface));
     await expect(underlineOf(canvas.getByText('15'))).toBe('dashed');
   },

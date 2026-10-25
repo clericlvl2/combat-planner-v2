@@ -53,10 +53,11 @@ describe('skipsTurn', () => {
     expect(skipsTurn(makeUnit({ hp: 1 }))).toBe(false);
   });
 
-  it('An unconscious hero keeps their turn; a dead hero is skipped', () => {
+  it('An unconscious hero keeps their turn at any HP below 0', () => {
     expect(skipsTurn(makeUnit({ role: 'hero', maxHp: 30, hp: 0 }))).toBe(false);
     expect(skipsTurn(makeUnit({ role: 'hero', maxHp: 30, hp: -14 }))).toBe(false);
-    expect(skipsTurn(makeUnit({ role: 'hero', maxHp: 30, hp: -15 }))).toBe(true);
+    expect(skipsTurn(makeUnit({ role: 'hero', maxHp: 30, hp: -15 }))).toBe(false);
+    expect(skipsTurn(makeUnit({ role: 'hero', maxHp: 30, hp: -30 }))).toBe(false);
     expect(skipsTurn(makeUnit({ role: 'ally', maxHp: 30, hp: 0 }))).toBe(true);
   });
 });

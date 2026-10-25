@@ -10,14 +10,18 @@ import { ulid } from 'ulid';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
+import { layout } from '../../layout.ts';
 import {
   COMBAT_ID,
   JONAS,
   MIKA,
   MISSING_COMBAT_ID,
   STORY_ORIGIN,
+  combatOf,
+  combatScenario,
   libraryPresets,
   longScenario,
+  longUnits,
   noUnitsScenario,
   rolls,
   roster,
@@ -27,7 +31,7 @@ import {
   unitIds,
 } from './CombatScreen.scenarios.ts';
 import { CombatScreen } from './CombatScreen.tsx';
-import { anyValue, collapsedSpace, storyT } from '../../storybook/storyT.ts';
+import { anyValue, collapsedSpace, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -41,6 +45,16 @@ const names = {
 };
 
 const rosterOrder = Object.values(names);
+
+const ticketName = (t: TFunction, round: number, value: number): string =>
+  t('CombatHeader:editRoundAndEscalation', { round, value });
+
+const ticketAny = (t: TFunction): RegExp => {
+  const [before = '', between = '', after = ''] = String(
+    t('CombatHeader:editRoundAndEscalation', { round: '\u0000', value: '\u0000' }),
+  ).split('\u0000');
+  return new RegExp(`^${[before, between, after].map(escapeRegExp).join('\\d+')}$`);
+};
 
 function LocationProbe() {
   const { pathname } = useLocation();
@@ -136,6 +150,9 @@ const pickMenu = async (canvas: Canvas, item: string, t: TFunction) => {
 
 const nextTurnButton = (canvas: Canvas, t: TFunction) =>
   canvas.findByRole('button', { name: (label: string) => label.startsWith(t('TurnBar:nextTurn')) });
+
+const addTileOf = (canvas: Canvas, t: TFunction): Promise<HTMLElement> =>
+  canvas.findByRole('button', { name: t('EmptyState:addUnit') });
 
 const startButton = (canvas: Canvas, t: TFunction) =>
   canvas.findByRole('button', {
@@ -296,9 +313,16 @@ export const EmptyCombat = meta.story({
   parameters: { scenario: noUnitsScenario() },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
-    await expect(
-      await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') }),
-    ).toBeVisible();
+    const heading = await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
+    await expect(heading).toBeVisible();
+    const emptyState = heading.parentElement;
+    if (!emptyState) throw new Error('The empty state is missing');
+    await expect(within(emptyState).queryByRole('button')).toBeNull();
+    const tile = await addTileOf(canvas, t);
+    await expect(tile).toBeEnabled();
+    await expect(tile.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      emptyState.getBoundingClientRect().bottom,
+    );
     const start = await startButton(canvas, t);
     await expect(start).toBeDisabled();
     await expect(start).toHaveTextContent(t('TurnBar:addUnitFirst'));
@@ -313,7 +337,7 @@ export const AddUnitSheet = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
-    await userEvent.click(canvas.getByRole('button', { name: t('Menu:addUnit') }));
+    await userEvent.click(await addTileOf(canvas, t));
     const form = await canvas.findByRole('dialog', { name: t('Menu:addUnit') });
     await expect(within(form).getByRole('textbox', { name: t('UnitForm:name') })).toHaveAttribute(
       'placeholder',
@@ -328,16 +352,31 @@ export const SetupWithUnits = meta.story({
   parameters: { scenario: setupScenario() },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
-    await rowOf(canvasElement, names.shadow);
+    const last = await rowOf(canvasElement, names.shadow);
     await expect(orderOf(canvasElement, rosterOrder)).toEqual(rosterOrder);
+    const tile = await addTileOf(canvas, t);
+    await expect(last.nextElementSibling).toBe(tile);
+    await expect(tile.getBoundingClientRect().width).toBeCloseTo(
+      last.getBoundingClientRect().width,
+      0,
+    );
     const start = await startButton(canvas, t);
     await expect(start).toBeEnabled();
-    await expect(start).toHaveTextContent(t('TurnBar:rollsMissingInitiative'));
-    await expect(
-      canvas.queryByRole('button', {
-        name: anyValue(t, 'CombatHeader:editRound', 'round'),
-      }),
-    ).toBeNull();
+    await expect(start).toHaveAccessibleName(t('TurnBar:startCombat'));
+    await expect(canvas.queryByRole('button', { name: ticketAny(t) })).toBeNull();
+  },
+});
+
+export const AddTileOpensAddSheet = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: setupScenario() },
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    await rowOf(canvasElement, names.shadow);
+    await userEvent.click(await addTileOf(canvas, t));
+    const form = await canvas.findByRole('dialog', { name: t('Menu:addUnit') });
+    await expect(within(form).getByText(t('UnitForm:hintSetup'))).toBeVisible();
+    await expect(dispatched(fakeApiOf(loaded))).toEqual([]);
   },
 });
 
@@ -348,9 +387,7 @@ export const CombatStarted = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await userEvent.click(await startButton(canvas, t));
-    await expect(
-      await canvas.findByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
-    ).toBeVisible();
+    await expect(await canvas.findByRole('button', { name: ticketName(t, 1, 0) })).toBeVisible();
     await expect(dispatched(fakeApiOf(loaded))).toEqual([
       expect.objectContaining({
         type: 'start',
@@ -375,6 +412,7 @@ export const RunningCombat = meta.story({
     await expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-active');
     const next = await nextTurnButton(canvas, t);
     await expect(next).toHaveTextContent(names.tomas);
+    await expect(canvas.queryByRole('button', { name: t('EmptyState:addUnit') })).toBeNull();
     next.focus();
     await expect(next).toHaveFocus();
   },
@@ -396,9 +434,7 @@ export const NextTurnPassesToNextUnit = meta.story({
     await expect(await nextTurnButton(canvas, t)).toHaveTextContent(
       t('nextWrap', { name: 'Ser Aldric', round: 4 }),
     );
-    await expect(
-      canvas.getByRole('button', { name: t('CombatHeader:editRound', { round: 3 }) }),
-    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: ticketName(t, 3, 2) })).toBeVisible();
   },
 });
 
@@ -432,12 +468,7 @@ export const NewRoundEscalationRaised = meta.story({
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
     await userEvent.click(await nextTurnButton(canvas, t));
-    await expect(
-      await canvas.findByRole('button', { name: t('CombatHeader:editRound', { round: 4 }) }),
-    ).toBeVisible();
-    await expect(
-      canvas.getByRole('button', { name: t('CombatHeader:setEscalation', { value: 3 }) }),
-    ).toBeVisible();
+    await expect(await canvas.findByRole('button', { name: ticketName(t, 4, 3) })).toBeVisible();
     await expect(await rowOf(canvasElement, names.aldric)).toHaveAttribute('data-active');
     await expect(await nextTurnButton(canvas, t)).toHaveTextContent(names.orc);
   },
@@ -603,15 +634,18 @@ export const HpHistoryFromRow = meta.story({
   },
 });
 
-export const RoundPopover = meta.story({
+export const RoundSheetOpen = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'CombatScreen');
-    await userEvent.click(
-      await canvas.findByRole('button', { name: t('CombatHeader:editRound', { round: 3 }) }),
-    );
-    const popover = await canvas.findByRole('dialog', { name: t('Menu:round') });
-    await expect(within(popover).getByRole('spinbutton')).toHaveValue('3');
+    const ticket = await canvas.findByRole('button', { name: ticketName(t, 3, 2) });
+    await userEvent.click(ticket);
+    const sheet = await canvas.findByRole('dialog', { name: t('CombatHeader:roundSheetTitle') });
+    await expect(within(sheet).getByRole('spinbutton')).toHaveValue('3');
+    await expect(
+      within(sheet).getByRole('button', { name: t('CombatHeader:escalationFace', { value: 2 }) }),
+    ).toHaveAttribute('aria-pressed', 'true');
+    await expect(ticket).toHaveAttribute('aria-expanded', 'true');
   },
 });
 
@@ -619,49 +653,52 @@ export const RoundAndEscalationEdits = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
+    await userEvent.click(await canvas.findByRole('button', { name: ticketName(t, 3, 2) }));
+    const sheet = await canvas.findByRole('dialog', { name: t('CombatHeader:roundSheetTitle') });
     await userEvent.click(
-      await canvas.findByRole('button', { name: t('CombatHeader:editRound', { round: 3 }) }),
+      within(sheet).getByRole('button', {
+        name: t('Stepper:increaseField', { label: t('CombatHeader:round') }),
+      }),
     );
-    const popover = await canvas.findByRole('dialog', { name: t('Menu:round') });
-    await userEvent.click(within(popover).getByRole('button', { name: t('Stepper:increase') }));
     await waitFor(() =>
       expect(dispatched(fakeApiOf(loaded))).toEqual([
         expect.objectContaining({ type: 'editRound', round: 4 }),
       ]),
     );
     await userEvent.click(
-      canvas.getByRole('button', {
-        name: anyValue(t, 'CombatHeader:setEscalation', 'value'),
-      }),
+      within(sheet).getByRole('button', { name: t('CombatHeader:escalationFace', { value: 3 }) }),
     );
+    await waitFor(() =>
+      expect(dispatched(fakeApiOf(loaded))).toEqual([
+        expect.objectContaining({ type: 'editRound', round: 4 }),
+        expect.objectContaining({ type: 'setEscalation', escalation: 3 }),
+      ]),
+    );
+    await expect(sheet).toBeVisible();
     await expect(
-      await canvas.findByRole('dialog', { name: t('CombatHeader:escalationTitle') }),
-    ).toBeVisible();
+      await canvas.findByRole('button', { name: ticketName(t, 4, 3), hidden: true }),
+    ).toBeInTheDocument();
     await expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-active');
   },
 });
 
-export const EscalationPopover = meta.story({
-  parameters: { scenario: runningScenario({ round: 4 }) },
+export const InitiativeSheetRolls = meta.story({
+  tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
+    const orc = await rowOf(canvasElement, names.orc);
+    await userEvent.click(within(orc).getByRole('button', { name: t('UnitRow:rollInitiative') }));
+    const sheet = await canvas.findByRole('dialog', { name: names.orc });
+    await expect(within(sheet).getByRole('heading', { name: names.orc })).toBeVisible();
     await userEvent.click(
-      await canvas.findByRole('button', { name: t('CombatHeader:setEscalation', { value: 2 }) }),
+      within(sheet).getByRole('button', { name: anyValue(t, 'InitiativeSheet:roll', 'bonus') }),
     );
-    const popover = await canvas.findByRole('dialog', { name: t('CombatHeader:escalationTitle') });
-    await userEvent.click(
-      within(popover).getByRole('button', { name: t('CombatHeader:escalationFace', { value: 3 }) }),
+    await waitFor(() =>
+      expect(dispatched(fakeApiOf(loaded))).toEqual([
+        expect.objectContaining({ type: 'rollInitiative', unitId: unitIds.orc, roll: 11 }),
+      ]),
     );
-    await expect(
-      await canvas.findByRole('button', { name: t('CombatHeader:setEscalation', { value: 3 }) }),
-    ).toBeVisible();
-    await expect(
-      canvas.getByRole('button', { name: t('CombatHeader:editRound', { round: 4 }) }),
-    ).toBeVisible();
-    await expect(dispatched(fakeApiOf(loaded))).toEqual([
-      expect.objectContaining({ type: 'setEscalation', escalation: 3 }),
-    ]);
-    await expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-active');
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
 
@@ -807,9 +844,21 @@ export const DefensesTriggerOpensSheet = meta.story({
       if (!stepper) throw new Error(`${stat} row missing`);
       return within(stepper);
     };
-    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
-    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
-    await userEvent.click(stepperOf('pd').getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(
+      stepperOf('ac').getByRole('button', {
+        name: t('Stepper:increaseField', { label: t('DefenseLine:ac') }),
+      }),
+    );
+    await userEvent.click(
+      stepperOf('ac').getByRole('button', {
+        name: t('Stepper:increaseField', { label: t('DefenseLine:ac') }),
+      }),
+    );
+    await userEvent.click(
+      stepperOf('pd').getByRole('button', {
+        name: t('Stepper:decreaseField', { label: t('DefenseLine:pd') }),
+      }),
+    );
     await expect(stepperOf('ac').getByText('20')).toBeVisible();
     await expect(stepperOf('pd').getByText('15')).toBeVisible();
     await expect(within(sheet).getAllByText(t('DefenseSheet:base', { value: 18 }))).toHaveLength(1);
@@ -980,6 +1029,27 @@ export const UnitLimitReached = meta.story({
   },
 });
 
+export const SetupUnitLimitReached = meta.story({
+  parameters: {
+    geometry: longNameBreak,
+    scenario: combatScenario(combatOf({ status: 'setup', units: longUnits(99) })),
+  },
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const tile = await addTileOf(canvas, t);
+    const list = tile.closest<HTMLElement>('[data-scrollarea-viewport]');
+    if (!list) throw new Error('The unit list is missing');
+    list.scrollTop = list.scrollHeight;
+    await waitFor(() => expect(tile).toBeVisible());
+    await expect(tile).toBeDisabled();
+    await expect(tile).toHaveAccessibleDescription(t('Toast:unitCap', { limit: 99 }));
+    await expect(rowsOf(canvasElement)).toHaveLength(99);
+    await userEvent.click(tile, { pointerEventsCheck: 0 });
+    await expect(canvas.queryByRole('dialog', { name: t('Menu:addUnit') })).toBeNull();
+    await expect(dispatched(fakeApiOf(loaded))).toEqual([]);
+  },
+});
+
 export const RequestFailed = meta.story({
   tags: ['visual'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
@@ -1120,7 +1190,7 @@ export const AddUnitAndPreset = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
-    await userEvent.click(canvas.getByRole('button', { name: t('Menu:addUnit') }));
+    await userEvent.click(await addTileOf(canvas, t));
     const form = await canvas.findByRole('dialog', { name: t('Menu:addUnit') });
     await userEvent.click(within(form).getByRole('button', { name: t('UnitForm:addUnit') }));
     await rowOf(canvasElement, t('UnitForm:defaultName', { role: t('UnitForm:enemy'), n: 1 }));
@@ -1351,9 +1421,7 @@ export const TryAgainAfterFailedLoad = meta.story({
       canvas.getByRole('heading', { name: t('MessageScreen:offlineTitle') }),
     ).toBeVisible();
     await userEvent.click(retry);
-    await expect(
-      await canvas.findByRole('button', { name: t('CombatHeader:editRound', { round: 3 }) }),
-    ).toBeVisible();
+    await expect(await canvas.findByRole('button', { name: ticketName(t, 3, 2) })).toBeVisible();
     await expect(callsOf(fakeApiOf(loaded), 'combats.open')).toHaveLength(1);
   },
 });
@@ -1480,9 +1548,7 @@ export const DoubleNextTurnAfterFailure = meta.story({
     await waitFor(async () =>
       expect(await rowOf(canvasElement, names.aldric)).toHaveAttribute('data-active'),
     );
-    await expect(
-      canvas.getByRole('button', { name: t('CombatHeader:editRound', { round: 4 }) }),
-    ).toBeVisible();
+    await expect(canvas.getByRole('button', { name: ticketName(t, 4, 3) })).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: t('Toast:retry') }));
     await expect(await canvas.findByText(t('Toast:combatChanged'))).toBeVisible();
     await expect(await rowOf(canvasElement, names.aldric)).toHaveAttribute('data-active');
@@ -1749,5 +1815,31 @@ export const ReleaseWaits = meta.story({
     await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
     await expect(busy).toBeDisabled();
     await expect(within(row).getByText('@Mika')).toBeVisible();
+  },
+});
+
+export const HeaderScrollsWithList = meta.story({
+  tags: ['!dev'],
+  parameters: { geometry: longNameBreak, scenario: longScenario() },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const header = await canvas.findByRole('banner');
+    const first = await rowOf(canvasElement, 'Flussbrückenwächterin Adelheid von Stein');
+    const viewport = first.closest<HTMLElement>('[data-scrollarea-viewport]');
+    const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
+    const strip = canvasElement.querySelector<HTMLElement>('[data-status-strip]');
+    if (!viewport || !frame || !strip) throw new Error('The combat screen parts are missing');
+    await expect(viewport).toContainElement(header);
+    viewport.scrollTop = header.getBoundingClientRect().height + 40;
+    await waitFor(() =>
+      expect(header.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        viewport.getBoundingClientRect().top,
+      ),
+    );
+    const edge = frame.getBoundingClientRect();
+    await expect(strip.getBoundingClientRect().top).toBe(edge.top);
+    await expect(strip.getBoundingClientRect().height).toBe(layout.statusBar);
+    const bar = (await nextTurnButton(canvas, t)).parentElement!;
+    await expect(bar.getBoundingClientRect().bottom).toBe(edge.bottom);
   },
 });

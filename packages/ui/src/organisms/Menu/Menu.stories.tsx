@@ -1,5 +1,4 @@
 import preview from '#.storybook/preview';
-import { LIMITS } from '@combat-planner/domain';
 import {
   IconArrowBackUp,
   IconBookmark,
@@ -20,9 +19,8 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
-import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
-import { Menu, PopoverFrame } from './Menu.tsx';
+import { Menu } from './Menu.tsx';
 import type { MenuItem } from './Menu.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { base } from '../../theme.ts';
@@ -56,12 +54,6 @@ const stage: CSSProperties = {
   alignItems: 'flex-start',
   flex: 1,
   padding: 12,
-};
-
-const note: CSSProperties = {
-  color: 'var(--cp-color-secondary)',
-  fontSize: 'var(--mantine-font-size-small)',
-  lineHeight: 'var(--mantine-line-height-snug)',
 };
 
 function usePresetItems(preset: Preset): MenuItem[] {
@@ -143,25 +135,6 @@ function MenuCell({
   );
 }
 
-function RoundCell() {
-  const { t } = useTranslation('Menu');
-  const [round, setRound] = useState(3);
-  return (
-    <div style={stage}>
-      <PopoverFrame title={t('round')} width={240}>
-        <Stepper
-          value={round}
-          min={LIMITS.round.min}
-          max={LIMITS.round.max}
-          signed={false}
-          onChange={setRound}
-        />
-        <span style={note}>{t('roundHint', LIMITS.round)}</span>
-      </PopoverFrame>
-    </div>
-  );
-}
-
 const meta = preview.meta({
   title: 'Organisms/Menu',
   component: MenuCell,
@@ -185,15 +158,6 @@ export const CombatMenu = meta.story({
     await expect(
       canvas.getByRole('menuitem', { name: (label: string) => label.startsWith(t('undo')) }),
     ).toHaveTextContent(t('undoHint', { n: 12 }));
-  },
-});
-
-export const RoundPopover = meta.story({
-  render: () => <RoundCell />,
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'Menu');
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('3');
-    await expect(canvas.getByText(t('roundHint', { min: 1, max: 99 }))).toBeVisible();
   },
 });
 

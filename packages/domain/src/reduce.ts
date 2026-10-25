@@ -145,7 +145,7 @@ const withEntry = (
   return { ...unit, hpHistory: [...unit.hpHistory, entry].slice(-LIMITS.hpHistory) };
 };
 
-export type HpFields = Pick<Unit, 'hp' | 'tempHp' | 'maxHp'>;
+export type HpFields = Pick<Unit, 'hp' | 'tempHp' | 'maxHp' | 'role'>;
 
 export const applyHp = <T extends HpFields>(unit: T, kind: HpHistoryKind, amount: number): T => {
   switch (kind) {
@@ -157,8 +157,10 @@ export const applyHp = <T extends HpFields>(unit: T, kind: HpHistoryKind, amount
         tempHp: unit.tempHp - absorbed,
       };
     }
-    case 'heal':
-      return { ...unit, hp: Math.min(unit.hp + amount, unit.maxHp) };
+    case 'heal': {
+      const from = unit.role === 'hero' ? Math.max(unit.hp, 0) : unit.hp;
+      return { ...unit, hp: Math.min(from + amount, unit.maxHp) };
+    }
     case 'temp':
       return { ...unit, tempHp: amount };
     case 'max':

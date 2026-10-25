@@ -27,7 +27,7 @@
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  height: 44px;
+  height: var(--cp-status-bar);
   padding: 0 32px;
   color: var(--cp-color-on-chrome);
   font-size: var(--mantine-font-size-body);
@@ -56,22 +56,23 @@
 
 .headerStatus {
   flex: none;
-  height: 44px;
+  height: var(--cp-status-bar);
 }
 
 .bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px 0 4px;
+  min-height: var(--cp-header-row);
+  padding: 0 var(--cp-content-edge);
 }
 
 .back {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: var(--cp-control-m);
+  height: var(--cp-control-m);
 }
 
 .title {
@@ -90,8 +91,8 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: var(--cp-control-m);
+  height: var(--cp-control-m);
   border-radius: var(--mantine-radius-field);
   background: color-mix(in srgb, var(--cp-color-on-chrome) 12%, transparent);
 }
@@ -100,8 +101,8 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: stretch;
-  height: 52px;
-  margin: 12px;
+  height: var(--cp-header-second-row);
+  margin: var(--cp-header-gap) var(--cp-content-edge) var(--cp-header-pad-bottom);
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);
@@ -237,7 +238,7 @@
     width: 24px;
     height: 24px;
     padding: 4px;
-    border-radius: 5px;
+    border-radius: var(--mantine-radius-segment);
   }
 
   .die[data-ticket][data-empty] & {
@@ -300,9 +301,9 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: var(--cp-card-gap);
+  gap: var(--cp-list-gap);
   min-height: 0;
-  padding: 8px 12px;
+  padding: 8px var(--cp-content-edge);
   overflow: clip;
   overflow-clip-margin: 20px;
   background: var(--cp-color-field);
@@ -314,8 +315,8 @@
   display: grid;
   flex: none;
   grid-template-columns: 49px minmax(0, 1fr) 85px;
-  min-height: 64px;
-  border: 1px solid var(--cp-color-border);
+  min-height: var(--cp-unit-row);
+  border: var(--cp-border) solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
   transition:
@@ -395,7 +396,7 @@
   padding: 1px 3px;
   border-radius: var(--mantine-radius-full);
   background: var(--cp-color-surface);
-  color: var(--cp-role-hero);
+  color: var(--cp-role-hero-text);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 1;
@@ -517,23 +518,14 @@
   border-radius: var(--mantine-radius-field);
   background: var(--stage-hp-tint);
 
-  &[data-status='wounded'] {
-    --stage-hp-status: var(--cp-health-wounded);
-    --stage-hp-tint: var(--cp-health-tint-wounded);
-  }
-
   &[data-status='staggered'] {
     --stage-hp-status: var(--cp-health-staggered);
     --stage-hp-tint: var(--cp-health-tint-staggered);
   }
 
-  &[data-status='unconscious'] {
-    --stage-hp-status: var(--cp-health-unconscious);
-    --stage-hp-tint: var(--cp-health-tint-unconscious);
-  }
-
+  &[data-status='unconscious'],
   &[data-status='dead'] {
-    --stage-hp-status: var(--cp-health-dead);
+    --stage-hp-status: var(--cp-color-border);
     --stage-hp-tint: var(--cp-color-soft);
   }
 
@@ -600,7 +592,7 @@
   width: 24px;
   height: 5px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-color-disabled);
+  background: var(--cp-color-border);
 
   &[data-filled] {
     background: var(--stage-hp-status);
@@ -656,10 +648,10 @@
   flex: none;
   align-items: center;
   width: 100%;
-  min-height: 98px;
+  min-height: var(--cp-bottom-bar-height);
   margin-top: auto;
-  padding: 10px 28px 28px;
-  border-top: 2px solid var(--cp-color-border);
+  padding: var(--cp-bottom-bar-padding);
+  border-top: var(--cp-bottom-bar-border) solid var(--cp-color-border);
   background: var(--cp-color-background);
 }
 
@@ -672,9 +664,9 @@
   gap: 4px;
   width: 100%;
   min-width: 0;
-  min-height: 58px;
+  min-height: var(--cp-bottom-button);
   padding: 6px 16px;
-  border-radius: 29px;
+  border-radius: var(--mantine-radius-full);
   background: var(--cp-color-primary);
   color: var(--cp-color-on-primary);
   animation: press 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
@@ -690,7 +682,7 @@
 .turnNext {
   max-width: 100%;
   overflow: hidden;
-  color: var(--cp-color-disabled);
+  color: var(--cp-color-on-primary);
   font-size: var(--mantine-font-size-small);
   font-weight: 500;
   line-height: var(--mantine-line-height-snug);

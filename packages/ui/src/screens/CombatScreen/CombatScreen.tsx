@@ -35,6 +35,7 @@ import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.ts
 import { combatKey } from '../../hooks/combat.ts';
 import type { CombatEntry } from '../../hooks/combat.ts';
 import { overlay } from '../../hooks/optimistic.ts';
+import { createSendQueue } from '../../hooks/sendQueue.ts';
 import type { ToastAction, ToastKind } from '../../hooks/toasts.ts';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
@@ -45,13 +46,14 @@ import { usePresets } from '../../hooks/usePresets.ts';
 import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { AddTile } from '../../molecules/AddTile/AddTile.tsx';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
 import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import type {
-  CombatHeaderPopover,
+  CombatHeaderPanel,
   CombatMenuAction,
 } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
@@ -59,7 +61,9 @@ import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import type { DialogProps } from '../../organisms/Dialog/Dialog.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
+import { InitiativeSheet } from '../../organisms/InitiativeSheet/InitiativeSheet.tsx';
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
+import { RoundSheet } from '../../organisms/RoundSheet/RoundSheet.tsx';
 import { ShareSheet } from '../../organisms/ShareSheet/ShareSheet.tsx';
 import { TurnBar } from '../../organisms/TurnBar/TurnBar.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
@@ -70,6 +74,7 @@ import { CombatNotFound } from '../CombatNotFound/CombatNotFound.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
 import { saveCombatFile } from '../shared/combatFile.ts';
 import { LoadingScreen } from '../shared/LoadingScreen.tsx';
+import { StatusStrip } from '../shared/StatusStrip.tsx';
 import { toastLook } from '../shared/toastLook.ts';
 import { claimEvents } from './claimEvents.ts';
 import { isUndoable, undoLabel } from './undoLabel.ts';
@@ -190,7 +195,7 @@ export function CombatScreen({
   useConnection();
   const { presets, create: createPreset } = usePresets();
   const { tags } = useTags();
-  const [headerOpen, setHeaderOpen] = useState<CombatHeaderPopover | null>(null);
+  const [headerOpen, setHeaderOpen] = useState<CombatHeaderPanel | null>(null);
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Panel | null>(null);
   const [form, setForm] = useState<Form | null>(null);
@@ -203,7 +208,7 @@ export function CombatScreen({
   const knownVersion = useRef(0);
   const previous = useRef<DmCombat | undefined>(undefined);
   const ownReleases = useRef(new Map<UnitId, number>());
-  const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const [enqueue] = useState(createSendQueue);
   const { session } = useAccount();
   const signedOut =
     session === null ||
@@ -265,17 +270,6 @@ export function CombatScreen({
     if (!result.applied) return null;
     knownVersion.current = Math.max(knownVersion.current, result.version);
     return { action, version: result.version };
-  };
-
-  const enqueue = <T,>(run: (release: () => void) => Promise<T>): Promise<T> => {
-    let release = () => {};
-    const released = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    const step = () => run(release);
-    const next = queue.current.then(step, step);
-    queue.current = Promise.race([next, released]).catch(() => {});
-    return next;
   };
 
   const send = (body: ActionBody): Promise<Sent | null> => {
@@ -352,6 +346,7 @@ export function CombatScreen({
   const panelUnit = (panel: RowPanel) =>
     (open?.panel === panel ? combat?.units.find((unit) => unit.id === open.unitId) : undefined) ??
     null;
+  const initiativeOpen = panelUnit('initiative');
   const numpadOpen = panelUnit('numpad');
   const conditionsOpen = panelUnit('conditions');
   const historyOpen = panelUnit('history');
@@ -360,6 +355,7 @@ export function CombatScreen({
     (form?.mode === 'edit' ? combat?.units.find((unit) => unit.id === form.unitId) : undefined) ??
     null;
   const addingOpen = form?.mode === 'add' ? form : null;
+  const initiativeUnit = useRetained(initiativeOpen);
   const numpadUnit = useRetained(numpadOpen);
   const conditionsUnit = useRetained(conditionsOpen);
   const historyUnit = useRetained(historyOpen);
@@ -581,102 +577,98 @@ export function CombatScreen({
 
   return (
     <div className={classes.root}>
-      <CombatHeader
-        title={combat.title}
-        round={setup ? null : combat.round}
-        escalation={combat.escalation as EscalationValue}
-        open={headerOpen}
-        undoDisabled={!combat.undo || pending.length > 0}
-        busy={undoing || (shareOpen && link.token === undefined && !linkFailed)}
-        onBack={goToCombats}
-        onRound={() => setHeaderOpen('round')}
-        onEscalation={() => setHeaderOpen('escalation')}
-        onMenu={() => setHeaderOpen((current) => (current === 'menu' ? null : 'menu'))}
-        onClose={() => setHeaderOpen(null)}
-        onRoundChange={(round) => {
-          if (round !== latest()?.round) void send({ type: 'editRound', round });
-        }}
-        onEscalationChange={(escalation) => {
-          if (escalation !== combat.escalation) void send({ type: 'setEscalation', escalation });
-        }}
-        onMenuSelect={selectMenu}
-      />
-      <ScrollList className={classes.list} contentClassName={classes.listContent}>
-        <TurnBracket activeId={setup ? null : combat.activeUnitId} />
-        {units.map((unit) => (
-          <UnitRow
-            key={unit.id}
-            className={classes.row}
-            data-unit-id={unit.id}
-            unit={unit}
-            claimedByName={unit.claimedBy === null ? undefined : combat.players[unit.claimedBy]}
-            active={!setup && combat.activeUnitId === unit.id}
-            expanded={expandedId === unit.id}
-            hpChange={hpChanges.get(unit.id)}
-            initiativeOpen={isOpen('initiative', unit)}
-            conditionsOpen={isOpen('conditions', unit)}
-            historyOpen={isOpen('history', unit)}
-            defensesOpen={isOpen('defenses', unit)}
-            menuOpen={isOpen('menu', unit)}
-            busy={busyUnitId === unit.id}
-            duplicateDisabled={atCap}
-            random={random}
-            onToggle={() => {
-              close();
-              setExpandedId((current) => (current === unit.id ? null : unit.id));
-            }}
-            onInitiative={() => show('initiative', unit)}
-            onInitiativeSet={(initiative) => {
-              void send({ type: 'setInitiative', unitId: unit.id, initiative });
-            }}
-            onInitiativeRoll={(_initiative, roll) => {
-              close();
-              void send({ type: 'rollInitiative', unitId: unit.id, roll });
-            }}
-            onInitiativeClose={close}
-            onHp={() => show('numpad', unit)}
-            onConditions={() => show('conditions', unit)}
-            onDefenses={() => show('defenses', unit)}
-            onHistory={() => show('history', unit)}
-            onNoteChange={(note) => {
-              if (note !== unit.note) void send({ type: 'editNote', unitId: unit.id, note });
-            }}
-            onEdit={() => {
-              close();
-              openForm({ mode: 'edit', unitId: unit.id });
-            }}
-            onMore={() => (isOpen('menu', unit) ? close() : show('menu', unit))}
-            onMenuClose={close}
-            onDuplicate={() => duplicate(unit)}
-            onSetDisabled={(disabled) => {
-              close();
-              if (disabled) setExpandedId(null);
-              void send({ type: 'setDisabled', unitId: unit.id, disabled });
-            }}
-            onSaveAsPreset={() => saveAsPreset(unit)}
-            onReleaseClaim={() => {
-              close();
-              setBusyUnitId(unit.id);
-              void releaseAsDm(
-                [unit.id],
-                async () =>
-                  (await send({ type: 'releaseUnit', unitId: unit.id }))?.version ?? false,
-              ).finally(() => setBusyUnitId(null));
-            }}
-            onRemove={() => {
-              close();
-              setConfirm({ kind: 'remove', unitId: unit.id });
-            }}
-          />
-        ))}
-        {combat.units.length === 0 ? (
-          <EmptyState
-            icon={IconUsers}
-            title={tEmpty('noUnitsTitle')}
-            body={tEmpty('noUnitsBody')}
-            action={{ label: tEmpty('addUnit'), icon: IconUserPlus, onAction: openAdd }}
-          />
-        ) : null}
+      <StatusStrip />
+      <ScrollList className={classes.list} contentClassName={classes.scrollContent}>
+        <CombatHeader
+          title={combat.title}
+          round={setup ? null : combat.round}
+          escalation={combat.escalation as EscalationValue}
+          open={headerOpen}
+          undoDisabled={!combat.undo || pending.length > 0}
+          busy={undoing || (shareOpen && link.token === undefined && !linkFailed)}
+          onBack={goToCombats}
+          onRound={() => setHeaderOpen('round')}
+          onMenu={() => setHeaderOpen((current) => (current === 'menu' ? null : 'menu'))}
+          onClose={() => setHeaderOpen(null)}
+          onMenuSelect={selectMenu}
+          statusBar={false}
+        />
+        <div className={classes.listContent}>
+          <TurnBracket activeId={setup ? null : combat.activeUnitId} />
+          {units.map((unit) => (
+            <UnitRow
+              key={unit.id}
+              className={classes.row}
+              data-unit-id={unit.id}
+              unit={unit}
+              claimedByName={unit.claimedBy === null ? undefined : combat.players[unit.claimedBy]}
+              active={!setup && combat.activeUnitId === unit.id}
+              expanded={expandedId === unit.id}
+              hpChange={hpChanges.get(unit.id)}
+              initiativeOpen={isOpen('initiative', unit)}
+              conditionsOpen={isOpen('conditions', unit)}
+              historyOpen={isOpen('history', unit)}
+              defensesOpen={isOpen('defenses', unit)}
+              menuOpen={isOpen('menu', unit)}
+              busy={busyUnitId === unit.id}
+              duplicateDisabled={atCap}
+              onToggle={() => {
+                close();
+                setExpandedId((current) => (current === unit.id ? null : unit.id));
+              }}
+              onInitiative={() => show('initiative', unit)}
+              onHp={() => show('numpad', unit)}
+              onConditions={() => show('conditions', unit)}
+              onDefenses={() => show('defenses', unit)}
+              onHistory={() => show('history', unit)}
+              onNoteChange={(note) => {
+                if (note !== unit.note) void send({ type: 'editNote', unitId: unit.id, note });
+              }}
+              onEdit={() => {
+                close();
+                openForm({ mode: 'edit', unitId: unit.id });
+              }}
+              onMore={() => (isOpen('menu', unit) ? close() : show('menu', unit))}
+              onMenuClose={close}
+              onDuplicate={() => duplicate(unit)}
+              onSetDisabled={(disabled) => {
+                close();
+                if (disabled) setExpandedId(null);
+                void send({ type: 'setDisabled', unitId: unit.id, disabled });
+              }}
+              onSaveAsPreset={() => saveAsPreset(unit)}
+              onReleaseClaim={() => {
+                close();
+                setBusyUnitId(unit.id);
+                void releaseAsDm(
+                  [unit.id],
+                  async () =>
+                    (await send({ type: 'releaseUnit', unitId: unit.id }))?.version ?? false,
+                ).finally(() => setBusyUnitId(null));
+              }}
+              onRemove={() => {
+                close();
+                setConfirm({ kind: 'remove', unitId: unit.id });
+              }}
+            />
+          ))}
+          {combat.units.length === 0 ? (
+            <EmptyState
+              icon={IconUsers}
+              title={tEmpty('noUnitsTitle')}
+              body={tEmpty('noUnitsBody')}
+            />
+          ) : null}
+          {setup ? (
+            <AddTile
+              label={tEmpty('addUnit')}
+              icon={IconUserPlus}
+              disabled={atCap}
+              hint={atCap ? tToast('unitCap', { limit: LIMITS.unitsPerCombat }) : undefined}
+              onClick={openAdd}
+            />
+          ) : null}
+        </div>
       </ScrollList>
       <TurnBar
         mode={setup ? 'start' : 'next'}
@@ -696,6 +688,37 @@ export function CombatScreen({
           action={toast.action}
           duration={toast.duration}
           onHide={() => dismiss(toast.id)}
+        />
+      ) : null}
+      <RoundSheet
+        opened={!setup && headerOpen === 'round'}
+        combatTitle={combat.title}
+        round={combat.round}
+        escalation={combat.escalation as EscalationValue}
+        onRoundChange={(round) => {
+          if (round !== latest()?.round) void send({ type: 'editRound', round });
+        }}
+        onEscalationChange={(escalation) => {
+          if (escalation !== combat.escalation) void send({ type: 'setEscalation', escalation });
+        }}
+        onClose={() => setHeaderOpen(null)}
+      />
+      {initiativeUnit ? (
+        <InitiativeSheet
+          key={`initiative-${initiativeUnit.id}`}
+          opened={initiativeOpen !== null}
+          unitName={initiativeUnit.name}
+          value={initiativeUnit.initiative}
+          bonus={initiativeUnit.initiativeBonus}
+          random={random}
+          onSet={(initiative) => {
+            void send({ type: 'setInitiative', unitId: initiativeUnit.id, initiative });
+          }}
+          onRoll={(_initiative, roll) => {
+            close();
+            void send({ type: 'rollInitiative', unitId: initiativeUnit.id, roll });
+          }}
+          onClose={close}
         />
       ) : null}
       {numpadUnit ? (

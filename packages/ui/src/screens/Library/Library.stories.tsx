@@ -131,7 +131,7 @@ const fillCreate = async (canvas: Canvas, t: TFunction) => {
   const name = canvas.getByRole('textbox', { name: t('UnitForm:name') });
   await userEvent.click(name);
   await userEvent.type(name, 'Orc Warchief');
-  await setStepper(canvas, t('NumberField:maxHp'), '72');
+  await setStepper(canvas, t('PresetFormSheet:maxHp'), '72');
   await setStepper(canvas, t('UnitForm:ac'), '20');
   await setStepper(canvas, t('UnitForm:pd'), '18');
   await setStepper(canvas, t('UnitForm:md'), '14');

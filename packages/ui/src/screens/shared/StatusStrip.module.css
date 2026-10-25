@@ -1,0 +1,5 @@
+.root {
+  flex: none;
+  height: var(--cp-layout-status-bar, var(--cp-status-bar));
+  background: var(--cp-color-chrome);
+}

@@ -152,7 +152,7 @@ export const Default = meta.story({
     await canvas.findByRole('button', { name: detailsOf(t, ambush.title) });
     await expect(titlesOf(canvas, t)).toEqual(listCombats.map((combat) => combat.title));
     await expect(canvas.getByRole('button', { name: t('sort') })).toBeVisible();
-    await expect(canvas.getByRole('button', { name: t('import') })).toBeEnabled();
+    await expect(canvas.getByRole('button', { name: t('PageHeader:actions') })).toBeEnabled();
     await expect(fakeApiOf(loaded).calls.map((call) => call.method)).toContain('combats.list');
     const chevron = canvas.getByRole('button', { name: detailsOf(t, ambush.title) });
     chevron.focus();
@@ -494,7 +494,8 @@ export const ImportAtCombatLimit = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatList');
     await canvas.findByRole('button', { name: detailsOf(t, 'Encounter 1') });
-    await userEvent.click(canvas.getByRole('button', { name: t('import') }));
+    await userEvent.click(canvas.getByRole('button', { name: t('PageHeader:actions') }));
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('import') }));
     await expect(await canvas.findByRole('status')).toHaveTextContent(
       t('BottomBar:combatLimitReached'),
     );
@@ -656,7 +657,7 @@ export const ImportWaits = meta.story({
       t,
       combatFileOf(JSON.stringify(toCombatFile(importedCombat))),
     );
-    const tool = canvas.getByRole('button', { name: t('import') });
+    const tool = canvas.getByRole('button', { name: t('PageHeader:actions') });
     await waitFor(() => expect(tool).toHaveAttribute('aria-busy', 'true'));
     await expect(tool).toBeDisabled();
   },

@@ -6,6 +6,7 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import type { HTMLAttributes, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 import { layout } from '../../layout.ts';
+import { iconSizes } from '../../theme.ts';
 import classes from './HpBox.module.css';
 
 export type HpBoxViewer = 'dm' | 'player';
@@ -124,7 +125,7 @@ export function HpBox({
           data-part="unconscious"
           aria-hidden="true"
         >
-          <IconZzz size={11} stroke={2.5} />
+          <IconZzz size={iconSizes.S} stroke={2.5} />
         </span>
       ) : null}
       {showStatus ? <VisuallyHidden data-part="status">{t(status)}</VisuallyHidden> : null}

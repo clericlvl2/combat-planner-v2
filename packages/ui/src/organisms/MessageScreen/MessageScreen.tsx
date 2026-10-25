@@ -3,6 +3,7 @@ import type { HTMLAttributes, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './MessageScreen.module.css';
 
 export interface MessageScreenProps extends Omit<
@@ -39,7 +40,7 @@ export function MessageScreen({
       data-system-screen=""
     >
       <span className={classes.tile} aria-hidden="true">
-        <IconComponent size={32} stroke={2} />
+        <IconComponent size={iconSizes.XL} stroke={2} />
       </span>
       <h1 className={classes.title}>{title}</h1>
       <p className={classes.body}>{body}</p>

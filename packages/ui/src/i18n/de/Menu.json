@@ -12,7 +12,5 @@
   "releaseClaim": "Zuordnung aufheben",
   "remove": "Entfernen",
   "heroes": "Helden",
-  "delete": "Löschen",
-  "round": "Runde",
-  "roundHint": "{{min}}–{{max}}. Eine Rundenänderung verschiebt den Zug nicht."
+  "delete": "Löschen"
 }

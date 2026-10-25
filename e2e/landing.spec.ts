@@ -1,6 +1,36 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { signUp } from './helpers.ts';
 import { t } from './t.ts';
+
+interface RootWatch {
+  withoutLanding: number;
+  withLanding: number;
+}
+
+const watchRoot = (page: Page) =>
+  page.addInitScript(() => {
+    const watch: RootWatch = { withoutLanding: 0, withLanding: 0 };
+    Object.assign(window, { rootWatch: watch });
+    new MutationObserver(() => {
+      const root = document.getElementById('root');
+      if (!root || root.childElementCount === 0) return;
+      if (root.querySelector('[data-landing]')) watch.withLanding += 1;
+      else watch.withoutLanding += 1;
+    }).observe(document, { childList: true, subtree: true });
+  });
+
+const rootWatch = (page: Page): Promise<RootWatch> =>
+  page.evaluate(() => (window as unknown as { rootWatch: RootWatch }).rootWatch);
+
+test('a guest at / sees the landing as the first content of the column', async ({ page }) => {
+  await watchRoot(page);
+  await page.goto('/');
+  await expect(page.getByRole('heading', { level: 1, name: t('Landing:title') })).toBeVisible();
+  const watch = await rootWatch(page);
+  expect(watch.withLanding).toBeGreaterThan(0);
+  expect(watch.withoutLanding).toBe(0);
+});
 
 test('a guest on the landing taps Create account and reaches sign-up', async ({ page }) => {
   await page.goto('/');
@@ -14,8 +44,12 @@ test('a signed-in DM on / reaches the combat list and lands on / after signing o
   page,
 }) => {
   await signUp(page);
-  await page.goto('/');
+  await watchRoot(page);
+  const response = await page.goto('/');
+  expect(new URL(response?.request().redirectedFrom()?.url() ?? '').pathname).toBe('/');
   await expect(page).toHaveURL(/\/combats$/);
+  await expect(page.getByRole('heading', { level: 1, name: t('CombatList:title') })).toBeVisible();
+  expect((await rootWatch(page)).withLanding).toBe(0);
 
   await page.goto('/account');
   await page.getByRole('button', { name: t('Account:signOut'), exact: true }).click();

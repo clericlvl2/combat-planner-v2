@@ -25,23 +25,14 @@
     cursor: pointer;
   }
 
-  &[data-status='wounded'] {
-    --hp-box-status: var(--cp-health-wounded);
-    --hp-box-tint: var(--cp-health-tint-wounded);
-  }
-
   &[data-status='staggered'] {
     --hp-box-status: var(--cp-health-staggered);
     --hp-box-tint: var(--cp-health-tint-staggered);
   }
 
-  &[data-status='unconscious'] {
-    --hp-box-status: var(--cp-health-unconscious);
-    --hp-box-tint: var(--cp-health-tint-unconscious);
-  }
-
+  &[data-status='unconscious'],
   &[data-status='dead'] {
-    --hp-box-status: var(--cp-health-dead);
+    --hp-box-status: var(--cp-color-border);
     --hp-box-tint: var(--cp-color-soft);
   }
 
@@ -74,7 +65,7 @@
   white-space: nowrap;
 
   &[data-editable] {
-    border-bottom: 2px dashed var(--cp-color-ink);
+    border-bottom: var(--cp-border) dashed var(--cp-color-ink);
   }
 
   [data-preset] & {
@@ -110,7 +101,7 @@
   width: 24px;
   height: 5px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-color-disabled);
+  background: var(--cp-color-border);
 
   &[data-filled] {
     background: var(--hp-box-status);
@@ -139,12 +130,13 @@
 }
 
 .sleep {
-  bottom: -8px;
+  bottom: -9px;
   left: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
+  width: 20px;
+  height: 20px;
   padding: 0;
   background: var(--cp-health-unconscious);
   transform: translateX(-50%);

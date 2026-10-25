@@ -117,14 +117,10 @@ type UnitRowCellProps = Omit<UnitRowProps, 'claimedByName' | 'readOnly' | keyof 
 function UnitRowCell({
   unit: initialUnit,
   expanded: initiallyExpanded = false,
-  initiativeOpen: initiallyInitiativeOpen = false,
   menuOpen: initiallyMenuOpen = false,
   conditionsOpen = false,
   onToggle,
   onInitiative,
-  onInitiativeSet,
-  onInitiativeRoll,
-  onInitiativeClose,
   onConditions,
   onNoteChange,
   onMore,
@@ -134,7 +130,6 @@ function UnitRowCell({
 }: UnitRowCellProps) {
   const [unit, setUnit] = useState(initialUnit);
   const [expanded, setExpanded] = useState(initiallyExpanded);
-  const [initiativeOpen, setInitiativeOpen] = useState(initiallyInitiativeOpen);
   const [menuOpen, setMenuOpen] = useState(initiallyMenuOpen);
   return (
     <div style={screen}>
@@ -144,29 +139,13 @@ function UnitRowCell({
         unit={unit}
         claimedByName={unit.claimedBy ? players[unit.claimedBy] : undefined}
         expanded={expanded}
-        initiativeOpen={initiativeOpen}
         menuOpen={menuOpen}
         conditionsOpen={conditionsOpen}
         onToggle={() => {
           setExpanded((value) => !value);
           onToggle();
         }}
-        onInitiative={() => {
-          setInitiativeOpen(true);
-          onInitiative();
-        }}
-        onInitiativeSet={(initiative) => {
-          setUnit((current) => ({ ...current, initiative }));
-          onInitiativeSet(initiative);
-        }}
-        onInitiativeRoll={(initiative, roll) => {
-          setUnit((current) => ({ ...current, initiative }));
-          onInitiativeRoll(initiative, roll);
-        }}
-        onInitiativeClose={() => {
-          setInitiativeOpen(false);
-          onInitiativeClose();
-        }}
+        onInitiative={() => onInitiative()}
         onConditions={() => onConditions()}
         onNoteChange={(note) => {
           setUnit((current) => ({ ...current, note }));
@@ -192,12 +171,8 @@ const meta = preview.meta({
   args: {
     unit: vashti,
     active: true,
-    random: () => 0.5,
     onToggle: fn(),
     onInitiative: fn(),
-    onInitiativeSet: fn(),
-    onInitiativeRoll: fn(),
-    onInitiativeClose: fn(),
     onHp: fn(),
     onConditions: fn(),
     onDefenses: fn(),
@@ -367,7 +342,7 @@ export const ClaimedLongPlayerName = meta.story({
 export const Expanded = meta.story({
   tags: ['visual'],
   args: { unit: vashtiExpanded, expanded: true },
-  play: async ({ canvas, globals }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'UnitRow');
     await expect(canvas.getByRole('button', { name: 'Vashti the Hexer' })).toHaveAttribute(
       'aria-expanded',
@@ -382,6 +357,19 @@ export const Expanded = meta.story({
     ).toBeVisible();
     await expect(canvas.getByRole('button', { name: t('CardActions:edit') })).toBeVisible();
     await expect(canvas.queryByRole('img', { name: t('NoteField:label') })).toBeNull();
+    const details = canvasElement.querySelector('[data-part="details"]');
+    await expect(details && getComputedStyle(details).borderTopWidth).toBe('1px');
+    for (const name of [
+      t('conditions'),
+      t('defenses'),
+      `${t('NoteField:label')}: ${hexNote}`,
+      t('CardActions:edit'),
+      t('CardActions:more'),
+    ]) {
+      await expect(getComputedStyle(canvas.getByRole('button', { name })).borderTopWidth).toBe(
+        '1px',
+      );
+    }
   },
 });
 
@@ -393,18 +381,6 @@ export const ConditionsOpen = meta.story({
     const trigger = canvas.getByRole('button', { name: t('conditions') });
     await expect(trigger).toHaveAttribute('aria-expanded', 'true');
     await expect(trigger).toHaveAttribute('data-open');
-  },
-});
-
-export const InitiativePopoverOpen = meta.story({
-  tags: ['visual'],
-  args: { unit: vashtiExpanded, initiativeOpen: true },
-  play: async ({ canvas, globals }) => {
-    const t = storyT(globals, 'UnitRow');
-    await expect(canvas.getByRole('dialog', { name: t('InitiativePopover:title') })).toBeVisible();
-    await expect(
-      canvas.getByRole('button', { name: t('InitiativePopover:roll', { bonus: '+3' }) }),
-    ).toBeVisible();
   },
 });
 
@@ -537,18 +513,15 @@ export const SetupNoInitiative = meta.story({
     await expect(canvas.getByRole('img', { name: t('RoleBlock:noInitiative') })).toBeVisible();
     await userEvent.click(canvas.getByRole('button', { name: t('rollInitiative') }));
     await expect(args.onInitiative).toHaveBeenCalledOnce();
-    const dialog = canvas.getByRole('dialog', { name: t('InitiativePopover:title') });
-    await expect(within(dialog).getByRole('spinbutton')).toHaveValue('—');
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
 
 export const ReadOnly = meta.story({
-  args: { active: false, readOnly: true, expanded: true, initiativeOpen: true },
+  args: { active: false, readOnly: true, expanded: true },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitRow');
     await expect(canvas.queryByRole('button')).toBeNull();
-    await expect(canvas.queryByRole('dialog')).toBeNull();
     await userEvent.click(canvas.getByText('Vashti the Hexer'));
     await userEvent.click(canvas.getByText('20'));
     await userEvent.click(canvas.getByText('15'));
@@ -578,26 +551,16 @@ export const TapRowExpands = meta.story({
   },
 });
 
-export const TapRoleBlockSetsInitiative = meta.story({
+export const TapRoleBlockOpensInitiative = meta.story({
   tags: ['!dev'],
   args: { unit: vashtiExpanded, active: false },
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'UnitRow');
-    await userEvent.click(canvas.getByRole('button', { name: t('rollInitiative') }));
+    const role = canvas.getByRole('button', { name: t('rollInitiative') });
+    await expect(role).toHaveAttribute('aria-haspopup', 'dialog');
+    await expect(role).toHaveAttribute('aria-expanded', 'false');
+    await userEvent.click(role);
     await expect(args.onInitiative).toHaveBeenCalledOnce();
-    await expect(args.onToggle).not.toHaveBeenCalled();
-    const dialog = canvas.getByRole('dialog', { name: t('InitiativePopover:title') });
-    await userEvent.click(within(dialog).getByRole('button', { name: t('Stepper:increase') }));
-    await expect(args.onInitiativeSet).toHaveBeenCalledOnce();
-    await expect(args.onInitiativeSet).toHaveBeenCalledWith(16);
-    await userEvent.click(
-      within(dialog).getByRole('button', { name: t('InitiativePopover:roll', { bonus: '+3' }) }),
-    );
-    await expect(args.onInitiativeRoll).toHaveBeenCalledOnce();
-    await expect(args.onInitiativeRoll).toHaveBeenCalledWith(14, 11);
-    await expect(canvas.getByRole('button', { name: t('rollInitiative') })).toHaveTextContent(
-      /^14/,
-    );
     await expect(args.onToggle).not.toHaveBeenCalled();
   },
 });
@@ -638,19 +601,6 @@ export const EachActionFiresOnce = meta.story({
   },
 });
 
-export const RoleBlockClosesPopover = meta.story({
-  tags: ['!dev'],
-  args: { unit: vashtiExpanded, active: false, initiativeOpen: true },
-  play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'UnitRow');
-    await expect(canvas.getByRole('dialog', { name: t('InitiativePopover:title') })).toBeVisible();
-    await userEvent.click(canvas.getByRole('button', { name: t('rollInitiative') }));
-    await expect(args.onInitiativeClose).toHaveBeenCalledOnce();
-    await expect(args.onInitiative).not.toHaveBeenCalled();
-    await expect(canvas.queryByRole('dialog')).toBeNull();
-  },
-});
-
 export const ReadOnlySurvivesEveryTap = meta.story({
   tags: ['!dev'],
   args: { active: false },
@@ -660,7 +610,6 @@ export const ReadOnlySurvivesEveryTap = meta.story({
         unit={unitOf({ ...orcSeed, conditions: ['hampered'], note: 'Hex until round 4' })}
         readOnly
         expanded
-        initiativeOpen
         conditionsOpen
         historyOpen
         menuOpen
@@ -703,10 +652,7 @@ export const DisabledUnitOpensHp = meta.story({
   },
 });
 
-type KeyboardSpies = Pick<
-  UnitRowProps,
-  'onInitiative' | 'onInitiativeClose' | 'onHp' | 'onToggle' | 'onConditions'
->;
+type KeyboardSpies = Pick<UnitRowProps, 'onInitiative' | 'onHp' | 'onToggle' | 'onConditions'>;
 
 async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: TFunction) {
   const canvas = within(canvasElement);
@@ -716,15 +662,6 @@ async function keyboardWalk(canvasElement: HTMLElement, args: KeyboardSpies, t: 
   await waitFor(() => expect(role).toHaveFocus());
   await userEvent.keyboard('{Enter}');
   await expect(args.onInitiative).toHaveBeenCalledOnce();
-  const dialog = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
-  await userEvent.tab();
-  await waitFor(() =>
-    expect(within(dialog).getByRole('button', { name: t('Stepper:decrease') })).toHaveFocus(),
-  );
-  await userEvent.keyboard('{Escape}');
-  await expect(args.onInitiativeClose).toHaveBeenCalledOnce();
-  await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
-  await waitFor(() => expect(role).toHaveFocus());
   await userEvent.tab();
   await waitFor(() => expect(name).toHaveFocus());
   await userEvent.keyboard('{Enter}');
@@ -754,8 +691,8 @@ export const KeyboardWithMotionOn = meta.story({
   parameters: { motion: 'on' },
   play: async ({ args, canvasElement, globals }) => {
     const t = storyT(globals, 'UnitRow');
+    await expect(document.documentElement.dataset.motion).toBe('on');
     await keyboardWalk(canvasElement, args, t);
-    await expect(args.onInitiativeSet).not.toHaveBeenCalled();
   },
 });
 

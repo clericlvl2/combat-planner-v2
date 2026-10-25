@@ -282,6 +282,11 @@ describe('Visibility for players', () => {
     expect(pu(down, 2)).toMatchObject({ healthStatus: 'unconscious', healthSegments: 0 });
   });
 
+  it('shows a hero at −max HP as unconscious to players', () => {
+    const down = project({ ...combat, units: [{ ...other, hp: -other.maxHp }] }, PLAYER);
+    expect(pu(down, 2)).toMatchObject({ healthStatus: 'unconscious', healthSegments: 0 });
+  });
+
   it('Health status | Enemy', () => {
     expect(enemyUnit).toMatchObject({ healthStatus: 'staggered', healthSegments: 1 });
     const dead = project({ ...combat, units: [{ ...enemy, hp: 0 }] }, PLAYER);

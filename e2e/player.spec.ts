@@ -59,7 +59,9 @@ test('a player claims a hero and sees the turn order after Start', async ({ page
   await expect(unitRow(page, 'Aria').getByText('@Pat', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
   await expect(
-    page.getByRole('button', { name: t('CombatHeader:editRound', { round: 1 }) }),
+    page.getByRole('button', {
+      name: t('CombatHeader:editRoundAndEscalation', { round: 1, value: 0 }),
+    }),
   ).toBeVisible();
 
   await expect(

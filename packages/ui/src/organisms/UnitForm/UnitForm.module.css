@@ -8,7 +8,7 @@
   & button[role='radio'] {
     height: 40px;
     border: none;
-    border-radius: 20px;
+    border-radius: var(--mantine-radius-full);
     background: transparent;
 
     &[data-selected] {
@@ -61,10 +61,6 @@
 
 .stepper[data-empty] input[role='spinbutton']:not(:focus) {
   color: var(--cp-color-muted);
-}
-
-.stepper button[aria-controls]:disabled {
-  background: var(--cp-color-background);
 }
 
 .tools {

@@ -16,6 +16,7 @@ import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import { TagSheet } from '../TagSheet/TagSheet.tsx';
 import type { TagSheetTag } from '../TagSheet/TagSheet.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './UnitForm.module.css';
 
 export type UnitDraft = UnitFormFields;
@@ -316,7 +317,7 @@ export function UnitForm({
                         {on ? (
                           <IconCheck
                             className={classes.check}
-                            size={20}
+                            size={iconSizes.M}
                             stroke={2}
                             aria-hidden="true"
                           />

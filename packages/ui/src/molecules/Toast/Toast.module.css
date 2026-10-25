@@ -6,6 +6,8 @@
 }
 
 .root {
+  --cp-state-focus: var(--cp-color-surface);
+
   position: absolute;
   right: var(--toast-inset);
   bottom: var(--toast-bottom);
@@ -21,7 +23,7 @@
   min-height: 40px;
   margin-inline: auto;
   padding: 4px 40px 4px 8px;
-  border-radius: 20px;
+  border-radius: var(--mantine-radius-full);
   background: var(--cp-color-ink);
   color: var(--cp-color-surface);
   font-family: var(--cp-font-ui);
@@ -48,7 +50,7 @@
   justify-content: center;
   width: 24px;
   height: 24px;
-  border-radius: 12px;
+  border-radius: var(--mantine-radius-full);
   background: var(--cp-color-soft);
   color: var(--cp-color-ink);
 
@@ -86,8 +88,8 @@
   height: 32px;
   margin-left: auto;
   padding: 0 10px;
-  border-radius: 16px;
-  color: var(--cp-color-accent);
+  border-radius: var(--mantine-radius-full);
+  color: var(--cp-color-highlight);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   font-weight: 700;
@@ -123,7 +125,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 16px;
+  border-radius: var(--mantine-radius-full);
   color: var(--cp-color-surface);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;

@@ -13,22 +13,27 @@
 
 .statusBar {
   flex: none;
-  height: var(--cp-layout-status-bar, 44px);
+  height: var(--cp-layout-status-bar, var(--cp-status-bar));
 }
 
 .nav {
+  --cp-state-focus: var(--cp-color-on-chrome);
+  --cp-state-tap-marker: var(--cp-color-accent);
+
   box-sizing: border-box;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
   min-height: var(--cp-header-row);
-  padding: var(--cp-header-pad-top) 12px 0 4px;
+  padding: 0 var(--cp-content-edge);
 }
 
 .back,
 .menu {
   .root .nav & {
+    width: var(--cp-control-m);
+    height: var(--cp-control-m);
     color: var(--cp-color-on-chrome);
   }
 
@@ -64,18 +69,63 @@
   margin-left: auto;
 }
 
+.more {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--cp-control-m);
+  height: var(--cp-control-m);
+  padding: 0;
+  border: none;
+  border-radius: var(--mantine-radius-field);
+  background: color-mix(in srgb, var(--cp-color-on-chrome) 12%, transparent);
+  color: var(--cp-color-on-chrome);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active,
+  &[data-pressed] {
+    background: color-mix(in srgb, var(--cp-color-on-chrome) 24%, transparent);
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-open] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
 .tools {
   --cp-color-border: var(--cp-color-chrome);
 
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: var(--cp-header-gap) 12px 0;
+  margin: var(--cp-header-gap) var(--cp-content-edge) 0;
 }
 
 .search {
   flex: 1 1 120px;
   min-width: 0;
+}
+
+.tool {
+  --cp-state-focus: var(--cp-color-on-chrome);
+  --cp-state-tap-marker: var(--cp-color-accent);
+
+  .root .tools & {
+    min-width: var(--cp-control-m);
+    height: var(--cp-control-m);
+  }
 }
 
 .clear {
@@ -91,10 +141,12 @@
 
 .filters {
   --cp-color-border: var(--cp-color-chrome);
+  --cp-state-focus: var(--cp-color-on-chrome);
+  --cp-state-tap-marker: var(--cp-color-accent);
 
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
-  margin: 10px 12px 0;
+  margin: 10px var(--cp-content-edge) 0;
 }
