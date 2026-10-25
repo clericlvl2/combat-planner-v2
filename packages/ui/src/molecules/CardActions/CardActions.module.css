@@ -18,8 +18,6 @@
 }
 
 .root .more {
-  width: 48px;
-  height: 48px;
   border-radius: var(--mantine-radius-field);
 
   &[data-open] {

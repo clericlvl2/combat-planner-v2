@@ -4,7 +4,7 @@
   grid-template-columns: 49px minmax(0, 1fr) 85px;
   width: 100%;
   min-height: 64px;
-  border: 1px solid var(--cp-color-border);
+  border: var(--cp-border) solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);

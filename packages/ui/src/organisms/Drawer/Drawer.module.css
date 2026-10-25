@@ -11,7 +11,7 @@
   left: 0;
   z-index: var(--mb-z-index);
   display: flex;
-  width: min(300px, var(--cp-layout-viewport-width, 100%) - 56px);
+  width: min(var(--cp-drawer-width), var(--cp-layout-viewport-width, 100%) - 56px);
   pointer-events: none;
 }
 
@@ -45,7 +45,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 56px 12px 28px;
+  padding: var(--cp-drawer-padding);
 }
 
 .title {

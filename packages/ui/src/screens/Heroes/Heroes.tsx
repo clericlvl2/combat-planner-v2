@@ -21,6 +21,7 @@ import { playerEvents } from '../PlayerView/playerEvents.ts';
 import type { PlayerEvent } from '../PlayerView/playerEvents.ts';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './Heroes.module.css';
 
 export interface HeroesProps {
@@ -223,9 +224,9 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
                       ) : (
                         <span className={classes.tile} aria-hidden="true">
                           {state === 'taken' ? (
-                            <IconLock size={20} stroke={2} />
+                            <IconLock size={iconSizes.M} stroke={2} />
                           ) : (
-                            <IconShield size={20} stroke={2} />
+                            <IconShield size={iconSizes.M} stroke={2} />
                           )}
                         </span>
                       )}

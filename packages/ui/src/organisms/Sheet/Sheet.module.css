@@ -25,7 +25,7 @@
   --cp-sheet-status-bar: var(--cp-layout-status-bar, 0px);
 
   width: auto;
-  padding: calc(12px + var(--cp-sheet-status-bar)) 0 0;
+  padding: calc(var(--cp-sheet-inset) + var(--cp-sheet-status-bar)) 0 0;
   pointer-events: none;
 }
 
@@ -39,9 +39,10 @@
   max-width: none;
   max-height: 100%;
   position: relative;
-  padding: 22px 14px calc(14px + env(safe-area-inset-bottom, 0px));
+  padding: var(--cp-sheet-header-top) var(--cp-sheet-padding)
+    calc(var(--cp-sheet-padding) + env(safe-area-inset-bottom, 0px));
   overflow: hidden;
-  border: 2px solid var(--cp-color-primary);
+  border: var(--cp-sheet-border) solid var(--cp-color-primary);
   border-bottom-width: 0;
   border-radius: var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0 0;
   background: var(--cp-color-surface);
@@ -66,7 +67,7 @@
   top: 0;
   right: 0;
   left: 0;
-  height: 22px;
+  height: var(--cp-sheet-header-top);
   touch-action: none;
 
   &::before {

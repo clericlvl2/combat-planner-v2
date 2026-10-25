@@ -30,6 +30,7 @@ import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Menu, PopoverFrame } from '../Menu/Menu.tsx';
 import type { MenuItem } from '../Menu/Menu.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './CombatHeader.module.css';
 
 export type CombatHeaderPopover = 'round' | 'escalation' | 'menu';
@@ -470,9 +471,9 @@ export function CombatHeader({
               onClick={busy ? undefined : () => onMenu()}
             >
               {spinning ? (
-                <Loader size={24} color="currentColor" />
+                <Loader size={iconSizes.L} color="currentColor" />
               ) : (
-                <IconDots size={24} stroke={2} aria-hidden="true" />
+                <IconDots size={iconSizes.L} stroke={2} aria-hidden="true" />
               )}
             </UnstyledButton>
           }

@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { HTMLAttributes, KeyboardEvent, MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TextArea } from '../../atoms/TextArea/TextArea.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './NoteField.module.css';
 
 export interface NoteFieldProps extends Omit<
@@ -75,7 +76,7 @@ export function NoteField({
       <div {...rest} className={rootClass(classes.line)}>
         <IconNote
           className={classes.lineIcon}
-          size={16}
+          size={iconSizes.S}
           stroke={2}
           role="img"
           aria-label={fieldLabel}

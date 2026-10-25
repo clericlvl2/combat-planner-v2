@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'react-qr-code';
 import { Button } from '../../atoms/Button/Button.tsx';
-import { palette } from '../../theme.ts';
+import { iconSizes, palette } from '../../theme.ts';
 import { Sheet } from '../Sheet/Sheet.tsx';
 import classes from './ShareSheet.module.css';
 
@@ -103,7 +103,12 @@ export function ShareSheet({
               );
             }}
           >
-            <CopyIcon className={classes.copyIcon} size={20} stroke={2} aria-hidden="true" />
+            <CopyIcon
+              className={classes.copyIcon}
+              size={iconSizes.L}
+              stroke={2}
+              aria-hidden="true"
+            />
           </UnstyledButton>
         </div>
         <p className={classes.note}>{t('note')}</p>

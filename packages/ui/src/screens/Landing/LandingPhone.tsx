@@ -1,6 +1,7 @@
 import { healthSegments, healthStatus } from '@combat-planner/domain';
 import { IconChevronLeft, IconDots, IconNote } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { iconSizes } from '../../theme.ts';
 import classes from './LandingPhone.module.css';
 import { STAGE_COMBAT_TITLE, nextUnitName } from './landingStage.ts';
 import type { StageDelta, StageDeltaKind, StageState, StageUnit } from './landingStage.ts';
@@ -176,7 +177,7 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
         ) : null}
         {mine && unit.note ? (
           <span className={classes.note}>
-            <IconNote size={16} stroke={2} />
+            <IconNote size={iconSizes.S} stroke={2} />
             {unit.note}
           </span>
         ) : null}
@@ -201,13 +202,13 @@ function DmHeader({ state }: { state: StageState }) {
       <span className={classes.headerStatus} />
       <span className={classes.bar}>
         <span className={classes.back}>
-          <IconChevronLeft size={24} stroke={2} />
+          <IconChevronLeft size={iconSizes.L} stroke={2} />
         </span>
         <span className={classes.title} data-ellipsis="">
           {STAGE_COMBAT_TITLE}
         </span>
         <span className={classes.menu}>
-          <IconDots size={24} stroke={2} />
+          <IconDots size={iconSizes.L} stroke={2} />
         </span>
       </span>
       <span className={classes.ticket}>

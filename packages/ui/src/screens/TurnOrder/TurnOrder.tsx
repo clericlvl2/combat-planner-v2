@@ -33,6 +33,7 @@ import { useMotion } from '../../provider.tsx';
 import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './TurnOrder.module.css';
 
 export interface TurnOrderProps {
@@ -202,7 +203,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
         <TurnBracket activeId={setup ? null : combat.activeUnitId} />
         {setup && combat.units.length > 0 ? (
           <div className={classes.waiting} role="status">
-            <IconHourglass size={20} stroke={2} aria-hidden="true" />
+            <IconHourglass size={iconSizes.M} stroke={2} aria-hidden="true" />
             {t('waiting')}
           </div>
         ) : null}

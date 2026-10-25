@@ -2,6 +2,7 @@ import { Loader, UnstyledButton } from '@mantine/core';
 import type { Icon } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, MouseEventHandler } from 'react';
 import { useDelayed } from '../../hooks/useDelayed.ts';
+import { iconSizes } from '../../theme.ts';
 import classes from './ToolButton.module.css';
 
 export type ToolButtonSize = 'S' | 'M' | 'L';
@@ -21,7 +22,7 @@ export interface ToolButtonProps extends Omit<
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
-const iconSize: Record<ToolButtonSize, number> = { S: 16, M: 20, L: 24 };
+const iconSize: Record<ToolButtonSize, number> = { S: iconSizes.S, M: iconSizes.M, L: iconSizes.L };
 
 export function ToolButton({
   icon: IconComponent,

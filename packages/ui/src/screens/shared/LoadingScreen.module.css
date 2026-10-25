@@ -14,5 +14,5 @@
 }
 
 .listContent {
-  padding: var(--cp-list-inset-top) 12px var(--cp-list-inset-bottom);
+  padding: var(--cp-list-inset-top) var(--cp-content-edge) var(--cp-list-inset-bottom);
 }

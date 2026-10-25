@@ -3,6 +3,7 @@ import type { Icon } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
 import { Link } from 'react-router';
 import { useDelayed } from '../../hooks/useDelayed.ts';
+import { iconSizes } from '../../theme.ts';
 import classes from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -24,7 +25,7 @@ export interface ButtonProps extends Omit<
   children: ReactNode;
 }
 
-const loaderSize: Record<ButtonSize, number> = { S: 18, M: 22, L: 22 };
+const loaderSize: Record<ButtonSize, number> = { S: iconSizes.S, M: iconSizes.M, L: iconSizes.M };
 
 export function Button({
   variant = 'primary',
@@ -47,7 +48,7 @@ export function Button({
         <Loader className={classes.loader} size={loaderSize[size]} color="currentColor" />
       ) : null}
       {IconComponent ? (
-        <IconComponent className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+        <IconComponent className={classes.icon} size={iconSizes.M} stroke={2} aria-hidden="true" />
       ) : null}
       <span className={classes.label}>{children}</span>
     </>

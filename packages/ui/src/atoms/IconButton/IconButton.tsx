@@ -2,6 +2,7 @@ import { Loader, UnstyledButton } from '@mantine/core';
 import type { Icon } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, MouseEventHandler } from 'react';
 import { useDelayed } from '../../hooks/useDelayed.ts';
+import { iconSizes } from '../../theme.ts';
 import classes from './IconButton.module.css';
 
 export type IconButtonVariant = 'outline' | 'plain' | 'soft' | 'filled';
@@ -22,12 +23,7 @@ export interface IconButtonProps extends Omit<
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
-const iconSize: Record<IconButtonVariant, Record<IconButtonSize, number>> = {
-  outline: { S: 16, M: 20, L: 24 },
-  plain: { S: 16, M: 24, L: 24 },
-  soft: { S: 16, M: 20, L: 24 },
-  filled: { S: 16, M: 20, L: 24 },
-};
+const iconSize: Record<IconButtonSize, number> = { S: iconSizes.S, M: iconSizes.L, L: iconSizes.L };
 
 export function IconButton({
   icon: IconComponent,
@@ -41,7 +37,7 @@ export function IconButton({
   ...rest
 }: IconButtonProps) {
   const spinning = useDelayed(loading);
-  const glyph = iconSize[variant][size];
+  const glyph = iconSize[size];
   return (
     <UnstyledButton
       {...rest}

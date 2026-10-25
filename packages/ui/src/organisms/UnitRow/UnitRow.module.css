@@ -4,7 +4,7 @@
   display: grid;
   grid-template-columns: 49px minmax(0, 1fr) 85px;
   min-height: var(--cp-unit-row);
-  border: 1px solid var(--cp-color-border);
+  border: var(--cp-border) solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);
@@ -17,9 +17,9 @@
   &::before {
     content: '';
     position: absolute;
-    inset: -1px;
+    inset: calc(-1 * var(--cp-border));
     z-index: -1;
-    border: 1px solid var(--cp-color-accent);
+    border: var(--cp-border) solid var(--cp-color-accent);
     border-radius: var(--mantine-radius-card);
     background: var(--cp-color-accent);
     box-shadow: var(--cp-active-shadow);

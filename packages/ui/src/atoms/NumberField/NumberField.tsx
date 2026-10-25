@@ -2,6 +2,7 @@ import { LIMITS } from '@combat-planner/domain';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useId, useRef, useState } from 'react';
 import type { ComponentPropsWithoutRef, CSSProperties, KeyboardEvent, MouseEvent } from 'react';
+import { iconSizes } from '../../theme.ts';
 import classes from './NumberField.module.css';
 
 export interface NumberFieldProps extends Omit<
@@ -117,7 +118,7 @@ export function NumberField({
       </div>
       {error ? (
         <span id={errorId} className={classes.error}>
-          <IconAlertCircle size={16} stroke={2} aria-hidden="true" />
+          <IconAlertCircle size={iconSizes.S} stroke={2} aria-hidden="true" />
           {error}
         </span>
       ) : null}

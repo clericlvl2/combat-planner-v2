@@ -23,7 +23,7 @@
   height: 44px;
   padding: 0 12px;
   border: none;
-  border-radius: 10px;
+  border-radius: var(--mantine-radius-tile);
   background: transparent;
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);

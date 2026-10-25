@@ -2,6 +2,7 @@ import { LIMITS } from '@combat-planner/domain';
 import { IconAlertCircle } from '@tabler/icons-react';
 import { useId, useRef } from 'react';
 import type { ChangeEvent, HTMLAttributes, KeyboardEvent, MouseEvent } from 'react';
+import { iconSizes } from '../../theme.ts';
 import classes from './TextField.module.css';
 
 export type TextFieldSize = 'S' | 'M' | 'L';
@@ -122,7 +123,12 @@ export function TextField({
       </div>
       {error ? (
         <span id={errorId} className={classes.error}>
-          <IconAlertCircle className={classes.errorIcon} size={16} stroke={2} aria-hidden="true" />
+          <IconAlertCircle
+            className={classes.errorIcon}
+            size={iconSizes.S}
+            stroke={2}
+            aria-hidden="true"
+          />
           {error}
         </span>
       ) : null}

@@ -210,9 +210,9 @@ export const radius = {
   full: 9999,
 } as const;
 
-export const iconSizes = [16, 20, 24, 32] as const;
+export const iconSizes = { S: 16, M: 20, L: 24, XL: 32 } as const;
 
-export const borderWidth = { default: 2, divider: 1 } as const;
+export const borderWidth = { card: 1, control: 2 } as const;
 
 export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as const;
 
@@ -237,6 +237,9 @@ const shadowLayers = ({ color, layers }: typeof activeShadow) =>
     .join(', ');
 
 const px = (value: number) => `${value}px`;
+
+const box = ({ top, right, bottom, left }: Record<'top' | 'right' | 'bottom' | 'left', number>) =>
+  [top, right, bottom, left].map(px).join(' ');
 
 function kebab(name: string): string {
   return name.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
@@ -278,9 +281,13 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-scroll-shadow': `${layout.scrollShadow}px`,
     '--cp-scroll-shadow-color': `color-mix(in srgb, ${scrollShadow.color} ${scrollShadow.alpha}%, transparent)`,
     '--cp-turn-strip': `${layout.turnStrip}px`,
-    '--cp-header-pad-top': `${layout.header.padTop}px`,
+    '--cp-status-bar': px(layout.statusBar),
+    '--cp-content-edge': px(layout.contentEdge),
+    '--cp-border': px(borderWidth.card),
+    '--cp-control-s': px(layout.control.S),
+    '--cp-control-m': px(layout.control.M),
+    '--cp-control-l': px(layout.control.L),
     '--cp-header-row': `${layout.header.row}px`,
-    '--cp-header-control': `${layout.header.control}px`,
     '--cp-header-gap': `${layout.header.gap}px`,
     '--cp-header-second-row': `${layout.header.secondRow}px`,
     '--cp-header-pad-bottom': `${layout.header.padBottom}px`,
@@ -289,12 +296,24 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-card-expand-easing': layout.cardExpandEasing,
     '--cp-list-inset-top': `${layout.listInset.top}px`,
     '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
-    '--cp-card-gap': `${layout.cardGap}px`,
+    '--cp-list-gap': px(layout.listGap),
     '--cp-active-lift': `${layout.activeLift}px`,
     '--cp-active-shadow': shadowLayers(activeShadow),
     '--cp-role-tile-width': `${layout.roleTile.width}px`,
     '--cp-role-tile-inset': `${layout.roleTile.inset}px`,
     '--cp-unit-row': `${layout.unitRow}px`,
+    '--cp-bottom-bar-height': px(layout.bottomBar.height),
+    '--cp-bottom-bar-padding': box(layout.bottomBar.padding),
+    '--cp-bottom-bar-border': px(layout.bottomBar.borderTop),
+    '--cp-bottom-button': px(layout.bottomButton.height),
+    '--cp-sheet-inset': px(layout.sheet.inset),
+    '--cp-sheet-border': px(layout.sheet.border),
+    '--cp-sheet-padding': px(layout.sheet.padding),
+    '--cp-sheet-header-top': px(layout.sheet.headerTop),
+    '--cp-dialog-inset': px(layout.dialog.inset),
+    '--cp-dialog-padding': px(layout.dialog.padding),
+    '--cp-drawer-width': px(layout.drawer.width),
+    '--cp-drawer-padding': box(layout.drawer.padding),
     '--cp-page-transition-duration': `${layout.pageTransitionMs}ms`,
     '--cp-page-transition-easing': layout.sheetEasing,
   },
@@ -393,7 +412,12 @@ export const theme: MantineThemeOverride = createTheme({
     InputWrapper: { classNames: { label: classes.label, error: classes.error } },
     Paper: { defaultProps: { radius: 'card', shadow: 'none' } },
     Modal: {
-      defaultProps: { radius: 'sheet', centered: true, padding: 16, shadow: 'none' },
+      defaultProps: {
+        radius: 'sheet',
+        centered: true,
+        padding: layout.dialog.padding,
+        shadow: 'none',
+      },
       classNames: { content: classes.overlaySurface },
     },
     Popover: {
@@ -404,6 +428,6 @@ export const theme: MantineThemeOverride = createTheme({
       defaultProps: { radius: 'card', shadow: 'none' },
       classNames: { dropdown: classes.overlaySurface },
     },
-    Drawer: { defaultProps: { size: 300, position: 'left', shadow: 'none' } },
+    Drawer: { defaultProps: { size: layout.drawer.width, position: 'left', shadow: 'none' } },
   },
 });

@@ -26,6 +26,7 @@ import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
 import { Reveal } from '../../motion/Reveal.tsx';
 import { Menu } from '../Menu/Menu.tsx';
 import type { MenuItem } from '../Menu/Menu.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './UnitRow.module.css';
 
 export type UnitRowTarget =
@@ -314,7 +315,7 @@ export function UnitRow({
               onClick={() => onConditions?.()}
             >
               <span className={classes.triggerLabel}>{t('conditions')}</span>
-              <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+              <IconChevronDown size={iconSizes.M} stroke={2} aria-hidden="true" />
             </UnstyledButton>
             <UnstyledButton
               component="button"
@@ -327,7 +328,7 @@ export function UnitRow({
               onClick={() => onHistory?.()}
             >
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
-              <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+              <IconChevronDown size={iconSizes.M} stroke={2} aria-hidden="true" />
             </UnstyledButton>
             <UnstyledButton
               component="button"
@@ -340,7 +341,7 @@ export function UnitRow({
               onClick={() => onDefenses?.()}
             >
               <span className={classes.triggerLabel}>{t('defenses')}</span>
-              <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+              <IconChevronDown size={iconSizes.M} stroke={2} aria-hidden="true" />
             </UnstyledButton>
           </div>
           <NoteField value={unit.note} onChange={onNoteChange ?? noop} data-tap={tapOf('note')} />

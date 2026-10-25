@@ -3,6 +3,7 @@ import { IconPlus, IconX } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, CSSProperties, MouseEventHandler, ReactNode } from 'react';
 import type { ConditionName } from '../../theme.ts';
+import { iconSizes } from '../../theme.ts';
 import classes from './Chip.module.css';
 
 export type ChipVariant = 'tag' | 'add' | 'condition' | 'status' | 'meta';
@@ -65,12 +66,12 @@ export function Chip({
   const content = (
     <>
       {IconComponent ? (
-        <IconComponent className={classes.icon} size={16} stroke={2} aria-hidden="true" />
+        <IconComponent className={classes.icon} size={iconSizes.S} stroke={2} aria-hidden="true" />
       ) : null}
       <span className={classes.label}>{children}</span>
       {count === undefined ? null : <span className={classes.count}>{count}</span>}
       {removable ? (
-        <IconX className={classes.icon} size={16} stroke={2} aria-hidden="true" />
+        <IconX className={classes.icon} size={iconSizes.S} stroke={2} aria-hidden="true" />
       ) : null}
     </>
   );

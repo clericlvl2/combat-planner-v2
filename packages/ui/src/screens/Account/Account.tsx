@@ -14,6 +14,7 @@ import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import { PageScreen } from '../shared/PageScreen.tsx';
 import { PageSection } from '../shared/PageSection.tsx';
 import { submitOnEnter } from '../shared/submitOnEnter.ts';
+import { iconSizes } from '../../theme.ts';
 import classes from './Account.module.css';
 
 const toastedCodes: ReadonlySet<string> = new Set(['network', 'version', 'limit', 'rateLimited']);
@@ -25,9 +26,9 @@ interface RowIconProps {
 
 function RowIcon({ icon: IconComponent, busy }: RowIconProps) {
   return busy ? (
-    <Loader className={classes.icon} size={20} color="currentColor" />
+    <Loader className={classes.icon} size={iconSizes.M} color="currentColor" />
   ) : (
-    <IconComponent className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+    <IconComponent className={classes.icon} size={iconSizes.M} stroke={2} aria-hidden="true" />
   );
 }
 
@@ -170,11 +171,16 @@ export function Account() {
               data-tone="danger"
               onClick={() => setConfirming(true)}
             >
-              <IconUserX className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+              <IconUserX
+                className={classes.icon}
+                size={iconSizes.M}
+                stroke={2}
+                aria-hidden="true"
+              />
               <span className={classes.rowLabel}>{t('deleteAccount')}</span>
               <IconChevronRight
                 className={classes.chevron}
-                size={20}
+                size={iconSizes.M}
                 stroke={2}
                 aria-hidden="true"
               />

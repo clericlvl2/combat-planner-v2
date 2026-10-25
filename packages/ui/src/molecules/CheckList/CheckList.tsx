@@ -3,6 +3,7 @@ import { IconPlus } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Checkbox } from '../../atoms/Checkbox/Checkbox.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './CheckList.module.css';
 
 export type CheckListSize = 'S' | 'M' | 'L';
@@ -78,7 +79,7 @@ export function CheckList({
       onClick={() => onCreate?.(query.trim())}
     >
       <span className={classes.createIcon}>
-        <IconPlus size={20} stroke={2} aria-hidden="true" />
+        <IconPlus size={iconSizes.M} stroke={2} aria-hidden="true" />
       </span>
       <span className={classes.createLabel}>
         {createLabel ?? t('create', { query: query.trim() })}

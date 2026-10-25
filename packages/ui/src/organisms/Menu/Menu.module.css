@@ -93,7 +93,7 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  border-radius: 16px;
+  border-radius: var(--mantine-radius-full);
   background: var(--cp-color-soft);
 
   .item[data-tone='danger'] > & {

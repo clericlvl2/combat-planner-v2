@@ -5,6 +5,7 @@ import type { KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './Dialog.module.css';
 
 export type DialogTone = 'ink' | 'danger';
@@ -84,7 +85,7 @@ export function Dialog(props: DialogProps) {
               data-tone={tone}
             >
               <span className={classes.icon} aria-hidden="true">
-                <IconComponent size={24} stroke={2} />
+                <IconComponent size={iconSizes.L} stroke={2} />
               </span>
               <h2 id={titleId} className={classes.title}>
                 {title}

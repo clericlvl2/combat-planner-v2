@@ -8,6 +8,7 @@ import { Button } from '../../atoms/Button/Button.tsx';
 import { useMotion } from '../../provider.tsx';
 import { HpHistory } from '../HpHistory/HpHistory.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './NumpadSheet.module.css';
 
 export interface NumpadHealth {
@@ -300,7 +301,7 @@ export function NumpadSheet({
           <IconArrowRight
             className={classes.arrow}
             data-part="arrow"
-            size={24}
+            size={iconSizes.L}
             stroke={2}
             aria-hidden="true"
           />
@@ -331,7 +332,7 @@ export function NumpadSheet({
                 aria-label={t('delete')}
                 onClick={deleteDigit}
               >
-                <IconBackspace size={24} stroke={2} aria-hidden="true" />
+                <IconBackspace size={iconSizes.L} stroke={2} aria-hidden="true" />
               </UnstyledButton>
             ) : key === 'clear' ? (
               <UnstyledButton

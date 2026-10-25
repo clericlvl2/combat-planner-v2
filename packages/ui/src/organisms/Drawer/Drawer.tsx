@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { layout } from '../../layout.ts';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { useMotion } from '../../provider.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './Drawer.module.css';
 
 export type DrawerSection = 'combats' | 'library' | 'settings' | 'account' | 'about';
@@ -116,7 +117,12 @@ export function Drawer(props: DrawerProps) {
                   data-current={isCurrent || undefined}
                   onClick={() => handleNavigate(section)}
                 >
-                  <SectionIcon className={classes.icon} size={24} stroke={2} aria-hidden="true" />
+                  <SectionIcon
+                    className={classes.icon}
+                    size={iconSizes.L}
+                    stroke={2}
+                    aria-hidden="true"
+                  />
                   <span className={classes.label}>{t(section)}</span>
                 </UnstyledButton>
               );

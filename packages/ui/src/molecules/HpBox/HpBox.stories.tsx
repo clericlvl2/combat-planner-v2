@@ -89,9 +89,9 @@ const expectUnconsciousBadge = async (box: HTMLElement, reference: HTMLElement) 
   await expect(icon && getComputedStyle(icon).color).toBe(rgb(base.surface));
   const rect = badge.getBoundingClientRect();
   const boxRect = box.getBoundingClientRect();
-  await expect(rect.width).toBe(18);
-  await expect(rect.height).toBe(18);
-  await expect(rect.bottom - boxRect.bottom).toBe(8);
+  await expect(rect.width).toBe(20);
+  await expect(rect.height).toBe(20);
+  await expect(rect.bottom - boxRect.bottom).toBe(9);
   await expect(rect.left + rect.width / 2).toBe(boxRect.left + boxRect.width / 2);
 };
 

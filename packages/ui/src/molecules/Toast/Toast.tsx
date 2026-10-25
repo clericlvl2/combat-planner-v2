@@ -6,6 +6,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { layout } from '../../layout.ts';
 import { useMotion } from '../../provider.tsx';
+import { iconSizes } from '../../theme.ts';
 import classes from './Toast.module.css';
 
 export type ToastTone = 'success' | 'warning' | 'error' | 'neutral';
@@ -96,7 +97,7 @@ export function Toast({
       style={style}
     >
       <span className={classes.tone} aria-hidden="true">
-        <IconComponent size={16} stroke={2} />
+        <IconComponent size={iconSizes.S} stroke={2} />
       </span>
       <span className={classes.message}>{message}</span>
       {action ? (
@@ -120,7 +121,7 @@ export function Toast({
         aria-label={t('dismiss')}
         onClick={hide}
       >
-        <IconX size={18} stroke={2} aria-hidden="true" />
+        <IconX size={iconSizes.M} stroke={2} aria-hidden="true" />
       </UnstyledButton>
     </div>
   );

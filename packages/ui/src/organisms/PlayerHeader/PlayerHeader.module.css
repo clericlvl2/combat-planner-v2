@@ -29,20 +29,18 @@
 
 .statusBar {
   flex: none;
-  height: var(--cp-layout-status-bar, 44px);
+  height: var(--cp-layout-status-bar, var(--cp-status-bar));
 }
 
 .body {
   box-sizing: border-box;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  grid-template-rows: calc(var(--cp-header-row) - var(--cp-header-pad-top)) var(
-      --cp-header-second-row
-    );
+  grid-template-rows: var(--cp-header-row) var(--cp-header-second-row);
   align-items: center;
   column-gap: 8px;
   row-gap: var(--cp-header-gap);
-  padding: var(--cp-header-pad-top) 12px var(--cp-header-pad-bottom);
+  padding: 0 var(--cp-content-edge) var(--cp-header-pad-bottom);
 }
 
 .die {

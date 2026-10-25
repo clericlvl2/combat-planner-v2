@@ -10,6 +10,7 @@ import type {
   ReactNode,
   Ref,
 } from 'react';
+import { iconSizes } from '../../theme.ts';
 import classes from './Menu.module.css';
 
 export type MenuItemTone = 'ink' | 'danger';
@@ -221,7 +222,7 @@ export function Menu({
               onClick={() => handleSelect(item.id)}
             >
               <span className={classes.iconCircle} aria-hidden="true">
-                <ItemIcon size={20} stroke={2} />
+                <ItemIcon size={iconSizes.M} stroke={2} />
               </span>
               <span className={classes.label}>{item.label}</span>
               {item.hint ? <span className={classes.hint}>{item.hint}</span> : null}

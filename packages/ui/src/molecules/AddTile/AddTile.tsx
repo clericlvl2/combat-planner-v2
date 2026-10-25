@@ -1,6 +1,7 @@
 import type { Icon } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef } from 'react';
 import { useId } from 'react';
+import { iconSizes } from '../../theme.ts';
 import classes from './AddTile.module.css';
 
 export interface AddTileProps extends Omit<
@@ -35,7 +36,7 @@ export function AddTile({
       onClick={onClick}
     >
       <span className={classes.line}>
-        <IconComponent className={classes.icon} size={20} stroke={2} aria-hidden="true" />
+        <IconComponent className={classes.icon} size={iconSizes.M} stroke={2} aria-hidden="true" />
         <span className={classes.label}>{label}</span>
       </span>
       {hint ? (

@@ -1,6 +1,6 @@
 .root {
-  --stepper-height: 48px;
-  --stepper-key: 44px;
+  --stepper-height: var(--cp-control-m);
+  --stepper-key: var(--stepper-height);
   --stepper-field: 64px;
 
   box-sizing: border-box;
@@ -14,14 +14,12 @@
   font-family: var(--cp-font-ui);
 
   &[data-size='S'] {
-    --stepper-height: 40px;
-    --stepper-key: 36px;
+    --stepper-height: var(--cp-control-s);
     --stepper-field: 56px;
   }
 
   &[data-size='L'] {
-    --stepper-height: 56px;
-    --stepper-key: 52px;
+    --stepper-height: var(--cp-control-l);
     --stepper-field: 72px;
   }
 }

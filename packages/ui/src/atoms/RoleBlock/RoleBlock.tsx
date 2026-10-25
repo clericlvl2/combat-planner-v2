@@ -2,6 +2,7 @@ import { UnstyledButton } from '@mantine/core';
 import { IconDice5 } from '@tabler/icons-react';
 import type { HTMLAttributes, MouseEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
+import { iconSizes } from '../../theme.ts';
 import classes from './RoleBlock.module.css';
 
 export type UnitRole = 'hero' | 'enemy' | 'ally';
@@ -47,7 +48,7 @@ export function RoleBlock({
     <>
       {top === null ? (
         <span className={classes.die} role="img" aria-label={t('noInitiative')}>
-          <IconDice5 size={20} stroke={2} aria-hidden="true" />
+          <IconDice5 size={iconSizes.M} stroke={2} aria-hidden="true" />
         </span>
       ) : top.kind === 'initiative' ? (
         <span className={classes.value} data-editable={editable || undefined}>
