@@ -222,7 +222,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-list-inset-top': `${layout.listInset.top}px`,
     '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
     '--cp-card-gap': `${layout.cardGap}px`,
-    '--cp-active-scale': String(layout.activeScale),
+    '--cp-active-lift': `${layout.activeLift}px`,
     '--cp-active-shadow': shadowLayers(activeShadow),
     '--cp-role-tile-width': `${layout.roleTile.width}px`,
     '--cp-role-tile-inset': `${layout.roleTile.inset}px`,

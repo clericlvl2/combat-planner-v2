@@ -310,7 +310,7 @@
     border-color: var(--cp-color-accent);
     background: var(--cp-color-accent);
     box-shadow: var(--cp-active-shadow);
-    transform: scale(var(--cp-active-scale));
+    transform: translateY(calc(-1 * var(--cp-active-lift)));
   }
 }
 
@@ -721,5 +721,9 @@
   .phone *::after {
     transition: none !important;
     animation: none !important;
+  }
+
+  .row[data-active] {
+    transform: none;
   }
 }

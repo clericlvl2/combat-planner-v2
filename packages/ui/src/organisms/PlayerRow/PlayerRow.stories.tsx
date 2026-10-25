@@ -281,9 +281,12 @@ export const OwnHeroActiveTurn = meta.story({
     const row = canvasElement.querySelector<HTMLElement>('[data-active][data-mine]');
     await expect(row).not.toBeNull();
     const style = getComputedStyle(row as HTMLElement);
-    await expect(style.backgroundColor).toBe('rgb(255, 231, 163)');
-    await expect(style.boxShadow).not.toBe('none');
-    await expect(style.transform).not.toBe('none');
+    await expect(style.boxShadow).toBe('none');
+    await expect(style.transform).toBe(`matrix(1, 0, 0, 1, 0, -${layout.activeLift})`);
+    const surface = getComputedStyle(row as HTMLElement, '::before');
+    await expect(surface.backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(surface.boxShadow).not.toBe('none');
+    await expect(surface.transform).toBe('none');
     await expect(canvasElement.querySelector('[data-notch]')).toBeNull();
   },
 });

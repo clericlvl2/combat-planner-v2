@@ -16,7 +16,7 @@ export const layout = {
   contentEdge: 12,
   listGap: 8,
   cardGap: 10,
-  activeScale: 1.03,
+  activeLift: 3,
   roleTile: { width: 41, inset: 4 },
   listInset: { top: 16, bottom: 44 },
   bottomBar: {
