@@ -31,6 +31,8 @@ interface Current {
 
 const STEP = 1 / 120;
 
+const FOLLOW_SLACK_MS = 50;
+
 const cardOf = (parent: Element, activeId: string): HTMLElement | null => {
   for (const child of parent.children) {
     if (child instanceof HTMLElement && child.dataset.unitId === activeId) return child;
@@ -47,6 +49,7 @@ export function TurnBracket({ activeId }: TurnBracketProps) {
   const reduced = useReducedMotion();
   const rest = useRef<Place | null>(null);
   const flight = useRef<Flight | null>(null);
+  const followUntil = useRef(0);
 
   const land = () => {
     flight.current?.animation.cancel();
@@ -97,7 +100,7 @@ export function TurnBracket({ activeId }: TurnBracketProps) {
       return;
     }
     rest.current = place;
-    if (!previous || motion === 'off' || reduced) {
+    if (!previous || motion === 'off' || reduced || performance.now() < followUntil.current) {
       land();
       paint(node, place);
       return;
@@ -138,7 +141,20 @@ export function TurnBracket({ activeId }: TurnBracketProps) {
     if (!parent) return;
     const observer = new ResizeObserver(() => measureRef.current());
     observer.observe(parent);
+    let frame = 0;
+    const tick = () => {
+      measureRef.current();
+      frame = performance.now() < followUntil.current ? requestAnimationFrame(tick) : 0;
+    };
+    const follow = (event: TransitionEvent) => {
+      if (event.propertyName !== 'grid-template-rows') return;
+      followUntil.current = performance.now() + layout.cardExpandMs + FOLLOW_SLACK_MS;
+      if (frame === 0) frame = requestAnimationFrame(tick);
+    };
+    parent.addEventListener('transitionrun', follow);
     return () => {
+      parent.removeEventListener('transitionrun', follow);
+      cancelAnimationFrame(frame);
       observer.disconnect();
       flight.current?.animation.cancel();
       flight.current = null;

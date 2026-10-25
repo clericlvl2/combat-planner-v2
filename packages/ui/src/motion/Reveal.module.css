@@ -1,0 +1,31 @@
+.root {
+  display: grid;
+  grid-template-rows: 1fr;
+  min-width: 0;
+  transition: grid-template-rows var(--cp-card-expand-duration) var(--cp-card-expand-easing);
+
+  &[data-reveal='closing'] {
+    grid-template-rows: 0fr;
+  }
+}
+
+@starting-style {
+  .root[data-reveal='opening'] {
+    grid-template-rows: 0fr;
+  }
+}
+
+.inner {
+  min-width: 0;
+  min-height: 0;
+
+  .root:is([data-reveal='opening'], [data-reveal='closing']) > & {
+    overflow: clip;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    transition: none;
+  }
+}

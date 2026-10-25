@@ -23,6 +23,7 @@ import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
 import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
+import { Reveal } from '../../motion/Reveal.tsx';
 import { Menu } from '../Menu/Menu.tsx';
 import type { MenuItem } from '../Menu/Menu.tsx';
 import classes from './UnitRow.module.css';
@@ -268,9 +269,9 @@ export function UnitRow({
             ))}
           </span>
         ) : null}
-        {!expanded && unit.note ? (
+        <Reveal open={!expanded && unit.note !== ''} className={classes.noteSlot}>
           <NoteField value={unit.note} onChange={onNoteChange ?? noop} collapsed />
-        ) : null}
+        </Reveal>
       </div>
       {readOnly ? null : (
         <UnstyledButton
@@ -299,7 +300,7 @@ export function UnitRow({
       {hpChange ? (
         <HpChangeOverlay key={hpChange.key} change={hpChange} showNumber reduced={reduced} />
       ) : null}
-      {expanded ? (
+      <Reveal open={expanded} className={classes.detailsSlot}>
         <div id={detailsId} className={classes.details} data-part="details">
           <div className={classes.triggers}>
             <UnstyledButton
@@ -361,7 +362,7 @@ export function UnitRow({
             }
           />
         </div>
-      ) : null}
+      </Reveal>
     </div>
   );
 }

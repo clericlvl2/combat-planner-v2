@@ -13,6 +13,7 @@ import { useHpMotionReduced } from '../../hooks/useHpChanges.ts';
 import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
 import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
+import { Reveal } from '../../motion/Reveal.tsx';
 import classes from './PlayerRow.module.css';
 
 export type PlayerRowTarget = 'initiative' | 'hp' | 'conditions' | 'history' | 'defenses' | 'note';
@@ -151,7 +152,9 @@ export function PlayerRow({
             ))}
           </span>
         ) : null}
-        {collapsedNote ? <NoteField value={note} onChange={onNoteChange} collapsed /> : null}
+        <Reveal open={collapsedNote} className={classes.noteSlot}>
+          <NoteField value={note} onChange={onNoteChange} collapsed />
+        </Reveal>
       </div>
       {mine ? (
         <UnstyledButton
@@ -189,7 +192,7 @@ export function PlayerRow({
           reduced={reduced}
         />
       ) : null}
-      {expanded ? (
+      <Reveal open={expanded} className={classes.detailsSlot}>
         <div id={detailsId} className={classes.details} data-part="details">
           <div className={classes.triggers}>
             <UnstyledButton
@@ -237,7 +240,7 @@ export function PlayerRow({
           <NoteField value={note} onChange={onNoteChange} data-tap={tapOf('note')} />
           <CardActions open={moreOpen} busy={busy} onEdit={onEdit} onMore={onMore} />
         </div>
-      ) : null}
+      </Reveal>
     </div>
   );
 }

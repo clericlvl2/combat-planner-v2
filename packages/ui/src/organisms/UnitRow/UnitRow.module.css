@@ -156,10 +156,21 @@
   }
 }
 
+.noteSlot {
+  margin-top: -4px;
+
+  & > * {
+    padding-top: 4px;
+  }
+}
+
+.detailsSlot {
+  grid-column: 1 / -1;
+}
+
 .details {
   box-sizing: border-box;
   display: flex;
-  grid-column: 1 / -1;
   flex-direction: column;
   gap: 8px;
   min-width: 0;

@@ -31,6 +31,8 @@ export const layout = {
   sheetEnterMs: 240,
   sheetExitMs: 180,
   sheetEasing: 'cubic-bezier(0.32, 0.72, 0, 1)',
+  cardExpandMs: 220,
+  cardExpandEasing: 'cubic-bezier(0.2, 0.7, 0.2, 1)',
   sheetCloseRatio: 0.3,
   sheetFlickVelocity: 0.5,
   sheetRubberBand: 12,

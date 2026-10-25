@@ -917,3 +917,36 @@ export const NoRibbonWithMotionOff = meta.story({
     await expect(canvasElement.querySelector('[data-hp-change="number"]')).toBeNull();
   },
 });
+
+const detailsTransitionEnd = (root: HTMLElement) =>
+  new Promise<HTMLElement>((resolve) => {
+    const handle = (event: TransitionEvent) => {
+      const target = event.target;
+      if (event.propertyName !== 'grid-template-rows' || !(target instanceof HTMLElement)) return;
+      if (!target.querySelector('[data-part="details"]')) return;
+      root.removeEventListener('transitionend', handle);
+      resolve(target);
+    };
+    root.addEventListener('transitionend', handle);
+  });
+
+export const DetailsSlideOpenAndShut = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  args: { unit: vashtiExpanded },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
+    const opened = detailsTransitionEnd(canvasElement);
+    await userEvent.click(name);
+    const region = await opened;
+    await waitFor(() => expect(region).toHaveAttribute('data-reveal', 'open'));
+    await expect(canvas.getByRole('button', { name: t('hpHistory') })).toBeVisible();
+    const closed = detailsTransitionEnd(canvasElement);
+    await userEvent.click(name);
+    await expect(region).toHaveAttribute('data-reveal', 'closing');
+    await closed;
+    await waitFor(() => expect(region).not.toBeInTheDocument());
+    await expect(canvas.getByRole('img', { name: t('NoteField:label') })).toBeVisible();
+  },
+});
