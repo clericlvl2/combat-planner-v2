@@ -125,12 +125,9 @@ const resultList: CSSProperties = {
 const noop = () => {};
 
 const readOnlyRow = {
-  readOnly: true,
+  readOnly: true as const,
   onToggle: noop,
   onInitiative: noop,
-  onInitiativeSet: noop,
-  onInitiativeRoll: noop,
-  onInitiativeClose: noop,
   onHp: noop,
   onConditions: noop,
   onDefenses: noop,
@@ -360,6 +357,18 @@ export const OverkillDead = meta.story({
     await typeAmount(canvas, '400');
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−113/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('dead'));
+    await expect(filledPips(canvasElement, 'after')).toBe(0);
+  },
+});
+
+export const HeroOverkillUnconscious = meta.story({
+  tags: ['!dev'],
+  args: { who: 'vashti' },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await typeAmount(canvas, '99');
+    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−36/36');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('unconscious'));
     await expect(filledPips(canvasElement, 'after')).toBe(0);
   },
 });

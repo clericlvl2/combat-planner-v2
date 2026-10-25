@@ -471,12 +471,15 @@ export const FourConditions = meta.story({
   },
 });
 
-export const OwnHeroDead = meta.story({
-  args: { unit: playerUnit({ ...vashtiSeed, hp: -18, conditions: [] }) },
-  play: async ({ canvas, globals }) => {
+export const OwnHeroNeverDead = meta.story({
+  tags: ['!dev'],
+  args: { unit: playerUnit({ ...vashtiSeed, hp: -36, conditions: [] }) },
+  play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'PlayerRow');
-    await expect(canvas.getByRole('button', { name: `−18 /36 ${t('HpBox:dead')}` })).toBeVisible();
-    await expect(canvas.getByText(t('RoleBlock:you'))).toBeVisible();
+    await expect(
+      canvas.getByRole('button', { name: `−36 /36 ${t('HpBox:unconscious')}` }),
+    ).toBeVisible();
+    await expect(canvasElement.querySelector('[data-dead]')).toBeNull();
   },
 });
 

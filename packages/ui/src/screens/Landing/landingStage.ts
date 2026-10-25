@@ -1,3 +1,4 @@
+import { healthStatus } from '@combat-planner/domain';
 import type { Role } from '@combat-planner/domain';
 import type { ConditionName } from '../../theme.ts';
 
@@ -201,7 +202,8 @@ function applyOp(unit: StageUnit, op: StageOp): StageUnit {
   }
 }
 
-const alive = (unit: StageUnit | undefined): boolean => unit !== undefined && unit.hp > 0;
+const alive = (unit: StageUnit | undefined): boolean =>
+  unit !== undefined && healthStatus(unit.hp, unit.maxHp, unit.role) !== 'dead';
 
 function nextIndex(units: readonly StageUnit[], from: number): { index: number; wrapped: boolean } {
   let index = from;

@@ -330,10 +330,11 @@ export const PlayerTints = meta.story({
 const unconsciousCases: readonly HpBoxProps[] = [
   { viewer: 'dm', hp: 0, maxHp: 30, role: 'hero', onClick: fn() },
   { viewer: 'dm', hp: -14, maxHp: 30, role: 'hero' },
-  { viewer: 'dm', hp: -15, maxHp: 30, role: 'hero' },
+  { viewer: 'dm', hp: -30, maxHp: 30, role: 'hero' },
   { viewer: 'player', hp: -499, maxHp: 999, role: 'hero', mine: true },
   { viewer: 'player', status: 'unconscious' },
   { viewer: 'dm', hp: -8, maxHp: 30, role: 'hero', tempHp: 5 },
+  { viewer: 'dm', hp: 30, maxHp: 30, role: 'hero' },
 ];
 
 export const UnconsciousHero = meta.story({
@@ -344,7 +345,7 @@ export const UnconsciousHero = meta.story({
     for (const [index, hp, maxHp] of [
       [0, 0, 30],
       [1, -14, 30],
-      [2, -15, 30],
+      [2, -30, 30],
     ] as const) {
       await expect(boxFacts(caseAt(canvasElement, index))).toEqual(
         boxExpected(t, hp, maxHp, 'dm', 'hero'),
@@ -354,11 +355,11 @@ export const UnconsciousHero = meta.story({
     await expect(down).toHaveAttribute('data-status', 'unconscious');
     await expect(down).not.toHaveAttribute('data-off');
     await expect(getComputedStyle(down).backgroundColor).toBe(rgb(healthTints.unconscious));
-    for (const index of [0, 1, 3, 4, 5]) {
-      await expectUnconsciousBadge(caseAt(canvasElement, index), caseAt(canvasElement, 2));
+    for (const index of [0, 1, 2, 3, 4, 5]) {
+      await expectUnconsciousBadge(caseAt(canvasElement, index), caseAt(canvasElement, 6));
     }
     await expect(caseAt(canvasElement, 5).querySelector('[data-part="temp-badge"]')).toBeVisible();
-    await expect(caseAt(canvasElement, 2)).toHaveAttribute('data-status', 'dead');
+    await expect(caseAt(canvasElement, 2)).toHaveAttribute('data-status', 'unconscious');
     const own = caseAt(canvasElement, 3);
     await expect(boxFacts(own)).toEqual(boxExpected(t, -499, 999, 'player', 'hero'));
     await expect(own.querySelector('[data-part="numbers"]')).toHaveAttribute('data-editable');

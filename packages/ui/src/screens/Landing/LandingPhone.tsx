@@ -131,7 +131,7 @@ interface RowProps {
 
 function Row({ unit, viewer, mine, active, deltas }: RowProps) {
   const { t } = useTranslation(['RoleBlock', 'DefenseLine', 'Chip']);
-  const dead = unit.hp <= 0;
+  const dead = healthStatus(unit.hp, unit.maxHp, unit.role) === 'dead';
   const showDefenses = viewer === 'dm' || unit.role !== 'enemy';
   return (
     <div
