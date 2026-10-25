@@ -52,11 +52,6 @@
     color: var(--cp-role-inactive-text);
   }
 
-  &[data-neutral][data-unit-role] {
-    background: var(--cp-color-soft);
-    color: var(--cp-color-ink);
-  }
-
   &[data-unit-role]:focus-visible,
   &[data-unit-role][data-focus] {
     outline: 2px solid var(--cp-state-focus);

@@ -43,7 +43,6 @@ export function RoleBlock({
 }: RoleBlockProps) {
   const { t } = useTranslation('RoleBlock');
   const shownLabel = label ?? t(unitRole);
-  const neutral = top?.kind === 'none';
   const content = (
     <>
       {top === null ? (
@@ -62,7 +61,6 @@ export function RoleBlock({
   const shared = {
     className: className ? `${classes.root} ${className}` : classes.root,
     'data-unit-role': unitRole,
-    'data-neutral': neutral || undefined,
     'data-active': active || undefined,
     'data-inactive': dead || disabled || undefined,
     'data-fill': fill || undefined,

@@ -81,7 +81,7 @@ export const NoInitiativeDie = meta.story({
   },
 });
 
-export const NeutralPreset = meta.story({
+export const PresetRoles = meta.story({
   tags: ['visual'],
   render: () => (
     <div style={{ display: 'flex', gap: 8, height: 64 }}>
@@ -95,8 +95,8 @@ export const NeutralPreset = meta.story({
     const blocks = [...canvasElement.querySelectorAll<HTMLElement>('[data-unit-role]')];
     await expect(blocks).toHaveLength(3);
     for (const block of blocks) {
-      await expect(getComputedStyle(block).backgroundColor).toBe(rgb(base.soft));
-      await expect(getComputedStyle(block).color).toBe(rgb(base.ink));
+      const unitRole = block.dataset.unitRole as 'hero' | 'enemy' | 'ally';
+      await expect(getComputedStyle(block).backgroundColor).toBe(rgb(roles[unitRole]));
       await expect(block.getBoundingClientRect().width).toBe(48);
     }
     await expect(canvas.getByText(t('enemy'))).toBeVisible();
