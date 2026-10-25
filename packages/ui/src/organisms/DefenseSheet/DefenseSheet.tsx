@@ -6,6 +6,7 @@ import { defenseTotal, modDirection } from '../../molecules/DefenseLine/DefenseL
 import type { DefenseStat } from '../../molecules/DefenseLine/DefenseLine.tsx';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
+import rows from '../Sheet/SheetRows.module.css';
 import classes from './DefenseSheet.module.css';
 
 export interface DefenseMods {
@@ -42,9 +43,9 @@ function DefenseRow({
   const { t: tLine } = useTranslation('DefenseLine');
   const labelId = useId();
   return (
-    <div className={classes.row} data-stat={stat} role="group" aria-labelledby={labelId}>
+    <div className={rows.row} data-stat={stat} role="group" aria-labelledby={labelId}>
       <div className={classes.reading}>
-        <span id={labelId} className={classes.label}>
+        <span id={labelId} className={`${rows.label} ${classes.label}`}>
           {tLine(stat)}
         </span>
         <span className={classes.total} data-mod={modDirection(mod)}>
@@ -98,7 +99,7 @@ export function DefenseSheet({
         </>
       }
     >
-      <div className={classes.rows}>
+      <div className={rows.rows}>
         {STATS.map((stat) => (
           <DefenseRow
             key={stat}

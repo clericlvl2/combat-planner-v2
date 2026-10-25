@@ -7,8 +7,6 @@
   "escalationTitle": "Dado de escalada",
   "escalationFace": "Escalada {{value}}",
   "escalationCaption": "Escalada",
-  "escalationHint": "«Siguiente turno» lo sube en 1 cada ronda, hasta {{max}}",
-  "roundHint": "{{min}}–{{max}}. Cambiar la ronda no mueve el turno.",
   "menu": "Menú",
   "menuLabel": "Menú del combate",
   "playerMenuLabel": "Menú del jugador",

@@ -7,8 +7,6 @@
   "escalationTitle": "エスカレーションダイス",
   "escalationFace": "エスカレーション{{value}}",
   "escalationCaption": "エスカレーション",
-  "escalationHint": "「次のターン」で毎ラウンド1ずつ上がり、最大{{max}}",
-  "roundHint": "{{min}}–{{max}}。ラウンドを変えてもターンは移りません。",
   "menu": "メニュー",
   "menuLabel": "戦闘メニュー",
   "playerMenuLabel": "プレイヤーメニュー",

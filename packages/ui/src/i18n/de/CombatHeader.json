@@ -7,8 +7,6 @@
   "escalationTitle": "Eskalationswürfel",
   "escalationFace": "Eskalation {{value}}",
   "escalationCaption": "Eskalation",
-  "escalationHint": "„Nächster Zug“ erhöht ihn jede Runde um 1, bis {{max}}",
-  "roundHint": "{{min}}–{{max}}. Eine Rundenänderung verschiebt den Zug nicht.",
   "menu": "Menü",
   "menuLabel": "Kampfmenü",
   "playerMenuLabel": "Spielermenü",

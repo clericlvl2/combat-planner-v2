@@ -1,7 +1,7 @@
 import preview from '#.storybook/preview';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
-import { expect, fn, userEvent, waitFor } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { RoundSheet } from './RoundSheet.tsx';
 import { storyT } from '../../storybook/storyT.ts';
@@ -70,10 +70,12 @@ export const Default = meta.story({
     await expect(
       canvas.getByRole('button', { name: t('escalationFace', { value: 2 }) }),
     ).toHaveAttribute('aria-pressed', 'true');
-    await expect(canvas.getByText(t('roundHint', { min: 1, max: 99 }))).toBeVisible();
-    await expect(canvas.getByText(t('escalationHint', { max: 6 }))).toBeVisible();
     const faces = canvas.getByRole('group', { name: t('escalationTitle') });
     await expect(faces.querySelectorAll('button[data-face]')).toHaveLength(7);
+    const roundRow = canvas.getByRole('group', { name: t('round') });
+    const label = within(roundRow).getByText(t('round')).getBoundingClientRect();
+    const stepper = within(roundRow).getByRole('spinbutton').getBoundingClientRect();
+    await expect(label.right).toBeLessThan(stepper.left);
   },
 });
 

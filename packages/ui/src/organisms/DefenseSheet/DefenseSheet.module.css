@@ -18,23 +18,6 @@
   flex: none;
 }
 
-.rows {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.row {
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 168px;
-  align-items: center;
-  gap: 8px;
-  padding: 12px;
-  border-radius: var(--mantine-radius-card);
-  background: var(--cp-color-background);
-}
-
 .reading {
   display: grid;
   grid-template-columns: auto auto;
@@ -50,10 +33,6 @@
 
 .label {
   grid-area: label;
-  font-family: var(--cp-font-ui);
-  font-size: var(--mantine-font-size-small);
-  font-weight: 700;
-  color: var(--cp-color-secondary);
 }
 
 .total {

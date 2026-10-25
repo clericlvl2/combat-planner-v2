@@ -7,8 +7,6 @@
   "escalationTitle": "Dé d’escalade",
   "escalationFace": "Escalade {{value}}",
   "escalationCaption": "Escalade",
-  "escalationHint": "« Tour suivant » l’augmente de 1 à chaque round, jusqu’à {{max}}",
-  "roundHint": "{{min}}–{{max}}. Changer de round ne change pas le tour en cours.",
   "menu": "Menu",
   "menuLabel": "Menu du combat",
   "playerMenuLabel": "Menu du joueur",

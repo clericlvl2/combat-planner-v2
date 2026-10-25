@@ -7,8 +7,6 @@
   "escalationTitle": "Кубик эскалации",
   "escalationFace": "Эскалация {{value}}",
   "escalationCaption": "Эскалация",
-  "escalationHint": "«Следующий ход» повышает его на 1 каждый раунд, до {{max}}",
-  "roundHint": "{{min}}–{{max}}. Смена раунда не меняет текущий ход.",
   "menu": "Меню",
   "menuLabel": "Меню боя",
   "playerMenuLabel": "Меню игрока",
