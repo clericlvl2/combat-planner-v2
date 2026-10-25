@@ -3,8 +3,14 @@ import { IconChevronLeft, IconDots, IconNote } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { iconSizes } from '../../theme.ts';
 import classes from './LandingPhone.module.css';
-import { STAGE_COMBAT_TITLE, nextUnitName } from './landingStage.ts';
-import type { StageDelta, StageDeltaKind, StageState, StageUnit } from './landingStage.ts';
+import { nextUnit } from './landingStage.ts';
+import type {
+  StageDelta,
+  StageDeltaKind,
+  StageName,
+  StageState,
+  StageUnit,
+} from './landingStage.ts';
 
 export type LandingViewer = 'dm' | 'player';
 
@@ -27,6 +33,11 @@ const dieFaces: Record<number, readonly number[]> = {
 const dieSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 const defenses = ['ac', 'pd', 'md'] as const;
+
+function useStageName(): (name: StageName) => string {
+  const { t } = useTranslation('Landing');
+  return (name) => t(name.key, { number: name.number });
+}
 
 function formatHp(value: number): string {
   return value < 0 ? `−${Math.abs(value)}` : String(value);
@@ -130,7 +141,8 @@ interface RowProps {
 }
 
 function Row({ unit, viewer, mine, active, deltas }: RowProps) {
-  const { t } = useTranslation(['RoleBlock', 'DefenseLine', 'Chip']);
+  const { t } = useTranslation(['RoleBlock', 'DefenseLine', 'Chip', 'Landing']);
+  const stageName = useStageName();
   const dead = healthStatus(unit.hp, unit.maxHp, unit.role) === 'dead';
   const showDefenses = viewer === 'dm' || unit.role !== 'enemy';
   return (
@@ -148,7 +160,7 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
         {mine ? <span className={classes.you}>{t('RoleBlock:you')}</span> : null}
       </span>
       <div className={classes.main}>
-        <span className={classes.name}>{unit.name}</span>
+        <span className={classes.name}>{stageName(unit.name)}</span>
         {showDefenses ? (
           <span className={classes.defenses}>
             {defenses.map((defense) => (
@@ -178,7 +190,7 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
         {mine && unit.note ? (
           <span className={classes.note}>
             <IconNote size={iconSizes.S} stroke={2} />
-            {unit.note}
+            {t(`Landing:${unit.note}`)}
           </span>
         ) : null}
       </div>
@@ -196,7 +208,7 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
 }
 
 function DmHeader({ state }: { state: StageState }) {
-  const { t } = useTranslation('CombatHeader');
+  const { t } = useTranslation(['CombatHeader', 'Landing']);
   return (
     <div className={classes.header}>
       <span className={classes.headerStatus} />
@@ -205,7 +217,7 @@ function DmHeader({ state }: { state: StageState }) {
           <IconChevronLeft size={iconSizes.L} stroke={2} />
         </span>
         <span className={classes.title} data-ellipsis="">
-          {STAGE_COMBAT_TITLE}
+          {t('Landing:stageTitle')}
         </span>
         <span className={classes.menu}>
           <IconDots size={iconSizes.L} stroke={2} />
@@ -230,14 +242,14 @@ function DmHeader({ state }: { state: StageState }) {
 }
 
 function PlayerHeader({ state }: { state: StageState }) {
-  const { t } = useTranslation('PlayerHeader');
+  const { t } = useTranslation(['PlayerHeader', 'Landing']);
   return (
     <div className={classes.header}>
       <span className={classes.headerStatus} />
       <span className={classes.playerBody}>
         <span className={classes.playerText}>
           <span className={classes.playerTitle} data-ellipsis="">
-            {STAGE_COMBAT_TITLE}
+            {t('Landing:stageTitle')}
           </span>
           <Swap className={classes.playerRound} text={t('round', { round: state.round })} />
         </span>
@@ -249,11 +261,13 @@ function PlayerHeader({ state }: { state: StageState }) {
 
 function TurnBar({ state }: { state: StageState }) {
   const { t } = useTranslation('TurnBar');
+  const stageName = useStageName();
+  const next = nextUnit(state);
   return (
     <div className={classes.turnBar}>
       <span key={`${state.loop}-${state.step}`} className={classes.turnButton}>
         <span className={classes.turnTitle}>{t('nextTurn')}</span>
-        <Swap className={classes.turnNext} text={nextUnitName(state)} ellipsis />
+        <Swap className={classes.turnNext} text={next ? stageName(next.name) : ''} ellipsis />
       </span>
     </div>
   );

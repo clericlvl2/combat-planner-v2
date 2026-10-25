@@ -6,6 +6,7 @@ import { useMotion } from '../../provider.tsx';
 import { LandingPhone } from './LandingPhone.tsx';
 import classes from './LandingTable.module.css';
 import {
+  STAGE_PLAYERS,
   STAGE_PLAYER_DELAYS,
   STAGE_STILL_STEP,
   STAGE_TURN_MS,
@@ -263,11 +264,6 @@ const playerDelays: Record<PhoneId, number> = {
   jonas: STAGE_PLAYER_DELAYS.jonas,
 };
 
-const players: Record<Exclude<PhoneId, 'dm'>, { name: string; mine: string }> = {
-  mika: { name: 'Mika', mine: 'vashti' },
-  jonas: { name: 'Jonas', mine: 'aldric' },
-};
-
 export function LandingTable({ size, scroller }: LandingTableProps) {
   const { t } = useTranslation('Landing');
   const motion = useMotion();
@@ -340,7 +336,7 @@ export function LandingTable({ size, scroller }: LandingTableProps) {
           </>
         ) : null}
         {layout.phones.map((place) => {
-          const player = place.id === 'dm' ? null : players[place.id];
+          const player = place.id === 'dm' ? null : STAGE_PLAYERS[place.id];
           return (
             <div
               key={place.id}
@@ -360,12 +356,12 @@ export function LandingTable({ size, scroller }: LandingTableProps) {
             >
               <span className={classes.tag} data-player={player ? '' : undefined}>
                 {player ? <IconUsers stroke={2} /> : <IconDeviceMobile stroke={2} />}
-                {player ? `${t('player')} · ${player.name}` : t('dm')}
+                {player ? `${t('player')} · ${t(player.nameKey)}` : t('dm')}
               </span>
               <LandingPhone
                 state={states[place.id]}
                 viewer={player ? 'player' : 'dm'}
-                mine={player?.mine}
+                mine={player?.hero}
               />
             </div>
           );

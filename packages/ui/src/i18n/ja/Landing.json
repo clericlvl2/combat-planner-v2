@@ -8,5 +8,14 @@
   "about": "このアプリについて",
   "source": "ソースコード",
   "dm": "DM",
-  "player": "プレイヤー"
+  "player": "プレイヤー",
+  "stageTitle": "渡し場の待ち伏せ",
+  "stageAldric": "サー・アルドリック",
+  "stageOrc": "オーク・バーサーカー",
+  "stageVashti": "呪術師ヴァシュティ",
+  "stageGoblin": "ゴブリン射手{{number}}",
+  "stageTomas": "トマス修道士",
+  "stageVashtiNote": "オーク・バーサーカーに呪い",
+  "stagePlayerMika": "ミカ",
+  "stagePlayerJonas": "ヨナス"
 }

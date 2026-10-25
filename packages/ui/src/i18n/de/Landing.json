@@ -8,5 +8,14 @@
   "about": "Info",
   "source": "Quellcode",
   "dm": "Spielleitung",
-  "player": "Spieler"
+  "player": "Spieler",
+  "stageTitle": "Hinterhalt an der Fähre",
+  "stageAldric": "Ritter Aldric",
+  "stageOrc": "Ork-Berserker",
+  "stageVashti": "Vashti die Hexe",
+  "stageGoblin": "Goblin-Bogenschütze {{number}}",
+  "stageTomas": "Bruder Tomas",
+  "stageVashtiNote": "Fluch auf dem Ork-Berserker",
+  "stagePlayerMika": "Mika",
+  "stagePlayerJonas": "Jonas"
 }
