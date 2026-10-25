@@ -45,7 +45,7 @@ export const SetupStartCombat = meta.story({
       name: (label: string) => label.includes(t('startCombat')),
     });
     await expect(button).toBeEnabled();
-    await expect(canvas.getByText(t('rollsMissingInitiative'))).toBeVisible();
+    await expect(button).toHaveAccessibleName(t('startCombat'));
   },
 });
 
@@ -104,7 +104,6 @@ export const BlockedNoUnits = meta.story({
     });
     await expect(button).toBeDisabled();
     await expect(canvas.getByText(t('addUnitFirst'))).toBeVisible();
-    await expect(canvas.queryByText(t('rollsMissingInitiative'))).toBeNull();
     await userEvent.click(button, { pointerEventsCheck: 0 });
     await expect(args.onClick).not.toHaveBeenCalled();
   },

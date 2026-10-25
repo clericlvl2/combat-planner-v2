@@ -362,7 +362,7 @@ export const SetupWithUnits = meta.story({
     );
     const start = await startButton(canvas, t);
     await expect(start).toBeEnabled();
-    await expect(start).toHaveTextContent(t('TurnBar:rollsMissingInitiative'));
+    await expect(start).toHaveAccessibleName(t('TurnBar:startCombat'));
     await expect(canvas.queryByRole('button', { name: ticketAny(t) })).toBeNull();
   },
 });

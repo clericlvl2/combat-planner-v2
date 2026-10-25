@@ -1,7 +1,6 @@
 {
   "nextTurn": "Siguiente turno",
   "startCombat": "Empezar combate",
-  "rollsMissingInitiative": "Tira las iniciativas que faltan",
   "everyUnitDisabled": "Todas las unidades están desactivadas",
   "lastRound": "La ronda {{round}} es la última",
   "addUnitFirst": "Primero añade una unidad"
