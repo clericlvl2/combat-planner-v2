@@ -210,6 +210,8 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
   `viewport` global, so the test viewport is set in `preview.tsx` (`initialGlobals` `locale: 'ru'`,
   `frame: 'narrow'`, `viewport: 'narrow'`), not in `vite.config.ts`.
+- TypeScript 7: `tsc` is the native compiler and the `typescript` package exports no JS API, so
+  `scripts/check-stories.mjs` and `scripts/check-comments.mjs` parse with `@typescript/typescript6`.
 - Playwright 1.64.1 exact.
 - React Router 7 data mode.
 - Mantine 9; `postcss-preset-mantine` runs from `postcss.config.cjs`.
