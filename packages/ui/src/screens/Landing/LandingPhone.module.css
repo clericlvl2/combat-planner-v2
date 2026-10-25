@@ -518,23 +518,14 @@
   border-radius: var(--mantine-radius-field);
   background: var(--stage-hp-tint);
 
-  &[data-status='wounded'] {
-    --stage-hp-status: var(--cp-health-wounded);
-    --stage-hp-tint: var(--cp-health-tint-wounded);
-  }
-
   &[data-status='staggered'] {
     --stage-hp-status: var(--cp-health-staggered);
     --stage-hp-tint: var(--cp-health-tint-staggered);
   }
 
-  &[data-status='unconscious'] {
-    --stage-hp-status: var(--cp-health-unconscious);
-    --stage-hp-tint: var(--cp-health-tint-unconscious);
-  }
-
+  &[data-status='unconscious'],
   &[data-status='dead'] {
-    --stage-hp-status: var(--cp-health-dead);
+    --stage-hp-status: var(--cp-color-border);
     --stage-hp-tint: var(--cp-color-soft);
   }
 

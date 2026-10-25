@@ -80,24 +80,15 @@
     align-items: flex-end;
   }
 
-  &[data-status='wounded'] {
-    --numpad-health: var(--cp-health-wounded);
-    --numpad-health-text: var(--cp-health-text-wounded);
-  }
-
   &[data-status='staggered'] {
     --numpad-health: var(--cp-health-staggered);
     --numpad-health-text: var(--cp-health-staggered);
   }
 
-  &[data-status='unconscious'] {
-    --numpad-health: var(--cp-health-unconscious);
-    --numpad-health-text: var(--cp-health-unconscious);
-  }
-
+  &[data-status='unconscious'],
   &[data-status='dead'] {
-    --numpad-health: var(--cp-health-dead);
-    --numpad-health-text: var(--cp-health-dead);
+    --numpad-health: var(--cp-color-border);
+    --numpad-health-text: var(--cp-color-secondary);
   }
 }
 

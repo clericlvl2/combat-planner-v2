@@ -60,7 +60,7 @@ const tokenGroups: TokenGroup[] = [
       token('enemy', seeds.enemy, 'Enemy, damage, danger', 'Aa', onDark),
       token('ally', seeds.ally, 'Ally', 'Aa', onDark),
       token('full', seeds.full, 'Full health'),
-      token('wounded', seeds.wounded, 'Wounded'),
+      token('wounded', seeds.wounded, 'Olive: combat colour'),
       token('staggered', seeds.staggered, 'Staggered', 'Aa', onDark),
       token('unconscious', seeds.unconscious, 'Unconscious', 'Aa', onDark),
       token('max', seeds.max, 'Max HP', 'Aa', onDark),
@@ -116,11 +116,10 @@ const tokenGroups: TokenGroup[] = [
   {
     title: 'Health',
     items: [
-      token('full', health.full, 'Full, at max: 2 pips'),
-      token('wounded', health.wounded, 'Wounded, 50% and up: 2 pips'),
+      token('full', health.full, 'Full and wounded, 50% and up: 2 pips'),
       token('staggered', health.staggered, 'Staggered, below 50%: 1 pip'),
-      token('unconscious', health.unconscious, 'Hero unconscious, 0 to −½ max: 0 pips, Zzz icon'),
-      token('dead', health.dead, 'Dead: 0 pips, name struck: ink +19 L'),
+      token('unconscious', health.unconscious, 'Unconscious ribbon and Zzz icon; HP grey'),
+      token('dead', health.dead, 'Dead ribbon; HP grey, name struck: ink +19 L'),
     ],
   },
   {

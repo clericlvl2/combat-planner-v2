@@ -111,7 +111,6 @@ export const roles = {
 
 export const health = {
   full: seeds.full,
-  wounded: seeds.wounded,
   staggered: seeds.staggered,
   unconscious: seeds.unconscious,
   dead: lighten(seeds.ink, 19, -0.02),
@@ -119,14 +118,11 @@ export const health = {
 
 export const healthTints = {
   full: tint(seeds.full, 92, 0.05),
-  wounded: tint(seeds.wounded, 92, 0.05),
   staggered: tint(seeds.staggered, 92, 0.05),
-  unconscious: tint(seeds.unconscious, 92, 0.05),
 };
 
 export const healthText = {
   full: lighten(seeds.full, -6),
-  wounded: lighten(seeds.wounded, -6),
 };
 
 export const hpActions = {

@@ -8,6 +8,7 @@ import { layout } from '../../layout.ts';
 import { UnitRow } from '../UnitRow/UnitRow.tsx';
 import { NumpadSheet, hpAfter } from './NumpadSheet.tsx';
 import { escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { base, healthText } from '../../theme.ts';
 
 const at = '2026-10-15T18:00:00.000Z';
 
@@ -217,6 +218,16 @@ const readingOf = (canvasElement: HTMLElement, side: 'now' | 'after') => {
 const numbersOf = (canvasElement: HTMLElement, side: 'now' | 'after') =>
   readingOf(canvasElement, side).querySelector('[data-part="numbers"]');
 
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
+
+const afterColor = (canvasElement: HTMLElement) => {
+  const numbers = numbersOf(canvasElement, 'after');
+  return numbers && getComputedStyle(numbers).color;
+};
+
 const screenOf = (canvasElement: HTMLElement) => {
   const frame = canvasElement.ownerDocument.querySelector<HTMLElement>('[data-phone-frame]');
   if (!frame) throw new Error('phone frame not rendered');
@@ -349,6 +360,7 @@ export const ThreeDigitHpWounded = meta.story({
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('167/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('wounded'));
     await expect(filledPips(canvasElement, 'after')).toBe(2);
+    await expect(afterColor(canvasElement)).toBe(rgb(healthText.full));
   },
 });
 
@@ -360,6 +372,7 @@ export const OverkillDead = meta.story({
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−113/320');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('dead'));
     await expect(filledPips(canvasElement, 'after')).toBe(0);
+    await expect(afterColor(canvasElement)).toBe(rgb(base.secondary));
   },
 });
 
@@ -372,6 +385,7 @@ export const HeroOverkillUnconscious = meta.story({
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−36/36');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('unconscious'));
     await expect(filledPips(canvasElement, 'after')).toBe(0);
+    await expect(afterColor(canvasElement)).toBe(rgb(base.secondary));
   },
 });
 

@@ -25,23 +25,14 @@
     cursor: pointer;
   }
 
-  &[data-status='wounded'] {
-    --hp-box-status: var(--cp-health-wounded);
-    --hp-box-tint: var(--cp-health-tint-wounded);
-  }
-
   &[data-status='staggered'] {
     --hp-box-status: var(--cp-health-staggered);
     --hp-box-tint: var(--cp-health-tint-staggered);
   }
 
-  &[data-status='unconscious'] {
-    --hp-box-status: var(--cp-health-unconscious);
-    --hp-box-tint: var(--cp-health-tint-unconscious);
-  }
-
+  &[data-status='unconscious'],
   &[data-status='dead'] {
-    --hp-box-status: var(--cp-health-dead);
+    --hp-box-status: var(--cp-color-border);
     --hp-box-tint: var(--cp-color-soft);
   }
 
