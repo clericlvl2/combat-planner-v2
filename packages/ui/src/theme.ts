@@ -293,6 +293,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-active-shadow': shadowLayers(activeShadow),
     '--cp-role-tile-width': `${layout.roleTile.width}px`,
     '--cp-role-tile-inset': `${layout.roleTile.inset}px`,
+    '--cp-unit-row': `${layout.unitRow}px`,
     '--cp-page-transition-duration': `${layout.pageTransitionMs}ms`,
     '--cp-page-transition-easing': layout.sheetEasing,
   },

@@ -45,6 +45,7 @@ import { usePresets } from '../../hooks/usePresets.ts';
 import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { AddTile } from '../../molecules/AddTile/AddTile.tsx';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
@@ -674,7 +675,15 @@ export function CombatScreen({
             icon={IconUsers}
             title={tEmpty('noUnitsTitle')}
             body={tEmpty('noUnitsBody')}
-            action={{ label: tEmpty('addUnit'), icon: IconUserPlus, onAction: openAdd }}
+          />
+        ) : null}
+        {setup ? (
+          <AddTile
+            label={tEmpty('addUnit')}
+            icon={IconUserPlus}
+            disabled={atCap}
+            hint={atCap ? tToast('unitCap', { limit: LIMITS.unitsPerCombat }) : undefined}
+            onClick={openAdd}
           />
         ) : null}
       </ScrollList>

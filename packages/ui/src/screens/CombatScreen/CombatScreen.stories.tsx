@@ -16,8 +16,11 @@ import {
   MIKA,
   MISSING_COMBAT_ID,
   STORY_ORIGIN,
+  combatOf,
+  combatScenario,
   libraryPresets,
   longScenario,
+  longUnits,
   noUnitsScenario,
   rolls,
   roster,
@@ -136,6 +139,9 @@ const pickMenu = async (canvas: Canvas, item: string, t: TFunction) => {
 
 const nextTurnButton = (canvas: Canvas, t: TFunction) =>
   canvas.findByRole('button', { name: (label: string) => label.startsWith(t('TurnBar:nextTurn')) });
+
+const addTileOf = (canvas: Canvas, t: TFunction): Promise<HTMLElement> =>
+  canvas.findByRole('button', { name: t('EmptyState:addUnit') });
 
 const startButton = (canvas: Canvas, t: TFunction) =>
   canvas.findByRole('button', {
@@ -296,9 +302,16 @@ export const EmptyCombat = meta.story({
   parameters: { scenario: noUnitsScenario() },
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
-    await expect(
-      await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') }),
-    ).toBeVisible();
+    const heading = await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
+    await expect(heading).toBeVisible();
+    const emptyState = heading.parentElement;
+    if (!emptyState) throw new Error('The empty state is missing');
+    await expect(within(emptyState).queryByRole('button')).toBeNull();
+    const tile = await addTileOf(canvas, t);
+    await expect(tile).toBeEnabled();
+    await expect(tile.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      emptyState.getBoundingClientRect().bottom,
+    );
     const start = await startButton(canvas, t);
     await expect(start).toBeDisabled();
     await expect(start).toHaveTextContent(t('TurnBar:addUnitFirst'));
@@ -313,7 +326,7 @@ export const AddUnitSheet = meta.story({
   play: async ({ canvas, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
-    await userEvent.click(canvas.getByRole('button', { name: t('Menu:addUnit') }));
+    await userEvent.click(await addTileOf(canvas, t));
     const form = await canvas.findByRole('dialog', { name: t('Menu:addUnit') });
     await expect(within(form).getByRole('textbox', { name: t('UnitForm:name') })).toHaveAttribute(
       'placeholder',
@@ -328,8 +341,14 @@ export const SetupWithUnits = meta.story({
   parameters: { scenario: setupScenario() },
   play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'CombatScreen');
-    await rowOf(canvasElement, names.shadow);
+    const last = await rowOf(canvasElement, names.shadow);
     await expect(orderOf(canvasElement, rosterOrder)).toEqual(rosterOrder);
+    const tile = await addTileOf(canvas, t);
+    await expect(last.nextElementSibling).toBe(tile);
+    await expect(tile.getBoundingClientRect().width).toBeCloseTo(
+      last.getBoundingClientRect().width,
+      0,
+    );
     const start = await startButton(canvas, t);
     await expect(start).toBeEnabled();
     await expect(start).toHaveTextContent(t('TurnBar:rollsMissingInitiative'));
@@ -338,6 +357,19 @@ export const SetupWithUnits = meta.story({
         name: anyValue(t, 'CombatHeader:editRound', 'round'),
       }),
     ).toBeNull();
+  },
+});
+
+export const AddTileOpensAddSheet = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: setupScenario() },
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    await rowOf(canvasElement, names.shadow);
+    await userEvent.click(await addTileOf(canvas, t));
+    const form = await canvas.findByRole('dialog', { name: t('Menu:addUnit') });
+    await expect(within(form).getByText(t('UnitForm:hintSetup'))).toBeVisible();
+    await expect(dispatched(fakeApiOf(loaded))).toEqual([]);
   },
 });
 
@@ -375,6 +407,7 @@ export const RunningCombat = meta.story({
     await expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-active');
     const next = await nextTurnButton(canvas, t);
     await expect(next).toHaveTextContent(names.tomas);
+    await expect(canvas.queryByRole('button', { name: t('EmptyState:addUnit') })).toBeNull();
     next.focus();
     await expect(next).toHaveFocus();
   },
@@ -980,6 +1013,27 @@ export const UnitLimitReached = meta.story({
   },
 });
 
+export const SetupUnitLimitReached = meta.story({
+  parameters: {
+    geometry: longNameBreak,
+    scenario: combatScenario(combatOf({ status: 'setup', units: longUnits(99) })),
+  },
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const tile = await addTileOf(canvas, t);
+    const list = tile.closest<HTMLElement>('[data-scrollarea-viewport]');
+    if (!list) throw new Error('The unit list is missing');
+    list.scrollTop = list.scrollHeight;
+    await waitFor(() => expect(tile).toBeVisible());
+    await expect(tile).toBeDisabled();
+    await expect(tile).toHaveAccessibleDescription(t('Toast:unitCap', { limit: 99 }));
+    await expect(rowsOf(canvasElement)).toHaveLength(99);
+    await userEvent.click(tile, { pointerEventsCheck: 0 });
+    await expect(canvas.queryByRole('dialog', { name: t('Menu:addUnit') })).toBeNull();
+    await expect(dispatched(fakeApiOf(loaded))).toEqual([]);
+  },
+});
+
 export const RequestFailed = meta.story({
   tags: ['visual'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {
@@ -1120,7 +1174,7 @@ export const AddUnitAndPreset = meta.story({
   play: async ({ canvas, canvasElement, globals, loaded }) => {
     const t = storyT(globals, 'CombatScreen');
     await canvas.findByRole('heading', { name: t('EmptyState:noUnitsTitle') });
-    await userEvent.click(canvas.getByRole('button', { name: t('Menu:addUnit') }));
+    await userEvent.click(await addTileOf(canvas, t));
     const form = await canvas.findByRole('dialog', { name: t('Menu:addUnit') });
     await userEvent.click(within(form).getByRole('button', { name: t('UnitForm:addUnit') }));
     await rowOf(canvasElement, t('UnitForm:defaultName', { role: t('UnitForm:enemy'), n: 1 }));

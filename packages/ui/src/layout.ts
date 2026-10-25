@@ -21,6 +21,7 @@ export const layout = {
   turnBracket: { width: 5, gap: 4, height: 0.6 },
   turnSpring: { stiffness: 832, damping: 39, mass: 1 },
   roleTile: { width: 41, inset: 4 },
+  unitRow: 64,
   listInset: { top: 16, bottom: 44 },
   bottomBar: {
     height: 98,

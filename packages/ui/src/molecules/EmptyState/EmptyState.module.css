@@ -39,7 +39,3 @@
   line-height: var(--mantine-line-height-body);
   text-wrap: pretty;
 }
-
-.action {
-  padding-top: 6px;
-}

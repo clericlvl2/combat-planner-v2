@@ -3,7 +3,7 @@
   box-sizing: border-box;
   display: grid;
   grid-template-columns: 49px minmax(0, 1fr) 85px;
-  min-height: 64px;
+  min-height: var(--cp-unit-row);
   border: 1px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
