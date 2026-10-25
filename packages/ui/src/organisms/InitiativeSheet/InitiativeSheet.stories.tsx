@@ -60,11 +60,13 @@ export const Default = meta.story({
     const t = storyT(globals, 'InitiativeSheet');
     const sheet = await canvas.findByRole('dialog', { name: t('title') });
     await expect(sheet).toBeVisible();
-    await expect(within(sheet).getByText('(+3)')).toBeVisible();
     await expect(within(sheet).queryByRole('heading')).toBeNull();
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('15');
+    await expect(within(sheet).getAllByText(t('title'))).toHaveLength(1);
+    await expect(within(sheet).queryByText('(+3)')).toBeNull();
+    await expect(canvas.getByRole('spinbutton', { name: t('title') })).toHaveValue('15');
     const roll = canvas.getByRole('button', { name: t('roll', { bonus: '+3' }) });
     await expect(roll).toBeVisible();
+    await expect(roll).toHaveAttribute('data-sheet-action');
     await expect(roll.querySelector('svg')).not.toBeNull();
   },
 });
@@ -75,7 +77,7 @@ export const NoInitiativeYet = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'InitiativeSheet');
     await canvas.findByRole('dialog', { name: t('title') });
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('—');
+    await expect(canvas.getByRole('spinbutton', { name: t('title') })).toHaveValue('—');
   },
 });
 
@@ -93,14 +95,19 @@ export const NegativeBonusInRollLabel = meta.story({
 export const MinusAndPlusSetTheValue = meta.story({
   tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'Stepper');
-    await userEvent.click(await canvas.findByRole('button', { name: t('increase') }));
+    const t = storyT(globals, 'InitiativeSheet');
+    const label = t('title');
+    const increase = await canvas.findByRole('button', {
+      name: t('Stepper:increaseField', { label }),
+    });
+    const decrease = canvas.getByRole('button', { name: t('Stepper:decreaseField', { label }) });
+    await userEvent.click(increase);
     await expect(args.onSet).toHaveBeenLastCalledWith(16);
-    await userEvent.click(canvas.getByRole('button', { name: t('decrease') }));
-    await userEvent.click(canvas.getByRole('button', { name: t('decrease') }));
+    await userEvent.click(decrease);
+    await userEvent.click(decrease);
     await expect(args.onSet).toHaveBeenLastCalledWith(14);
     await expect(args.onSet).toHaveBeenCalledTimes(3);
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('14');
+    await expect(canvas.getByRole('spinbutton', { name: label })).toHaveValue('14');
     await expect(args.onRoll).not.toHaveBeenCalled();
   },
 });

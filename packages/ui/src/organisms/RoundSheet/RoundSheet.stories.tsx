@@ -66,16 +66,15 @@ export const Default = meta.story({
     const dialog = await canvas.findByRole('dialog', { name: t('roundSheetTitle') });
     await expect(dialog).toBeVisible();
     await expect(canvas.getByText('Ambush at the Ferry')).toBeVisible();
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('3');
+    await expect(canvas.getByRole('spinbutton', { name: t('round') })).toHaveValue('3');
     await expect(
       canvas.getByRole('button', { name: t('escalationFace', { value: 2 }) }),
     ).toHaveAttribute('aria-pressed', 'true');
     const faces = canvas.getByRole('group', { name: t('escalationTitle') });
     await expect(faces.querySelectorAll('button[data-face]')).toHaveLength(7);
-    const roundRow = canvas.getByRole('group', { name: t('round') });
-    const label = within(roundRow).getByText(t('round')).getBoundingClientRect();
-    const stepper = within(roundRow).getByRole('spinbutton').getBoundingClientRect();
-    await expect(label.right).toBeLessThan(stepper.left);
+    const label = within(faces).getByText(t('escalationTitle')).getBoundingClientRect();
+    const firstFace = faces.querySelector('button[data-face]')?.getBoundingClientRect();
+    await expect(firstFace?.top).toBeGreaterThanOrEqual(label.bottom);
   },
 });
 
@@ -83,8 +82,10 @@ export const RoundAtMaximum = meta.story({
   tags: ['!dev'],
   args: { round: 99 },
   play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'Stepper');
-    const increase = await canvas.findByRole('button', { name: t('increase') });
+    const t = storyT(globals, 'CombatHeader');
+    const increase = await canvas.findByRole('button', {
+      name: t('Stepper:increaseField', { label: t('round') }),
+    });
     await expect(increase).toBeDisabled();
     await userEvent.click(increase, { pointerEventsCheck: 0 });
     await expect(args.onRoundChange).not.toHaveBeenCalled();
@@ -94,11 +95,15 @@ export const RoundAtMaximum = meta.story({
 export const StepperChangesRound = meta.story({
   tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
-    const t = storyT(globals, 'Stepper');
-    await userEvent.click(await canvas.findByRole('button', { name: t('increase') }));
+    const t = storyT(globals, 'CombatHeader');
+    await userEvent.click(
+      await canvas.findByRole('button', {
+        name: t('Stepper:increaseField', { label: t('round') }),
+      }),
+    );
     await expect(args.onRoundChange).toHaveBeenCalledOnce();
     await expect(args.onRoundChange).toHaveBeenCalledWith(4);
-    await expect(canvas.getByRole('spinbutton')).toHaveValue('4');
+    await expect(canvas.getByRole('spinbutton', { name: t('round') })).toHaveValue('4');
     await expect(args.onEscalationChange).not.toHaveBeenCalled();
   },
 });

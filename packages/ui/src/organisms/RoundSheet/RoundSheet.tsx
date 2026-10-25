@@ -7,7 +7,6 @@ import { EscalationDie } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
-import rows from '../Sheet/SheetRows.module.css';
 import classes from './RoundSheet.module.css';
 
 export interface RoundSheetProps {
@@ -80,26 +79,20 @@ export function RoundSheet({
   onClose,
 }: RoundSheetProps) {
   const { t } = useTranslation('CombatHeader');
-  const roundLabel = useId();
   const escalationLabel = useId();
   return (
     <Sheet opened={opened} title={t('roundSheetTitle')} subtitle={combatTitle} onClose={onClose}>
-      <div className={rows.rows}>
-        <div className={rows.row} role="group" aria-labelledby={roundLabel}>
-          <span id={roundLabel} className={rows.label}>
-            {t('round')}
-          </span>
-          <Stepper
-            value={round}
-            min={LIMITS.round.min}
-            max={LIMITS.round.max}
-            signed={false}
-            size="M"
-            onChange={onRoundChange}
-          />
-        </div>
-        <div className={rows.row} role="group" aria-labelledby={escalationLabel}>
-          <span id={escalationLabel} className={rows.label}>
+      <div className={classes.fields}>
+        <Stepper
+          label={t('round')}
+          value={round}
+          min={LIMITS.round.min}
+          max={LIMITS.round.max}
+          signed={false}
+          onChange={onRoundChange}
+        />
+        <div className={classes.escalation} role="group" aria-labelledby={escalationLabel}>
+          <span id={escalationLabel} className={classes.label}>
             {t('escalationTitle')}
           </span>
           <FacePicker value={escalation} onPick={onEscalationChange} />

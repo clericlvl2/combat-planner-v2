@@ -83,8 +83,12 @@ export const WithModifiers = meta.story({
     await expect(within(ac).getByText(t('base', { value: 18 }))).toBeVisible();
     await expect(getComputedStyle(within(ac).getByText('20')).color).toBe(rgb(hpActions.heal));
     await expect(getComputedStyle(within(pd).getByText('17')).color).toBe(rgb(hpActions.damage));
-    await expect(within(ac).getByRole('spinbutton')).toHaveValue('+2');
-    await expect(within(pd).getByRole('spinbutton')).toHaveValue('−1');
+    await expect(within(ac).getByRole('spinbutton', { name: t('DefenseLine:ac') })).toHaveValue(
+      '+2',
+    );
+    await expect(within(pd).getByRole('spinbutton', { name: t('DefenseLine:pd') })).toHaveValue(
+      '−1',
+    );
   },
 });
 
@@ -94,9 +98,12 @@ export const StepperDispatches = meta.story({
   play: async ({ args, canvasElement, globals }) => {
     const t = storyT(globals, 'Stepper');
     const md = within(rowOf(canvasElement, 'md'));
-    await userEvent.click(md.getByRole('button', { name: t('decrease') }));
+    const decrease = md.getByRole('button', {
+      name: t('decreaseField', { label: t('DefenseLine:md') }),
+    });
+    await userEvent.click(decrease);
     await expect(args.onChange).toHaveBeenLastCalledWith({ ac: 2, pd: 0, md: -1 });
-    await userEvent.click(md.getByRole('button', { name: t('decrease') }));
+    await userEvent.click(decrease);
     await expect(args.onChange).toHaveBeenLastCalledWith({ ac: 2, pd: 0, md: -2 });
     await expect(md.getByText('16')).toBeVisible();
     await expect(args.onChange).toHaveBeenCalledTimes(2);

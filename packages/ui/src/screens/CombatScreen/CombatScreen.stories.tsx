@@ -655,7 +655,11 @@ export const RoundAndEscalationEdits = meta.story({
     const t = storyT(globals, 'CombatScreen');
     await userEvent.click(await canvas.findByRole('button', { name: ticketName(t, 3, 2) }));
     const sheet = await canvas.findByRole('dialog', { name: t('CombatHeader:roundSheetTitle') });
-    await userEvent.click(within(sheet).getByRole('button', { name: t('Stepper:increase') }));
+    await userEvent.click(
+      within(sheet).getByRole('button', {
+        name: t('Stepper:increaseField', { label: t('CombatHeader:round') }),
+      }),
+    );
     await waitFor(() =>
       expect(dispatched(fakeApiOf(loaded))).toEqual([
         expect.objectContaining({ type: 'editRound', round: 4 }),
@@ -840,9 +844,21 @@ export const DefensesTriggerOpensSheet = meta.story({
       if (!stepper) throw new Error(`${stat} row missing`);
       return within(stepper);
     };
-    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
-    await userEvent.click(stepperOf('ac').getByRole('button', { name: t('Stepper:increase') }));
-    await userEvent.click(stepperOf('pd').getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(
+      stepperOf('ac').getByRole('button', {
+        name: t('Stepper:increaseField', { label: t('DefenseLine:ac') }),
+      }),
+    );
+    await userEvent.click(
+      stepperOf('ac').getByRole('button', {
+        name: t('Stepper:increaseField', { label: t('DefenseLine:ac') }),
+      }),
+    );
+    await userEvent.click(
+      stepperOf('pd').getByRole('button', {
+        name: t('Stepper:decreaseField', { label: t('DefenseLine:pd') }),
+      }),
+    );
     await expect(stepperOf('ac').getByText('20')).toBeVisible();
     await expect(stepperOf('pd').getByText('15')).toBeVisible();
     await expect(within(sheet).getAllByText(t('DefenseSheet:base', { value: 18 }))).toHaveLength(1);

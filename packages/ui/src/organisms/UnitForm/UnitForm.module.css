@@ -63,10 +63,6 @@
   color: var(--cp-color-muted);
 }
 
-.stepper button[aria-controls]:disabled {
-  background: var(--cp-color-background);
-}
-
 .tools {
   display: flex;
   flex: none;

@@ -167,8 +167,16 @@ export const PlayerEditsOwnDefenses = meta.story({
     });
     const md = sheet.querySelector<HTMLElement>('[data-stat="md"]');
     if (!md) throw new Error('md row missing');
-    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
-    await userEvent.click(within(md).getByRole('button', { name: t('Stepper:decrease') }));
+    await userEvent.click(
+      within(md).getByRole('button', {
+        name: t('Stepper:decreaseField', { label: t('DefenseLine:md') }),
+      }),
+    );
+    await userEvent.click(
+      within(md).getByRole('button', {
+        name: t('Stepper:decreaseField', { label: t('DefenseLine:md') }),
+      }),
+    );
     await expect(within(md).getByText('13')).toBeVisible();
     await waitFor(() =>
       expect(sentBy(api)).toEqual([
@@ -260,7 +268,7 @@ export const EditOwnHeroTypeLocked = meta.story({
       'true',
     );
     await expect(within(form).getByRole('radiogroup')).toHaveAttribute('aria-disabled', 'true');
-    const maxHp = within(form).getByRole('spinbutton', { name: t('NumberField:maxHp') });
+    const maxHp = within(form).getByRole('spinbutton', { name: t('UnitForm:maxHp') });
     await expect(maxHp).toBeEnabled();
     await userEvent.clear(maxHp);
     await userEvent.type(maxHp, '40');

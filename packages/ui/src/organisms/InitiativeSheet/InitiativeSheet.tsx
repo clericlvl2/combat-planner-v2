@@ -4,7 +4,6 @@ import { Button } from '../../atoms/Button/Button.tsx';
 import { IconDiceD20 } from '../../atoms/icons/IconDiceD20.ts';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
-import classes from './InitiativeSheet.module.css';
 
 export interface InitiativeSheetProps {
   opened: boolean;
@@ -49,27 +48,22 @@ export function InitiativeSheet({
     <Sheet
       opened={opened}
       title={title}
-      header={
-        <span className={classes.title}>
-          {title} <span className={classes.bonus}>({signed(bonus)})</span>
-        </span>
-      }
+      header={null}
       onClose={onClose}
+      actions={
+        <Button variant="primary" fullWidth icon={IconDiceD20} onClick={roll} data-sheet-action="">
+          {t('roll', { bonus: signed(bonus) })}
+        </Button>
+      }
     >
-      <div className={classes.steps}>
-        <Stepper
-          className={classes.stepper}
-          value={value}
-          min={LIMITS.initiative.min}
-          max={LIMITS.initiative.max}
-          signed={false}
-          size="M"
-          onChange={onSet}
-        />
-      </div>
-      <Button size="S" fullWidth icon={IconDiceD20} onClick={roll}>
-        {t('roll', { bonus: signed(bonus) })}
-      </Button>
+      <Stepper
+        label={title}
+        value={value}
+        min={LIMITS.initiative.min}
+        max={LIMITS.initiative.max}
+        signed={false}
+        onChange={onSet}
+      />
     </Sheet>
   );
 }
