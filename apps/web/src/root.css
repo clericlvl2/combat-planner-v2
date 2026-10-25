@@ -97,3 +97,32 @@ body:has(> #root > [data-landing]) > #aside {
   border-radius: 0;
   box-shadow: none;
 }
+
+:root:active-view-transition #root:not(:has([data-scrim])) > * > header {
+  view-transition-name: header;
+}
+
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-group(header),
+::view-transition-old(header),
+::view-transition-new(header) {
+  animation-duration: var(--cp-page-transition-duration);
+  animation-timing-function: var(--cp-page-transition-easing);
+}
+
+::view-transition-old(header),
+::view-transition-new(header) {
+  height: 100%;
+  object-fit: none;
+  object-position: top;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
+}

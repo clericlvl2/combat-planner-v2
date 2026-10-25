@@ -47,4 +47,5 @@ export const layout = {
   loadingDelay: 250,
   hpNumberMs: 1000,
   hpCountMs: 450,
+  pageTransitionMs: 180,
 } as const;
