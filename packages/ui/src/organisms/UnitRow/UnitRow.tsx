@@ -189,6 +189,7 @@ export function UnitRow({
           aria-label={readOnly ? undefined : t('rollInitiative')}
           aria-haspopup={readOnly ? undefined : 'dialog'}
           aria-expanded={readOnly ? undefined : initiativeOpen}
+          data-tour={unit.initiative === null ? 'initiative' : undefined}
           onClick={readOnly ? undefined : () => onInitiative?.()}
         />
       </div>
@@ -238,6 +239,7 @@ export function UnitRow({
       )}
       <div className={classes.hp}>
         <HpBox
+          data-tour="hp"
           viewer="dm"
           hp={unit.hp}
           maxHp={unit.maxHp}

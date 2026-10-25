@@ -1,6 +1,8 @@
+import path from 'node:path';
 import { expect } from '@playwright/test';
-import type { Browser, BrowserContext, Page } from '@playwright/test';
+import type { Browser, BrowserContext, Locator, Page } from '@playwright/test';
 import { escapeRegExp, startsWithT, t } from './t.ts';
+import { TOUR_STORAGE_KEYS } from './tourStorage.ts';
 
 export const PASSWORD = 'correct-horse-battery';
 
@@ -43,11 +45,15 @@ export async function signIn(page: Page, email: string, password: string): Promi
 }
 
 export async function newPlayerContext(browser: Browser): Promise<BrowserContext> {
-  return browser.newContext({
+  const context = await browser.newContext({
     viewport: { width: 320, height: 568 },
     locale: 'ru-RU',
     extraHTTPHeaders: { 'x-forwarded-for': uniqueClientIp() },
   });
+  await context.addInitScript((keys: readonly string[]) => {
+    for (const key of keys) localStorage.setItem(key, 'done');
+  }, TOUR_STORAGE_KEYS);
+  return context;
 }
 
 export type UnitType = 'hero' | 'enemy' | 'ally';
@@ -194,4 +200,32 @@ export async function presetNames(page: Page): Promise<string[]> {
     .evaluateAll((cards) =>
       cards.map((card) => card.querySelector('[data-part="name"]')?.textContent ?? ''),
     );
+}
+
+const shots = process.env.TOUR_SHOTS;
+const taken = new Map<string, number>();
+
+export async function tourStep(
+  page: Page,
+  flow: string,
+  key: string,
+  current: number | null,
+): Promise<Locator> {
+  const tooltip = page.locator('[data-tour-tooltip][data-state="shown"]');
+  await expect(tooltip).toHaveAttribute('aria-label', t(`Tour:${key}Title`));
+  if (current === null) {
+    await expect(tooltip.getByText(/\d/)).toHaveCount(0);
+  } else if ((await tooltip.getAttribute('data-compact')) === null) {
+    const total = flow === 'dm' ? 8 : 6;
+    await expect(tooltip).toContainText(t('Tour:counter', { current, total }));
+  }
+  if (shots) {
+    const count = (taken.get(flow) ?? 0) + 1;
+    taken.set(flow, count);
+    await page.waitForTimeout(400);
+    await page.screenshot({
+      path: path.join(shots, `${String(count).padStart(2, '0')}-${key}.png`),
+    });
+  }
+  return tooltip;
 }

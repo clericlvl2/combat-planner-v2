@@ -122,6 +122,7 @@ export function PlayerRow({
         editable={mine}
         mine={mine}
         dead={dead}
+        data-tour="initiative"
         onClick={mine ? onInitiative : undefined}
       />
       <div className={classes.main}>
@@ -155,6 +156,7 @@ export function PlayerRow({
           component="button"
           type="button"
           className={classes.toggle}
+          data-tour="toggle"
           aria-label={unit.name}
           aria-expanded={expanded}
           aria-controls={expanded ? detailsId : undefined}
@@ -164,6 +166,7 @@ export function PlayerRow({
       <div className={classes.hp}>
         {numbers ? (
           <HpBox
+            data-tour="hp"
             viewer="player"
             hp={numbers.hp}
             maxHp={numbers.maxHp}

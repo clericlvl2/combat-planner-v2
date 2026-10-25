@@ -132,6 +132,31 @@ export const HeroList = meta.story({
   },
 });
 
+export const TourJoin = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: joinScenario, tour: { player: 'unset' } },
+  play: async ({ canvas, parameters }) => {
+    const t = storyT({ locale: parameters.scenario?.settings.language }, 'Tour');
+    const tooltip = await canvas.findByRole('dialog', { name: t('playerNameTitle') });
+    await expect(within(tooltip).getByText(t('counter', { current: 1, total: 6 }))).toBeVisible();
+    await typeName(canvas, playerT(parameters));
+    await expect(await canvas.findByRole('dialog', { name: t('playerHeroTitle') })).toBeVisible();
+  },
+});
+
+export const TourTurnStrip = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: ownTurn, tour: { player: 'done', turn: 'unset' } },
+  play: async ({ canvas, parameters }) => {
+    const t = storyT({ locale: parameters.scenario?.settings.language }, 'Tour');
+    const tooltip = await canvas.findByRole('dialog', { name: t('playerTurnTitle') });
+    await expect(within(tooltip).queryByRole('button', { name: t('skip') })).toBeNull();
+    await expect(within(tooltip).queryByText(/\d/)).toBeNull();
+    await userEvent.click(within(tooltip).getByRole('button', { name: t('gotIt') }));
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+  },
+});
+
 export const WaitingForDm = meta.story({
   name: 'Waiting For DM',
   tags: ['visual'],

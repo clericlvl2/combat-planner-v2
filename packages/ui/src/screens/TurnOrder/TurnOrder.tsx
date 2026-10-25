@@ -15,6 +15,7 @@ import type { DispatchResult } from '../../hooks/combat.ts';
 import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { useRetained } from '../../hooks/useRetained.ts';
+import { usePlayerTour } from '../../hooks/useTour.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
@@ -27,6 +28,7 @@ import { InitiativeSheet } from '../../organisms/InitiativeSheet/InitiativeSheet
 import { Menu } from '../../organisms/Menu/Menu.tsx';
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
+import { Tour } from '../../organisms/Tour/Tour.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
 import { useMotion } from '../../provider.tsx';
@@ -122,6 +124,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   };
 
   const applyHp = (unit: PlayerUnit, kind: HpHistoryKind, amount: number) => {
+    tour.complete(4);
     const sent = dispatch({ ...target(unit), type: hpActionTypes[kind], amount });
     if (kind === 'max') return sent;
     close();
@@ -164,6 +167,21 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   const historyUnit = useRetained(historyOpen);
   const defensesUnit = useRetained(defensesOpen);
   const editUnit = useRetained(editOpen);
+  const ownUnit = combat.units.find(ownsUnit);
+  const tour = usePlayerTour({
+    screen: 'turnOrder',
+    holdsHero: ownUnit !== undefined,
+    status: combat.status,
+    heroInitiative: ownUnit !== undefined && ownUnit.initiative !== null,
+    expanded: ownUnit !== undefined && expandedId === ownUnit.id,
+    initiativeOpen: initiativeOpen !== null,
+    numpadOpen: numpadOpen !== null,
+    otherOpen:
+      menuOpen ||
+      languageOpen ||
+      (open !== null && open.panel !== 'initiative' && open.panel !== 'numpad'),
+    stripShown: turnHero !== undefined || nextHero !== undefined,
+  });
 
   return (
     <div className={classes.root}>
@@ -197,13 +215,13 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           statusBar={false}
         />
         {turnHero ? (
-          <div className={classes.strip}>
+          <div className={classes.strip} data-tour="turn-strip">
             <TurnStrip kind="turn" onClick={() => revealUnit(turnHero.id)}>
               {t('yourTurn', { name: turnHero.name })}
             </TurnStrip>
           </div>
         ) : nextHero ? (
-          <div className={classes.strip}>
+          <div className={classes.strip} data-tour="turn-strip">
             <TurnStrip kind="next" onClick={() => revealUnit(nextHero.id)}>
               {t('youAreNext')}
             </TurnStrip>
@@ -223,6 +241,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
               <div key={unit.id} className={classes.slot} data-unit-id={unit.id}>
                 <PlayerRow
                   className={classes.row}
+                  data-tour={unit.id === ownUnit?.id ? 'own-row' : undefined}
                   hpChange={hpChanges.get(unit.id)}
                   unit={unit}
                   mine={mine}
@@ -274,10 +293,12 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           value={initiativeUnit.initiative}
           bonus={initiativeUnit.initiativeBonus ?? 0}
           random={random}
-          onSet={(initiative) =>
-            send({ ...target(initiativeUnit), type: 'setInitiative', initiative })
-          }
+          onSet={(initiative) => {
+            tour.complete(3);
+            send({ ...target(initiativeUnit), type: 'setInitiative', initiative });
+          }}
           onRoll={(_initiative, roll) => {
+            tour.complete(3);
             send({ ...target(initiativeUnit), type: 'rollInitiative', roll });
             close();
           }}
@@ -296,7 +317,10 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           tempHp={numpadUnit.tempHp ?? 0}
           history={(numpadUnit.hpHistory ?? []).toReversed()}
           onApply={(kind, amount) => applyHp(numpadUnit, kind, amount)}
-          onClose={close}
+          onClose={() => {
+            tour.complete(4);
+            close();
+          }}
         />
       ) : null}
       {conditionsUnit ? (
@@ -358,6 +382,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
       ) : null}
       <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
       <PlayerToast aboveBottomBar={false} />
+      <Tour step={tour.view} onNext={tour.onNext} onSkip={tour.onSkip} />
     </div>
   );
 }

@@ -10,6 +10,9 @@ import { I18nextProvider, initReactI18next } from 'react-i18next';
 import { memoryLocaleStorage } from './localeChoice.ts';
 import type { LocaleStorage } from './localeChoice.ts';
 import { cssVariablesResolver, theme } from './theme.ts';
+import type { TourStorage } from './tour/progress.ts';
+import { createTourStore } from './tour/store.ts';
+import type { TourStore } from './tour/store.ts';
 
 export const locales = LOCALES;
 
@@ -116,16 +119,30 @@ export function useLocaleStorage(): LocaleStorage {
   return useContext(LocaleStorageContext);
 }
 
+const TourStoreContext = createContext<TourStore>(createTourStore(null));
+
+export function useTourStore(): TourStore {
+  return useContext(TourStoreContext);
+}
+
 export interface UiProviderProps {
   motion: Motion;
   locale: Locale;
   localeStorage?: LocaleStorage;
+  tourStorage?: TourStorage;
   children: ReactNode;
 }
 
-export function UiProvider({ motion, locale, localeStorage, children }: UiProviderProps) {
+export function UiProvider({
+  motion,
+  locale,
+  localeStorage,
+  tourStorage,
+  children,
+}: UiProviderProps) {
   const i18n = useMemo(() => createI18n(locale), [locale]);
   const [memoryStorage] = useState(memoryLocaleStorage);
+  const tourStore = useMemo(() => createTourStore(tourStorage ?? null), [tourStorage]);
 
   useLayoutEffect(() => {
     const root = document.documentElement;
@@ -140,9 +157,11 @@ export function UiProvider({ motion, locale, localeStorage, children }: UiProvid
   return (
     <MotionContext.Provider value={motion}>
       <LocaleStorageContext.Provider value={localeStorage ?? memoryStorage}>
-        <MantineProvider theme={themes[motion]} cssVariablesResolver={cssVariablesResolver}>
-          <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
-        </MantineProvider>
+        <TourStoreContext.Provider value={tourStore}>
+          <MantineProvider theme={themes[motion]} cssVariablesResolver={cssVariablesResolver}>
+            <I18nextProvider i18n={i18n}>{children}</I18nextProvider>
+          </MantineProvider>
+        </TourStoreContext.Provider>
       </LocaleStorageContext.Provider>
     </MotionContext.Provider>
   );

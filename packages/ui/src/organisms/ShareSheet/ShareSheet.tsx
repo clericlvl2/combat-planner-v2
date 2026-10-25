@@ -67,7 +67,7 @@ export function ShareSheet({
       }
     >
       <div className={classes.body}>
-        <div className={classes.qr}>
+        <div className={classes.qr} data-tour="share-qr">
           <QRCode
             value={url}
             size={168}

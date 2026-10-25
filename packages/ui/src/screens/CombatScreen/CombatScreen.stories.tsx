@@ -331,6 +331,27 @@ export const EmptyCombat = meta.story({
   },
 });
 
+export const TourDamageInSheet = meta.story({
+  tags: ['visual'],
+  parameters: { tour: { dm: { stage: 6, skipped: [] } } },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Tour');
+    const hp = await canvas.findByRole('dialog', { name: t('hpTitle') });
+    await expect(within(hp).getByText(t('counter', { current: 6, total: 8 }))).toBeVisible();
+    await userEvent.click(within(hp).getByRole('button', { name: t('next') }));
+    const tooltip = await canvas.findByRole('dialog', { name: t('hpApplyTitle') });
+    await expect(tooltip).toHaveAttribute('data-compact');
+    const box = tooltip.getBoundingClientRect();
+    const keys = [...canvasElement.querySelectorAll('[role="group"] button')];
+    await expect(keys.length).toBeGreaterThan(0);
+    const covered = keys.filter((key) => {
+      const rect = key.getBoundingClientRect();
+      return rect.top < box.bottom && box.top < rect.bottom;
+    });
+    await expect(covered).toEqual([]);
+  },
+});
+
 export const AddUnitSheet = meta.story({
   tags: ['visual'],
   parameters: { scenario: noUnitsScenario() },

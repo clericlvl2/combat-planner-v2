@@ -20,6 +20,7 @@ import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombatList } from '../../hooks/useCombatList.ts';
 import { useDelayed } from '../../hooks/useDelayed.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { useDmTour } from '../../hooks/useTour.ts';
 import { CardSkeleton } from '../../molecules/CardSkeleton/CardSkeleton.tsx';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
@@ -33,6 +34,8 @@ import type { DrawerSection } from '../../organisms/Drawer/Drawer.tsx';
 import { PageHeader } from '../../organisms/PageHeader/PageHeader.tsx';
 import { SortSheet, combatSorts } from '../../organisms/SortSheet/SortSheet.tsx';
 import type { CombatSort } from '../../organisms/SortSheet/SortSheet.tsx';
+import { Tour } from '../../organisms/Tour/Tour.tsx';
+import { isStage } from '../../tour/progress.ts';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { COMBAT_FILE_ACCEPT, readCombatFile, saveCombatFile } from '../shared/combatFile.ts';
 import { hasCode } from '../shared/hasCode.ts';
@@ -157,8 +160,18 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   const locale = i18n.language;
   const all = combats ?? [];
   const loaded = combats !== undefined;
+
   const skeleton = useDelayed(!loaded && error === null);
   const visible = searchCombats(sortCombats(all, sort, locale), query, locale);
+  const editingForm = formOpen && form?.mode === 'edit';
+  const tour = useDmTour({
+    screen: 'list',
+    loaded,
+    calm: !drawerOpen && !sortOpen && deleteId === null && menuId === null && !editingForm,
+    formOpen: formOpen && form?.mode === 'create',
+    combatIds: visible.map((combat) => combat.id),
+  });
+  const tourCombatId = isStage(tour.progress) ? tour.progress.combatId : undefined;
   const atLimit = all.length >= LIMITS.combatsPerDm;
   const custom = sort !== DEFAULT_SORT;
   const editing = form?.mode === 'edit' ? all.find((combat) => combat.id === form.id) : undefined;
@@ -182,6 +195,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
       if (form.mode === 'create') await create({ id: form.id, ...value });
       else await update(form.id, value);
       setFormOpen(false);
+      if (form.mode === 'create') tour.complete(1, form.id);
     } catch {
       return;
     } finally {
@@ -316,6 +330,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
         {visible.map((combat) => (
           <CombatCard
             key={combat.id}
+            data-tour={combat.id === tourCombatId ? 'open-combat' : undefined}
             title={combat.title}
             description={combat.description}
             color={combat.color}
@@ -355,6 +370,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
         ) : null}
       </ScrollList>
       <BottomBar
+        data-tour="create"
         label={tBar('newCombat')}
         icon={IconPlus}
         disabled={!loaded || atLimit}
@@ -417,6 +433,7 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
         onNavigate={navigateTo}
         onClose={() => setDrawerOpen(false)}
       />
+      <Tour step={tour.view} onNext={tour.onNext} onSkip={tour.onSkip} />
     </div>
   );
 }

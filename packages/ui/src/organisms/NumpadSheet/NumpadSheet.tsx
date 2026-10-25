@@ -263,7 +263,7 @@ export function NumpadSheet({
       title={name}
       onClose={onClose}
       actions={
-        <div className={classes.actions}>
+        <div className={classes.actions} data-tour="hp-apply">
           {actionKinds.map((kind) => (
             <Button
               key={kind}

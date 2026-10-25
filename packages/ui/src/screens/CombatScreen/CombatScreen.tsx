@@ -46,6 +46,7 @@ import { usePresets } from '../../hooks/usePresets.ts';
 import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { useDmTour } from '../../hooks/useTour.ts';
 import { useWakeLock } from '../../hooks/useWakeLock.ts';
 import { AddTile } from '../../molecules/AddTile/AddTile.tsx';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
@@ -66,6 +67,7 @@ import { InitiativeSheet } from '../../organisms/InitiativeSheet/InitiativeSheet
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { RoundSheet } from '../../organisms/RoundSheet/RoundSheet.tsx';
 import { ShareSheet } from '../../organisms/ShareSheet/ShareSheet.tsx';
+import { Tour } from '../../organisms/Tour/Tour.tsx';
 import { TurnBar } from '../../organisms/TurnBar/TurnBar.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
@@ -364,6 +366,27 @@ export function CombatScreen({
   const defensesUnit = useRetained(defensesOpen);
   const editing = useRetained(editingOpen);
   const adding = useRetained(addingOpen);
+  const tour = useDmTour(
+    combat === undefined
+      ? null
+      : {
+          screen: 'combat',
+          status: combat.status,
+          units: combat.units.length,
+          missingInitiative: combat.units.some((unit) => unit.initiative === null),
+          adding: addingOpen !== null,
+          initiativeOpen: initiativeOpen !== null,
+          numpadOpen: numpadOpen !== null,
+          menuOpen: headerOpen === 'menu',
+          shareOpen: shareOpen && link.token !== undefined,
+          otherOpen:
+            headerOpen === 'round' ||
+            confirm !== null ||
+            editingOpen !== null ||
+            (open !== null && open.panel !== 'initiative' && open.panel !== 'numpad') ||
+            (shareOpen && link.token === undefined),
+        },
+  );
 
   if (ended?.type === 'deleted') return <CombatNotFound onHome={goHome} />;
   if (combat === undefined) {
@@ -418,6 +441,7 @@ export function CombatScreen({
   };
 
   const applyHp = (unit: Unit, kind: HpHistoryKind, amount: number) => {
+    tour.complete(6);
     close();
     void send({ type: hpActionTypes[kind], unitId: unit.id, amount });
   };
@@ -494,6 +518,7 @@ export function CombatScreen({
       return false;
     }
     setShareOpen(false);
+    tour.complete(8);
     notify(tToast('linkCopied'), 'success');
     return true;
   };
@@ -663,6 +688,7 @@ export function CombatScreen({
           ) : null}
           {setup ? (
             <AddTile
+              data-tour="add-unit"
               label={tEmpty('addUnit')}
               icon={IconUserPlus}
               disabled={atCap}
@@ -673,13 +699,18 @@ export function CombatScreen({
         </div>
       </ScrollList>
       <TurnBar
+        data-tour="turn-bar"
         mode={setup ? 'start' : 'next'}
         nextName={nextName}
         disabled={setup ? combat.units.length === 0 : reason !== null}
         reason={blockedReason}
         onClick={() => {
-          if (setup) start();
-          else void send({ type: 'nextTurn' });
+          if (setup) {
+            start();
+            return;
+          }
+          tour.complete(7);
+          void send({ type: 'nextTurn' });
         }}
       />
       {toast ? (
@@ -714,9 +745,11 @@ export function CombatScreen({
           bonus={initiativeUnit.initiativeBonus}
           random={random}
           onSet={(initiative) => {
+            tour.complete(4);
             void send({ type: 'setInitiative', unitId: initiativeUnit.id, initiative });
           }}
           onRoll={(_initiative, roll) => {
+            tour.complete(4);
             close();
             void send({ type: 'rollInitiative', unitId: initiativeUnit.id, roll });
           }}
@@ -817,7 +850,10 @@ export function CombatScreen({
         onCopy={copyLink}
         onReissue={() => setConfirm({ kind: 'revoke' })}
         onStop={() => setConfirm({ kind: 'stop' })}
-        onClose={() => setShareOpen(false)}
+        onClose={() => {
+          setShareOpen(false);
+          tour.complete(8);
+        }}
       />
       <Dialog
         opened={confirm !== null && (confirm.kind !== 'remove' || removing !== undefined)}
@@ -827,6 +863,7 @@ export function CombatScreen({
         }}
         onCancel={() => setConfirm(null)}
       />
+      <Tour step={tour.view} onNext={tour.onNext} onSkip={tour.onSkip} />
     </div>
   );
 }

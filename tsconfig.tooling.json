@@ -4,5 +4,5 @@
     "outDir": ".tsbuild/tooling",
     "types": ["node"]
   },
-  "include": ["*.ts", "e2e/teardown.ts"]
+  "include": ["*.ts", "e2e/teardown.ts", "e2e/tourStorage.ts"]
 }
