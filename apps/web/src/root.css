@@ -1,5 +1,5 @@
 :root {
-  --cp-layout-status-bar: env(safe-area-inset-top, 0px);
+  --cp-layout-status-bar: max(env(safe-area-inset-top, 0px), 12px);
   --cp-layout-viewport-width: min(100vw, 440px);
 }
 
