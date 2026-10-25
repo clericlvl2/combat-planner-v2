@@ -28,8 +28,10 @@ A VPS with HTTPS and continuous database backup: [deploy/README.md](deploy/READM
 ## Releases
 
 Work happens on a short-lived branch from `main`, merged through a pull request to `main`. A
-release is a manual run of the `release` workflow on `main`; it creates the tag `vX.Y.Z` and the
-image `ghcr.io/clericlvl2/combat-planner-v2:X.Y.Z`.
+release is a manual run of the `release` workflow on `main` with a green `ci` check; it creates
+the tag `vX.Y.Z` and its GitHub Release, pushes the image
+`ghcr.io/clericlvl2/combat-planner-v2:X.Y.Z` (also tagged `X.Y` and `latest`) and deploys it after
+the owner's approval: [deploy/README.md](deploy/README.md).
 
 ## Legal
 
