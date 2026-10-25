@@ -1,8 +1,9 @@
 import preview from '#.storybook/preview';
-import { IconDice5, IconPlus, IconUserX } from '@tabler/icons-react';
+import { IconPlus, IconUserX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import type en from '../../i18n/en/Button.json';
+import { IconDiceD20 } from '../icons/IconDiceD20.ts';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { Button } from './Button.tsx';
@@ -46,7 +47,7 @@ export const AllStates = meta.story({
     <StateGrid
       columns={states}
       rows={[
-        row('Primary S', { variant: 'primary', size: 'S', icon: IconDice5, labelKey: 'rollD20' }),
+        row('Primary S', { variant: 'primary', size: 'S', icon: IconDiceD20, labelKey: 'rollD20' }),
         row('Primary M', { variant: 'primary', size: 'M', labelKey: 'save' }),
         row('Primary L', { variant: 'primary', size: 'L', labelKey: 'save' }),
         row('Primary L with icon', {

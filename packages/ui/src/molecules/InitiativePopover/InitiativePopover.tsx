@@ -1,10 +1,10 @@
 import { LIMITS, rolledInitiative } from '@combat-planner/domain';
 import { Popover } from '@mantine/core';
-import { IconDice5 } from '@tabler/icons-react';
 import { useEffect, useRef } from 'react';
 import type { HTMLAttributes, KeyboardEvent, ReactNode, RefObject } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '../../atoms/Button/Button.tsx';
+import { IconDiceD20 } from '../../atoms/icons/IconDiceD20.ts';
 import { PopoverFrame } from '../../organisms/Menu/Menu.tsx';
 import { Stepper } from '../Stepper/Stepper.tsx';
 import classes from './InitiativePopover.module.css';
@@ -109,7 +109,7 @@ export function InitiativePopover({
             onChange={onSet}
           />
         </div>
-        <Button size="S" fullWidth icon={IconDice5} onClick={handleRoll}>
+        <Button size="S" fullWidth icon={IconDiceD20} onClick={handleRoll}>
           {t('roll', { bonus: signed(bonus) })}
         </Button>
       </PopoverFrame>

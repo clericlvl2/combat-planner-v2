@@ -44,4 +44,5 @@ a trademark of Fire Opal Media Inc.
 The MIT license covers the source code only and grants no rights to Fire Opal Media
 trademarks; forks must comply with the 13th Age Community Use Policy themselves.
 
-Code: [MIT](LICENSE). Security reports: [SECURITY.md](SECURITY.md).
+Code: [MIT](LICENSE). Third-party assets: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Security
+reports: [SECURITY.md](SECURITY.md).
