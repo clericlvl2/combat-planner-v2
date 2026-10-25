@@ -25,9 +25,9 @@
   flex: 1 1 auto;
   min-width: 0;
   max-height: 100%;
-  border: 2px solid var(--cp-color-ink);
+  border: 2px solid var(--cp-color-sheet-border);
   border-radius: var(--mantine-radius-sheet);
-  background: var(--cp-color-surface);
+  background: var(--cp-color-sheet);
   color: var(--cp-color-ink);
   pointer-events: all;
 

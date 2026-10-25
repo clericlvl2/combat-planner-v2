@@ -7,6 +7,12 @@ import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { Swatch } from './Swatch.tsx';
 import type { SwatchProps, SwatchSize } from './Swatch.tsx';
+import { base, combatColors } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type ColorKey = keyof typeof en;
 
@@ -93,7 +99,7 @@ export const GreyFill = meta.story({
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'Swatch');
     const swatch = canvas.getByRole('button', { name: t('grey') });
-    await expect(swatch.style.getPropertyValue('--swatch-fill')).toBe('#8C8578');
+    await expect(swatch.style.getPropertyValue('--swatch-fill')).toBe(combatColors[7]);
   },
 });
 
@@ -106,7 +112,7 @@ export const SelectedIsPressed = meta.story({
     await expect(swatch).toHaveAttribute('aria-pressed', 'true');
     await expect(swatch).toHaveAttribute('data-selected');
     await expect(swatch.querySelector('[data-check]')).not.toBeNull();
-    await expect(getComputedStyle(swatch).boxShadow).toContain('rgb(35, 31, 28)');
+    await expect(getComputedStyle(swatch).boxShadow).toContain(rgb(base.ink));
   },
 });
 
@@ -125,7 +131,7 @@ export const ClickSelects = meta.story({
     await expect(swatch).toHaveAttribute('aria-pressed', 'true');
     await expect(swatch).toHaveAttribute('data-selected');
     await expect(swatch.querySelector('[data-check]')).not.toBeNull();
-    await expect(getComputedStyle(swatch).boxShadow).toContain('rgb(35, 31, 28)');
+    await expect(getComputedStyle(swatch).boxShadow).toContain(rgb(base.ink));
   },
 });
 

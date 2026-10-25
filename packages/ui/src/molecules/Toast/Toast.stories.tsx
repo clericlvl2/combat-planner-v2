@@ -18,6 +18,12 @@ import { Toast, toastDuration } from './Toast.tsx';
 import type { ToastProps, ToastTone } from './Toast.tsx';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { palette } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type ToastKind = 'preset' | 'cap' | 'link' | 'failed' | 'undone';
 
@@ -143,7 +149,7 @@ export const AllStates = meta.story({
       const style = getComputedStyle(toast);
       await expect(toast.getBoundingClientRect().height).toBeGreaterThanOrEqual(40);
       await expect(style.borderTopLeftRadius).toBe('20px');
-      await expect(style.backgroundColor).toBe('rgb(35, 31, 28)');
+      await expect(style.backgroundColor).toBe(rgb(palette.toast.fill));
     }
     const long = canvasElement.querySelector<HTMLElement>(
       '[data-state-cell="error · long"] [role="status"]',

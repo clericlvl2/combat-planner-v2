@@ -13,56 +13,100 @@ import { layout } from './layout.ts';
 import classes from './theme.module.css';
 
 export const base = {
-  background: '#FAF6EE',
-  surface: '#FFFFFF',
-  soft: '#F3EDE2',
-  highlight: '#FFF4D2',
-  accent: '#FFE7A3',
-  border: '#E2D8C6',
-  disabled: '#E6DDCC',
-  ink: '#231F1C',
-  inkPressed: '#3A3531',
-  secondary: '#5F574D',
-  muted: '#8C8578',
+  background: '#EBDFD4',
+  field: '#E4D5C7',
+  surface: '#F9F4EC',
+  soft: '#F1E6DA',
+  highlight: '#F3E2C7',
+  accent: '#EFA831',
+  accentText: '#302017',
+  border: '#BFAE9E',
+  disabled: '#D7CBC1',
+  ink: '#302017',
+  inkPressed: '#45342A',
+  secondary: '#6B5A4D',
+  muted: '#938374',
+  chrome: '#3D4E2B',
+  chromeText: '#F9F4EC',
+  primary: '#3D4E2B',
+  primaryText: '#F9F4EC',
+  primaryPressed: '#50623E',
+  sheet: '#F9F4EC',
+  sheetBorder: '#3D4E2B',
 } as const;
 
 export const roles = {
-  hero: '#1E5FA8',
-  enemy: '#B4232A',
-  ally: '#2D7D46',
-  inactive: '#5F574D',
-  inactiveFill: '#F3EDE2',
+  hero: '#1E59CD',
+  heroText: '#FFFFFF',
+  enemy: '#C50710',
+  enemyText: '#FFFFFF',
+  ally: '#007570',
+  allyText: '#FFFFFF',
+  inactive: '#766558',
+  inactiveText: '#FFFFFF',
+  inactiveFill: '#E8DCD1',
 } as const;
 
 export const health = {
-  full: '#2E7A43',
-  staggered: '#B33A0A',
-  unconscious: '#5B4B9E',
-  dead: '#57534E',
-  empty: '#E6DDCC',
+  full: '#009157',
+  wounded: '#938010',
+  staggered: '#AF2D18',
+  unconscious: '#7D3AB7',
+  dead: '#5A5450',
+  empty: '#D7CBC1',
 } as const;
 
 export const healthTints = {
-  full: '#E3F1E6',
-  staggered: '#FBE3D8',
-  unconscious: '#ECE8F7',
+  full: '#C9EFD9',
+  wounded: '#F5E5A8',
+  staggered: '#FFDDC6',
+  unconscious: '#EBDEFD',
 } as const;
 
 export const hpActions = {
-  damage: '#B4232A',
-  heal: '#2E7A43',
-  setTemp: '#1E5FA8',
-  setMax: '#A85400',
-  dangerSoft: '#F7E4E2',
+  damage: '#C50710',
+  damageText: '#FFFFFF',
+  heal: '#0C7830',
+  healText: '#FFFFFF',
+  setTemp: '#1E59CD',
+  setTempText: '#FFFFFF',
+  setMax: '#CF9A35',
+  setMaxText: '#302017',
+  dangerSoft: '#FCE1DD',
 } as const;
 
 export const interaction = {
-  focus: '#1E5FA8',
-  tapMarker: '#FFE7A3',
-  dangerPressed: '#9B1C1C',
+  focus: '#1E59CD',
+  tapMarker: '#EFA831',
+  bracket: '#302017',
+  dangerPressed: '#9E0008',
 } as const;
 
-export const historyTemp = { fill: '#DCE6F7', text: '#1E4E8C' } as const;
+export const historyTemp = { fill: '#D8E5FD', text: '#1E4EAC' } as const;
+
+export const historyMax = { text: '#785300' } as const;
+
+export const toast = {
+  fill: '#302017',
+  text: '#F9F4EC',
+  action: '#EFA831',
+  pressed: '#45342A',
+  info: '#F1E6DA',
+  infoText: '#302017',
+  success: '#0C7830',
+  successText: '#FFFFFF',
+  warning: '#EFA831',
+  warningText: '#302017',
+  error: '#C50710',
+  errorText: '#FFFFFF',
+} as const;
+
+export const landing = {
+  deskField: '#E4D5C7',
+  deskText: '#302017',
+  plane: '#253317',
+  planeDot: '#EFA831',
+} as const;
 
 export const conditionNames = [
   'charmed',
@@ -81,28 +125,28 @@ export const conditionNames = [
 export type ConditionName = (typeof conditionNames)[number];
 
 export const conditions: Record<ConditionName, { fill: string; text: string }> = {
-  charmed: { fill: '#F9DDE6', text: '#8A2448' },
-  confused: { fill: '#DDEFD5', text: '#2F6B1F' },
-  dazed: { fill: '#FFF1B8', text: '#6B5600' },
-  fear: { fill: '#E3E1DC', text: '#3D3A35' },
-  helpless: { fill: '#F6DCD5', text: '#8A2E17' },
-  hampered: { fill: '#D7EBF5', text: '#12506E' },
-  shocked: { fill: '#D5F0F0', text: '#0E5E63' },
-  stuck: { fill: '#E9DFD1', text: '#5C4026' },
-  stunned: { fill: '#FBE0C2', text: '#8A3F00' },
-  vulnerable: { fill: '#F8D7D7', text: '#9B1C1C' },
-  weakened: { fill: '#EDE6C9', text: '#5E5214' },
+  charmed: { fill: '#F9D1E3', text: '#5E3248' },
+  confused: { fill: '#D0E6C5', text: '#314B24' },
+  dazed: { fill: '#E8DEB9', text: '#4E420D' },
+  fear: { fill: '#E1DED5', text: '#464239' },
+  helpless: { fill: '#FDD3C8', text: '#623428' },
+  hampered: { fill: '#BDE5F9', text: '#0C4960' },
+  shocked: { fill: '#B8E9E9', text: '#004D4F' },
+  stuck: { fill: '#F1DABA', text: '#573D0F' },
+  stunned: { fill: '#FBD5C1', text: '#60361E' },
+  vulnerable: { fill: '#FED1D2', text: '#623234' },
+  weakened: { fill: '#DFE2BC', text: '#454513' },
 };
 
 export const combatColors = [
-  '#B4232A',
-  '#A85400',
-  '#8A6A00',
-  '#2E7A43',
-  '#0E5E63',
-  '#1E5FA8',
-  '#5C4026',
-  '#8C8578',
+  '#C50710',
+  '#BB5D00',
+  '#938010',
+  '#009157',
+  '#007570',
+  '#1E59CD',
+  '#6B5A4D',
+  '#938374',
 ] as const;
 
 export const palette = {
@@ -112,6 +156,10 @@ export const palette = {
   healthTints,
   hpActions,
   interaction,
+  historyTemp,
+  historyMax,
+  toast,
+  landing,
   conditions,
   combatColors,
 } as const;
@@ -192,7 +240,10 @@ export function paletteVariables(): Record<string, string> {
     'health-tint': healthTints,
     hp: hpActions,
     'history-temp': historyTemp,
+    'history-max': historyMax,
     state: interaction,
+    toast,
+    landing,
   };
   for (const [prefix, group] of Object.entries(groups)) {
     for (const [name, value] of Object.entries(group)) {
@@ -242,15 +293,17 @@ export const theme: MantineThemeOverride = createTheme({
   black: base.ink,
   colors: {
     ink: colorsTuple(base.ink),
+    primary: colorsTuple(base.primary),
     hero: colorsTuple(roles.hero),
     enemy: colorsTuple(roles.enemy),
     ally: colorsTuple(roles.ally),
     damage: colorsTuple(hpActions.damage),
     heal: colorsTuple(hpActions.heal),
+    wounded: colorsTuple(health.wounded),
     setTemp: colorsTuple(hpActions.setTemp),
     setMax: colorsTuple(hpActions.setMax),
   },
-  primaryColor: 'ink',
+  primaryColor: 'primary',
   primaryShade: 0,
   autoContrast: false,
   fontFamily: fontFamilies.ui,

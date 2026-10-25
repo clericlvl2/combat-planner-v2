@@ -8,11 +8,16 @@ import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { HpChange } from '../../hooks/useHpChanges.ts';
 import { layout } from '../../layout.ts';
-import { fontSizes } from '../../theme.ts';
+import { base, fontSizes, hpActions } from '../../theme.ts';
 import { UnitRow } from './UnitRow.tsx';
 import type { UnitRowCallbacks, UnitRowProps } from './UnitRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { createI18n, locales } from '../../provider.tsx';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp'> &
   Partial<Unit> & { defenses: [number, number, number] };
@@ -235,7 +240,7 @@ export const ActiveTurnWounded = meta.story({
     await expect(style.boxShadow).toBe('none');
     await expect(style.transform).toBe(`matrix(1, 0, 0, 1, 0, -${layout.activeLift})`);
     const surface = getComputedStyle(row as HTMLElement, '::before');
-    await expect(surface.backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(surface.backgroundColor).toBe(rgb(base.accent));
     await expect(surface.boxShadow).not.toBe('none');
     await expect(surface.transform).toBe('none');
     await expect(canvasElement.querySelector('[data-notch]')).toBeNull();
@@ -781,7 +786,7 @@ export const DamageNumber = meta.story({
     const number = numberOf(canvasElement);
     await expect(number).toHaveTextContent('−3');
     const style = getComputedStyle(number);
-    await expect(style.color).toBe('rgb(180, 35, 42)');
+    await expect(style.color).toBe(rgb(hpActions.damage));
     await expect(style.fontSize).toBe(`${fontSizes.display}px`);
     await expect(Number(style.opacity)).toBeGreaterThan(0.5);
     await expect(getComputedStyle(number.parentElement as HTMLElement).pointerEvents).toBe('none');
@@ -796,7 +801,7 @@ export const HealNumber = meta.story({
   play: async ({ canvasElement }) => {
     const number = numberOf(canvasElement);
     await expect(number).toHaveTextContent('+10');
-    await expect(getComputedStyle(number).color).toBe('rgb(46, 122, 67)');
+    await expect(getComputedStyle(number).color).toBe(rgb(hpActions.heal));
   },
 });
 
@@ -809,7 +814,7 @@ export const TempNumber = meta.story({
     const t = storyT(globals, 'HpBox');
     const number = numberOf(canvasElement);
     await expect(number).toHaveTextContent(t('temp', { amount: 5 }));
-    await expect(getComputedStyle(number).color).toBe('rgb(30, 95, 168)');
+    await expect(getComputedStyle(number).color).toBe(rgb(hpActions.setTemp));
   },
 });
 
@@ -828,8 +833,8 @@ export const StaggeredRibbon = meta.story({
     await expect(ribbon).toHaveTextContent(t('staggered'));
     const style = getComputedStyle(ribbon as HTMLElement);
     await expect(style.textTransform).toBe('uppercase');
-    await expect(style.backgroundColor).toBe('color(srgb 0.701961 0.227451 0.0392157 / 0.94)');
-    await expect(style.color).toBe('rgb(255, 255, 255)');
+    await expect(style.backgroundColor).toBe('color(srgb 0.686275 0.176471 0.0941176 / 0.94)');
+    await expect(style.color).toBe(rgb(base.surface));
     const card = (ribbon as HTMLElement).closest<HTMLElement>('[data-unit-role]');
     const plate = (ribbon as HTMLElement).getBoundingClientRect();
     const edges = (card as HTMLElement).getBoundingClientRect();

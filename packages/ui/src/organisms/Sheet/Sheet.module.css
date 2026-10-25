@@ -40,9 +40,9 @@
   max-height: 100%;
   padding: 14px;
   overflow: hidden;
-  border: 2px solid var(--cp-color-ink);
+  border: 2px solid var(--cp-color-sheet-border);
   border-radius: var(--mantine-radius-sheet);
-  background: var(--cp-color-surface);
+  background: var(--cp-color-sheet);
   color: var(--cp-color-ink);
   box-shadow: none;
   pointer-events: all;

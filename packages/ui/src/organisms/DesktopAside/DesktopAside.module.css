@@ -16,7 +16,7 @@
   width: 64px;
   height: 64px;
   border-radius: var(--mantine-radius-card);
-  background: var(--cp-color-ink);
+  background: var(--cp-color-primary);
   color: var(--cp-color-accent);
 }
 

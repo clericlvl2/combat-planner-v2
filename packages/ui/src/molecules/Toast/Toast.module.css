@@ -22,8 +22,8 @@
   margin-inline: auto;
   padding: 4px 40px 4px 8px;
   border-radius: 20px;
-  background: var(--cp-color-ink);
-  color: var(--cp-color-surface);
+  background: var(--cp-toast-fill);
+  color: var(--cp-toast-text);
   font-family: var(--cp-font-ui);
   animation: enter var(--toast-exit) ease-out;
   transition:
@@ -49,22 +49,22 @@
   width: 24px;
   height: 24px;
   border-radius: 12px;
-  background: var(--cp-color-soft);
-  color: var(--cp-color-ink);
+  background: var(--cp-toast-info);
+  color: var(--cp-toast-info-text);
 
   .root[data-tone='success'] & {
-    background: var(--cp-health-full);
-    color: var(--cp-color-surface);
+    background: var(--cp-toast-success);
+    color: var(--cp-toast-success-text);
   }
 
   .root[data-tone='warning'] & {
-    background: var(--cp-color-accent);
-    color: var(--cp-color-ink);
+    background: var(--cp-toast-warning);
+    color: var(--cp-toast-warning-text);
   }
 
   .root[data-tone='error'] & {
-    background: var(--cp-role-enemy);
-    color: var(--cp-color-surface);
+    background: var(--cp-toast-error);
+    color: var(--cp-toast-error-text);
   }
 }
 
@@ -87,7 +87,7 @@
   margin-left: auto;
   padding: 0 10px;
   border-radius: 16px;
-  color: var(--cp-color-accent);
+  color: var(--cp-toast-action);
   font-family: var(--cp-font-ui);
   font-size: var(--mantine-font-size-small);
   font-weight: 700;
@@ -97,7 +97,7 @@
 
   &:active,
   &[data-pressed] {
-    background: var(--cp-color-ink-pressed);
+    background: var(--cp-toast-pressed);
   }
 
   &:focus-visible,
@@ -124,13 +124,13 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  color: var(--cp-color-surface);
+  color: var(--cp-toast-text);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
-    background: var(--cp-color-ink-pressed);
+    background: var(--cp-toast-pressed);
   }
 
   &:focus-visible,

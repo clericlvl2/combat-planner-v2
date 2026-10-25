@@ -4,6 +4,12 @@ import { CardActions } from './CardActions.tsx';
 import type { CardActionsProps } from './CardActions.tsx';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 interface CardActionsCellProps extends CardActionsProps {
   width?: number;
@@ -93,7 +99,7 @@ export const OpenMarksTheButton = meta.story({
     const more = canvas.getByRole('button', { name: t('more') });
     await expect(more).toHaveAttribute('aria-expanded', 'true');
     await expect(more).toHaveAttribute('aria-haspopup', 'menu');
-    await expect(getComputedStyle(more).backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(getComputedStyle(more).backgroundColor).toBe(rgb(base.accent));
   },
 });
 

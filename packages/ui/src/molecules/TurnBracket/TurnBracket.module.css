@@ -4,7 +4,7 @@
   left: 0;
   display: block;
   border-radius: 999px;
-  background: var(--cp-color-ink);
+  background: var(--cp-state-bracket);
   pointer-events: none;
   will-change: transform;
 

@@ -12,6 +12,12 @@ import { Menu } from '../Menu/Menu.tsx';
 import { PlayerRow } from './PlayerRow.tsx';
 import type { PlayerRowProps } from './PlayerRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 interface UnitSeed {
   id: string;
@@ -284,7 +290,7 @@ export const OwnHeroActiveTurn = meta.story({
     await expect(style.boxShadow).toBe('none');
     await expect(style.transform).toBe(`matrix(1, 0, 0, 1, 0, -${layout.activeLift})`);
     const surface = getComputedStyle(row as HTMLElement, '::before');
-    await expect(surface.backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(surface.backgroundColor).toBe(rgb(base.accent));
     await expect(surface.boxShadow).not.toBe('none');
     await expect(surface.transform).toBe('none');
     await expect(canvasElement.querySelector('[data-notch]')).toBeNull();

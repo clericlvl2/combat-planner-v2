@@ -5,6 +5,12 @@ import { expect, fn, userEvent } from 'storybook/test';
 import { TurnBar } from './TurnBar.tsx';
 import type { TurnBarProps } from './TurnBar.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type ReasonKey = 'everyUnitDisabled' | 'lastRound' | 'addUnitFirst';
 
@@ -122,7 +128,7 @@ export const DataDisabledGreysSecondLine = meta.story({
   render: (args) => <TurnBarCell {...args} data-disabled="" />,
   play: async ({ canvas }) => {
     const line = canvas.getByText('Brother Tomas');
-    await expect(getComputedStyle(line).color).toBe('rgb(95, 87, 77)');
+    await expect(getComputedStyle(line).color).toBe(rgb(base.secondary));
   },
 });
 

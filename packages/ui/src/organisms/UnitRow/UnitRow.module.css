@@ -41,6 +41,7 @@
     --cp-state-tap-marker: var(--cp-color-ink);
 
     z-index: 1;
+    color: var(--cp-color-accent-text);
     transform: translateY(calc(-1 * var(--cp-active-lift)));
     transition: transform 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
 
@@ -119,6 +120,10 @@
 
 .claimer {
   color: var(--cp-role-hero);
+
+  .root[data-active] & {
+    color: var(--cp-color-accent-text);
+  }
 }
 
 .conditions {

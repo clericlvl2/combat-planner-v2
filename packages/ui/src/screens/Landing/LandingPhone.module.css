@@ -14,7 +14,7 @@
     0 0 0 2px var(--cp-color-border),
     0 0 0 10px var(--cp-color-surface),
     0 0 0 12px var(--cp-color-border),
-    0 40px 60px -10px rgb(0 0 0 / 60%);
+    0 40px 60px -10px color-mix(in srgb, var(--cp-color-ink) 60%, transparent);
   contain: layout paint;
 }
 
@@ -29,6 +29,7 @@
   align-items: center;
   height: 44px;
   padding: 0 32px;
+  color: var(--cp-color-chrome-text);
   font-size: var(--mantine-font-size-body);
   font-weight: 600;
   line-height: 1;
@@ -48,8 +49,10 @@
   flex: none;
   flex-direction: column;
   width: 100%;
-  border-bottom: 2px solid var(--cp-color-border);
-  background: var(--cp-color-background);
+  border-bottom: 2px solid
+    color-mix(in srgb, var(--cp-color-chrome-text) 25%, var(--cp-color-chrome));
+  background: var(--cp-color-chrome);
+  color: var(--cp-color-chrome-text);
 }
 
 .headerStatus {
@@ -91,7 +94,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--mantine-radius-field);
-  background: var(--cp-color-soft);
+  background: color-mix(in srgb, var(--cp-color-chrome-text) 12%, transparent);
 }
 
 .ticket {
@@ -102,6 +105,7 @@
   margin: 12px;
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
 }
 
 .divider {
@@ -215,10 +219,19 @@
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-ink);
 
+  .playerBody & {
+    border-color: var(--cp-color-surface);
+    background: var(--cp-color-surface);
+  }
+
   .die[data-empty] & {
     padding: 6px;
     border: 2px dashed var(--cp-color-muted);
     background: transparent;
+  }
+
+  .playerBody .die[data-empty] & {
+    border-color: color-mix(in srgb, var(--cp-color-chrome-text) 60%, transparent);
   }
 
   .die[data-ticket] & {
@@ -245,6 +258,11 @@
   border-radius: 50%;
   background: var(--cp-color-surface);
   opacity: 0;
+
+  .playerBody & {
+    background: var(--cp-color-ink);
+  }
+
   transform: scale(0);
   transition:
     transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -271,6 +289,11 @@
   .die[data-empty] & {
     color: var(--cp-color-secondary);
   }
+
+  .playerBody &,
+  .playerBody .die[data-empty] & {
+    color: var(--cp-color-chrome-text);
+  }
 }
 
 .list {
@@ -283,7 +306,7 @@
   padding: 8px 12px;
   overflow: clip;
   overflow-clip-margin: 20px;
-  background: var(--cp-color-soft);
+  background: var(--cp-color-field);
 }
 
 .row {
@@ -310,6 +333,7 @@
     z-index: 1;
     border-color: var(--cp-color-accent);
     background: var(--cp-color-accent);
+    color: var(--cp-color-accent-text);
     box-shadow: var(--cp-active-shadow);
     transform: translateY(calc(-1 * var(--cp-active-lift)));
   }
@@ -494,6 +518,11 @@
   border-radius: var(--mantine-radius-field);
   background: var(--stage-hp-tint);
 
+  &[data-status='wounded'] {
+    --stage-hp-status: var(--cp-health-wounded);
+    --stage-hp-tint: var(--cp-health-tint-wounded);
+  }
+
   &[data-status='staggered'] {
     --stage-hp-status: var(--cp-health-staggered);
     --stage-hp-tint: var(--cp-health-tint-staggered);
@@ -589,7 +618,7 @@
   border: 2px solid var(--cp-color-surface);
   border-radius: var(--mantine-radius-full);
   background: var(--cp-hp-set-temp);
-  color: var(--cp-color-surface);
+  color: var(--cp-hp-set-temp-text);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 14px;
@@ -647,8 +676,8 @@
   min-height: 58px;
   padding: 6px 16px;
   border-radius: 29px;
-  background: var(--cp-color-ink);
-  color: var(--cp-color-surface);
+  background: var(--cp-color-primary);
+  color: var(--cp-color-primary-text);
   animation: press 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 

@@ -53,10 +53,10 @@ export const Tokens = meta.story({
     );
     await expect(fills).toEqual(expectedFills);
     await expect(fills).toContain(health.unconscious);
-    await expect(combatColors[7]).toBe('#8C8578');
+    await expect(combatColors[7]).toBe('#938374');
     await expect(
       getComputedStyle(document.documentElement).getPropertyValue('--cp-combat-7').trim(),
-    ).toBe('#8C8578');
+    ).toBe('#938374');
     await expect(document.documentElement.dataset.motion).toBe('off');
     const swatch = canvasElement.querySelector('[data-hex]');
     await expect(swatch && getComputedStyle(swatch).transitionDuration).toBe('0s');

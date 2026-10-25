@@ -4,9 +4,10 @@
   flex: none;
   flex-direction: column;
   width: 100%;
-  border-bottom: 2px solid var(--cp-color-border);
-  background: var(--cp-color-background);
-  color: var(--cp-color-ink);
+  border-bottom: 2px solid
+    color-mix(in srgb, var(--cp-color-chrome-text) 25%, var(--cp-color-chrome));
+  background: var(--cp-color-chrome);
+  color: var(--cp-color-chrome-text);
   font-family: var(--cp-font-ui);
 }
 
@@ -29,6 +30,15 @@
 
 .back {
   flex: none;
+
+  .bar & {
+    color: var(--cp-color-chrome-text);
+  }
+
+  .bar &:active:not(:disabled),
+  .bar &[data-pressed] {
+    background: color-mix(in srgb, var(--cp-color-chrome-text) 12%, transparent);
+  }
 }
 
 .title {
@@ -55,15 +65,15 @@
   padding: 0;
   border: none;
   border-radius: var(--mantine-radius-field);
-  background: var(--cp-color-soft);
-  color: var(--cp-color-ink);
+  background: color-mix(in srgb, var(--cp-color-chrome-text) 12%, transparent);
+  color: var(--cp-color-chrome-text);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
-    background: var(--cp-color-border);
+    background: color-mix(in srgb, var(--cp-color-chrome-text) 24%, transparent);
   }
 
   &:focus-visible,
@@ -87,6 +97,7 @@
   margin: 12px;
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
 
   &[data-setup] {
     grid-template-columns: minmax(0, 1fr);

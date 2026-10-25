@@ -5,6 +5,12 @@ import type { CombatColor } from '../../atoms/Swatch/Swatch.tsx';
 import { SwatchRow } from './SwatchRow.tsx';
 import type { SwatchRowProps } from './SwatchRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 interface SwatchRowCellProps extends SwatchRowProps {
   width?: number;
@@ -76,7 +82,7 @@ export const SwatchesShrinkToTheRow = meta.story({
     const teal = canvas.getByRole('button', { name: t('teal') });
     await expect(teal.getBoundingClientRect().width).toBe(26);
     await expect(teal.getBoundingClientRect().height).toBe(26);
-    await expect(getComputedStyle(teal).boxShadow).toContain('rgb(35, 31, 28)');
+    await expect(getComputedStyle(teal).boxShadow).toContain(rgb(base.ink));
   },
 });
 

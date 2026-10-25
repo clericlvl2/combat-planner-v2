@@ -25,6 +25,11 @@
     cursor: pointer;
   }
 
+  &[data-status='wounded'] {
+    --hp-box-status: var(--cp-health-wounded);
+    --hp-box-tint: var(--cp-health-tint-wounded);
+  }
+
   &[data-status='staggered'] {
     --hp-box-status: var(--cp-health-staggered);
     --hp-box-tint: var(--cp-health-tint-staggered);
@@ -126,6 +131,7 @@
   right: 6px;
   padding: 0 6px;
   background: var(--cp-hp-set-temp);
+  color: var(--cp-hp-set-temp-text);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 14px;

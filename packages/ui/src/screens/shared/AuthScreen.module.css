@@ -31,7 +31,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--mantine-radius-field);
-  background: var(--cp-color-ink);
+  background: var(--cp-color-primary);
   color: var(--cp-color-accent);
 }
 

@@ -7,6 +7,12 @@ import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { IconButton } from './IconButton.tsx';
 import type { IconButtonProps } from './IconButton.tsx';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type LabelKey = keyof typeof en;
 
@@ -79,10 +85,10 @@ export const OpenState = meta.story({
     for (const name of [t('openNavigation'), t('back'), t('add')]) {
       const button = canvas.getByRole('button', { name });
       await expect(getComputedStyle(button).boxShadow).toBe(
-        'rgb(35, 31, 28) 0px 0px 0px 2px inset',
+        `${rgb(base.ink)} 0px 0px 0px 2px inset`,
       );
-      await expect(getComputedStyle(button).backgroundColor).toBe('rgb(255, 231, 163)');
-      await expect(getComputedStyle(button).color).toBe('rgb(35, 31, 28)');
+      await expect(getComputedStyle(button).backgroundColor).toBe(rgb(base.accent));
+      await expect(getComputedStyle(button).color).toBe(rgb(base.ink));
     }
   },
 });
@@ -95,8 +101,8 @@ export const OpenColours = meta.story({
     const t = storyT(globals, 'IconButton');
     const button = canvas.getByRole('button', { name: t('close') });
     await expect(button).toHaveAttribute('data-open');
-    await expect(getComputedStyle(button).backgroundColor).toBe('rgb(255, 231, 163)');
-    await expect(getComputedStyle(button).borderTopColor).toBe('rgb(35, 31, 28)');
+    await expect(getComputedStyle(button).backgroundColor).toBe(rgb(base.accent));
+    await expect(getComputedStyle(button).borderTopColor).toBe(rgb(base.ink));
   },
 });
 

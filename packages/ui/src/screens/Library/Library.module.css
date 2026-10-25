@@ -13,7 +13,7 @@
   min-height: 0;
 
   &:has(.card) {
-    background: var(--cp-color-soft);
+    background: var(--cp-color-field);
   }
 }
 

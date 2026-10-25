@@ -301,7 +301,7 @@ export const PlayerTints = meta.story({
     await expect(getComputedStyle(full).backgroundColor).toBe(rgb(healthTints.full));
     const wounded = caseAt(canvasElement, 1);
     await expect(boxFacts(wounded)).toEqual(boxExpected(t, 24, 40, 'player'));
-    await expect(getComputedStyle(wounded).backgroundColor).toBe(rgb(healthTints.full));
+    await expect(getComputedStyle(wounded).backgroundColor).toBe(rgb(healthTints.wounded));
     const own = caseAt(canvasElement, 2);
     const ownNumbers = own.querySelector('[data-part="numbers"]');
     await expect(ownNumbers && getComputedStyle(ownNumbers).borderBottomStyle).toBe('dashed');
@@ -388,7 +388,7 @@ export const DamageSteps = meta.story({
     const t = storyT(globals, 'HpBox');
     const tints: Record<HealthStatus, string> = {
       full: rgb(healthTints.full),
-      wounded: rgb(healthTints.full),
+      wounded: rgb(healthTints.wounded),
       staggered: rgb(healthTints.staggered),
       unconscious: rgb(healthTints.unconscious),
       dead: 'rgba(0, 0, 0, 0)',
@@ -481,11 +481,11 @@ export const OneHpLostKeepsTwoSegments = meta.story({
     />
   ),
   play: async ({ canvasElement }) => {
-    const green = rgb(health.full);
+    const wounded = rgb(health.wounded);
     for (const index of [0, 1, 2, 3]) {
       const box = caseAt(canvasElement, index);
       await expect(box).toHaveAttribute('data-status', 'wounded');
-      await expect(filledColors(box)).toEqual([green, green]);
+      await expect(filledColors(box)).toEqual([wounded, wounded]);
     }
   },
 });

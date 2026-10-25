@@ -13,7 +13,7 @@
   min-height: 0;
 
   &:has(.row) {
-    background: var(--cp-color-soft);
+    background: var(--cp-color-field);
   }
 }
 

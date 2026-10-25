@@ -27,7 +27,7 @@
   }
 
   &[data-kind='max'] {
-    --history-amount: var(--cp-hp-set-max);
+    --history-amount: var(--cp-history-max-text);
   }
 }
 

@@ -17,7 +17,7 @@
   left: 0;
   box-sizing: border-box;
   width: min(300px, var(--cp-layout-viewport-width, 100%) - 56px);
-  border-right: 2px solid var(--cp-color-ink);
+  border-right: 2px solid var(--cp-color-sheet-border);
   border-radius: 0 var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0;
   background: var(--cp-color-background);
   color: var(--cp-color-ink);
