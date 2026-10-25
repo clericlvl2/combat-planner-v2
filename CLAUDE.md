@@ -213,7 +213,7 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
 - TypeScript 7: `tsc` is the native compiler and the `typescript` package exports no JS API, so
   `scripts/check-stories.mjs` and `scripts/check-comments.mjs` parse with `@typescript/typescript6`.
 - Playwright 1.64.1 exact.
-- React Router 7 data mode.
+- React Router 8 data mode.
 - Mantine 9; `postcss-preset-mantine` runs from `postcss.config.cjs`.
 
 ## 13th Age glossary
