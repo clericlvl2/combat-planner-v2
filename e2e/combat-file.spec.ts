@@ -38,7 +38,8 @@ test('a DM exports a combat to a file and imports it back as a new combat', asyn
 
   await page.goto('/combats');
   const choosing = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: t('CombatList:import') }).click();
+  await page.getByRole('button', { name: t('PageHeader:actions') }).click();
+  await page.getByRole('menuitem', { name: t('CombatList:import') }).click();
   await (await choosing).setFiles(file);
   await expect(
     page.getByRole('status').getByText(t('Toast:imported', { title: 'Goblin ambush' })),

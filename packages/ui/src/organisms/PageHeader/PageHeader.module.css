@@ -64,6 +64,41 @@
   margin-left: auto;
 }
 
+.more {
+  position: relative;
+  box-sizing: border-box;
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--cp-tap-target);
+  height: var(--cp-tap-target);
+  padding: 0;
+  border: none;
+  border-radius: var(--mantine-radius-field);
+  background: color-mix(in srgb, var(--cp-color-on-chrome) 12%, transparent);
+  color: var(--cp-color-on-chrome);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active,
+  &[data-pressed] {
+    background: color-mix(in srgb, var(--cp-color-on-chrome) 24%, transparent);
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: 2px;
+  }
+
+  &[data-open] {
+    outline: 3px solid var(--cp-state-tap-marker);
+    outline-offset: 2px;
+  }
+}
+
 .tools {
   --cp-color-border: var(--cp-color-chrome);
 

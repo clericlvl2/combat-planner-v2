@@ -31,6 +31,7 @@ CombatHeader.round
 Menu.round
 CombatScreen.nextWrap
 PageHeader.combats
+PageHeader.actions
 Drawer.combats
 CombatList.title
 InitiativePopover.title

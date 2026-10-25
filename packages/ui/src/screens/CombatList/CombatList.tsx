@@ -213,10 +213,10 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
   };
 
   const selectTool = (id: string) => {
-    if (id !== IMPORT_TOOL) {
-      setSortOpen(true);
-      return;
-    }
+    if (id === SORT_TOOL) setSortOpen(true);
+  };
+
+  const pickImportFile = () => {
     if (atLimit) {
       showToast({ message: tBar('combatLimitReached'), kind: 'warning' });
       return;
@@ -281,8 +281,8 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
         onMenu={() => setDrawerOpen(true)}
         search={{ value: query, placeholder: t('search') }}
         onSearch={setQuery}
-        tools={[
-          ...(all.length > 0
+        tools={
+          all.length > 0
             ? [
                 {
                   id: SORT_TOOL,
@@ -291,16 +291,16 @@ export function CombatList({ now = Date.now() }: CombatListProps) {
                   active: custom,
                 },
               ]
-            : []),
-          {
-            id: IMPORT_TOOL,
-            icon: IconFileImport,
-            'aria-label': t('import'),
-            disabled: !loaded,
-            loading: importing,
-          },
-        ]}
+            : []
+        }
         onTool={selectTool}
+        menu={{
+          items: [{ id: IMPORT_TOOL, icon: IconFileImport, label: t('import'), disabled: !loaded }],
+          onSelect: (id) => {
+            if (id === IMPORT_TOOL) pickImportFile();
+          },
+          busy: importing,
+        }}
       />
       <input
         ref={fileRef}
