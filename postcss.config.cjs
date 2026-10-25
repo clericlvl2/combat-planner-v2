@@ -1,17 +1,22 @@
-const focusOutline = { outline: '2px solid var(--cp-state-focus)', outlineOffset: '-2px' };
+const postcss = require('postcss');
+
+const focusOutline = 'outline: 2px solid var(--cp-state-focus); outline-offset: -2px;';
 const keyboardPointer = '@media (hover: hover) and (pointer: fine)';
+
+const cssMixin = (css) => (rule) => {
+  const parsed = postcss.parse(css, { from: rule.source?.input.file });
+  rule.parent.insertBefore(rule, parsed.nodes);
+};
 
 module.exports = {
   plugins: {
     'postcss-preset-mantine': {
       mixins: {
-        'focus-ring': {
-          '&:focus-visible': { outline: 'none' },
-          [keyboardPointer]: { '&:focus-visible': focusOutline },
-          '&[data-focus]': focusOutline,
-        },
-        'focus-ring-keyboard': { [keyboardPointer]: focusOutline },
-        'focus-ring-outline': focusOutline,
+        'focus-ring': cssMixin(
+          `&:focus-visible { outline: none; } ${keyboardPointer} { &:focus-visible { ${focusOutline} } } &[data-focus] { ${focusOutline} }`,
+        ),
+        'focus-ring-keyboard': cssMixin(`${keyboardPointer} { ${focusOutline} }`),
+        'focus-ring-outline': cssMixin(focusOutline),
       },
     },
     'postcss-simple-vars': {
