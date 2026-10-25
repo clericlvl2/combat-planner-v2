@@ -57,6 +57,11 @@ body {
       0 0 0 12px var(--cp-color-border),
       0 24px 48px -16px color-mix(in srgb, var(--cp-color-ink) 35%, transparent);
   }
+
+  ::view-transition-group(header) {
+    overflow: clip;
+    border-radius: 28px 28px 0 0;
+  }
 }
 
 @media (min-width: 1180px) {
