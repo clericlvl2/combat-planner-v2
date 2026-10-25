@@ -65,6 +65,8 @@
 }
 
 .tools {
+  --cp-color-border: var(--cp-color-chrome);
+
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -88,6 +90,8 @@
 }
 
 .filters {
+  --cp-color-border: var(--cp-color-chrome);
+
   display: flex;
   flex-wrap: wrap;
   align-items: center;
