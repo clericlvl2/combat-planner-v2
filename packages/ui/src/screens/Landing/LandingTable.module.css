@@ -2,7 +2,6 @@
   position: relative;
   flex: none;
   margin: 8px 8px 16px;
-  overflow-x: clip;
   perspective: 1200px;
   perspective-origin: 50% 35%;
   pointer-events: none;
