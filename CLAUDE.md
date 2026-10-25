@@ -219,7 +219,7 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
 - **HP, temp HP**: hit points and temporary hit points; every change is recorded in the HP history.
 - **Health statuses** (`healthStatus.ts`): `full`, `wounded`, `staggered` (below half max HP),
   `unconscious` (a hero at 0 HP or below; the app never shows a hero as dead), `dead` (any other
-  unit at 0 HP or below).
+  unit at 0 HP or below). Healing a hero below 0 HP counts from 0.
 - **Conditions**: charmed, confused, dazed, fear, helpless, hampered, shocked, stuck, stunned,
   vulnerable, weakened.
 - **Player link**: a signed URL (and QR) for one combat. A player opens it and **claims** their hero.

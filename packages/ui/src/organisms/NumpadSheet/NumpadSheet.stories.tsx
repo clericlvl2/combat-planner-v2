@@ -109,6 +109,7 @@ type Who = keyof typeof units;
 interface NumpadSheetCellProps {
   who?: Who;
   tempHp?: number;
+  hp?: number;
   history?: HistorySet;
   onApply?: (kind: HpHistoryKind, amount: number) => void;
   onClose?: () => void;
@@ -146,11 +147,12 @@ const readOnlyRow = {
 function NumpadSheetCell({
   who = 'orc',
   tempHp = 0,
+  hp,
   history = 'full',
   onApply,
   onClose,
 }: NumpadSheetCellProps) {
-  const before: Unit = { ...units[who], tempHp };
+  const before: Unit = { ...units[who], tempHp, ...(hp === undefined ? {} : { hp }) };
   const [opened, setOpened] = useState(true);
   const [after, setAfter] = useState<Unit | null>(null);
   const claimedByName = before.claimedBy ? 'Mika' : undefined;
@@ -173,7 +175,7 @@ function NumpadSheetCell({
         history={histories[history]}
         onApply={(kind, amount) => {
           onApply?.(kind, amount);
-          setAfter({ ...before, ...hpAfter(before, kind, amount) });
+          setAfter({ ...before, ...hpAfter(before, before.role, kind, amount) });
         }}
         onClose={() => {
           setOpened(false);
@@ -370,6 +372,23 @@ export const HeroOverkillUnconscious = meta.story({
     await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('−36/36');
     await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('unconscious'));
     await expect(filledPips(canvasElement, 'after')).toBe(0);
+  },
+});
+
+export const HeroHealFromBelowZero = meta.story({
+  tags: ['!dev'],
+  args: { who: 'vashti', hp: -4 },
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'NumpadSheet');
+    await typeAmount(canvas, '5');
+    await previewAction(canvas, t('heal'));
+    await expect(numbersOf(canvasElement, 'after')).toHaveTextContent('5/36');
+    await expect(readingOf(canvasElement, 'after')).toHaveTextContent(t('staggered'));
+    await userEvent.click(canvas.getByRole('button', { name: t('heal') }));
+    await expect(args.onApply).toHaveBeenCalledOnce();
+    await expect(args.onApply).toHaveBeenCalledWith('heal', 5);
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+    await expect(canvasElement.querySelector('[data-result]')).toHaveTextContent('5/36');
   },
 });
 

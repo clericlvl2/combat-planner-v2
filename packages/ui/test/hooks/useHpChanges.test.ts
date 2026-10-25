@@ -32,6 +32,18 @@ describe('useHpChanges state', () => {
     expect(temp.latest.get(HERO)).toEqual({ key: 2, unitId: HERO, kind: 'temp', amount: 5 });
   });
 
+  it('reports a heal of an unconscious hero as the HP gained from 0', () => {
+    const state = nextHpState(initialHpState([hero(-4, 0, 'unconscious')]), [
+      hero(5, 0, 'staggered'),
+    ]);
+    expect(state.latest.get(HERO)).toMatchObject({ kind: 'heal', amount: 5 });
+  });
+
+  it('reports a heal of a dead unit as the whole rise', () => {
+    const state = nextHpState(initialHpState([hero(-4, 0, 'dead')]), [hero(2, 0, 'staggered')]);
+    expect(state.latest.get(HERO)).toMatchObject({ kind: 'heal', amount: 6 });
+  });
+
   it('fires once for an optimistic change followed by the same server values', () => {
     const optimistic = nextHpState(initialHpState([hero(20)]), [hero(17)]);
     expect(nextHpState(optimistic, [{ ...hero(17) }])).toBe(optimistic);

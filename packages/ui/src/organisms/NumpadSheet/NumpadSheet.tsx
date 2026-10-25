@@ -55,7 +55,12 @@ function hpAction(kind: HpHistoryKind, amount: number): Action {
   }
 }
 
-export function hpAfter(health: NumpadHealth, kind: HpHistoryKind, amount: number): NumpadHealth {
+export function hpAfter(
+  health: NumpadHealth,
+  role: Role,
+  kind: HpHistoryKind,
+  amount: number,
+): NumpadHealth {
   if (amount < 0 || (amount === 0 && kind !== 'temp')) return health;
   const combat: Combat = {
     id: previewId,
@@ -76,7 +81,7 @@ export function hpAfter(health: NumpadHealth, kind: HpHistoryKind, amount: numbe
       {
         id: previewId,
         name: previewId,
-        role: 'enemy',
+        role,
         initiativeBonus: 0,
         initiative: null,
         maxHp: health.maxHp,
@@ -232,7 +237,7 @@ export function NumpadSheet({
   }, [opened, append, deleteDigit]);
 
   const now = { hp, maxHp, tempHp };
-  const after = amount === null ? now : hpAfter(now, previewKind, amount);
+  const after = amount === null ? now : hpAfter(now, role, previewKind, amount);
   const enabled = (kind: HpHistoryKind) => amount !== null && (amount > 0 || kind === 'temp');
 
   const applyKind = (kind: HpHistoryKind) => {

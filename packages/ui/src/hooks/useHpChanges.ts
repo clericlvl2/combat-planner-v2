@@ -64,7 +64,10 @@ const numberOf = (
   if (next.hp < previous.hp || (next.hp === previous.hp && lost > 0)) {
     return { kind: 'damage', amount: lost };
   }
-  if (next.hp > previous.hp) return { kind: 'heal', amount: next.hp - previous.hp };
+  if (next.hp > previous.hp) {
+    const from = previous.status === 'unconscious' ? Math.max(previous.hp, 0) : previous.hp;
+    return { kind: 'heal', amount: next.hp - from };
+  }
   if (next.tempHp > previous.tempHp) return { kind: 'temp', amount: next.tempHp };
   return undefined;
 };

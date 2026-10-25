@@ -1,4 +1,4 @@
-import { healthStatus } from '@combat-planner/domain';
+import { applyHp, healthStatus } from '@combat-planner/domain';
 import type { Role } from '@combat-planner/domain';
 import type { ConditionName } from '../../theme.ts';
 
@@ -186,12 +186,9 @@ export const initialStage = (loop = 0): StageState => ({
 
 function applyOp(unit: StageUnit, op: StageOp): StageUnit {
   switch (op.op) {
-    case 'damage': {
-      const absorbed = Math.min(unit.tempHp, op.amount);
-      return { ...unit, tempHp: unit.tempHp - absorbed, hp: unit.hp - (op.amount - absorbed) };
-    }
+    case 'damage':
     case 'heal':
-      return { ...unit, hp: Math.min(unit.maxHp, unit.hp + op.amount) };
+      return applyHp(unit, op.op, op.amount);
     case 'temp':
       return { ...unit, tempHp: op.amount };
     case 'condition': {

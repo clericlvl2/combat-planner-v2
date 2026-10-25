@@ -733,12 +733,29 @@ describe('Rules', () => {
       previous: 8,
       result: 10,
     });
-    const fromDead = go(one({ hp: -4, maxHp: 10 }), {
-      type: 'heal',
-      unitId: id(1),
-      amount: 6,
+  });
+
+  describe('Hero heal from below 0', () => {
+    const heal = (overrides: Partial<Unit>, amount: number) =>
+      go(one(overrides), { type: 'heal', unitId: id(1), amount });
+
+    it('a hero at 1 HP healed by 5 has 6 HP', () => {
+      expect(u(heal({ role: 'hero', hp: 1, maxHp: 10 }, 5), 1).hp).toBe(6);
     });
-    expect(u(fromDead, 1).hp).toBe(2);
+
+    it('a hero at −4 HP healed by 5 has 5 HP', () => {
+      const next = heal({ role: 'hero', hp: -4, maxHp: 10 }, 5);
+      expect(u(next, 1).hp).toBe(5);
+      expect(hist(next)[0]).toMatchObject({ kind: 'heal', amount: 5, previous: -4, result: 5 });
+    });
+
+    it('a hero below 0 healed past max HP stops at max HP', () => {
+      expect(u(heal({ role: 'hero', hp: -4, maxHp: 10 }, 50), 1).hp).toBe(10);
+    });
+
+    it('an enemy at −4 HP healed by 6 has 2 HP', () => {
+      expect(u(heal({ role: 'enemy', hp: -4, maxHp: 10 }, 6), 1).hp).toBe(2);
+    });
   });
 
   it('Damage never lowers HP below −max.', () => {
@@ -851,36 +868,51 @@ describe('Rules', () => {
 
 describe('applyHp', () => {
   it('computes the HP fields the matching action stores, without a combat', () => {
-    const health = { hp: 6, maxHp: 10, tempHp: 3 };
-    expect(applyHp(health, 'damage', 5)).toEqual({ hp: 4, maxHp: 10, tempHp: 0 });
-    expect(applyHp(health, 'damage', 99)).toEqual({ hp: -10, maxHp: 10, tempHp: 0 });
-    expect(applyHp(health, 'heal', 50)).toEqual({ hp: 10, maxHp: 10, tempHp: 3 });
-    expect(applyHp(health, 'temp', 0)).toEqual({ hp: 6, maxHp: 10, tempHp: 0 });
-    expect(applyHp(health, 'max', 4)).toEqual({ hp: 4, maxHp: 4, tempHp: 3 });
-    expect(applyHp({ hp: -8, maxHp: 10, tempHp: 0 }, 'max', 4)).toEqual({
+    const health = { hp: 6, maxHp: 10, tempHp: 3, role: 'enemy' } as const;
+    expect(applyHp(health, 'damage', 5)).toEqual({ hp: 4, maxHp: 10, tempHp: 0, role: 'enemy' });
+    expect(applyHp(health, 'damage', 99)).toEqual({
+      hp: -10,
+      maxHp: 10,
+      tempHp: 0,
+      role: 'enemy',
+    });
+    expect(applyHp(health, 'heal', 50)).toEqual({ hp: 10, maxHp: 10, tempHp: 3, role: 'enemy' });
+    expect(applyHp(health, 'temp', 0)).toEqual({ hp: 6, maxHp: 10, tempHp: 0, role: 'enemy' });
+    expect(applyHp(health, 'max', 4)).toEqual({ hp: 4, maxHp: 4, tempHp: 3, role: 'enemy' });
+    expect(applyHp({ hp: -8, maxHp: 10, tempHp: 0, role: 'enemy' }, 'max', 4)).toEqual({
       hp: -4,
       maxHp: 4,
       tempHp: 0,
+      role: 'enemy',
     });
-    expect(health).toEqual({ hp: 6, maxHp: 10, tempHp: 3 });
+    expect(applyHp({ hp: -4, maxHp: 10, tempHp: 0, role: 'hero' }, 'heal', 5)).toMatchObject({
+      hp: 5,
+    });
+    expect(health).toEqual({ hp: 6, maxHp: 10, tempHp: 3, role: 'enemy' });
   });
 
   it('matches apply for damage, heal, setTempHp and setMaxHp', () => {
-    const unit = makeUnit({ id: id(1), hp: 6, maxHp: 10, tempHp: 3 });
     const cases = [
       ['damage', 'damage'],
       ['heal', 'heal'],
       ['temp', 'setTempHp'],
       ['max', 'setMaxHp'],
     ] as const satisfies readonly (readonly [HpHistoryKind, Action['type']])[];
-    for (const [kind, type] of cases) {
-      const stored = u(go(one(unit), { type, unitId: id(1), amount: 4 }), 1);
-      const { hp, maxHp, tempHp } = applyHp(unit, kind, 4);
-      expect({ hp: stored.hp, maxHp: stored.maxHp, tempHp: stored.tempHp }).toEqual({
-        hp,
-        maxHp,
-        tempHp,
-      });
+    const units = [
+      makeUnit({ id: id(1), hp: 6, maxHp: 10, tempHp: 3 }),
+      makeUnit({ id: id(1), role: 'enemy', hp: -4, maxHp: 10 }),
+      makeUnit({ id: id(1), role: 'hero', hp: -4, maxHp: 10 }),
+    ];
+    for (const unit of units) {
+      for (const [kind, type] of cases) {
+        const stored = u(go(one(unit), { type, unitId: id(1), amount: 4 }), 1);
+        const { hp, maxHp, tempHp } = applyHp(unit, kind, 4);
+        expect({ hp: stored.hp, maxHp: stored.maxHp, tempHp: stored.tempHp }).toEqual({
+          hp,
+          maxHp,
+          tempHp,
+        });
+      }
     }
   });
 });
