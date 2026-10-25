@@ -77,13 +77,11 @@ describe('FakeApiClient dispatch', () => {
     expect(dm.documents.at(-1)?.units.find((unit) => unit.id === HERO_ID)?.hp).toBe(23);
   });
 
-  it('refuses a retried action with version and applies it once', async () => {
+  it('answers a repeated action with the current version and applies it once', async () => {
     const client = seeded();
     const dm = watchDm(client);
     await client.combats.dispatch(COMBAT_ID, damage(1));
-    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).rejects.toMatchObject({
-      code: 'version',
-    });
+    await expect(client.combats.dispatch(COMBAT_ID, damage(1))).resolves.toEqual({ version: 2 });
     expect(dm.documents).toHaveLength(2);
   });
 
@@ -394,7 +392,7 @@ describe('FakeApiClient REST groups', () => {
     await client.tags.create({ id: '01ARZ3NDEKTSV4RRFFQ69G5FE0', name: 'Undead' });
     await expect(
       client.tags.create({ id: '01ARZ3NDEKTSV4RRFFQ69G5FE1', name: 'undead' }),
-    ).rejects.toMatchObject({ code: 'invalid', status: 422 });
+    ).rejects.toMatchObject({ code: 'invalid', status: 409 });
   });
 
   it('lists summaries with the round of an active combat and the creation time', async () => {

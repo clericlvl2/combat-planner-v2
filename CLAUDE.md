@@ -56,6 +56,11 @@ from the repository root.
   - `live/` holds the per-combat subscriber registry and the SSE stream.
   - `client.ts` defines the `ApiClient` interface and its Zod schemas; `hono-client.ts` implements
     it over HTTP and SSE, including reconnect and refetch repair.
+  - `contract/apiClientContract.ts`, exported as `@combat-planner/api/contract`:
+    `describeApiClientContract`, one `ApiClient` suite run against `createHonoApiClient` over the
+    in-process app (`test/contract.test.ts`, `test/inProcess.ts`) and against `FakeApiClient`
+    (`packages/ui/test/api/FakeApiClient.contract.test.ts`). The server is the reference: a case
+    failing on Fake is fixed in Fake.
 - `packages/ui`: every component and screen, built on Mantine.
   - `atoms/`, `molecules/`, `organisms/`, `screens/`; `hooks/` wrap TanStack Query around
     `ApiClient` and hold `useSheetDrag` (drag a sheet down to close) and `useRetained` (the last

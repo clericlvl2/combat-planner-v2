@@ -106,8 +106,11 @@ const DOMAIN_ERROR_CODE: Record<DomainErrorCode, ApiErrorCode> = {
 
 const DM = { kind: 'dm' } as const satisfies Viewer;
 
-const fail = (code: ApiErrorCode, message: string = code): ApiError =>
-  new ApiError({ status: FAKE_ERROR_STATUS[code], code, message });
+const fail = (
+  code: ApiErrorCode,
+  message: string = code,
+  status: number = FAKE_ERROR_STATUS[code],
+): ApiError => new ApiError({ status, code, message });
 
 const fromDomain = (error: DomainError): ApiError =>
   fail(DOMAIN_ERROR_CODE[error.code], error.message);
@@ -168,6 +171,7 @@ export class FakeApiClient implements ApiClient {
   private readonly connectionListeners = new Set<ConnectionListener>();
   private readonly dmSubscribers = new Map<CombatId, Set<DmSubscriber>>();
   private readonly playerSubscribers = new Map<CombatId, Set<PlayerSubscriber>>();
+  private readonly joined = new Map<CombatId, Set<PlayerId>>();
   private pendingFailure: ApiError | null = null;
   private pendingHold = false;
   private broadcastsDeferred = false;
@@ -182,6 +186,7 @@ export class FakeApiClient implements ApiClient {
     for (const combat of scenario.combats) {
       const players = { ...combat.players, ...scenario.players[combat.id] };
       this.combatStore.set(combat.id, { combat: { ...combat, players }, log: [] });
+      this.joined.set(combat.id, new Set(Object.keys(players)));
       const token = scenario.links[combat.id] ?? tokenOf(combat.id, combat.linkGeneration);
       this.links.set(token, { combatId: combat.id, generation: combat.linkGeneration });
     }
@@ -206,6 +211,10 @@ export class FakeApiClient implements ApiClient {
 
   expireSession(): void {
     this.session = null;
+    this.endDmStreams();
+  }
+
+  private endDmStreams(): void {
     const ended = [...this.dmSubscribers.values()].flatMap((subscribers) => [...subscribers]);
     this.dmSubscribers.clear();
     for (const subscriber of ended) subscriber.onEnd({ type: 'unauthorized' });
@@ -346,6 +355,9 @@ export class FakeApiClient implements ApiClient {
 
   private dispatchAs(stored: StoredCombat, viewer: Viewer, action: Action): VersionResult {
     const combat = stored.combat;
+    if (stored.log.some((entry) => entry.action.id === action.id)) {
+      return { version: combat.version };
+    }
     if (action.version !== combat.version) {
       throw fail(
         'version',
@@ -360,6 +372,17 @@ export class FakeApiClient implements ApiClient {
     stored.log = nextStack(stored.log, { action, author: viewer, at: now, patch: result.patch });
     this.save(stored, result.combat);
     return { version: result.combat.version };
+  }
+
+  private admit(combatId: CombatId, playerId: PlayerId): void {
+    const players = this.joined.get(combatId) ?? new Set<PlayerId>();
+    if (players.has(playerId)) return;
+    if (players.size >= LIMITS.playersPerCombat) {
+      throw fail('limit', `A combat admits at most ${LIMITS.playersPerCombat} players`);
+    }
+    players.add(playerId);
+    this.joined.set(combatId, players);
+    this.announce(combatId, { type: 'playerJoined' });
   }
 
   private resolveLink(token: LinkToken): StoredCombat {
@@ -421,7 +444,7 @@ export class FakeApiClient implements ApiClient {
     const taken = this.tagList.some(
       (tag) => tag.id !== exceptId && normalizeTag(tag.name) === normalizeTag(name),
     );
-    if (taken) throw fail('invalid', 'A tag with this name already exists');
+    if (taken) throw fail('invalid', 'A tag with this name already exists', 409);
   }
 
   private signInAs(account: FakeAccount): Session {
@@ -471,6 +494,7 @@ export class FakeApiClient implements ApiClient {
     signOut: () =>
       this.run('auth.signOut', [], () => {
         this.session = null;
+        this.endDmStreams();
       }),
     signOutOtherDevices: () => this.run('auth.signOutOtherDevices', [], () => {}),
     session: () => this.run('auth.session', [], () => this.session),
@@ -514,6 +538,7 @@ export class FakeApiClient implements ApiClient {
     update: (id, patch) =>
       this.run('combats.update', [id, patch], () => {
         const stored = this.stored(id);
+        if (Object.keys(patch).length === 0) return { version: stored.combat.version };
         const next: Combat = {
           ...stored.combat,
           ...patch,
@@ -627,6 +652,7 @@ export class FakeApiClient implements ApiClient {
       updatedAt: now,
     };
     stored.combat = next;
+    this.joined.delete(id);
     this.broadcast(stored, 'dm');
     this.endSubscribers(id, { type: 'linkRevoked' }, 'player');
     return next;
@@ -644,6 +670,7 @@ export class FakeApiClient implements ApiClient {
         reopen(token);
         return this.run('play.get', [token, playerId], () => {
           const { combat } = this.resolveLink(token);
+          this.admit(combat.id, playerId);
           return {
             combatId: combat.id,
             playerId,
@@ -656,6 +683,7 @@ export class FakeApiClient implements ApiClient {
         this.run('play.dispatch', [token, playerId, action], () => {
           const stored = this.resolveLink(token);
           if (departed.has(stored.combat.id)) throw fail('unauthorized', 'This player left');
+          this.admit(stored.combat.id, playerId);
           return this.dispatchAs(stored, viewer, action);
         }),
       subscribe: (token, onDocument, onEnd) => {
@@ -670,6 +698,11 @@ export class FakeApiClient implements ApiClient {
           return () => {};
         }
         const combatId = stored.combat.id;
+        try {
+          this.admit(combatId, playerId);
+        } catch {
+          return () => {};
+        }
         const subscriber: PlayerSubscriber = { playerId, onDocument, onEnd, version: -1 };
         const subscribers = this.playerSubscribers.get(combatId) ?? new Set<PlayerSubscriber>();
         subscribers.add(subscriber);
@@ -684,6 +717,7 @@ export class FakeApiClient implements ApiClient {
         const leaving = this.run('play.leave', [combatId, playerId], () => {
           const stored = this.combatStore.get(combatId);
           if (!stored) return;
+          this.joined.get(combatId)?.delete(playerId);
           const { combat } = stored;
           const name = combat.players[playerId];
           const holdsHero = combat.units.some((unit) => unit.claimedBy === playerId);
