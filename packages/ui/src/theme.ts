@@ -280,6 +280,7 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-turn-strip': `${layout.turnStrip}px`,
     '--cp-header-pad-top': `${layout.header.padTop}px`,
     '--cp-header-row': `${layout.header.row}px`,
+    '--cp-header-control': `${layout.header.control}px`,
     '--cp-header-gap': `${layout.header.gap}px`,
     '--cp-header-second-row': `${layout.header.secondRow}px`,
     '--cp-header-pad-bottom': `${layout.header.padBottom}px`,

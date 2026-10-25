@@ -437,7 +437,7 @@ export function CombatHeader({
   return (
     <header {...rest} className={className ? `${classes.root} ${className}` : classes.root}>
       <div className={classes.statusBar} aria-hidden="true" />
-      <div className={classes.bar} data-back={onBack ? '' : undefined}>
+      <div className={classes.bar}>
         {onBack ? (
           <IconButton
             className={classes.back}

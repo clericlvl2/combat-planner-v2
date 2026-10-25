@@ -157,6 +157,7 @@ export function PageHeader({
           {tools.map((tool) => (
             <ToolButton
               key={tool.id}
+              className={classes.tool}
               size="M"
               icon={tool.icon}
               label={tool.label}

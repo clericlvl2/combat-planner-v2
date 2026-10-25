@@ -23,12 +23,14 @@
   align-items: center;
   gap: 8px;
   min-height: var(--cp-header-row);
-  padding: var(--cp-header-pad-top) 12px 0 4px;
+  padding: var(--cp-header-pad-top) 12px 0;
 }
 
 .back,
 .menu {
   .root .nav & {
+    width: var(--cp-header-control);
+    height: var(--cp-header-control);
     color: var(--cp-color-on-chrome);
   }
 
@@ -71,8 +73,8 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: var(--cp-tap-target);
-  height: var(--cp-tap-target);
+  width: var(--cp-header-control);
+  height: var(--cp-header-control);
   padding: 0;
   border: none;
   border-radius: var(--mantine-radius-field);
@@ -111,6 +113,13 @@
 .search {
   flex: 1 1 120px;
   min-width: 0;
+}
+
+.tool {
+  .root .tools & {
+    min-width: var(--cp-header-control);
+    height: var(--cp-header-control);
+  }
 }
 
 .clear {
