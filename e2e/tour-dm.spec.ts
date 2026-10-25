@@ -44,11 +44,12 @@ test('a new DM walks the tour from the first combat to sharing it', async ({ pag
   await step('hp', 6);
   await page.locator("[data-tour='hp']").first().click();
   const apply = await step('hpApply', 6);
-  await expect(apply).toHaveAttribute('data-compact');
+  await expect(apply).toContainText(t('Tour:hpApplyBody'));
   const numpad = page.getByRole('dialog', { name: 'Гоблин' });
-  await numpad.getByRole('button', { name: '3', exact: true }).click();
-  await numpad.getByRole('button', { name: t('NumpadSheet:damage') }).click();
+  const hp = await page.locator("[data-tour='hp']").first().textContent();
+  await apply.getByRole('button', { name: t('Tour:gotIt') }).click();
   await expect(numpad).toBeHidden();
+  await expect(page.locator("[data-tour='hp']").first()).toHaveText(hp ?? '');
 
   await step('nextTurn', 7);
   await page.getByRole('button', { name: containsT('TurnBar:nextTurn') }).click();

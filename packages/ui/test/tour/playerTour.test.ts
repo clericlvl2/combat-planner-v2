@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vite-plus/test';
-import { counterOf } from '../../src/tour/flow.ts';
+import { HP_STEP_TARGET, counterOf } from '../../src/tour/flow.ts';
 import {
   PLAYER_STAGES,
+  PLAYER_STEPS,
   playerPending,
   playerSettled,
   playerStep,
@@ -89,6 +90,12 @@ describe('playerStep', () => {
     expect(playerStep(at(4), 'unset', order({ numpadOpen: true }))).toBe('playerHpApply');
     expect(playerStep(at(5), 'unset', order())).toBe('playerExpand');
     expect(playerStep(at(6), 'unset', order())).toBe('playerMenu');
+  });
+
+  it('closes the numpad from the HP step and goes on to the hero details', () => {
+    expect(PLAYER_STEPS.playerHpApply).toMatchObject({ stage: 4, action: 'dismiss' });
+    expect(PLAYER_STEPS.playerHpApply.target).toBe(HP_STEP_TARGET);
+    expect(playerStep(at(5), 'unset', order())).toBe('playerExpand');
   });
 
   it('shows nothing while a sheet or menu of the screen is open', () => {

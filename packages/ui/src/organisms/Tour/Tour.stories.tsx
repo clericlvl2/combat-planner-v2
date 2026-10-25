@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import { Button } from '../../atoms/Button/Button.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { HP_STEP_TARGET } from '../../tour/flow.ts';
 import { NumpadSheet } from '../NumpadSheet/NumpadSheet.tsx';
 import { overlaps } from './place.ts';
 import { Tour } from './Tour.tsx';
@@ -25,6 +26,7 @@ const placed = (style: CSSProperties): CSSProperties => ({ position: 'absolute',
 function TourCell({ scene = 'buttons', onTarget, onSkip }: TourCellProps) {
   const { t } = useTranslation('Tour');
   const [index, setIndex] = useState<number | null>(0);
+  const [numpadOpen, setNumpadOpen] = useState(true);
   const view = (key: string, target: string, current: number): TourView => ({
     key,
     target,
@@ -37,7 +39,7 @@ function TourCell({ scene = 'buttons', onTarget, onSkip }: TourCellProps) {
   });
   const steps: TourView[] =
     scene === 'numpad'
-      ? [{ ...view('hpApply', "[data-tour='hp-apply']", 6), action: 'advance' }]
+      ? [{ ...view('hpApply', HP_STEP_TARGET, 6), action: 'dismiss', nextLabel: t('gotIt') }]
       : [
           view('start', "[data-tour='fixture-start']", 2),
           view('nextTurn', "[data-tour='fixture-next']", 3),
@@ -64,7 +66,7 @@ function TourCell({ scene = 'buttons', onTarget, onSkip }: TourCellProps) {
         </>
       ) : (
         <NumpadSheet
-          opened
+          opened={numpadOpen}
           name="Tarin"
           role="hero"
           initiative={15}
@@ -73,7 +75,10 @@ function TourCell({ scene = 'buttons', onTarget, onSkip }: TourCellProps) {
           tempHp={0}
           history={[]}
           onApply={() => undefined}
-          onClose={() => undefined}
+          onClose={() => {
+            onTarget?.('close');
+            setNumpadOpen(false);
+          }}
         />
       )}
       <Tour
@@ -136,21 +141,27 @@ export const Default = meta.story({
   },
 });
 
-export const Compact = meta.story({
+export const HpStep = meta.story({
+  name: 'HP Step',
   tags: ['visual'],
   args: { scene: 'numpad' },
-  play: async ({ canvas, canvasElement, globals }) => {
+  play: async ({ args, canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'Tour');
     const tooltip = await canvas.findByRole('dialog', { name: t('hpApplyTitle') });
-    await expect(tooltip).toHaveAttribute('data-compact');
-    await expect(within(tooltip).queryByText(t('hpApplyBody'))).toBeNull();
-    await expect(within(tooltip).getByRole('button', { name: t('next') })).toBeVisible();
-    const box = tooltip.getBoundingClientRect();
-    const keys = [...canvasElement.querySelectorAll('[role="group"] button')];
-    await expect(keys.length).toBeGreaterThan(0);
-    await expect(keys.filter((key) => overlaps(box, key.getBoundingClientRect()))).toEqual([]);
-    const actions = targetOf(canvasElement, 'hp-apply').getBoundingClientRect();
-    await expect(overlaps(box, actions)).toBe(false);
+    const ring = ringOf(canvasElement).getBoundingClientRect();
+    for (const name of ['hp-keys', 'hp-damage', 'hp-heal']) {
+      await expect(surrounds(ring, targetOf(canvasElement, name).getBoundingClientRect())).toBe(
+        true,
+      );
+    }
+    const keys = targetOf(canvasElement, 'hp-keys').getBoundingClientRect();
+    const heal = targetOf(canvasElement, 'hp-heal').getBoundingClientRect();
+    await expect(ring.top).toBeCloseTo(keys.top - 4, 0);
+    await expect(ring.bottom).toBeCloseTo(heal.bottom + 4, 0);
+    await expect(overlaps(tooltip.getBoundingClientRect(), ring)).toBe(false);
+    await userEvent.click(within(tooltip).getByRole('button', { name: t('gotIt') }));
+    await expect(args.onTarget).toHaveBeenCalledWith('close');
+    await waitFor(() => expect(canvas.queryByRole('dialog', { name: 'Tarin' })).toBeNull());
   },
 });
 

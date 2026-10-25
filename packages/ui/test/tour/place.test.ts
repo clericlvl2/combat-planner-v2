@@ -3,9 +3,9 @@ import {
   RING_PADDING,
   TOOLTIP_GAP,
   TOOLTIP_MARGIN,
-  overlaps,
   placeTooltip,
   spotOf,
+  unionOf,
 } from '../../src/organisms/Tour/place.ts';
 import type { Box } from '../../src/organisms/Tour/place.ts';
 
@@ -32,8 +32,17 @@ describe('spotOf', () => {
   });
 });
 
+describe('unionOf', () => {
+  it('spans every box', () => {
+    const keys = { left: 16, top: 200, width: 288, height: 148 };
+    const damage = { left: 16, top: 420, width: 288, height: 56 };
+    const heal = { left: 16, top: 484, width: 92, height: 48 };
+    expect(unionOf([keys, damage, heal])).toEqual({ left: 16, top: 200, width: 288, height: 332 });
+  });
+});
+
 describe('placeTooltip', () => {
-  const base = { area, full: 140, compact: 96, avoid: [], inSheet: false };
+  const base = { area, full: 140, compact: 96, inSheet: false };
 
   it('places the tooltip below a target in the upper half', () => {
     const spot = { left: 20, top: 60, width: 100, height: 50 };
@@ -43,10 +52,16 @@ describe('placeTooltip', () => {
     expect(placed.left).toBe(TOOLTIP_MARGIN);
   });
 
-  it('places the tooltip above a target in the lower half', () => {
+  it('places the tooltip right above a target in the lower half', () => {
     const spot = { left: 24, top: 470, width: 272, height: 66 };
     const placed = placeTooltip({ ...base, spot });
     expect(placed).toMatchObject({ side: 'above', top: 470 - TOOLTIP_GAP - 140, compact: false });
+  });
+
+  it('sits right above a sheet button at the bottom whatever lies between', () => {
+    const spot = { left: 12, top: 500, width: 296, height: 56 };
+    const placed = placeTooltip({ ...base, spot, inSheet: true });
+    expect(placed).toMatchObject({ side: 'above', top: 500 - TOOLTIP_GAP - 140, compact: false });
   });
 
   it('centres on the target within the margins', () => {
@@ -55,21 +70,16 @@ describe('placeTooltip', () => {
     expect(placed.left + placed.width).toBe(320 - TOOLTIP_MARGIN);
   });
 
-  it('moves to the other side to keep off sheet actions', () => {
-    const spot = { left: 20, top: 200, width: 100, height: 40 };
-    const action = { left: 12, top: 260, width: 296, height: 56 };
-    const placed = placeTooltip({ ...base, spot, avoid: [action] });
-    expect(placed.side).toBe('above');
-    expect(overlaps({ ...placed, height: 140 }, action)).toBe(false);
+  it('moves to the other side when the roomier side is too short for it', () => {
+    const spot = { left: 20, top: 300, width: 280, height: 160 };
+    const placed = placeTooltip({ ...base, spot, full: 120 });
+    expect(placed).toMatchObject({ side: 'above', top: 300 - TOOLTIP_GAP - 120, compact: false });
   });
 
-  it('turns compact inside a sheet when the full tooltip would cover controls', () => {
-    const spot = { left: 12, top: 462, width: 296, height: 68 };
-    const keypad = { left: 16, top: 100, width: 288, height: 230 };
-    const placed = placeTooltip({ ...base, spot, avoid: [keypad], inSheet: true, full: 160 });
-    expect(placed.compact).toBe(true);
-    expect(placed.side).toBe('above');
-    expect(overlaps({ ...placed, height: 96 }, keypad)).toBe(false);
+  it('turns compact inside a sheet only when the full tooltip fits on neither side', () => {
+    const spot = { left: 12, top: 200, width: 296, height: 300 };
+    const placed = placeTooltip({ ...base, spot, inSheet: true, full: 190, compact: 56 });
+    expect(placed).toMatchObject({ side: 'above', top: 200 - TOOLTIP_GAP - 56, compact: true });
   });
 
   it('stays full outside a sheet and falls back to the roomier side', () => {
@@ -78,29 +88,6 @@ describe('placeTooltip', () => {
     expect(placed.compact).toBe(false);
     expect(placed.side).toBe('below');
     expect(placed.top).toBe(568 - 140 - TOOLTIP_MARGIN);
-  });
-
-  it('finds the free strip above a tall sheet for a compact tooltip', () => {
-    const spot = { left: 12, top: 436, width: 296, height: 120 };
-    const sheet = { left: 12, top: 76, width: 296, height: 340 };
-    const placed = placeTooltip({ ...base, spot, avoid: [sheet], inSheet: true, compact: 56 });
-    expect(placed.compact).toBe(true);
-    expect(placed.top).toBeGreaterThanOrEqual(TOOLTIP_MARGIN);
-    expect(placed.top + 56).toBeLessThanOrEqual(76);
-  });
-
-  it('uses the gap between sheet controls nearest to the target', () => {
-    const spot = { left: 12, top: 450, width: 296, height: 100 };
-    const close = { left: 256, top: 30, width: 48, height: 48 };
-    const keypad = { left: 16, top: 200, width: 288, height: 240 };
-    const placed = placeTooltip({
-      ...base,
-      spot,
-      avoid: [close, keypad],
-      inSheet: true,
-      compact: 56,
-    });
-    expect(placed).toMatchObject({ compact: true, top: 200 - 56, side: 'above' });
   });
 
   it('falls back to a compact tooltip clamped into the area inside a sheet', () => {

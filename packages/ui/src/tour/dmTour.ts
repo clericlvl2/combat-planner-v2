@@ -1,5 +1,5 @@
 import type { CombatStatus } from '@combat-planner/domain';
-import { advanced, skippedStage } from './flow.ts';
+import { HP_STEP_TARGET, advanced, skippedStage } from './flow.ts';
 import type { TourStepDef } from './flow.ts';
 import { isStage } from './progress.ts';
 import type { TourProgress } from './progress.ts';
@@ -59,7 +59,7 @@ export const DM_STEPS: Record<DmStepId, TourStepDef> = {
   roll: { stage: 4, target: "[data-tour='roll']", action: 'click' },
   start: { stage: 5, target: "[data-tour='turn-bar']", action: 'click' },
   hp: { stage: 6, target: "[data-tour='hp']", action: 'click' },
-  hpApply: { stage: 6, target: "[data-tour='hp-apply']", action: 'advance' },
+  hpApply: { stage: 6, target: HP_STEP_TARGET, action: 'dismiss' },
   nextTurn: { stage: 7, target: "[data-tour='turn-bar']", action: 'click' },
   menu: { stage: 8, target: "[data-tour='menu']", action: 'click' },
   share: { stage: 8, target: "[role='menuitem'][data-item='share']", action: 'click' },

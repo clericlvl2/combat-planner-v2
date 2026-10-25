@@ -6,7 +6,7 @@ import { Button } from '../../atoms/Button/Button.tsx';
 import { layout } from '../../layout.ts';
 import { useMotion } from '../../provider.tsx';
 import type { TourAction, TourCounter } from '../../tour/flow.ts';
-import { placeTooltip, sameBox, spotOf, tooltipWidth } from './place.ts';
+import { placeTooltip, sameBox, spotOf, tooltipWidth, unionOf } from './place.ts';
 import type { Box, Placement, Spot } from './place.ts';
 import classes from './Tour.module.css';
 
@@ -46,8 +46,6 @@ interface Leaving {
 const SETTLE_FRAMES = 2;
 const SETTLE_LIMIT_MS = layout.sheetEnterMs + 60;
 const SHEET = "[role='dialog']:not([data-tour-tooltip])";
-const SHEET_CONTROLS =
-  "button, input, textarea, select, output, [role='radio'], [role='button'], [role='checkbox']";
 const PRESSABLE = "button, [role='menuitem']";
 
 const toBox = (rect: DOMRect, origin: DOMRect): Box => ({
@@ -57,29 +55,46 @@ const toBox = (rect: DOMRect, origin: DOMRect): Box => ({
   height: rect.height,
 });
 
-function findTarget(selector: string): HTMLElement | null {
-  const element = document.querySelector<HTMLElement>(selector);
-  if (!element) return null;
-  const rect = element.getBoundingClientRect();
-  if (rect.width === 0 || rect.height === 0) return null;
-  return element.closest<HTMLElement>('[data-field]') ?? element;
+function selectorParts(selector: string): string[] {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let index = 0; index < selector.length; index += 1) {
+    const char = selector[index];
+    if (char === '(' || char === '[') depth += 1;
+    else if (char === ')' || char === ']') depth -= 1;
+    else if (char === ',' && depth === 0) {
+      parts.push(selector.slice(start, index));
+      start = index + 1;
+    }
+  }
+  parts.push(selector.slice(start));
+  return parts.map((part) => part.trim()).filter((part) => part !== '');
 }
 
-function spotFor(element: HTMLElement, origin: DOMRect, area: Box): Spot {
-  const radius = Number.parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0;
-  return spotOf(toBox(element.getBoundingClientRect(), origin), radius, area);
+function findTargets(selector: string): HTMLElement[] {
+  const found: HTMLElement[] = [];
+  for (const part of selectorParts(selector)) {
+    const element = document.querySelector<HTMLElement>(part);
+    if (!element) return [];
+    const rect = element.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) return [];
+    const target = element.closest<HTMLElement>('[data-field]') ?? element;
+    if (!found.includes(target)) found.push(target);
+  }
+  return found;
 }
 
-function avoidedBoxes(element: HTMLElement, origin: DOMRect): Box[] {
-  const sheet = element.closest(SHEET);
-  const others = sheet
-    ? [...sheet.querySelectorAll<HTMLElement>(SHEET_CONTROLS)].filter(
-        (control) => !element.contains(control),
-      )
-    : [...document.querySelectorAll<HTMLElement>('[data-sheet-action]')];
-  return others
-    .map((control) => toBox(control.getBoundingClientRect(), origin))
-    .filter((box) => box.width > 0 && box.height > 0);
+const boxOf = (elements: readonly HTMLElement[], origin: DOMRect): Box =>
+  unionOf(elements.map((element) => toBox(element.getBoundingClientRect(), origin)));
+
+function spotFor(elements: readonly HTMLElement[], origin: DOMRect, area: Box): Spot {
+  const radius = Math.max(
+    ...elements.map(
+      (element) => Number.parseFloat(getComputedStyle(element).borderTopLeftRadius) || 0,
+    ),
+  );
+  return spotOf(boxOf(elements, origin), radius, area);
 }
 
 function pressTarget(view: TourView): HTMLElement | null {
@@ -87,6 +102,11 @@ function pressTarget(view: TourView): HTMLElement | null {
   const target = document.querySelector<HTMLElement>(view.target);
   if (!target) return null;
   return target.matches(PRESSABLE) ? target : target.querySelector<HTMLElement>('button, input');
+}
+
+function sheetClose(view: TourView): HTMLElement | null {
+  const [target] = findTargets(view.target);
+  return target?.closest(SHEET)?.querySelector<HTMLElement>('[data-sheet-close]') ?? null;
 }
 
 function inputOf(view: TourView): HTMLElement | null {
@@ -160,11 +180,12 @@ export function Tour({ step, onNext, onSkip }: TourProps) {
     const tick = (now: number) => {
       frame = requestAnimationFrame(tick);
       const root = rootRef.current;
-      const element = findTarget(current.target);
+      const elements = findTargets(current.target);
+      const [element] = elements;
       if (!root || !element) return;
       const origin = root.getBoundingClientRect();
       const area: Box = { left: 0, top: 0, width: origin.width, height: origin.height };
-      const spot = spotFor(element, origin, area);
+      const spot = spotFor(elements, origin, area);
       if (settled) {
         setShown((value) =>
           value && (!sameBox(value.spot, spot) || value.spot.radius !== spot.radius)
@@ -173,7 +194,7 @@ export function Tour({ step, onNext, onSkip }: TourProps) {
         );
         return;
       }
-      const box = toBox(element.getBoundingClientRect(), origin);
+      const box = boxOf(elements, origin);
       if (!scrolled) {
         scrolled = true;
         if (box.top < 0 || box.top + box.height > area.height) {
@@ -249,7 +270,6 @@ export function Tour({ step, onNext, onSkip }: TourProps) {
     const measure = measureRef.current;
     const compact = compactRef.current;
     const root = rootRef.current;
-    const element = findTarget(shown.view.target);
     if (!measure || !compact || !root) return;
     const origin = root.getBoundingClientRect();
     const area: Box = { left: 0, top: 0, width: origin.width, height: origin.height };
@@ -258,7 +278,6 @@ export function Tour({ step, onNext, onSkip }: TourProps) {
       area,
       full: measure.offsetHeight,
       compact: compact.offsetHeight,
-      avoid: element ? avoidedBoxes(element, origin) : [],
       inSheet: shown.inSheet,
     });
     setShown({ ...shown, stale: false, placement });
@@ -284,7 +303,10 @@ export function Tour({ step, onNext, onSkip }: TourProps) {
   const next = (view: TourView) => {
     if (view.action === 'click') pressTarget(view)?.click();
     else if (view.action === 'focus') inputOf(view)?.focus();
-    else onNext();
+    else if (view.action === 'dismiss') {
+      sheetClose(view)?.click();
+      onNext();
+    } else onNext();
   };
 
   const tooltips: { view: TourView; placement: Placement; state: 'shown' | 'leaving' }[] = [];

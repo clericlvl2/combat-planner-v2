@@ -121,10 +121,11 @@
 
 .counter {
   min-width: 0;
-  white-space: nowrap;
   color: var(--cp-color-muted);
   font-size: var(--mantine-font-size-meta);
+  line-height: 1.2;
   text-align: center;
+  text-wrap: balance;
 }
 
 @media (prefers-reduced-motion: reduce) {

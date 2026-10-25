@@ -340,15 +340,14 @@ export const TourDamageInSheet = meta.story({
     await expect(within(hp).getByText(t('counter', { current: 6, total: 8 }))).toBeVisible();
     await userEvent.click(within(hp).getByRole('button', { name: t('next') }));
     const tooltip = await canvas.findByRole('dialog', { name: t('hpApplyTitle') });
-    await expect(tooltip).toHaveAttribute('data-compact');
     const box = tooltip.getBoundingClientRect();
-    const keys = [...canvasElement.querySelectorAll('[role="group"] button')];
-    await expect(keys.length).toBeGreaterThan(0);
-    const covered = keys.filter((key) => {
-      const rect = key.getBoundingClientRect();
-      return rect.top < box.bottom && box.top < rect.bottom;
-    });
-    await expect(covered).toEqual([]);
+    const keys = canvasElement.querySelector("[data-tour='hp-keys']");
+    if (!keys) throw new Error('keypad is missing');
+    await expect(box.bottom).toBeLessThanOrEqual(keys.getBoundingClientRect().top);
+    await userEvent.click(within(tooltip).getByRole('button', { name: t('gotIt') }));
+    const next = await canvas.findByRole('dialog', { name: t('nextTurnTitle') });
+    await expect(within(next).getByText(t('counter', { current: 7, total: 8 }))).toBeVisible();
+    await expect(canvasElement.querySelector("[data-tour='hp-keys']")).toBeNull();
   },
 });
 

@@ -52,7 +52,7 @@
   "playerHpTitle": "Vos PV",
   "playerHpBody": "Des dégâts ou des soins ? Touchez vos PV.",
   "playerHpApplyTitle": "Dégâts ou soins",
-  "playerHpApplyBody": "Saisissez un nombre et choisissez une action.",
+  "playerHpApplyBody": "Saisissez un nombre et touchez « Dégâts » ou « Soigner ».",
   "playerExpandTitle": "États et défenses",
   "playerExpandBody": "Touchez le nom de votre héros pour ouvrir ses états et défenses.",
   "playerMenuTitle": "Menu du joueur",

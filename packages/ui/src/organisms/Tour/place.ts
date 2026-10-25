@@ -16,7 +16,6 @@ export interface PlaceInput {
   area: Box;
   full: number;
   compact: number;
-  avoid: readonly Box[];
   inSheet: boolean;
 }
 
@@ -42,6 +41,14 @@ export const overlaps = (a: Box, b: Box): boolean =>
 export const sameBox = (a: Box, b: Box): boolean =>
   a.left === b.left && a.top === b.top && a.width === b.width && a.height === b.height;
 
+export function unionOf(boxes: readonly Box[]): Box {
+  const left = Math.min(...boxes.map((box) => box.left));
+  const top = Math.min(...boxes.map((box) => box.top));
+  const right = Math.max(...boxes.map((box) => box.left + box.width));
+  const bottom = Math.max(...boxes.map((box) => box.top + box.height));
+  return { left, top, width: right - left, height: bottom - top };
+}
+
 export function spotOf(target: Box, radius: number, area: Box): Spot {
   const left = Math.max(area.left, target.left - RING_PADDING);
   const top = Math.max(area.top, target.top - RING_PADDING);
@@ -61,66 +68,30 @@ export function spotOf(target: Box, radius: number, area: Box): Spot {
 export const tooltipWidth = (area: Box): number =>
   Math.min(TOOLTIP_WIDTH, area.width - TOOLTIP_MARGIN * 2);
 
-function distanceFrom(spot: Box, top: number, height: number): number {
-  if (top + height <= spot.top) return spot.top - (top + height);
-  return top - (spot.top + spot.height);
-}
-
-export function placeTooltip({ spot, area, full, compact, avoid, inSheet }: PlaceInput): Placement {
+export function placeTooltip({ spot, area, full, compact, inSheet }: PlaceInput): Placement {
   const width = tooltipWidth(area);
   const left = Math.min(
     Math.max(spot.left + spot.width / 2 - width / 2, area.left + TOOLTIP_MARGIN),
     area.left + area.width - width - TOOLTIP_MARGIN,
   );
-  const halo = {
-    left: spot.left,
-    top: spot.top - TOOLTIP_GAP,
-    width: spot.width,
-    height: spot.height + TOOLTIP_GAP * 2,
-  };
-  const blocked = [halo, ...avoid].filter((box) => box.width > 0 && box.height > 0);
-  const lowerHalf = spot.top + spot.height / 2 > area.top + area.height / 2;
-  const preferred: TooltipSide = lowerHalf ? 'above' : 'below';
-  const sideOf = (top: number, height: number): TooltipSide =>
-    top + height <= spot.top ? 'above' : 'below';
-  const fits = (top: number, height: number): boolean =>
-    top >= area.top + TOOLTIP_MARGIN &&
-    top + height <= area.top + area.height - TOOLTIP_MARGIN &&
-    !blocked.some((box) => overlaps({ left, top, width, height }, box));
-  const heights = inSheet ? [full, compact] : [full];
-  for (const height of heights) {
-    const first = Math.ceil(area.top + TOOLTIP_MARGIN);
-    const last = Math.floor(area.top + area.height - TOOLTIP_MARGIN - height);
-    const tops = [
-      spot.top - TOOLTIP_GAP - height,
-      spot.top + spot.height + TOOLTIP_GAP,
-      ...Array.from({ length: Math.max(0, last - first + 1) }, (_, index) => first + index),
-    ];
-    let best: { top: number; rank: number } | null = null;
-    for (const top of tops) {
-      if (!fits(top, height)) continue;
-      const rank =
-        Math.abs(distanceFrom(spot, top, height)) * 2 + (sideOf(top, height) === preferred ? 0 : 1);
-      if (best === null || rank < best.rank) best = { top, rank };
-    }
-    if (best !== null) {
-      return {
-        left,
-        top: best.top,
-        width,
-        side: sideOf(best.top, height),
-        compact: height !== full,
-      };
-    }
-  }
   const roomAbove = spot.top - area.top;
   const roomBelow = area.top + area.height - (spot.top + spot.height);
   const side: TooltipSide = roomAbove > roomBelow ? 'above' : 'below';
+  const sides: TooltipSide[] = [side, side === 'above' ? 'below' : 'above'];
+  const topOf = (at: TooltipSide, height: number): number =>
+    at === 'above' ? spot.top - TOOLTIP_GAP - height : spot.top + spot.height + TOOLTIP_GAP;
+  const fits = (top: number, height: number): boolean =>
+    top >= area.top + TOOLTIP_MARGIN && top + height <= area.top + area.height - TOOLTIP_MARGIN;
+  const heights = inSheet ? [full, compact] : [full];
+  for (const height of heights) {
+    for (const next of sides) {
+      const top = topOf(next, height);
+      if (fits(top, height)) return { left, top, width, side: next, compact: height !== full };
+    }
+  }
   const height = inSheet ? compact : full;
-  const wanted =
-    side === 'above' ? spot.top - TOOLTIP_GAP - height : spot.top + spot.height + TOOLTIP_GAP;
   const top = Math.min(
-    Math.max(wanted, area.top + TOOLTIP_MARGIN),
+    Math.max(topOf(side, height), area.top + TOOLTIP_MARGIN),
     area.top + area.height - height - TOOLTIP_MARGIN,
   );
   return { left, top, width, side, compact: inSheet };

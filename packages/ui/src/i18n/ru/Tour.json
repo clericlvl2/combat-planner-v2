@@ -52,7 +52,7 @@
   "playerHpTitle": "Ваши ОЗ",
   "playerHpBody": "Получили урон или лечение? Нажмите на ОЗ.",
   "playerHpApplyTitle": "Урон или лечение",
-  "playerHpApplyBody": "Наберите число и выберите действие.",
+  "playerHpApplyBody": "Наберите число и нажмите «Урон» или «Лечение».",
   "playerExpandTitle": "Состояния и защиты",
   "playerExpandBody": "Нажмите на имя героя — откроются состояния и защиты.",
   "playerMenuTitle": "Меню игрока",

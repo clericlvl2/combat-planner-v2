@@ -263,12 +263,13 @@ export function NumpadSheet({
       title={name}
       onClose={onClose}
       actions={
-        <div className={classes.actions} data-tour="hp-apply">
+        <div className={classes.actions}>
           {actionKinds.map((kind) => (
             <Button
               key={kind}
               className={classes.action}
               data-kind={kind}
+              data-tour={kind === 'damage' || kind === 'heal' ? `hp-${kind}` : undefined}
               data-sheet-action=""
               size={kind === 'damage' ? 'M' : 'S'}
               fullWidth
@@ -322,7 +323,7 @@ export function NumpadSheet({
           </output>
           <span className={classes.caret} aria-hidden="true" />
         </div>
-        <div className={classes.keys} role="group" aria-label={t('keypad')}>
+        <div className={classes.keys} role="group" aria-label={t('keypad')} data-tour="hp-keys">
           {keypadKeys.map((key) =>
             key === 'delete' ? (
               <UnstyledButton

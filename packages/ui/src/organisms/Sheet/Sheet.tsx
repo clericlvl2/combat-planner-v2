@@ -164,7 +164,13 @@ export function Sheet(props: SheetProps) {
           ) : (
             <div className={classes.custom}>{header}</div>
           )}
-          <IconButton icon={IconX} variant="outline" aria-label={t('close')} onClick={onClose} />
+          <IconButton
+            icon={IconX}
+            variant="outline"
+            aria-label={t('close')}
+            onClick={onClose}
+            data-sheet-close=""
+          />
         </div>
         <ScrollList
           className={classes.content}

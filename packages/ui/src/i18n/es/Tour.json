@@ -52,7 +52,7 @@
   "playerHpTitle": "Tus PG",
   "playerHpBody": "¿Recibiste daño o curación? Toca tus PG.",
   "playerHpApplyTitle": "Daño o curación",
-  "playerHpApplyBody": "Escribe un número y elige una acción.",
+  "playerHpApplyBody": "Escribe un número y toca «Daño» o «Curar».",
   "playerExpandTitle": "Estados y defensas",
   "playerExpandBody": "Toca el nombre de tu héroe para abrir estados y defensas.",
   "playerMenuTitle": "Menú del jugador",

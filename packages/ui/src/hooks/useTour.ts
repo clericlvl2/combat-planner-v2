@@ -63,7 +63,8 @@ const viewOf = ({ id, def, counter, body, finishLabel, skippable, t }: ViewInput
   title: t(`${id}Title`),
   body: t(body ?? `${id}Body`),
   counter,
-  nextLabel: def.action === 'finish' ? t(finishLabel) : t('next'),
+  nextLabel:
+    def.action === 'finish' ? t(finishLabel) : def.action === 'dismiss' ? t('gotIt') : t('next'),
   skippable,
 });
 
@@ -100,7 +101,7 @@ export function useDmTour(state: DmState | null): TourControl {
     if (current === null) return;
     const def = DM_STEPS[current];
     if (def.action === 'promote') setPromoted(current);
-    else if (def.action === 'advance') complete(def.stage);
+    else if (def.action === 'advance' || def.action === 'dismiss') complete(def.stage);
     else if (def.action === 'finish') setStored('done');
   }, [latest, complete, setStored]);
 
@@ -153,7 +154,7 @@ export function usePlayerTour(state: PlayerState | null): TourControl {
     if (current === null) return;
     const def = PLAYER_STEPS[current];
     if (current === 'playerTurn') setTurn('done');
-    else if (def.action === 'advance') complete(def.stage);
+    else if (def.action === 'advance' || def.action === 'dismiss') complete(def.stage);
     else if (def.action === 'finish') setStored('done');
   }, [latest, complete, setStored, setTurn]);
 

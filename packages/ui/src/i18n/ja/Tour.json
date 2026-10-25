@@ -52,7 +52,7 @@
   "playerHpTitle": "あなたのHP",
   "playerHpBody": "ダメージや回復を受けたら、HPをタップします。",
   "playerHpApplyTitle": "ダメージか回復",
-  "playerHpApplyBody": "数値を入力してアクションを選びます。",
+  "playerHpApplyBody": "数値を入力して「ダメージ」か「回復」をタップします。",
   "playerExpandTitle": "状態と防御",
   "playerExpandBody": "ヒーローの名前をタップすると、状態と防御が開きます。",
   "playerMenuTitle": "プレイヤーメニュー",

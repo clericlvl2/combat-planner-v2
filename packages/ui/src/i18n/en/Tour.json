@@ -52,7 +52,7 @@
   "playerHpTitle": "Your HP",
   "playerHpBody": "Took damage or healing? Tap your HP.",
   "playerHpApplyTitle": "Damage or heal",
-  "playerHpApplyBody": "Type a number and pick an action.",
+  "playerHpApplyBody": "Type a number and tap “Damage” or “Heal”.",
   "playerExpandTitle": "Conditions and defenses",
   "playerExpandBody": "Tap your hero’s name to open conditions and defenses.",
   "playerMenuTitle": "Player menu",

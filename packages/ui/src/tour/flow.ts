@@ -1,7 +1,10 @@
 import { isStage } from './progress.ts';
 import type { TourProgress } from './progress.ts';
 
-export type TourAction = 'click' | 'focus' | 'promote' | 'advance' | 'finish';
+export type TourAction = 'click' | 'focus' | 'promote' | 'advance' | 'dismiss' | 'finish';
+
+export const HP_STEP_TARGET =
+  "[data-tour='hp-keys'], [data-tour='hp-damage'], [data-tour='hp-heal']";
 
 export interface TourStepDef {
   stage: number;

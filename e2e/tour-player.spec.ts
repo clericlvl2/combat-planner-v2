@@ -45,9 +45,12 @@ test('a new player walks the tour and sees the turn strip hint once', async ({ p
 
     await step('playerHp', 4);
     await player.locator("[data-tour='own-row'] [data-tour='hp']").click();
-    await step('playerHpApply', 4);
+    const apply = await step('playerHpApply', 4);
+    await expect(apply).toContainText(t('Tour:playerHpApplyBody'));
+    await expect(apply.getByRole('button', { name: t('Tour:gotIt') })).toBeVisible();
     const numpad = player.getByRole('dialog', { name: 'Тарин' });
-    await numpad.getByRole('button', { name: t('Sheet:close') }).click();
+    await numpad.getByRole('button', { name: '3', exact: true }).click();
+    await numpad.getByRole('button', { name: t('NumpadSheet:damage') }).click();
     await expect(numpad).toBeHidden();
 
     const expand = await step('playerExpand', 5);

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vite-plus/test';
 import { DM_STEPS, dmSettled, dmStep } from '../../src/tour/dmTour.ts';
+import { HP_STEP_TARGET } from '../../src/tour/flow.ts';
 import type { DmCombatState, DmListState } from '../../src/tour/dmTour.ts';
 import type { TourProgress } from '../../src/tour/progress.ts';
 
@@ -116,6 +117,12 @@ describe('dmStep', () => {
     expect(dmStep(at(6), { ...active, numpadOpen: true }, null)).toBe('hpApply');
     expect(dmStep(at(6), combat({ units: 1 }), null)).toBeNull();
     expect(dmStep(at(6), { ...active, otherOpen: true }, null)).toBeNull();
+  });
+
+  it('closes the numpad from the HP step and goes on to the next turn', () => {
+    expect(DM_STEPS.hpApply).toMatchObject({ stage: 6, action: 'dismiss' });
+    expect(DM_STEPS.hpApply.target).toBe(HP_STEP_TARGET);
+    expect(dmStep(at(7), combat({ status: 'active', units: 1 }), null)).toBe('nextTurn');
   });
 
   it('walks sharing through the menu', () => {
