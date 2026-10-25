@@ -20,16 +20,19 @@
   }
 }
 
-@keyframes band {
+@keyframes ribbon {
   0% {
     opacity: 0;
-    transform: scaleX(0.2);
+    clip-path: inset(0 100% 0 0);
   }
 
-  15%,
+  15% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+
   75% {
     opacity: 1;
-    transform: scaleX(1);
   }
 
   100% {
@@ -62,12 +65,16 @@
 }
 
 .number {
+  position: relative;
+  z-index: 1;
   font-family: var(--cp-font-display);
   font-size: var(--mantine-font-size-display);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   white-space: nowrap;
+  -webkit-text-stroke: 6px var(--cp-color-surface);
+  paint-order: stroke fill;
   animation: rise var(--cp-hp-number-duration) ease-out both;
 
   &[data-kind='damage'] {
@@ -84,30 +91,35 @@
 }
 
 .ribbon {
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
   box-sizing: border-box;
-  width: 100%;
-  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--mantine-radius-card);
   color: var(--cp-color-surface);
-  font-family: var(--cp-font-ui);
-  font-size: var(--mantine-font-size-small);
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-body);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  line-height: var(--mantine-line-height-tight);
+  letter-spacing: 0.1em;
+  opacity: 0;
   text-align: center;
   text-transform: uppercase;
   white-space: nowrap;
-  animation: band var(--cp-hp-number-duration) ease-out both;
+  animation: ribbon 1700ms 700ms forwards;
 
   &[data-status='staggered'] {
-    background: var(--cp-health-staggered);
+    background: color-mix(in srgb, var(--cp-health-staggered) 94%, transparent);
   }
 
   &[data-status='unconscious'] {
-    background: var(--cp-health-unconscious);
+    background: color-mix(in srgb, var(--cp-health-unconscious) 94%, transparent);
   }
 
   &[data-status='dead'] {
-    background: var(--cp-health-dead);
+    background: color-mix(in srgb, var(--cp-health-dead) 94%, transparent);
   }
 }
 
@@ -143,7 +155,12 @@
   }
 }
 
-:global([data-motion-frozen]) :is(.number, .ribbon, .badge) {
+:global([data-motion-frozen]) :is(.number, .badge) {
   animation-delay: -400ms;
+  animation-play-state: paused;
+}
+
+:global([data-motion-frozen]) .ribbon {
+  animation-delay: -1000ms;
   animation-play-state: paused;
 }

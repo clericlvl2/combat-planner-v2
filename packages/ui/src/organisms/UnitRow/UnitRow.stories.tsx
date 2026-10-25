@@ -826,8 +826,32 @@ export const StaggeredRibbon = meta.story({
     await expect(ribbon).toHaveTextContent(t('staggered'));
     const style = getComputedStyle(ribbon as HTMLElement);
     await expect(style.textTransform).toBe('uppercase');
-    await expect(style.backgroundColor).toBe('rgb(179, 58, 10)');
+    await expect(style.backgroundColor).toBe('color(srgb 0.701961 0.227451 0.0392157 / 0.94)');
     await expect(style.color).toBe('rgb(255, 255, 255)');
-    await expect(numberOf(canvasElement)).toHaveTextContent('−5');
+    const card = (ribbon as HTMLElement).closest<HTMLElement>('[data-unit-role]');
+    const plate = (ribbon as HTMLElement).getBoundingClientRect();
+    const edges = (card as HTMLElement).getBoundingClientRect();
+    await expect([plate.left, plate.right, plate.top, plate.bottom]).toEqual([
+      edges.left,
+      edges.right,
+      edges.top,
+      edges.bottom,
+    ]);
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent('−5');
+    await expect(Number(getComputedStyle(number).zIndex)).toBeGreaterThan(Number(style.zIndex));
+  },
+});
+
+export const NoRibbonWithMotionOff = meta.story({
+  tags: ['!dev'],
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 15 }), {
+    kind: 'damage',
+    amount: 5,
+    status: 'staggered',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-hp-change="ribbon"]')).toBeNull();
+    await expect(canvasElement.querySelector('[data-hp-change="number"]')).toBeNull();
   },
 });
