@@ -16,7 +16,6 @@ import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { useRetained } from '../../hooks/useRetained.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
-import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
 import { TurnStrip } from '../../molecules/TurnStrip/TurnStrip.tsx';
@@ -24,6 +23,7 @@ import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
 import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
+import { InitiativeSheet } from '../../organisms/InitiativeSheet/InitiativeSheet.tsx';
 import { Menu } from '../../organisms/Menu/Menu.tsx';
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
@@ -151,11 +151,13 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
     });
   };
 
+  const initiativeOpen = panelOf('initiative');
   const numpadOpen = panelOf('numpad');
   const conditionsOpen = panelOf('conditions');
   const historyOpen = panelOf('history');
   const defensesOpen = panelOf('defenses');
   const editOpen = panelOf('edit');
+  const initiativeUnit = useRetained(initiativeOpen);
   const numpadUnit = useRetained(numpadOpen);
   const conditionsUnit = useRetained(conditionsOpen);
   const historyUnit = useRetained(historyOpen);
@@ -235,23 +237,6 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
                 onEdit={() => show('edit', unit)}
                 onMore={() => (isOpen('more', unit) ? close() : show('more', unit))}
               />
-              {mine ? (
-                <InitiativePopover
-                  className={classes.initiative}
-                  open={isOpen('initiative', unit)}
-                  value={unit.initiative}
-                  bonus={unit.initiativeBonus ?? 0}
-                  random={random}
-                  onSet={(initiative) =>
-                    send({ ...target(unit), type: 'setInitiative', initiative })
-                  }
-                  onRoll={(_initiative, roll) => {
-                    send({ ...target(unit), type: 'rollInitiative', roll });
-                    close();
-                  }}
-                  onClose={close}
-                />
-              ) : null}
               {mine && expandedId === unit.id ? (
                 <div className={classes.more}>
                   <Menu
@@ -270,6 +255,24 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
           <EmptyState icon={IconUsers} title={t('noUnitsTitle')} body={t('noUnitsBody')} />
         ) : null}
       </ScrollList>
+      {initiativeUnit ? (
+        <InitiativeSheet
+          key={`initiative-${initiativeUnit.id}`}
+          opened={initiativeOpen !== null}
+          unitName={initiativeUnit.name}
+          value={initiativeUnit.initiative}
+          bonus={initiativeUnit.initiativeBonus ?? 0}
+          random={random}
+          onSet={(initiative) =>
+            send({ ...target(initiativeUnit), type: 'setInitiative', initiative })
+          }
+          onRoll={(_initiative, roll) => {
+            send({ ...target(initiativeUnit), type: 'rollInitiative', roll });
+            close();
+          }}
+          onClose={close}
+        />
+      ) : null}
       {numpadUnit ? (
         <NumpadSheet
           key={`numpad-${numpadUnit.id}`}

@@ -312,10 +312,10 @@ export const InitiativeBonus = meta.story({
         name: (label: string) => label.endsWith(t('RoleBlock:you')),
       }),
     );
-    const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
+    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
     await expect(
-      within(popover).getByRole('button', {
-        name: (label: string) => label.startsWith(t('InitiativePopover:roll', { bonus: '+2' })),
+      within(sheet).getByRole('button', {
+        name: (label: string) => label.startsWith(t('InitiativeSheet:roll', { bonus: '+2' })),
       }),
     ).toBeVisible();
   },

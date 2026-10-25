@@ -10,7 +10,7 @@ import {
   IconUserMinus,
   IconUserOff,
 } from '@tabler/icons-react';
-import { useId, useRef } from 'react';
+import { useId } from 'react';
 import type { HTMLAttributes, MouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Chip } from '../../atoms/Chip/Chip.tsx';
@@ -21,7 +21,6 @@ import type { HpChange } from '../../hooks/useHpChanges.ts';
 import { useHpMotionReduced } from '../../hooks/useHpChanges.ts';
 import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
 import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
-import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
 import { Reveal } from '../../motion/Reveal.tsx';
 import { Menu } from '../Menu/Menu.tsx';
@@ -42,9 +41,6 @@ export type UnitRowTarget =
 export interface UnitRowCallbacks {
   onToggle: () => void;
   onInitiative: () => void;
-  onInitiativeSet: (initiative: number) => void;
-  onInitiativeRoll: (initiative: number, roll: number) => void;
-  onInitiativeClose: () => void;
   onHp: () => void;
   onConditions: () => void;
   onDefenses: () => void;
@@ -73,7 +69,6 @@ interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childre
   menuOpen?: boolean;
   busy?: boolean;
   duplicateDisabled?: boolean;
-  random?: () => number;
   'data-tap'?: UnitRowTarget;
 }
 
@@ -101,12 +96,8 @@ export function UnitRow({
   menuOpen = false,
   busy = false,
   duplicateDisabled = false,
-  random,
   onToggle,
   onInitiative,
-  onInitiativeSet,
-  onInitiativeRoll,
-  onInitiativeClose,
   onHp,
   onConditions,
   onDefenses,
@@ -128,10 +119,7 @@ export function UnitRow({
   const { t } = useTranslation('UnitRow');
   const detailsId = useId();
   const reduced = useHpMotionReduced();
-  const roleCellRef = useRef<HTMLDivElement>(null);
-  const initiativeRef = useRef<HTMLDivElement>(null);
   const expanded = !readOnly && expandedProp;
-  const showInitiative = !readOnly && initiativeOpen;
   const dead = healthStatus(unit.hp, unit.maxHp, unit.role) === 'dead';
   const disabled = unit.disabled;
   const claimName = unit.claimedBy ? claimedByName : undefined;
@@ -143,12 +131,6 @@ export function UnitRow({
     if (readOnly || event.defaultPrevented) return;
     if (event.target instanceof Element && event.target.closest(INTERACTIVE)) return;
     onToggle?.();
-  };
-
-  const closeInitiative = () => {
-    const focusInside = initiativeRef.current?.contains(document.activeElement) === true;
-    onInitiativeClose?.();
-    if (focusInside) roleCellRef.current?.querySelector('button')?.focus();
   };
 
   const menuItems: (MenuItem & { run: () => void })[] = [
@@ -207,7 +189,7 @@ export function UnitRow({
       data-unit-role={unit.role}
       onClick={handleClick}
     >
-      <div ref={roleCellRef} className={classes.roleCell}>
+      <div className={classes.roleCell}>
         <RoleBlock
           className={classes.role}
           fill
@@ -220,26 +202,10 @@ export function UnitRow({
           disabled={disabled}
           aria-label={readOnly ? undefined : t('rollInitiative')}
           aria-haspopup={readOnly ? undefined : 'dialog'}
-          aria-expanded={readOnly ? undefined : showInitiative}
+          aria-expanded={readOnly ? undefined : initiativeOpen}
           data-tap={tapOf('initiative')}
-          onClick={
-            readOnly ? undefined : () => (showInitiative ? closeInitiative() : onInitiative?.())
-          }
+          onClick={readOnly ? undefined : () => onInitiative?.()}
         />
-        {showInitiative ? (
-          <div ref={initiativeRef} className={classes.initiative}>
-            <InitiativePopover
-              open
-              value={unit.initiative}
-              bonus={unit.initiativeBonus}
-              random={random}
-              triggerRef={roleCellRef}
-              onSet={onInitiativeSet ?? noop}
-              onRoll={onInitiativeRoll ?? noop}
-              onClose={closeInitiative}
-            />
-          </div>
-        ) : null}
       </div>
       <div className={classes.main}>
         <span className={classes.nameLine}>

@@ -61,6 +61,7 @@ import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import type { DialogProps } from '../../organisms/Dialog/Dialog.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
+import { InitiativeSheet } from '../../organisms/InitiativeSheet/InitiativeSheet.tsx';
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { RoundSheet } from '../../organisms/RoundSheet/RoundSheet.tsx';
 import { ShareSheet } from '../../organisms/ShareSheet/ShareSheet.tsx';
@@ -344,6 +345,7 @@ export function CombatScreen({
   const panelUnit = (panel: RowPanel) =>
     (open?.panel === panel ? combat?.units.find((unit) => unit.id === open.unitId) : undefined) ??
     null;
+  const initiativeOpen = panelUnit('initiative');
   const numpadOpen = panelUnit('numpad');
   const conditionsOpen = panelUnit('conditions');
   const historyOpen = panelUnit('history');
@@ -352,6 +354,7 @@ export function CombatScreen({
     (form?.mode === 'edit' ? combat?.units.find((unit) => unit.id === form.unitId) : undefined) ??
     null;
   const addingOpen = form?.mode === 'add' ? form : null;
+  const initiativeUnit = useRetained(initiativeOpen);
   const numpadUnit = useRetained(numpadOpen);
   const conditionsUnit = useRetained(conditionsOpen);
   const historyUnit = useRetained(historyOpen);
@@ -605,20 +608,11 @@ export function CombatScreen({
             menuOpen={isOpen('menu', unit)}
             busy={busyUnitId === unit.id}
             duplicateDisabled={atCap}
-            random={random}
             onToggle={() => {
               close();
               setExpandedId((current) => (current === unit.id ? null : unit.id));
             }}
             onInitiative={() => show('initiative', unit)}
-            onInitiativeSet={(initiative) => {
-              void send({ type: 'setInitiative', unitId: unit.id, initiative });
-            }}
-            onInitiativeRoll={(_initiative, roll) => {
-              close();
-              void send({ type: 'rollInitiative', unitId: unit.id, roll });
-            }}
-            onInitiativeClose={close}
             onHp={() => show('numpad', unit)}
             onConditions={() => show('conditions', unit)}
             onDefenses={() => show('defenses', unit)}
@@ -704,6 +698,24 @@ export function CombatScreen({
         }}
         onClose={() => setHeaderOpen(null)}
       />
+      {initiativeUnit ? (
+        <InitiativeSheet
+          key={`initiative-${initiativeUnit.id}`}
+          opened={initiativeOpen !== null}
+          unitName={initiativeUnit.name}
+          value={initiativeUnit.initiative}
+          bonus={initiativeUnit.initiativeBonus}
+          random={random}
+          onSet={(initiative) => {
+            void send({ type: 'setInitiative', unitId: initiativeUnit.id, initiative });
+          }}
+          onRoll={(_initiative, roll) => {
+            close();
+            void send({ type: 'rollInitiative', unitId: initiativeUnit.id, roll });
+          }}
+          onClose={close}
+        />
+      ) : null}
       {numpadUnit ? (
         <NumpadSheet
           key={`numpad-${numpadUnit.id}`}

@@ -33,7 +33,7 @@ PageHeader.combats
 PageHeader.actions
 Drawer.combats
 CombatList.title
-InitiativePopover.title
+InitiativeSheet.title
 DefenseLine.ac
 DesktopAside.title
 Landing.name

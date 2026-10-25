@@ -164,7 +164,7 @@ export const OwnHeroWithoutInitiative = meta.story({
   },
 });
 
-export const InitiativePopover = meta.story({
+export const InitiativeSheet = meta.story({
   parameters: { scenario: setupScenario },
   play: async ({ canvas, parameters }) => {
     const t = playerT(parameters);
@@ -174,10 +174,10 @@ export const InitiativePopover = meta.story({
         name: (label: string) => label.endsWith(t('RoleBlock:you')),
       }),
     );
-    const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
+    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
     await expect(
-      within(popover).getByRole('button', {
-        name: anyValue(t, 'InitiativePopover:roll', 'bonus'),
+      within(sheet).getByRole('button', {
+        name: anyValue(t, 'InitiativeSheet:roll', 'bonus'),
       }),
     ).toBeVisible();
   },
@@ -195,10 +195,10 @@ export const RollDispatched = meta.story({
         name: (label: string) => label.endsWith(t('RoleBlock:you')),
       }),
     );
-    const popover = await canvas.findByRole('dialog', { name: t('InitiativePopover:title') });
+    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
     await userEvent.click(
-      within(popover).getByRole('button', {
-        name: anyValue(t, 'InitiativePopover:roll', 'bonus'),
+      within(sheet).getByRole('button', {
+        name: anyValue(t, 'InitiativeSheet:roll', 'bonus'),
       }),
     );
     await waitFor(() =>

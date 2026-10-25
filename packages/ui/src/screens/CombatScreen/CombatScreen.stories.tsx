@@ -30,7 +30,7 @@ import {
   unitIds,
 } from './CombatScreen.scenarios.ts';
 import { CombatScreen } from './CombatScreen.tsx';
-import { collapsedSpace, escapeRegExp, storyT } from '../../storybook/storyT.ts';
+import { anyValue, collapsedSpace, escapeRegExp, storyT } from '../../storybook/storyT.ts';
 
 type Canvas = ReturnType<typeof within>;
 
@@ -674,6 +674,26 @@ export const RoundAndEscalationEdits = meta.story({
       await canvas.findByRole('button', { name: ticketName(t, 4, 3), hidden: true }),
     ).toBeInTheDocument();
     await expect(await rowOf(canvasElement, names.vashti)).toHaveAttribute('data-active');
+  },
+});
+
+export const InitiativeSheetRolls = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, canvasElement, globals, loaded }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const orc = await rowOf(canvasElement, names.orc);
+    await userEvent.click(within(orc).getByRole('button', { name: t('UnitRow:rollInitiative') }));
+    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
+    await expect(within(sheet).getByText(names.orc)).toBeVisible();
+    await userEvent.click(
+      within(sheet).getByRole('button', { name: anyValue(t, 'InitiativeSheet:roll', 'bonus') }),
+    );
+    await waitFor(() =>
+      expect(dispatched(fakeApiOf(loaded))).toEqual([
+        expect.objectContaining({ type: 'rollInitiative', unitId: unitIds.orc, roll: 11 }),
+      ]),
+    );
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
   },
 });
 

@@ -68,14 +68,6 @@
   padding: var(--cp-role-tile-inset);
 }
 
-.initiative {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  z-index: 4;
-  cursor: default;
-}
-
 .main {
   display: flex;
   grid-area: 1 / 2;

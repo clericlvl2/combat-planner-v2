@@ -44,13 +44,6 @@
   flex: none;
 }
 
-.initiative {
-  position: absolute;
-  top: 56px;
-  left: -2px;
-  z-index: 7;
-}
-
 .more {
   position: absolute;
   top: calc(100% - 8px);
