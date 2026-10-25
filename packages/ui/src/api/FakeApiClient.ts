@@ -61,6 +61,7 @@ export interface FakeCall {
 interface StoredCombat {
   combat: Combat;
   log: UndoableEntry[];
+  applied: ActionId[];
 }
 
 interface DmSubscriber {
@@ -185,7 +186,7 @@ export class FakeApiClient implements ApiClient {
     this.accounts = scenario.accounts.map((account) => ({ ...account }));
     for (const combat of scenario.combats) {
       const players = { ...combat.players, ...scenario.players[combat.id] };
-      this.combatStore.set(combat.id, { combat: { ...combat, players }, log: [] });
+      this.combatStore.set(combat.id, { combat: { ...combat, players }, log: [], applied: [] });
       this.joined.set(combat.id, new Set(Object.keys(players)));
       const token = scenario.links[combat.id] ?? tokenOf(combat.id, combat.linkGeneration);
       this.links.set(token, { combatId: combat.id, generation: combat.linkGeneration });
@@ -308,7 +309,7 @@ export class FakeApiClient implements ApiClient {
       this.deliver(stored, audience);
       return;
     }
-    const snapshot: StoredCombat = { combat: stored.combat, log: [...stored.log] };
+    const snapshot: StoredCombat = { ...stored, log: [...stored.log] };
     setTimeout(() => this.deliver(snapshot, audience), 0);
   }
 
@@ -355,9 +356,7 @@ export class FakeApiClient implements ApiClient {
 
   private dispatchAs(stored: StoredCombat, viewer: Viewer, action: Action): VersionResult {
     const combat = stored.combat;
-    if (stored.log.some((entry) => entry.action.id === action.id)) {
-      return { version: combat.version };
-    }
+    if (stored.applied.includes(action.id)) return { version: combat.version };
     if (action.version !== combat.version) {
       throw fail(
         'version',
@@ -370,6 +369,7 @@ export class FakeApiClient implements ApiClient {
     const result = apply(combat, action, viewer, now, stored.log);
     if (result instanceof DomainError) throw fromDomain(result);
     stored.log = nextStack(stored.log, { action, author: viewer, at: now, patch: result.patch });
+    stored.applied = [...stored.applied, action.id].slice(-LIMITS.repeatWindow);
     this.save(stored, result.combat);
     return { version: result.combat.version };
   }
@@ -412,7 +412,7 @@ export class FakeApiClient implements ApiClient {
     if (this.combatStore.size >= LIMITS.combatsPerDm) {
       throw fail('limit', `A DM keeps at most ${LIMITS.combatsPerDm} combats`);
     }
-    this.combatStore.set(combat.id, { combat, log: [] });
+    this.combatStore.set(combat.id, { combat, log: [], applied: [] });
     return combat;
   }
 

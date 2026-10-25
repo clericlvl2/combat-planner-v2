@@ -181,13 +181,15 @@ describe('undo stack through dispatch', () => {
     expect((await fetchCombat(dm)).units.find((unit) => unit.id === HERO_ID)?.claimedBy).toBe(null);
   });
 
-  it('a retried undo is refused with 409 version and writes no row', async () => {
+  it('a retried undo answers 200 with the current version and writes no row', async () => {
     await hits(2);
     const { action } = await step({ type: 'undo' });
     const before = rowsOf(opened);
+    const { version } = await fetchCombat(dm);
     const retry = await call(dm, 'POST', `/combats/${COMBAT_ID}/actions`, action);
-    expect(retry.status).toBe(409);
-    expect(await retry.json()).toMatchObject({ code: 'version' });
+    expect(retry.status).toBe(200);
+    expect(await retry.json()).toEqual({ version });
+    expect((await fetchCombat(dm)).version).toBe(version);
     expect(rowsOf(opened)).toEqual(before);
     expect(before).toHaveLength(1);
   });

@@ -25,6 +25,7 @@ export const LIMITS = {
   roll: { min: 1, max: 20 },
   amount: { min: 0, max: 999 },
   undoDepth: 10,
+  repeatWindow: 100,
   orphanedLinkMinutes: 15,
   watchingMinutes: 15,
   idleStreamHours: 2,

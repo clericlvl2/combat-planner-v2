@@ -52,7 +52,10 @@ from the repository root.
     `errors`).
   - `sharing/` holds link and connected-player state and closes DM streams of ended sessions;
     `stats/` the daily usage counts (`Europe/Moscow` days) read by the admin page.
-  - `db/` is Drizzle over better-sqlite3; migrations in `drizzle/`.
+  - `db/` is Drizzle over better-sqlite3; migrations in `drizzle/`. `action_log` holds the undo
+    stack only; `applied_actions` (`combats/applied.ts`) holds the ids of the last
+    `LIMITS.repeatWindow` applied actions of a combat, including claims, releases and undos, so a
+    repeated action id answers 200 with the current version and changes nothing.
   - `live/` holds the per-combat subscriber registry and the SSE stream.
   - `client.ts` defines the `ApiClient` interface and its Zod schemas; `hono-client.ts` implements
     it over HTTP and SSE, including reconnect and refetch repair.

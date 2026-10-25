@@ -438,6 +438,61 @@ export function describeApiClientContract(
       });
     });
 
+    describe('actions, repeats after a lost reply', () => {
+      it('a repeated undo answers the current version and undoes nothing more', async () => {
+        const combat = await createCombat();
+        const unitId = ulid();
+        let version = await send(combat.id, addUnit(combat.version, 'Orc', 'enemy', unitId));
+        const first = toggle(version, unitId, 'dazed');
+        version = await send(combat.id, first);
+        version = await send(combat.id, toggle(version, unitId, 'stunned'));
+        const undone = undo(version);
+        version = await send(combat.id, undone);
+        expect(await dm.combats.dispatch(combat.id, undone)).toEqual({ version });
+        const stored = await dm.combats.get(combat.id);
+        expect(stored.version).toBe(version);
+        expect(unitOf(stored, unitId)?.conditions).toEqual(['dazed']);
+        expect(stored.undo).toMatchObject({ action: { id: first.id } });
+      });
+
+      it('a repeated claimUnit answers the current version', async () => {
+        const { combat, heroId, token } = await withHero();
+        const { client, view } = await join(token);
+        const claimed = claim(view.combat.version, heroId);
+        const { version } = await client.play.dispatch(token, claimed);
+        expect(await client.play.dispatch(token, claimed)).toEqual({ version });
+        const stored = await dm.combats.get(combat.id);
+        expect(stored.version).toBe(version);
+        expect(unitOf(stored, heroId)?.claimedBy).toBe(view.playerId);
+      });
+
+      it('a repeated releaseUnit answers the current version', async () => {
+        const { combat, heroId, token } = await withHero();
+        const { client, view } = await join(token);
+        const claimed = await client.play.dispatch(token, claim(view.combat.version, heroId));
+        const released = release(claimed.version, heroId);
+        const { version } = await client.play.dispatch(token, released);
+        expect(await client.play.dispatch(token, released)).toEqual({ version });
+        const stored = await dm.combats.get(combat.id);
+        expect(stored.version).toBe(version);
+        expect(unitOf(stored, heroId)?.claimedBy).toBeNull();
+      });
+
+      it('a repeat of an action pushed out of the undo stack answers the current version', async () => {
+        const combat = await createCombat();
+        const unitId = ulid();
+        const added = addUnit(combat.version, 'Orc', 'enemy', unitId);
+        let version = await send(combat.id, added);
+        for (let index = 0; index < LIMITS.undoDepth; index += 1) {
+          version = await send(combat.id, toggle(version, unitId));
+        }
+        expect(await dm.combats.dispatch(combat.id, added)).toEqual({ version });
+        const stored = await dm.combats.get(combat.id);
+        expect(stored.version).toBe(version);
+        expect(stored.units).toHaveLength(1);
+      });
+    });
+
     describe('undo', () => {
       it('undo reverts the top action and the summary moves to the one below', async () => {
         const combat = await createCombat();
