@@ -95,9 +95,11 @@ from the repository root.
     `min(100dvh - 64px, 956px)`) on a dotted `--cp-color-field` field. `main.tsx` always portals
     `DesktopAside` into `#aside`; `root.css` shows it from 1180 wide, left of the column. A
     screen root with `data-landing` fills the window, without frame or aside. During a view
-    transition the screen's `header` takes `view-transition-name: header` unless a `[data-scrim]`
-    is open; transitions run on `--cp-page-transition-duration` / `-easing` and are off under
-    `prefers-reduced-motion`.
+    transition a pinned screen header (`PageHeader`, a direct child of the screen root) takes
+    `view-transition-name: header` unless a `[data-scrim]` is open; `CombatHeader` and
+    `PlayerHeader` sit inside the screen's `ScrollList` under a fixed `StatusStrip`
+    (`screens/shared/StatusStrip.tsx`) and cross-fade with the page. Transitions run on
+    `--cp-page-transition-duration` / `-easing` and are off under `prefers-reduced-motion`.
 - `apps/server`: Node entry. It loads `.env`, creates or reads `secrets.json` next to the
   database, serves the API under `/api` and the built web app. It runs TypeScript through Node type
   stripping, with no build step.

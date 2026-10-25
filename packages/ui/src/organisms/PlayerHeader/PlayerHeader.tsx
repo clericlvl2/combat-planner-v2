@@ -11,14 +11,22 @@ export interface PlayerHeaderProps extends Omit<
   title: string;
   round: number | null;
   escalation: EscalationValue;
+  statusBar?: boolean;
 }
 
-export function PlayerHeader({ title, round, escalation, className, ...rest }: PlayerHeaderProps) {
+export function PlayerHeader({
+  title,
+  round,
+  escalation,
+  statusBar = true,
+  className,
+  ...rest
+}: PlayerHeaderProps) {
   const { t } = useTranslation('PlayerHeader');
   const setup = round === null;
   return (
     <header {...rest} className={className ? `${classes.root} ${className}` : classes.root}>
-      <div className={classes.statusBar} aria-hidden="true" />
+      {statusBar ? <div className={classes.statusBar} aria-hidden="true" /> : null}
       <div className={classes.body}>
         <span className={classes.title} data-ellipsis="">
           {title}

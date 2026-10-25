@@ -10,6 +10,7 @@ import { ulid } from 'ulid';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
+import { layout } from '../../layout.ts';
 import {
   COMBAT_ID,
   JONAS,
@@ -1798,5 +1799,31 @@ export const ReleaseWaits = meta.story({
     await waitFor(() => expect(busy).toHaveAttribute('aria-busy', 'true'));
     await expect(busy).toBeDisabled();
     await expect(within(row).getByText('@Mika')).toBeVisible();
+  },
+});
+
+export const HeaderScrollsWithList = meta.story({
+  tags: ['!dev'],
+  parameters: { geometry: longNameBreak, scenario: longScenario() },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'CombatScreen');
+    const header = await canvas.findByRole('banner');
+    const first = await rowOf(canvasElement, 'Flussbrückenwächterin Adelheid von Stein');
+    const viewport = first.closest<HTMLElement>('[data-scrollarea-viewport]');
+    const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
+    const strip = canvasElement.querySelector<HTMLElement>('[data-status-strip]');
+    if (!viewport || !frame || !strip) throw new Error('The combat screen parts are missing');
+    await expect(viewport).toContainElement(header);
+    viewport.scrollTop = header.getBoundingClientRect().height + 40;
+    await waitFor(() =>
+      expect(header.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+        viewport.getBoundingClientRect().top,
+      ),
+    );
+    const edge = frame.getBoundingClientRect();
+    await expect(strip.getBoundingClientRect().top).toBe(edge.top);
+    await expect(strip.getBoundingClientRect().height).toBe(layout.statusBar);
+    const bar = (await nextTurnButton(canvas, t)).parentElement!;
+    await expect(bar.getBoundingClientRect().bottom).toBe(edge.bottom);
   },
 });

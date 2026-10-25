@@ -352,14 +352,20 @@ export const YouAreNext = meta.story({
 
 export const YourTurn = meta.story({
   tags: ['visual'],
-  play: async ({ canvas, globals }) => {
+  play: async ({ canvas, canvasElement, globals }) => {
     const t = storyT(globals, 'TurnOrder');
     const strip = await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) });
     await expect(strip).toHaveAttribute('data-kind', 'turn');
     await expect(canvas.queryByRole('button', { name: t('youAreNext') })).toBeNull();
-    const list = canvas.getByText(ME).closest('[data-scroll-list]');
-    await expect(list?.getBoundingClientRect().top).toBeGreaterThanOrEqual(
-      strip.getBoundingClientRect().bottom,
+    const header = canvas.getByRole('banner');
+    await waitFor(() =>
+      expect(strip.getBoundingClientRect().top).toBeCloseTo(
+        Math.max(
+          header.getBoundingClientRect().bottom,
+          listViewport(canvasElement).getBoundingClientRect().top,
+        ),
+        0,
+      ),
     );
   },
 });
@@ -377,10 +383,13 @@ export const YourTurnScrollsToHero = meta.story({
       listViewport(canvasElement).getBoundingClientRect().bottom,
     );
     await actAsDm(api, { type: 'nextTurn' });
-    await expect(
-      await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) }),
-    ).toBeVisible();
+    const strip = await canvas.findByRole('button', { name: t('yourTurn', { name: ME }) });
     await expectInView(canvasElement, vashti);
+    await expect(strip).toBeVisible();
+    await expect(strip.getBoundingClientRect().top).toBeCloseTo(
+      listViewport(canvasElement).getBoundingClientRect().top,
+      0,
+    );
   },
 });
 

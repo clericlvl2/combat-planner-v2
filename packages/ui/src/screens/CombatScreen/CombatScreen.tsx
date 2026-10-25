@@ -74,6 +74,7 @@ import { CombatNotFound } from '../CombatNotFound/CombatNotFound.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
 import { saveCombatFile } from '../shared/combatFile.ts';
 import { LoadingScreen } from '../shared/LoadingScreen.tsx';
+import { StatusStrip } from '../shared/StatusStrip.tsx';
 import { toastLook } from '../shared/toastLook.ts';
 import { claimEvents } from './claimEvents.ts';
 import { isUndoable, undoLabel } from './undoLabel.ts';
@@ -576,94 +577,98 @@ export function CombatScreen({
 
   return (
     <div className={classes.root}>
-      <CombatHeader
-        title={combat.title}
-        round={setup ? null : combat.round}
-        escalation={combat.escalation as EscalationValue}
-        open={headerOpen}
-        undoDisabled={!combat.undo || pending.length > 0}
-        busy={undoing || (shareOpen && link.token === undefined && !linkFailed)}
-        onBack={goToCombats}
-        onRound={() => setHeaderOpen('round')}
-        onMenu={() => setHeaderOpen((current) => (current === 'menu' ? null : 'menu'))}
-        onClose={() => setHeaderOpen(null)}
-        onMenuSelect={selectMenu}
-      />
-      <ScrollList className={classes.list} contentClassName={classes.listContent}>
-        <TurnBracket activeId={setup ? null : combat.activeUnitId} />
-        {units.map((unit) => (
-          <UnitRow
-            key={unit.id}
-            className={classes.row}
-            data-unit-id={unit.id}
-            unit={unit}
-            claimedByName={unit.claimedBy === null ? undefined : combat.players[unit.claimedBy]}
-            active={!setup && combat.activeUnitId === unit.id}
-            expanded={expandedId === unit.id}
-            hpChange={hpChanges.get(unit.id)}
-            initiativeOpen={isOpen('initiative', unit)}
-            conditionsOpen={isOpen('conditions', unit)}
-            historyOpen={isOpen('history', unit)}
-            defensesOpen={isOpen('defenses', unit)}
-            menuOpen={isOpen('menu', unit)}
-            busy={busyUnitId === unit.id}
-            duplicateDisabled={atCap}
-            onToggle={() => {
-              close();
-              setExpandedId((current) => (current === unit.id ? null : unit.id));
-            }}
-            onInitiative={() => show('initiative', unit)}
-            onHp={() => show('numpad', unit)}
-            onConditions={() => show('conditions', unit)}
-            onDefenses={() => show('defenses', unit)}
-            onHistory={() => show('history', unit)}
-            onNoteChange={(note) => {
-              if (note !== unit.note) void send({ type: 'editNote', unitId: unit.id, note });
-            }}
-            onEdit={() => {
-              close();
-              openForm({ mode: 'edit', unitId: unit.id });
-            }}
-            onMore={() => (isOpen('menu', unit) ? close() : show('menu', unit))}
-            onMenuClose={close}
-            onDuplicate={() => duplicate(unit)}
-            onSetDisabled={(disabled) => {
-              close();
-              if (disabled) setExpandedId(null);
-              void send({ type: 'setDisabled', unitId: unit.id, disabled });
-            }}
-            onSaveAsPreset={() => saveAsPreset(unit)}
-            onReleaseClaim={() => {
-              close();
-              setBusyUnitId(unit.id);
-              void releaseAsDm(
-                [unit.id],
-                async () =>
-                  (await send({ type: 'releaseUnit', unitId: unit.id }))?.version ?? false,
-              ).finally(() => setBusyUnitId(null));
-            }}
-            onRemove={() => {
-              close();
-              setConfirm({ kind: 'remove', unitId: unit.id });
-            }}
-          />
-        ))}
-        {combat.units.length === 0 ? (
-          <EmptyState
-            icon={IconUsers}
-            title={tEmpty('noUnitsTitle')}
-            body={tEmpty('noUnitsBody')}
-          />
-        ) : null}
-        {setup ? (
-          <AddTile
-            label={tEmpty('addUnit')}
-            icon={IconUserPlus}
-            disabled={atCap}
-            hint={atCap ? tToast('unitCap', { limit: LIMITS.unitsPerCombat }) : undefined}
-            onClick={openAdd}
-          />
-        ) : null}
+      <StatusStrip />
+      <ScrollList className={classes.list} contentClassName={classes.scrollContent}>
+        <CombatHeader
+          title={combat.title}
+          round={setup ? null : combat.round}
+          escalation={combat.escalation as EscalationValue}
+          open={headerOpen}
+          undoDisabled={!combat.undo || pending.length > 0}
+          busy={undoing || (shareOpen && link.token === undefined && !linkFailed)}
+          onBack={goToCombats}
+          onRound={() => setHeaderOpen('round')}
+          onMenu={() => setHeaderOpen((current) => (current === 'menu' ? null : 'menu'))}
+          onClose={() => setHeaderOpen(null)}
+          onMenuSelect={selectMenu}
+          statusBar={false}
+        />
+        <div className={classes.listContent}>
+          <TurnBracket activeId={setup ? null : combat.activeUnitId} />
+          {units.map((unit) => (
+            <UnitRow
+              key={unit.id}
+              className={classes.row}
+              data-unit-id={unit.id}
+              unit={unit}
+              claimedByName={unit.claimedBy === null ? undefined : combat.players[unit.claimedBy]}
+              active={!setup && combat.activeUnitId === unit.id}
+              expanded={expandedId === unit.id}
+              hpChange={hpChanges.get(unit.id)}
+              initiativeOpen={isOpen('initiative', unit)}
+              conditionsOpen={isOpen('conditions', unit)}
+              historyOpen={isOpen('history', unit)}
+              defensesOpen={isOpen('defenses', unit)}
+              menuOpen={isOpen('menu', unit)}
+              busy={busyUnitId === unit.id}
+              duplicateDisabled={atCap}
+              onToggle={() => {
+                close();
+                setExpandedId((current) => (current === unit.id ? null : unit.id));
+              }}
+              onInitiative={() => show('initiative', unit)}
+              onHp={() => show('numpad', unit)}
+              onConditions={() => show('conditions', unit)}
+              onDefenses={() => show('defenses', unit)}
+              onHistory={() => show('history', unit)}
+              onNoteChange={(note) => {
+                if (note !== unit.note) void send({ type: 'editNote', unitId: unit.id, note });
+              }}
+              onEdit={() => {
+                close();
+                openForm({ mode: 'edit', unitId: unit.id });
+              }}
+              onMore={() => (isOpen('menu', unit) ? close() : show('menu', unit))}
+              onMenuClose={close}
+              onDuplicate={() => duplicate(unit)}
+              onSetDisabled={(disabled) => {
+                close();
+                if (disabled) setExpandedId(null);
+                void send({ type: 'setDisabled', unitId: unit.id, disabled });
+              }}
+              onSaveAsPreset={() => saveAsPreset(unit)}
+              onReleaseClaim={() => {
+                close();
+                setBusyUnitId(unit.id);
+                void releaseAsDm(
+                  [unit.id],
+                  async () =>
+                    (await send({ type: 'releaseUnit', unitId: unit.id }))?.version ?? false,
+                ).finally(() => setBusyUnitId(null));
+              }}
+              onRemove={() => {
+                close();
+                setConfirm({ kind: 'remove', unitId: unit.id });
+              }}
+            />
+          ))}
+          {combat.units.length === 0 ? (
+            <EmptyState
+              icon={IconUsers}
+              title={tEmpty('noUnitsTitle')}
+              body={tEmpty('noUnitsBody')}
+            />
+          ) : null}
+          {setup ? (
+            <AddTile
+              label={tEmpty('addUnit')}
+              icon={IconUserPlus}
+              disabled={atCap}
+              hint={atCap ? tToast('unitCap', { limit: LIMITS.unitsPerCombat }) : undefined}
+              onClick={openAdd}
+            />
+          ) : null}
+        </div>
       </ScrollList>
       <TurnBar
         mode={setup ? 'start' : 'next'}

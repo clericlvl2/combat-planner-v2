@@ -17,8 +17,14 @@
   }
 }
 
+.scrollContent {
+  display: flex;
+  flex-direction: column;
+}
+
 .listContent {
   position: relative;
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   gap: var(--cp-list-gap);
