@@ -76,6 +76,7 @@ export function PageHeader({
       <div className={classes.nav}>
         {back || onMenu ? (
           <IconButton
+            className={back ? classes.back : classes.menu}
             variant="plain"
             size="M"
             icon={back ? IconChevronLeft : IconMenu2}
@@ -87,7 +88,7 @@ export function PageHeader({
         {action ? (
           <Button
             className={classes.action}
-            variant="primary"
+            variant="secondary"
             size="S"
             disabled={action.disabled}
             onClick={action.onClick}
@@ -137,7 +138,12 @@ export function PageHeader({
               {filter.label}
             </Chip>
           ))}
-          <Button variant="ghost" size="S" onClick={() => onClearFilters?.()}>
+          <Button
+            className={classes.clear}
+            variant="ghost"
+            size="S"
+            onClick={() => onClearFilters?.()}
+          >
             {t('clear')}
           </Button>
         </div>

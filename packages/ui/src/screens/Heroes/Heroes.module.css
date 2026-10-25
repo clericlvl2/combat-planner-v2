@@ -6,6 +6,7 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
+  background: var(--cp-color-background);
 }
 
 .body {

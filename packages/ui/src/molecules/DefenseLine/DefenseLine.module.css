@@ -17,7 +17,7 @@
   padding: 0 4px;
   border: 1px solid transparent;
   border-radius: var(--mantine-radius-full);
-  background: var(--cp-color-background);
+  background: var(--cp-color-soft);
   line-height: 20px;
   white-space: nowrap;
 }

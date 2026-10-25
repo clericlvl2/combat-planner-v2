@@ -58,7 +58,7 @@
   gap: 8px;
   padding: 16px;
   border-radius: var(--mantine-radius-card);
-  background: var(--cp-color-background);
+  background: var(--cp-color-soft);
 }
 
 .arrow {

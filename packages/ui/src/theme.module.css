@@ -57,7 +57,7 @@
 }
 
 .overlaySurface {
-  border: 2px solid var(--cp-color-ink);
+  border: 2px solid var(--cp-color-primary);
   background: var(--cp-color-surface);
   box-shadow: none;
 }

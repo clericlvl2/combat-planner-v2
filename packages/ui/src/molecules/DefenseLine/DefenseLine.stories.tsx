@@ -93,7 +93,7 @@ export const LabelAndChips = meta.story({
     await expect(chip.getBoundingClientRect().height).toBe(22);
     await expect(style.borderTopWidth).toBe('1px');
     await expect(style.borderTopColor).toBe('rgba(0, 0, 0, 0)');
-    await expect(style.backgroundColor).toBe(rgb(base.background));
+    await expect(style.backgroundColor).toBe(rgb(base.soft));
     const label = chip.firstElementChild;
     await expect(label && getComputedStyle(label).color).toBe(rgb(base.secondary));
     const value = chip.lastElementChild;

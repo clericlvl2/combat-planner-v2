@@ -26,7 +26,7 @@
   overflow: hidden;
   border-right: 2px solid var(--cp-color-primary);
   border-radius: 0 var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0;
-  background: var(--cp-color-background);
+  background: var(--cp-color-surface);
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
   box-shadow: none;
