@@ -9,103 +9,23 @@ import '@fontsource/noto-sans-jp/500.css';
 import '@fontsource/noto-sans-jp/700.css';
 import { colorsTuple, createTheme } from '@mantine/core';
 import type { CSSVariablesResolver, MantineThemeOverride } from '@mantine/core';
+import { fromOklch, lighten, mix, on, tint } from './color.ts';
 import { layout } from './layout.ts';
 import classes from './theme.module.css';
 
-export const base = {
-  background: '#EBDFD4',
-  field: '#E4D5C7',
-  surface: '#F9F4EC',
-  soft: '#F1E6DA',
-  highlight: '#F3E2C7',
-  accent: '#EFA831',
-  accentText: '#302017',
-  border: '#BFAE9E',
-  disabled: '#D7CBC1',
+export const seeds = {
+  paper: '#F9F4EC',
   ink: '#302017',
-  inkPressed: '#45342A',
-  secondary: '#6B5A4D',
-  muted: '#938374',
-  chrome: '#3D4E2B',
-  chromeText: '#F9F4EC',
-  primary: '#3D4E2B',
-  primaryText: '#F9F4EC',
-  primaryPressed: '#50623E',
-  sheet: '#F9F4EC',
-  sheetBorder: '#3D4E2B',
-} as const;
-
-export const roles = {
+  moss: '#3D4E2B',
+  brass: '#EFA831',
   hero: '#1E59CD',
-  heroText: '#FFFFFF',
   enemy: '#C50710',
-  enemyText: '#FFFFFF',
   ally: '#007570',
-  allyText: '#FFFFFF',
-  inactive: '#766558',
-  inactiveText: '#FFFFFF',
-  inactiveFill: '#E8DCD1',
-} as const;
-
-export const health = {
   full: '#009157',
   wounded: '#938010',
   staggered: '#AF2D18',
   unconscious: '#7D3AB7',
-  dead: '#5A5450',
-  empty: '#D7CBC1',
-} as const;
-
-export const healthTints = {
-  full: '#C9EFD9',
-  wounded: '#F5E5A8',
-  staggered: '#FFDDC6',
-  unconscious: '#EBDEFD',
-} as const;
-
-export const hpActions = {
-  damage: '#C50710',
-  damageText: '#FFFFFF',
-  heal: '#0C7830',
-  healText: '#FFFFFF',
-  setTemp: '#1E59CD',
-  setTempText: '#FFFFFF',
-  setMax: '#CF9A35',
-  setMaxText: '#302017',
-  dangerSoft: '#FCE1DD',
-} as const;
-
-export const interaction = {
-  focus: '#1E59CD',
-  tapMarker: '#EFA831',
-  bracket: '#302017',
-  dangerPressed: '#9E0008',
-} as const;
-
-export const historyTemp = { fill: '#D8E5FD', text: '#1E4EAC' } as const;
-
-export const historyMax = { text: '#785300' } as const;
-
-export const toast = {
-  fill: '#302017',
-  text: '#F9F4EC',
-  action: '#EFA831',
-  pressed: '#45342A',
-  info: '#F1E6DA',
-  infoText: '#302017',
-  success: '#0C7830',
-  successText: '#FFFFFF',
-  warning: '#EFA831',
-  warningText: '#302017',
-  error: '#C50710',
-  errorText: '#FFFFFF',
-} as const;
-
-export const landing = {
-  deskField: '#E4D5C7',
-  deskText: '#302017',
-  plane: '#253317',
-  planeDot: '#EFA831',
+  max: '#785300',
 } as const;
 
 export const conditionNames = [
@@ -124,32 +44,126 @@ export const conditionNames = [
 
 export type ConditionName = (typeof conditionNames)[number];
 
-export const conditions: Record<ConditionName, { fill: string; text: string }> = {
-  charmed: { fill: '#F9D1E3', text: '#5E3248' },
-  confused: { fill: '#D0E6C5', text: '#314B24' },
-  dazed: { fill: '#E8DEB9', text: '#4E420D' },
-  fear: { fill: '#E1DED5', text: '#464239' },
-  helpless: { fill: '#FDD3C8', text: '#623428' },
-  hampered: { fill: '#BDE5F9', text: '#0C4960' },
-  shocked: { fill: '#B8E9E9', text: '#004D4F' },
-  stuck: { fill: '#F1DABA', text: '#573D0F' },
-  stunned: { fill: '#FBD5C1', text: '#60361E' },
-  vulnerable: { fill: '#FED1D2', text: '#623234' },
-  weakened: { fill: '#DFE2BC', text: '#454513' },
+export const conditionHues: Record<ConditionName, number | null> = {
+  charmed: 349,
+  confused: 135,
+  dazed: 95,
+  fear: null,
+  helpless: 35,
+  hampered: 230,
+  shocked: 197,
+  stuck: 76,
+  stunned: 49,
+  vulnerable: 17,
+  weakened: 110,
 };
 
+export const paperSteps = {
+  soft: { l: -4, c: 0.008 },
+  background: { l: -6, c: 0.008 },
+  field: { l: -9, c: 0.013 },
+  disabled: { l: -12, c: 0.007 },
+  border: { l: -21, c: 0.018 },
+} as const;
+
+export const conditionTone = {
+  fill: { l: 90, c: 0.05, neutralC: 0.013 },
+  text: { l: 38, c: 0.07, neutralC: 0.016 },
+} as const;
+
+const onPaper = (fill: string) => on(fill, seeds.ink, seeds.paper);
+
+const paperStep = (step: keyof typeof paperSteps) =>
+  lighten(seeds.paper, paperSteps[step].l, paperSteps[step].c);
+
+export const base = {
+  background: paperStep('background'),
+  field: paperStep('field'),
+  surface: seeds.paper,
+  soft: paperStep('soft'),
+  highlight: mix(seeds.brass, seeds.paper, 25),
+  accent: seeds.brass,
+  onAccent: onPaper(seeds.brass),
+  border: paperStep('border'),
+  disabled: paperStep('disabled'),
+  ink: seeds.ink,
+  inkPressed: lighten(seeds.ink, 8),
+  secondary: lighten(seeds.ink, 22),
+  muted: lighten(seeds.ink, 36),
+  chrome: seeds.moss,
+  onChrome: onPaper(seeds.moss),
+  primary: seeds.moss,
+  onPrimary: onPaper(seeds.moss),
+  primaryPressed: lighten(seeds.moss, 7),
+  primaryDeep: lighten(seeds.moss, -10, -0.01),
+};
+
+export const roles = {
+  hero: seeds.hero,
+  enemy: seeds.enemy,
+  ally: seeds.ally,
+  inactive: lighten(seeds.ink, 26),
+  on: onPaper(seeds.hero),
+};
+
+export const health = {
+  full: seeds.full,
+  wounded: seeds.wounded,
+  staggered: seeds.staggered,
+  unconscious: seeds.unconscious,
+  dead: lighten(seeds.ink, 19, -0.02),
+};
+
+export const healthTints = {
+  full: tint(seeds.full, 92, 0.05),
+  wounded: tint(seeds.wounded, 92, 0.05),
+  staggered: tint(seeds.staggered, 92, 0.05),
+  unconscious: tint(seeds.unconscious, 92, 0.05),
+};
+
+export const hpActions = {
+  damage: seeds.enemy,
+  heal: lighten(seeds.full, -8),
+  setTemp: seeds.hero,
+  max: seeds.max,
+  on: onPaper(seeds.enemy),
+  dangerSoft: tint(seeds.enemy, 93, 0.03),
+};
+
+export const interaction = {
+  focus: seeds.hero,
+  tapMarker: seeds.brass,
+  dangerPressed: lighten(seeds.enemy, -8),
+};
+
+export const historyTemp = { text: lighten(seeds.hero, -5, -0.03) };
+
+function conditionColor(name: ConditionName, tone: keyof typeof conditionTone): string {
+  const hue = conditionHues[name];
+  const { l, c, neutralC } = conditionTone[tone];
+  return hue === null ? tint(seeds.paper, l, neutralC) : fromOklch({ l: l / 100, c, h: hue });
+}
+
+export const conditions = Object.fromEntries(
+  conditionNames.map((name) => [
+    name,
+    { fill: conditionColor(name, 'fill'), text: conditionColor(name, 'text') },
+  ]),
+) as Record<ConditionName, { fill: string; text: string }>;
+
 export const combatColors = [
-  '#C50710',
-  '#BB5D00',
-  '#938010',
-  '#009157',
-  '#007570',
-  '#1E59CD',
-  '#6B5A4D',
-  '#938374',
+  seeds.enemy,
+  seeds.max,
+  seeds.wounded,
+  seeds.full,
+  seeds.ally,
+  seeds.hero,
+  base.secondary,
+  base.muted,
 ] as const;
 
 export const palette = {
+  seeds,
   base,
   roles,
   health,
@@ -157,9 +171,6 @@ export const palette = {
   hpActions,
   interaction,
   historyTemp,
-  historyMax,
-  toast,
-  landing,
   conditions,
   combatColors,
 } as const;
@@ -240,10 +251,7 @@ export function paletteVariables(): Record<string, string> {
     'health-tint': healthTints,
     hp: hpActions,
     'history-temp': historyTemp,
-    'history-max': historyMax,
     state: interaction,
-    toast,
-    landing,
   };
   for (const [prefix, group] of Object.entries(groups)) {
     for (const [name, value] of Object.entries(group)) {
@@ -254,6 +262,7 @@ export function paletteVariables(): Record<string, string> {
     variables[`--cp-condition-${name}-fill`] = conditions[name].fill;
     variables[`--cp-condition-${name}-text`] = conditions[name].text;
   }
+  variables['--cp-color-scrim'] = `color-mix(in srgb, ${base.ink} 50%, transparent)`;
   combatColors.forEach((value, index) => {
     variables[`--cp-combat-${index}`] = value;
   });
@@ -294,14 +303,6 @@ export const theme: MantineThemeOverride = createTheme({
   colors: {
     ink: colorsTuple(base.ink),
     primary: colorsTuple(base.primary),
-    hero: colorsTuple(roles.hero),
-    enemy: colorsTuple(roles.enemy),
-    ally: colorsTuple(roles.ally),
-    damage: colorsTuple(hpActions.damage),
-    heal: colorsTuple(hpActions.heal),
-    wounded: colorsTuple(health.wounded),
-    setTemp: colorsTuple(hpActions.setTemp),
-    setMax: colorsTuple(hpActions.setMax),
   },
   primaryColor: 'primary',
   primaryShade: 0,

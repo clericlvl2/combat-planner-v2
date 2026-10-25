@@ -12,7 +12,7 @@
   border: none;
   border-radius: 0;
   background: var(--cp-role-enemy);
-  color: var(--cp-role-enemy-text);
+  color: var(--cp-role-on);
   font-family: var(--cp-font-ui);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -39,17 +39,17 @@
 
   &[data-unit-role='hero'] {
     background: var(--cp-role-hero);
-    color: var(--cp-role-hero-text);
+    color: var(--cp-role-on);
   }
 
   &[data-unit-role='ally'] {
     background: var(--cp-role-ally);
-    color: var(--cp-role-ally-text);
+    color: var(--cp-role-on);
   }
 
   &[data-inactive][data-unit-role] {
     background: var(--cp-role-inactive);
-    color: var(--cp-role-inactive-text);
+    color: var(--cp-role-on);
   }
 
   &[data-unit-role]:focus-visible,

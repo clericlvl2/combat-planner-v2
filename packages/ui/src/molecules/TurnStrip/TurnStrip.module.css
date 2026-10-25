@@ -30,7 +30,7 @@
   &[data-kind='turn'] {
     border-bottom-color: var(--cp-color-primary);
     background: var(--cp-color-primary);
-    color: var(--cp-color-primary-text);
+    color: var(--cp-color-on-primary);
     font-weight: 700;
     animation: slideIn 200ms ease-out;
   }

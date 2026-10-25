@@ -20,12 +20,12 @@
     content: '';
     position: absolute;
     inset: 0;
-    border: 2px solid color-mix(in srgb, var(--cp-landing-plane) 70%, var(--cp-color-accent));
+    border: 2px solid color-mix(in srgb, var(--cp-color-primary-deep) 70%, var(--cp-color-accent));
     border-radius: 32px;
-    background-color: var(--cp-landing-plane);
+    background-color: var(--cp-color-primary-deep);
     background-image: radial-gradient(
       circle at 1px 1px,
-      color-mix(in srgb, var(--cp-landing-plane-dot) 14%, transparent) 1px,
+      color-mix(in srgb, var(--cp-color-accent) 14%, transparent) 1px,
       transparent 0
     );
     background-size: 20px 20px;

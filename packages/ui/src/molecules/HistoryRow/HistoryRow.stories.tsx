@@ -1,7 +1,7 @@
 import type { HpHistoryEntry } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
-import { base, historyMax, historyTemp, hpActions } from '../../theme.ts';
+import { base, historyTemp, hpActions } from '../../theme.ts';
 import { HistoryRow } from './HistoryRow.tsx';
 import type { HistoryRowProps } from './HistoryRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
@@ -173,7 +173,7 @@ export const KindFacts = meta.story({
     await expect(part(maxLowered, 'amount').textContent).toBe('40');
     await expect(part(maxLowered, 'kind').textContent).toBe(t('max'));
     await expect(part(maxLowered, 'result').textContent).toBe('40/40');
-    await expect(amountColor(maxLowered)).toBe(rgb(historyMax.text));
+    await expect(amountColor(maxLowered)).toBe(rgb(hpActions.max));
     await expect(part(maxRaised, 'amount').textContent).toBe('50');
     await expect(part(maxRaised, 'result').textContent).toBe('40/50');
     await expect(start).toHaveTextContent(t('start'));

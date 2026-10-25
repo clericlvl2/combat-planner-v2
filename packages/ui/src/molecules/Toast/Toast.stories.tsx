@@ -149,7 +149,7 @@ export const AllStates = meta.story({
       const style = getComputedStyle(toast);
       await expect(toast.getBoundingClientRect().height).toBeGreaterThanOrEqual(40);
       await expect(style.borderTopLeftRadius).toBe('20px');
-      await expect(style.backgroundColor).toBe(rgb(palette.toast.fill));
+      await expect(style.backgroundColor).toBe(rgb(palette.base.ink));
     }
     const long = canvasElement.querySelector<HTMLElement>(
       '[data-state-cell="error · long"] [role="status"]',

@@ -9,6 +9,7 @@ import {
   hpActions,
   radius,
   roles,
+  seeds,
   spacing,
 } from '../../theme.ts';
 import classes from './ThemeAudit.module.css';
@@ -28,9 +29,9 @@ interface TokenGroup {
   wide?: boolean;
 }
 
-const onDark = '#FFFFFF';
+const onDark = base.onChrome;
 
-const combatColorNames = ['red', 'orange', 'ochre', 'green', 'teal', 'blue', 'brown', 'grey'];
+const combatColorNames = ['red', 'umber', 'ochre', 'green', 'teal', 'blue', 'brown', 'grey'];
 
 const token = (
   name: string,
@@ -49,54 +50,66 @@ const token = (
 
 const tokenGroups: TokenGroup[] = [
   {
+    title: 'Seeds',
+    items: [
+      token('paper', seeds.paper, 'Paper: surface, text on colour'),
+      token('ink', seeds.ink, 'Ink: text, selected fills', 'Aa', onDark),
+      token('moss', seeds.moss, 'Moss: headers, primary, overlay border', 'Aa', onDark),
+      token('brass', seeds.brass, 'Brass: accent, tap marker', 'Aa', base.onAccent),
+      token('hero', seeds.hero, 'Hero, focus, temp HP', 'Aa', onDark),
+      token('enemy', seeds.enemy, 'Enemy, damage, danger', 'Aa', onDark),
+      token('ally', seeds.ally, 'Ally', 'Aa', onDark),
+      token('full', seeds.full, 'Full health'),
+      token('wounded', seeds.wounded, 'Wounded'),
+      token('staggered', seeds.staggered, 'Staggered', 'Aa', onDark),
+      token('unconscious', seeds.unconscious, 'Unconscious', 'Aa', onDark),
+      token('max', seeds.max, 'Max HP', 'Aa', onDark),
+    ],
+  },
+  {
     title: 'Base',
     items: [
-      token('background', base.background, 'Screen background'),
-      token('field', base.field, 'Field under the card lists'),
-      token('surface', base.surface, 'Surface: cards, fields'),
-      token('soft', base.soft, 'Soft: keys, chips, soft buttons'),
-      token('highlight', base.highlight, 'Highlight: selected row'),
+      token('background', base.background, 'Screen background: paper −6 L'),
+      token('field', base.field, 'Field under the card lists: paper −9 L'),
+      token('surface', base.surface, 'Surface: cards, fields, overlays'),
+      token('soft', base.soft, 'Soft: keys, chips, dead card: paper −4 L'),
+      token('highlight', base.highlight, 'Highlight: brass 25 % in paper'),
       token('accent', base.accent, 'Accent: active turn, tap marker'),
-      token('accentText', base.accentText, 'Text on accent', 'Aa', onDark),
-      token('border', base.border, 'Border and divider'),
-      token('disabled', base.disabled, 'Disabled fill'),
+      token('onAccent', base.onAccent, 'Text on accent'),
+      token('border', base.border, 'Border and divider: paper −21 L'),
+      token('disabled', base.disabled, 'Disabled fill, empty pip: paper −12 L'),
       token('ink', base.ink, 'Ink: text, selected fills, active border', 'Aa', onDark),
-      token('inkPressed', base.inkPressed, 'Ink pressed', 'Aa', onDark),
-      token('secondary', base.secondary, 'Secondary text', 'Aa', onDark),
+      token('inkPressed', base.inkPressed, 'Ink pressed: ink +8 L', 'Aa', onDark),
+      token('secondary', base.secondary, 'Secondary text: ink +22 L', 'Aa', onDark),
+      token('muted', base.muted, 'Muted: placeholders, dashed lines: ink +36 L', 'Aa', onDark),
+      token('chrome', base.chrome, 'Every header', 'Aa', base.onChrome),
+      token('onChrome', base.onChrome, 'Text on chrome'),
       token(
-        'muted',
-        base.muted,
-        'Muted: placeholders, unchecked boxes, dashed lines',
+        'primary',
+        base.primary,
+        'Primary button, turn strip, overlay border',
         'Aa',
-        onDark,
+        base.onPrimary,
       ),
-      token('chrome', base.chrome, 'Combat header', 'Aa', base.chromeText),
-      token('chromeText', base.chromeText, 'Text on chrome'),
-      token('primary', base.primary, 'Primary button, turn strip', 'Aa', base.primaryText),
-      token('primaryText', base.primaryText, 'Text on primary'),
-      token('primaryPressed', base.primaryPressed, 'Primary pressed', 'Aa', base.primaryText),
-      token('sheet', base.sheet, 'Sheet, dialog'),
-      token('sheetBorder', base.sheetBorder, 'Sheet, dialog and drawer border'),
+      token('onPrimary', base.onPrimary, 'Text on primary'),
+      token(
+        'primaryPressed',
+        base.primaryPressed,
+        'Primary pressed: moss +7 L',
+        'Aa',
+        base.onPrimary,
+      ),
+      token('primaryDeep', base.primaryDeep, 'Landing table: moss −10 L', 'Aa', base.onPrimary),
     ],
   },
   {
     title: 'Roles',
     items: [
-      token('hero', roles.hero, 'Hero', '15', roles.heroText),
-      token('heroText', roles.heroText, 'Text on hero'),
-      token('enemy', roles.enemy, 'Enemy', '17', roles.enemyText),
-      token('enemyText', roles.enemyText, 'Text on enemy'),
-      token('ally', roles.ally, 'Ally', '9', roles.allyText),
-      token('allyText', roles.allyText, 'Text on ally'),
-      token(
-        'inactive',
-        roles.inactive,
-        'Role block when dead or disabled',
-        '12',
-        roles.inactiveText,
-      ),
-      token('inactiveText', roles.inactiveText, 'Text on inactive'),
-      token('inactiveFill', roles.inactiveFill, 'Card fill when dead or disabled'),
+      token('hero', roles.hero, 'Hero', '15', roles.on),
+      token('enemy', roles.enemy, 'Enemy', '17', roles.on),
+      token('ally', roles.ally, 'Ally', '9', roles.on),
+      token('inactive', roles.inactive, 'Role block when dead: ink +26 L', '12', roles.on),
+      token('on', roles.on, 'Text on a role'),
     ],
   },
   {
@@ -106,22 +119,18 @@ const tokenGroups: TokenGroup[] = [
       token('wounded', health.wounded, 'Wounded, 50% and up: 2 pips'),
       token('staggered', health.staggered, 'Staggered, below 50%: 1 pip'),
       token('unconscious', health.unconscious, 'Hero unconscious, 0 to −½ max: 0 pips, Zzz icon'),
-      token('dead', health.dead, 'Dead, hero at −½ max, others at 0: 0 pips, name struck'),
-      token('empty', health.empty, 'Empty pip'),
+      token('dead', health.dead, 'Dead: 0 pips, name struck: ink +19 L'),
     ],
   },
   {
     title: 'HP actions',
     items: [
-      token('damage', hpActions.damage, 'Damage; damage in history', 'Aa', hpActions.damageText),
-      token('damageText', hpActions.damageText, 'Text on damage'),
-      token('heal', hpActions.heal, 'Heal; healing in history', 'Aa', hpActions.healText),
-      token('healText', hpActions.healText, 'Text on heal'),
-      token('setTemp', hpActions.setTemp, 'Set Temp', 'Aa', hpActions.setTempText),
-      token('setTempText', hpActions.setTempText, 'Text on Set Temp'),
-      token('setMax', hpActions.setMax, 'Set Max', 'Aa', hpActions.setMaxText),
-      token('setMaxText', hpActions.setMaxText, 'Text on Set Max'),
-      token('dangerSoft', hpActions.dangerSoft, 'Danger soft fill'),
+      token('damage', hpActions.damage, 'Damage; damage in history', 'Aa', hpActions.on),
+      token('heal', hpActions.heal, 'Heal; healing in history: full −8 L', 'Aa', hpActions.on),
+      token('setTemp', hpActions.setTemp, 'Set Temp', 'Aa', hpActions.on),
+      token('max', hpActions.max, 'Set Max; max in history', 'Aa', hpActions.on),
+      token('on', hpActions.on, 'Text on an HP action'),
+      token('dangerSoft', hpActions.dangerSoft, 'Danger soft fill: 93 % 0.03 of enemy'),
     ],
   },
   {

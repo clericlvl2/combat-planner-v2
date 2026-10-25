@@ -1,7 +1,7 @@
 .scrim {
   position: fixed;
   inset: 0;
-  background: color-mix(in srgb, var(--cp-color-ink) 50%, transparent);
+  background: var(--cp-color-scrim);
 }
 
 .inner {
@@ -24,7 +24,7 @@
   max-height: none;
   margin: 0;
   overflow: hidden;
-  border-right: 2px solid var(--cp-color-sheet-border);
+  border-right: 2px solid var(--cp-color-primary);
   border-radius: 0 var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0;
   background: var(--cp-color-background);
   color: var(--cp-color-ink);

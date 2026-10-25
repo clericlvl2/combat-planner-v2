@@ -8,8 +8,8 @@
   height: 100%;
   overflow-x: hidden;
   overflow-y: auto;
-  background: var(--cp-landing-desk-field);
-  color: var(--cp-landing-desk-text);
+  background: var(--cp-color-field);
+  color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
   scrollbar-width: thin;
   scrollbar-color: var(--cp-color-border) transparent;

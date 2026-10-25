@@ -8,6 +8,7 @@ import {
   health,
   hpActions,
   roles,
+  seeds,
 } from '../../theme.ts';
 import { ThemeAudit } from './ThemeAudit.tsx';
 
@@ -22,6 +23,7 @@ const meta = preview.meta({
 });
 
 const groupOrder = [
+  'Seeds',
   'Base',
   'Roles',
   'Health',
@@ -35,6 +37,7 @@ const groupOrder = [
 ];
 
 const expectedFills = [
+  ...Object.values(seeds),
   ...Object.values(base),
   ...Object.values(roles),
   ...Object.values(health),
@@ -53,10 +56,10 @@ export const Tokens = meta.story({
     );
     await expect(fills).toEqual(expectedFills);
     await expect(fills).toContain(health.unconscious);
-    await expect(combatColors[7]).toBe('#938374');
+    await expect(combatColors[7]).toBe(base.muted);
     await expect(
       getComputedStyle(document.documentElement).getPropertyValue('--cp-combat-7').trim(),
-    ).toBe('#938374');
+    ).toBe(base.muted);
     await expect(document.documentElement.dataset.motion).toBe('off');
     const swatch = canvasElement.querySelector('[data-hex]');
     await expect(swatch && getComputedStyle(swatch).transitionDuration).toBe('0s');

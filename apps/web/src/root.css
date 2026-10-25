@@ -14,7 +14,7 @@ body {
   align-items: center;
   justify-content: center;
   margin: 0;
-  background: var(--cp-landing-desk-field);
+  background: var(--cp-color-field);
   touch-action: pan-y pinch-zoom;
 }
 
@@ -38,10 +38,10 @@ body {
 
 @media (min-width: 441px) {
   body {
-    background-color: var(--cp-landing-desk-field);
+    background-color: var(--cp-color-field);
     background-image: radial-gradient(
       circle at 1px 1px,
-      color-mix(in srgb, var(--cp-landing-desk-text) 30%, transparent) 1px,
+      color-mix(in srgb, var(--cp-color-ink) 30%, transparent) 1px,
       transparent 0
     );
     background-size: 22px 22px;

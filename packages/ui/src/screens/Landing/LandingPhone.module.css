@@ -29,7 +29,7 @@
   align-items: center;
   height: 44px;
   padding: 0 32px;
-  color: var(--cp-color-chrome-text);
+  color: var(--cp-color-on-chrome);
   font-size: var(--mantine-font-size-body);
   font-weight: 600;
   line-height: 1;
@@ -49,10 +49,9 @@
   flex: none;
   flex-direction: column;
   width: 100%;
-  border-bottom: 2px solid
-    color-mix(in srgb, var(--cp-color-chrome-text) 25%, var(--cp-color-chrome));
+  border-bottom: 2px solid color-mix(in srgb, var(--cp-color-on-chrome) 25%, var(--cp-color-chrome));
   background: var(--cp-color-chrome);
-  color: var(--cp-color-chrome-text);
+  color: var(--cp-color-on-chrome);
 }
 
 .headerStatus {
@@ -94,7 +93,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--mantine-radius-field);
-  background: color-mix(in srgb, var(--cp-color-chrome-text) 12%, transparent);
+  background: color-mix(in srgb, var(--cp-color-on-chrome) 12%, transparent);
 }
 
 .ticket {
@@ -231,7 +230,7 @@
   }
 
   .playerBody .die[data-empty] & {
-    border-color: color-mix(in srgb, var(--cp-color-chrome-text) 60%, transparent);
+    border-color: color-mix(in srgb, var(--cp-color-on-chrome) 60%, transparent);
   }
 
   .die[data-ticket] & {
@@ -292,7 +291,7 @@
 
   .playerBody &,
   .playerBody .die[data-empty] & {
-    color: var(--cp-color-chrome-text);
+    color: var(--cp-color-on-chrome);
   }
 }
 
@@ -326,14 +325,14 @@
     border-color 180ms ease;
 
   &[data-dead] {
-    background: var(--cp-role-inactive-fill);
+    background: var(--cp-color-soft);
   }
 
   &[data-active] {
     z-index: 1;
     border-color: var(--cp-color-accent);
     background: var(--cp-color-accent);
-    color: var(--cp-color-accent-text);
+    color: var(--cp-color-on-accent);
     box-shadow: var(--cp-active-shadow);
     transform: translateY(calc(-1 * var(--cp-active-lift)));
   }
@@ -601,7 +600,7 @@
   width: 24px;
   height: 5px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-health-empty);
+  background: var(--cp-color-disabled);
 
   &[data-filled] {
     background: var(--stage-hp-status);
@@ -618,7 +617,7 @@
   border: 2px solid var(--cp-color-surface);
   border-radius: var(--mantine-radius-full);
   background: var(--cp-hp-set-temp);
-  color: var(--cp-hp-set-temp-text);
+  color: var(--cp-hp-on);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 14px;
@@ -677,7 +676,7 @@
   padding: 6px 16px;
   border-radius: 29px;
   background: var(--cp-color-primary);
-  color: var(--cp-color-primary-text);
+  color: var(--cp-color-on-primary);
   animation: press 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 

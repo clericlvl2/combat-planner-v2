@@ -11,7 +11,7 @@
   border: none;
   border-radius: 29px;
   background: var(--cp-color-primary);
-  color: var(--cp-color-primary-text);
+  color: var(--cp-color-on-primary);
   font-family: var(--cp-font-ui);
   font-size: 19px;
   font-weight: 600;
@@ -48,7 +48,7 @@
 
   &[data-variant='danger'] {
     background: var(--cp-role-enemy);
-    color: var(--cp-role-enemy-text);
+    color: var(--cp-role-on);
   }
 
   &[data-variant='ghost'] {
@@ -124,12 +124,12 @@
 
   &[data-variant='primary'] {
     background: var(--cp-color-primary);
-    color: var(--cp-color-primary-text);
+    color: var(--cp-color-on-primary);
   }
 
   &[data-variant='danger'] {
     background: var(--cp-role-enemy);
-    color: var(--cp-role-enemy-text);
+    color: var(--cp-role-on);
   }
 
   &[data-variant='secondary'],

@@ -25,7 +25,7 @@
   border: none;
   border-radius: 29px;
   background: var(--cp-color-primary);
-  color: var(--cp-color-primary-text);
+  color: var(--cp-color-on-primary);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;

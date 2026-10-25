@@ -110,7 +110,7 @@
   width: 24px;
   height: 5px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-health-empty);
+  background: var(--cp-color-disabled);
 
   &[data-filled] {
     background: var(--hp-box-status);
@@ -131,7 +131,7 @@
   right: 6px;
   padding: 0 6px;
   background: var(--cp-hp-set-temp);
-  color: var(--cp-hp-set-temp-text);
+  color: var(--cp-hp-on);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 14px;

@@ -4,10 +4,9 @@
   flex: none;
   flex-direction: column;
   width: 100%;
-  border-bottom: 2px solid
-    color-mix(in srgb, var(--cp-color-chrome-text) 25%, var(--cp-color-chrome));
+  border-bottom: 2px solid color-mix(in srgb, var(--cp-color-on-chrome) 25%, var(--cp-color-chrome));
   background: var(--cp-color-chrome);
-  color: var(--cp-color-chrome-text);
+  color: var(--cp-color-on-chrome);
   font-family: var(--cp-font-ui);
 
   & [data-tile] {
@@ -15,7 +14,7 @@
   }
 
   & [data-empty] [data-tile] {
-    border-color: color-mix(in srgb, var(--cp-color-chrome-text) 60%, transparent);
+    border-color: color-mix(in srgb, var(--cp-color-on-chrome) 60%, transparent);
     background: transparent;
   }
 
@@ -24,7 +23,7 @@
   }
 
   & [data-value] > span:last-child {
-    color: var(--cp-color-chrome-text);
+    color: var(--cp-color-on-chrome);
   }
 }
 

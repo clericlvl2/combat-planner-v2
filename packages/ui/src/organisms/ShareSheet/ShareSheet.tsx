@@ -71,8 +71,8 @@ export function ShareSheet({
           <QRCode
             value={url}
             size={168}
-            fgColor={palette.base.ink}
-            bgColor={palette.base.surface}
+            fgColor={palette.seeds.ink}
+            bgColor={palette.seeds.paper}
             role="img"
             aria-label={t('qr')}
             data-qr=""
