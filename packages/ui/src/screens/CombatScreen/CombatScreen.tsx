@@ -35,6 +35,7 @@ import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.ts
 import { combatKey } from '../../hooks/combat.ts';
 import type { CombatEntry } from '../../hooks/combat.ts';
 import { overlay } from '../../hooks/optimistic.ts';
+import { createSendQueue } from '../../hooks/sendQueue.ts';
 import type { ToastAction, ToastKind } from '../../hooks/toasts.ts';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
@@ -204,7 +205,7 @@ export function CombatScreen({
   const knownVersion = useRef(0);
   const previous = useRef<DmCombat | undefined>(undefined);
   const ownReleases = useRef(new Map<UnitId, number>());
-  const queue = useRef<Promise<unknown>>(Promise.resolve());
+  const [enqueue] = useState(createSendQueue);
   const { session } = useAccount();
   const signedOut =
     session === null ||
@@ -266,17 +267,6 @@ export function CombatScreen({
     if (!result.applied) return null;
     knownVersion.current = Math.max(knownVersion.current, result.version);
     return { action, version: result.version };
-  };
-
-  const enqueue = <T,>(run: (release: () => void) => Promise<T>): Promise<T> => {
-    let release = () => {};
-    const released = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    const step = () => run(release);
-    const next = queue.current.then(step, step);
-    queue.current = Promise.race([next, released]).catch(() => {});
-    return next;
   };
 
   const send = (body: ActionBody): Promise<Sent | null> => {

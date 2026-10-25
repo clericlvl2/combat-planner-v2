@@ -149,7 +149,9 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
   the attributes the CSS reads (`data-pressed`, `data-focus`, `data-tap`, `data-open`,
   `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag (inert, see below).
 - `FakeApiClient.failNext(code)` rejects the next call; `holdNext()` leaves it pending, for loading
-  states.
+  states; `holdNextExchange()` applies the next call at once but holds its reply and every document
+  it broadcasts until `releaseReplies()`, which delivers the documents first, for sends that race
+  their own reply.
 - Visual states come from real pseudo-classes and `data-*` attributes (`&:active, &[data-pressed]`),
   never from a `state` prop.
 - Screen stories seed state through `FakeApiClient` scenarios and play only their own interaction.

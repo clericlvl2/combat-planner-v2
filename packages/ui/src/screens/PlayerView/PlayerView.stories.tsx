@@ -526,6 +526,58 @@ export const ConditionToggled = meta.story({
   },
 });
 
+export const QuickConditionTapsBothApply = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    await expandOwn(canvas);
+    await userEvent.click(canvas.getByRole('button', { name: t('PlayerRow:conditions') }));
+    const sheet = await canvas.findByRole('dialog', { name: t('PlayerRow:conditions') });
+    api.holdNextExchange();
+    await userEvent.click(within(sheet).getByRole('checkbox', { name: t('Chip:weakened') }));
+    await userEvent.click(within(sheet).getByRole('checkbox', { name: t('Chip:stunned') }));
+    api.releaseReplies();
+    const toggles = () => sentBy(api).filter((action) => action.type === 'toggleCondition');
+    await waitFor(() => expect(toggles()).toHaveLength(2));
+    const [first, second] = toggles();
+    await expect(second?.version).toBe((first?.version ?? 0) + 1);
+    await waitFor(() =>
+      expect(within(sheet).getByRole('checkbox', { name: t('Chip:weakened') })).toBeChecked(),
+    );
+    await waitFor(() =>
+      expect(within(sheet).getByRole('checkbox', { name: t('Chip:stunned') })).toBeChecked(),
+    );
+    await expect(canvas.queryByText(t('Toast:combatChanged'))).toBeNull();
+  },
+});
+
+export const QuickHeroSwapBothApply = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: playerScenario(ferryCombat({ active: 'orc', ilse: true })) },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    await userEvent.click(await canvas.findByRole('button', { name: t('CombatHeader:menu') }));
+    await userEvent.click(await canvas.findByRole('menuitem', { name: t('CombatHeader:heroes') }));
+    const me = await canvas.findByRole('checkbox', { name: ME });
+    api.holdNextExchange();
+    await userEvent.click(me);
+    await userEvent.click(canvas.getByRole('checkbox', { name: 'Ilse the Bold' }));
+    api.releaseReplies();
+    await waitFor(() => expect(sentBy(api)).toHaveLength(2));
+    const [released, claimed] = sentBy(api);
+    await expect(released).toMatchObject({ type: 'releaseUnit', unitId: unitIds.vashti });
+    await expect(claimed).toMatchObject({ type: 'claimUnit', unitId: unitIds.ilse });
+    await expect(claimed?.version).toBe((released?.version ?? 0) + 1);
+    await waitFor(() =>
+      expect(canvas.getByRole('checkbox', { name: 'Ilse the Bold' })).toBeChecked(),
+    );
+    await waitFor(() => expect(canvas.getByRole('checkbox', { name: ME })).not.toBeChecked());
+    await expect(canvas.queryByText(t('Toast:combatChanged'))).toBeNull();
+  },
+});
+
 export const DeletedBeforeEnd = meta.story({
   tags: ['!dev'],
   loaders: [heldEndLoader],

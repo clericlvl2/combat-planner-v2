@@ -177,6 +177,8 @@ export class FakeApiClient implements ApiClient {
   private pendingHold = false;
   private broadcastsDeferred = false;
   private pendingReplyHold = false;
+  private pendingExchangeHold = false;
+  private holdingBroadcasts = false;
   private heldReplies: Array<() => void> = [];
 
   constructor({ scenario, delay = 0 }: FakeApiClientOptions) {
@@ -245,6 +247,10 @@ export class FakeApiClient implements ApiClient {
     this.pendingReplyHold = true;
   }
 
+  holdNextExchange(): void {
+    this.pendingExchangeHold = true;
+  }
+
   releaseReplies(): void {
     const held = this.heldReplies;
     this.heldReplies = [];
@@ -259,14 +265,19 @@ export class FakeApiClient implements ApiClient {
     }
     const failure = this.pendingFailure;
     this.pendingFailure = null;
-    if (this.pendingReplyHold && !failure) {
+    if ((this.pendingReplyHold || this.pendingExchangeHold) && !failure) {
+      const exchange = this.pendingExchangeHold;
       this.pendingReplyHold = false;
+      this.pendingExchangeHold = false;
       return new Promise<T>((resolve, reject) => {
+        this.holdingBroadcasts = exchange;
         try {
           const value = operation();
           this.heldReplies.push(() => resolve(value));
         } catch (error) {
           this.heldReplies.push(() => reject(error));
+        } finally {
+          this.holdingBroadcasts = false;
         }
       });
     }
@@ -305,11 +316,15 @@ export class FakeApiClient implements ApiClient {
   }
 
   private broadcast(stored: StoredCombat, audience: 'all' | 'dm' = 'all'): void {
-    if (!this.broadcastsDeferred) {
+    if (!this.broadcastsDeferred && !this.holdingBroadcasts) {
       this.deliver(stored, audience);
       return;
     }
     const snapshot: StoredCombat = { ...stored, log: [...stored.log] };
+    if (this.holdingBroadcasts) {
+      this.heldReplies.push(() => this.deliver(snapshot, audience));
+      return;
+    }
     setTimeout(() => this.deliver(snapshot, audience), 0);
   }
 
