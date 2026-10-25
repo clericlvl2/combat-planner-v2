@@ -62,20 +62,10 @@ function Swap({ text, className, ellipsis = false }: SwapProps) {
   );
 }
 
-interface DieProps {
-  value: number;
-  ticket?: boolean;
-}
-
-function Die({ value, ticket = false }: DieProps) {
-  const { t } = useTranslation('EscalationDie');
+function Die({ value }: { value: number }) {
   const face = dieFaces[value] ?? [];
   return (
-    <span
-      className={classes.die}
-      data-empty={value === 0 || undefined}
-      data-ticket={ticket || undefined}
-    >
+    <span className={classes.die} data-empty={value === 0 || undefined}>
       <span className={classes.dieTile}>
         {dieSlots.map((slot) => (
           <span key={slot} className={classes.dieSlot}>
@@ -83,12 +73,6 @@ function Die({ value, ticket = false }: DieProps) {
           </span>
         ))}
       </span>
-      {ticket ? null : (
-        <Swap
-          className={classes.dieCaption}
-          text={value === 0 ? t('none') : t('value', { value })}
-        />
-      )}
     </span>
   );
 }
@@ -207,15 +191,17 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
   );
 }
 
-function DmHeader({ state }: { state: StageState }) {
+function Header({ state, viewer }: { state: StageState; viewer: LandingViewer }) {
   const { t } = useTranslation(['CombatHeader', 'Landing']);
   return (
     <div className={classes.header}>
       <span className={classes.headerStatus} />
       <span className={classes.bar}>
-        <span className={classes.back}>
-          <IconChevronLeft size={iconSizes.L} stroke={2} />
-        </span>
+        {viewer === 'dm' ? (
+          <span className={classes.back}>
+            <IconChevronLeft size={iconSizes.L} stroke={2} />
+          </span>
+        ) : null}
         <span className={classes.title} data-ellipsis="">
           {t('Landing:stageTitle')}
         </span>
@@ -230,7 +216,7 @@ function DmHeader({ state }: { state: StageState }) {
         </span>
         <span className={classes.divider} />
         <span className={classes.cell} data-part="escalation">
-          <Die value={state.escalation} ticket />
+          <Die value={state.escalation} />
           <span className={classes.stack}>
             <span className={classes.caption}>{t('escalationCaption')}</span>
             <Swap className={classes.number} text={`+${state.escalation}`} />
@@ -241,21 +227,23 @@ function DmHeader({ state }: { state: StageState }) {
   );
 }
 
-function PlayerHeader({ state }: { state: StageState }) {
-  const { t } = useTranslation(['PlayerHeader', 'Landing']);
+function TurnStripMock({ state, mine }: { state: StageState; mine?: string }) {
+  const { t } = useTranslation('TurnOrder');
+  const stageName = useStageName();
+  if (mine === undefined) return null;
+  const active = state.units[state.active];
+  const kind = active?.id === mine ? 'turn' : nextUnit(state)?.id === mine ? 'next' : null;
+  if (kind === null) return null;
   return (
-    <div className={classes.header}>
-      <span className={classes.headerStatus} />
-      <span className={classes.playerBody}>
-        <span className={classes.playerText}>
-          <span className={classes.playerTitle} data-ellipsis="">
-            {t('Landing:stageTitle')}
-          </span>
-          <Swap className={classes.playerRound} text={t('round', { round: state.round })} />
+    <span className={classes.strip}>
+      <span key={kind} className={classes.stripBar} data-kind={kind}>
+        <span className={classes.stripLabel} data-ellipsis="">
+          {kind === 'turn' && active
+            ? t('yourTurn', { name: stageName(active.name) })
+            : t('youAreNext')}
         </span>
-        <Die value={state.escalation} />
       </span>
-    </div>
+    </span>
   );
 }
 
@@ -278,7 +266,8 @@ export function LandingPhone({ state, viewer, mine }: LandingPhoneProps) {
     <div className={classes.phone}>
       <span className={classes.statusBar}>9:41</span>
       <div className={classes.screen}>
-        {viewer === 'dm' ? <DmHeader state={state} /> : <PlayerHeader state={state} />}
+        <Header state={state} viewer={viewer} />
+        {viewer === 'player' ? <TurnStripMock state={state} mine={mine} /> : null}
         <div className={classes.list}>
           {state.units.map((unit, index) => (
             <Row
