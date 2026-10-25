@@ -1,6 +1,6 @@
 import preview from '#.storybook/preview';
 import { expect } from 'storybook/test';
-import { base, hpActions, interaction } from '../../theme.ts';
+import { base, hpActions } from '../../theme.ts';
 import { DefenseLine } from './DefenseLine.tsx';
 import type { DefenseLineProps } from './DefenseLine.tsx';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
@@ -142,8 +142,8 @@ export const ModifiersShowTotals = meta.story({
       const value = canvasElement.querySelector(`[data-stat="${stat}"]`)?.lastElementChild;
       return value ? getComputedStyle(value).color : null;
     };
-    await expect(colourOf('ac')).toBe(rgb(hpActions.healText));
-    await expect(colourOf('pd')).toBe(rgb(interaction.dangerText));
+    await expect(colourOf('ac')).toBe(rgb(hpActions.heal));
+    await expect(colourOf('pd')).toBe(rgb(hpActions.damage));
     await expect(colourOf('md')).toBe(rgb(base.ink));
   },
 });

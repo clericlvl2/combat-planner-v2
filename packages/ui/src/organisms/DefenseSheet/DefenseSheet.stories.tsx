@@ -2,7 +2,7 @@ import preview from '#.storybook/preview';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, within } from 'storybook/test';
-import { hpActions, interaction } from '../../theme.ts';
+import { hpActions } from '../../theme.ts';
 import { DefenseSheet } from './DefenseSheet.tsx';
 import type { DefenseMods } from './DefenseSheet.tsx';
 import { storyT } from '../../storybook/storyT.ts';
@@ -81,10 +81,8 @@ export const WithModifiers = meta.story({
     await expect(within(ac).getByText('20')).toBeVisible();
     await expect(within(pd).getByText('17')).toBeVisible();
     await expect(within(ac).getByText(t('base', { value: 18 }))).toBeVisible();
-    await expect(getComputedStyle(within(ac).getByText('20')).color).toBe(rgb(hpActions.healText));
-    await expect(getComputedStyle(within(pd).getByText('17')).color).toBe(
-      rgb(interaction.dangerText),
-    );
+    await expect(getComputedStyle(within(ac).getByText('20')).color).toBe(rgb(hpActions.heal));
+    await expect(getComputedStyle(within(pd).getByText('17')).color).toBe(rgb(hpActions.damage));
     await expect(within(ac).getByRole('spinbutton')).toHaveValue('+2');
     await expect(within(pd).getByRole('spinbutton')).toHaveValue('−1');
   },

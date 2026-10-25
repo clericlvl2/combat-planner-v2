@@ -288,13 +288,7 @@ const apcaPairs: [string, string, string, number][] = [
     75,
   ]),
   ['danger text on dangerSoft', interaction.dangerText, hpActions.dangerSoft, 75],
-  ...(['surface', 'soft'] as const).map((fill): [string, string, string, number] => [
-    `heal text on ${fill}`,
-    hpActions.healText,
-    base[fill],
-    75,
-  ]),
-  ['heal total on background, display 22/700', hpActions.healText, base.background, 60],
+  ['heal text on surface', hpActions.healText, base.surface, 75],
   ...(['surface', 'highlight'] as const).map((fill): [string, string, string, number] => [
     `hero text on ${fill}`,
     roles.heroText,

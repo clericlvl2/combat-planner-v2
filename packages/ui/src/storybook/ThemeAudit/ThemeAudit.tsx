@@ -126,8 +126,20 @@ const tokenGroups: TokenGroup[] = [
   {
     title: 'HP actions',
     items: [
-      token('damage', hpActions.damage, 'Damage; damage in history', 'Aa', hpActions.on),
-      token('heal', hpActions.heal, 'Heal; healing in history: full −8 L', 'Aa', hpActions.on),
+      token(
+        'damage',
+        hpActions.damage,
+        'Damage; damage in history; defense down',
+        'Aa',
+        hpActions.on,
+      ),
+      token(
+        'heal',
+        hpActions.heal,
+        'Heal; healing in history; defense up: full −8 L',
+        'Aa',
+        hpActions.on,
+      ),
       token('healText', hpActions.healText, 'Heal as small text: full −20 L', 'Aa', onDark),
       token('setTemp', hpActions.setTemp, 'Set Temp', 'Aa', hpActions.on),
       token('max', hpActions.max, 'Set Max; max in history', 'Aa', hpActions.on),

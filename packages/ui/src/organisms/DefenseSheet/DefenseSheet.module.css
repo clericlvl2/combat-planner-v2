@@ -66,11 +66,11 @@
   color: var(--cp-color-ink);
 
   &[data-mod='up'] {
-    color: var(--cp-hp-heal-text);
+    color: var(--cp-hp-heal);
   }
 
   &[data-mod='down'] {
-    color: var(--cp-state-danger-text);
+    color: var(--cp-hp-damage);
   }
 }
 
