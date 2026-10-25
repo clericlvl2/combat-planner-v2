@@ -18,6 +18,7 @@ import {
   ulidSchema,
   unitNameSchema,
 } from './schemas.ts';
+import { restartedCombat } from './reduce.ts';
 import type { Combat, CombatId, UnitId } from './types.ts';
 
 export const COMBAT_FILE_FORMAT = 'combat-planner/combat';
@@ -69,35 +70,38 @@ export const combatFileSchema = z.object({
 export type CombatFile = z.infer<typeof combatFileSchema>;
 export type CombatFileUnit = z.infer<typeof combatFileUnitSchema>;
 
-export const toCombatFile = (combat: Combat): CombatFile => ({
-  format: COMBAT_FILE_FORMAT,
-  version: COMBAT_FILE_VERSION,
-  combat: {
-    title: combat.title,
-    description: combat.description,
-    color: combat.color,
-    status: combat.status,
-    round: combat.round,
-    escalation: combat.escalation,
-    activeUnitId: combat.activeUnitId,
-    units: combat.units.map((unit) => ({
-      id: unit.id,
-      name: unit.name,
-      role: unit.role,
-      initiativeBonus: unit.initiativeBonus,
-      initiative: unit.initiative,
-      maxHp: unit.maxHp,
-      hp: unit.hp,
-      tempHp: unit.tempHp,
-      ac: unit.ac,
-      pd: unit.pd,
-      md: unit.md,
-      note: unit.note,
-      conditions: [...unit.conditions],
-      disabled: unit.disabled,
-    })),
-  },
-});
+export const toCombatFile = (source: Combat): CombatFile => {
+  const combat = restartedCombat(source);
+  return {
+    format: COMBAT_FILE_FORMAT,
+    version: COMBAT_FILE_VERSION,
+    combat: {
+      title: combat.title,
+      description: combat.description,
+      color: combat.color,
+      status: combat.status,
+      round: combat.round,
+      escalation: combat.escalation,
+      activeUnitId: combat.activeUnitId,
+      units: combat.units.map((unit) => ({
+        id: unit.id,
+        name: unit.name,
+        role: unit.role,
+        initiativeBonus: unit.initiativeBonus,
+        initiative: unit.initiative,
+        maxHp: unit.maxHp,
+        hp: unit.hp,
+        tempHp: unit.tempHp,
+        ac: unit.ac,
+        pd: unit.pd,
+        md: unit.md,
+        note: unit.note,
+        conditions: [...unit.conditions],
+        disabled: unit.disabled,
+      })),
+    },
+  };
+};
 
 export interface CombatFileIds {
   combatId: CombatId;

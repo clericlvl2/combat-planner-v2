@@ -257,18 +257,17 @@ const nextTurn = (combat: Combat): Step => {
   };
 };
 
-const restart = (combat: Combat): Step => {
-  const error = requireActive(combat, 'Restart');
-  if (error) return error;
-  return {
-    ...combat,
-    status: 'setup',
-    round: LIMITS.round.min,
-    escalation: LIMITS.escalation.min,
-    activeUnitId: null,
-    units: combat.units.map(restartedUnit),
-  };
-};
+export const restartedCombat = (combat: Combat): Combat => ({
+  ...combat,
+  status: 'setup',
+  round: LIMITS.round.min,
+  escalation: LIMITS.escalation.min,
+  activeUnitId: null,
+  units: combat.units.map(restartedUnit),
+});
+
+const restart = (combat: Combat): Step =>
+  requireActive(combat, 'Restart') ?? restartedCombat(combat);
 
 const clear = (combat: Combat): Step => ({
   ...combat,

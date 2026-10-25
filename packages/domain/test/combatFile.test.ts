@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vite-plus/test';
 import {
   COMBAT_FILE_FORMAT,
+  LIMITS,
   combatFileSchema,
   combatSchema,
   fromCombatFile,
@@ -58,14 +59,24 @@ const freshIds = () => {
 };
 
 describe('combat file', () => {
-  it('round-trips a combat apart from ids, history and claims', () => {
+  it('round-trips a combat as restarted, apart from ids and claims', () => {
     const file = combatFileSchema.parse(JSON.parse(JSON.stringify(toCombatFile(source))));
     const imported = fromCombatFile(file, freshIds(), LATER);
     expect(combatSchema.parse(imported)).toEqual(imported);
+    const restarted = {
+      initiative: null,
+      tempHp: 0,
+      conditions: [],
+      disabled: false,
+      hpHistory: [],
+    };
     expect(imported).toEqual({
       ...source,
       id: id(99),
-      activeUnitId: id(101),
+      status: 'setup',
+      round: LIMITS.round.min,
+      escalation: LIMITS.escalation.min,
+      activeUnitId: null,
       lastPlayedAt: null,
       linkGeneration: 0,
       version: 1,
@@ -73,10 +84,38 @@ describe('combat file', () => {
       createdAt: LATER,
       updatedAt: LATER,
       units: [
-        { ...hero, id: id(100), claimedBy: null, hpHistory: [] },
-        { ...goblin, id: id(101) },
+        { ...hero, ...restarted, id: id(100), hp: hero.maxHp, claimedBy: null },
+        { ...goblin, ...restarted, id: id(101), hp: goblin.maxHp },
       ],
     });
+  });
+
+  it('exports an active combat as restarted and leaves the combat untouched', () => {
+    const modded = {
+      ...source,
+      units: [{ ...hero, acMod: 2, pdMod: -1, mdMod: 3 }, goblin],
+    };
+    const before = JSON.parse(JSON.stringify(modded));
+    const file = toCombatFile(modded);
+    expect(modded).toEqual(before);
+    expect(file.combat).toMatchObject({
+      status: 'setup',
+      round: LIMITS.round.min,
+      escalation: LIMITS.escalation.min,
+      activeUnitId: null,
+    });
+    for (const unit of file.combat.units) {
+      expect(unit).toMatchObject({
+        hp: unit.maxHp,
+        tempHp: 0,
+        conditions: [],
+        initiative: null,
+      });
+    }
+    const imported = fromCombatFile(file, freshIds(), LATER);
+    for (const unit of imported.units) {
+      expect(unit).toMatchObject({ acMod: 0, pdMod: 0, mdMod: 0 });
+    }
   });
 
   it('carries only the current state', () => {
