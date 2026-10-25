@@ -16,7 +16,10 @@ const env: ApiEnv = {
 };
 
 mkdirSync(staticDir);
-writeFileSync(path.join(staticDir, 'index.html'), '<!doctype html><title>Combat Planner</title>');
+writeFileSync(
+  path.join(staticDir, 'index.html'),
+  '<!doctype html><html lang="en"><title>Combat Planner</title></html>',
+);
 
 const start = () =>
   createServerApp({ databasePath, staticRoot: path.relative(process.cwd(), staticDir), env });
@@ -56,6 +59,55 @@ describe('server app', () => {
     const response = await app.request('/combats/01J');
     expect(response.status).toBe(200);
     expect(await response.text()).toContain('<title>Combat Planner</title>');
+    close();
+  });
+});
+
+const cookieOf = (response: Response): string =>
+  response.headers
+    .getSetCookie()
+    .map((cookie) => cookie.split(';')[0])
+    .join('; ');
+
+describe('landing at /', () => {
+  it('serves index.html marked for a guest without a cookie', async () => {
+    const { app, close } = start();
+    const response = await app.request('/');
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain('<html data-boot="guest" lang="en">');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('vary')).toBe('Cookie');
+    expect(response.headers.get('content-type')).toBe('text/html; charset=UTF-8');
+    close();
+  });
+
+  it('redirects a signed-in user to /combats', async () => {
+    const { app, close } = start();
+    const signedUp = await app.request('/api/auth/sign-up/email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', origin: env.betterAuthUrl ?? '' },
+      body: JSON.stringify({
+        name: 'Dungeon Master',
+        email: 'landing@example.com',
+        password: 'correct horse battery',
+      }),
+    });
+    expect(signedUp.status).toBe(200);
+    const response = await app.request('/', { headers: { cookie: cookieOf(signedUp) } });
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toBe('/combats');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('vary')).toBe('Cookie');
+    close();
+  });
+
+  it('serves index.html without the guest mark for other routes', async () => {
+    const { app, close } = start();
+    const response = await app.request('/combats');
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain('<title>Combat Planner</title>');
+    expect(html).not.toContain('data-boot');
     close();
   });
 });

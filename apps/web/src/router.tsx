@@ -12,6 +12,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { createBrowserRouter, redirect } from 'react-router';
 import type {
   DataRouter,
+  HydrationState,
   LoaderFunctionArgs,
   RouteObject,
   RouterNavigateOptions,
@@ -38,7 +39,10 @@ export interface AppRouteOptions {
   about: AboutLinks;
   language: Promise<LanguageSwitch>;
   reportError: (error: unknown) => void;
+  guestAtBoot?: boolean;
 }
+
+export const GUEST_BOOT: HydrationState = { loaderData: { home: null } };
 
 export type RouterStateGetter = () => { state: LocaleRouterState };
 
@@ -169,7 +173,12 @@ export function createRoutes(
 }
 
 export function createAppRouter(options: AppRouteOptions): DataRouter {
-  const router: DataRouter = createBrowserRouter(createRoutes(options, () => router));
+  const router: DataRouter = createBrowserRouter(
+    createRoutes(options, () => router),
+    {
+      hydrationData: options.guestAtBoot ? GUEST_BOOT : undefined,
+    },
+  );
   return withViewTransitions(router);
 }
 

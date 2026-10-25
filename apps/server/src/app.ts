@@ -1,4 +1,4 @@
-import { createApiApp, openDatabase, runMigrations } from '@combat-planner/api';
+import { createApiApp, createAuth, openDatabase, runMigrations } from '@combat-planner/api';
 import type { ApiEnv } from '@combat-planner/api';
 import { serveStatic } from '@hono/node-server/serve-static';
 import { Hono } from 'hono';
@@ -6,6 +6,7 @@ import { secureHeaders } from 'hono/secure-headers';
 import type { CheckProbes } from './admin/checks.ts';
 import { startChecker } from './admin/checks.ts';
 import { createAdminApp } from './admin/routes.ts';
+import { landingRoute } from './landing.ts';
 import type { ServerProbes } from './admin/server-stats.ts';
 import { startSweeper } from './sweeper.ts';
 import type { SharingTimers } from './timers.ts';
@@ -56,6 +57,7 @@ export function createServerApp({
 }: ServerAppOptions) {
   const opened = openDatabase(databasePath);
   runMigrations(opened.db);
+  const auth = createAuth({ db: opened.db, env });
   let lastSweepAt: Date | undefined;
   const stopSweeper = startSweeper(opened.db, timers, (at) => {
     lastSweepAt = at;
@@ -79,7 +81,7 @@ export function createServerApp({
         : c.json({ status: 'ok' }, 200);
     });
   }
-  app.route('/api', createApiApp({ db: opened.db, env }));
+  app.route('/api', createApiApp({ db: opened.db, env, instance: auth }));
   if (admin && started) {
     app.route(
       '/admin',
@@ -96,6 +98,7 @@ export function createServerApp({
     .all('/api/health/checks', (c) => c.notFound())
     .all('/admin', (c) => c.notFound())
     .all('/admin/*', (c) => c.notFound())
+    .get('/', landingRoute({ auth, staticRoot }))
     .use('/*', serveStatic({ root: staticRoot }))
     .get('/*', serveStatic({ root: staticRoot, path: 'index.html' }));
   return {

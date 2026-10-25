@@ -43,6 +43,7 @@ const router = createAppRouter({
   about: aboutLinks(import.meta.env),
   language,
   reportError: (error) => errorReporter.report(error),
+  guestAtBoot: document.documentElement.dataset.boot === 'guest',
 });
 
 createRoot(rootElement).render(
