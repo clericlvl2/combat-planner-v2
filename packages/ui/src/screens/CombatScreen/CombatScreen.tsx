@@ -46,6 +46,7 @@ import { usePresets } from '../../hooks/usePresets.ts';
 import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { useWakeLock } from '../../hooks/useWakeLock.ts';
 import { AddTile } from '../../molecules/AddTile/AddTile.tsx';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
@@ -193,6 +194,7 @@ export function CombatScreen({
   } = useCombat(combatId, DM, { onPresence });
   const combat = useMemo(() => server && overlay(server, pending, DM), [server, pending]);
   useConnection();
+  useWakeLock(server !== undefined && ended === null);
   const { presets, create: createPreset } = usePresets();
   const { tags } = useTags();
   const [headerOpen, setHeaderOpen] = useState<CombatHeaderPanel | null>(null);

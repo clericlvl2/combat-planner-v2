@@ -14,6 +14,7 @@ import { errorToast } from '../../hooks/toasts.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { useWakeLock } from '../../hooks/useWakeLock.ts';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatDeleted } from '../CombatDeleted/CombatDeleted.tsx';
@@ -52,6 +53,7 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     pending,
     tracker,
   } = useCombat(combatId, PLAYER, token);
+  useWakeLock(server !== undefined && ended === null);
   const queryClient = useQueryClient();
   const combat = useMemo(() => server && overlay(server, pending, PLAYER), [server, pending]);
   const { i18n } = useTranslation();
