@@ -86,7 +86,7 @@ const meta = preview.meta({
 
 const renderGroup = (args: RadioCellProps) => <RadioGroupCell {...args} />;
 
-const states = ['off', 'on', 'disabled', 'disabled on', 'focus', 'tap'] as const;
+const states = ['off', 'on', 'disabled', 'disabled on', 'focus'] as const;
 type State = (typeof states)[number];
 
 const row = (size: RadioProps['size'] & string) => ({
@@ -96,10 +96,9 @@ const row = (size: RadioProps['size'] & string) => ({
       size={size}
       name={`${size}-${state}`}
       onChange={fn()}
-      checked={state === 'on' || state === 'disabled on' || state === 'tap'}
+      checked={state === 'on' || state === 'disabled on'}
       disabled={state === 'disabled' || state === 'disabled on'}
       data-focus={state === 'focus' ? '' : undefined}
-      data-tap={state === 'tap' ? '' : undefined}
     />
   ),
 });

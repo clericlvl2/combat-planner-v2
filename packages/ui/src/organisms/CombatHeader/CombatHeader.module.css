@@ -18,7 +18,6 @@
 
 .bar {
   --cp-state-focus: var(--cp-color-on-chrome);
-  --cp-state-tap-marker: var(--cp-color-accent);
 
   box-sizing: border-box;
   display: flex;

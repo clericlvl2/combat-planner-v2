@@ -116,11 +116,6 @@
     outline-offset: -4px;
   }
 
-  &[data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: -4px;
-  }
-
   &::after {
     content: '';
     position: absolute;

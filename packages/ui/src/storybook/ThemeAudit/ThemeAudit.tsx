@@ -55,7 +55,7 @@ const tokenGroups: TokenGroup[] = [
       token('paper', seeds.paper, 'Paper: surface, text on colour'),
       token('ink', seeds.ink, 'Ink: text, selected fills', 'Aa', onDark),
       token('moss', seeds.moss, 'Moss: headers, primary, overlay border', 'Aa', onDark),
-      token('brass', seeds.brass, 'Brass: accent, tap marker', 'Aa', base.onAccent),
+      token('brass', seeds.brass, 'Brass: accent', 'Aa', base.onAccent),
       token('hero', seeds.hero, 'Hero, focus, temp HP', 'Aa', onDark),
       token('enemy', seeds.enemy, 'Enemy, damage, danger', 'Aa', onDark),
       token('ally', seeds.ally, 'Ally', 'Aa', onDark),

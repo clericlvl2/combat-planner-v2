@@ -25,7 +25,6 @@ export interface NumpadSheetProps extends NumpadHealth {
   history: readonly HpHistoryEntry[];
   onApply: (kind: HpHistoryKind, amount: number) => void | Promise<unknown>;
   onClose: () => void;
-  'data-tap'?: HpHistoryKind;
 }
 
 const previewId = '00000000000000000000000000';
@@ -170,7 +169,6 @@ export function NumpadSheet({
   history,
   onApply,
   onClose,
-  'data-tap': tap,
 }: NumpadSheetProps) {
   const { t } = useTranslation('NumpadSheet');
   const [amount, setAmount] = useState<number | null>(null);
@@ -272,7 +270,6 @@ export function NumpadSheet({
               className={classes.action}
               data-kind={kind}
               data-sheet-action=""
-              data-tap={tap === kind ? '' : undefined}
               size={kind === 'damage' ? 'M' : 'S'}
               fullWidth
               disabled={!enabled(kind) || (waiting !== null && waiting !== kind)}

@@ -306,9 +306,6 @@ export const HeaderTapToggles = meta.story({
     await userEvent.click(header);
     await expect(args.onToggle).toHaveBeenCalledTimes(2);
     await expect(canvas.queryByRole('list')).toBeNull();
-    header.blur();
-    header.setAttribute('data-tap', '');
-    await expect(header).toHaveAttribute('data-tap');
   },
 });
 

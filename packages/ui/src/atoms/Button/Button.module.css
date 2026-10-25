@@ -107,11 +107,6 @@
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
   }
-
-  &[data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
-  }
 }
 
 .icon {

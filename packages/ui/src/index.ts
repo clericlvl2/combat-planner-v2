@@ -19,7 +19,6 @@ export {
   radius,
   roles,
   spacing,
-  tapMarker,
   theme,
 } from './theme.ts';
 export type { ConditionName } from './theme.ts';

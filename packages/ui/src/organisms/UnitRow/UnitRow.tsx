@@ -28,16 +28,6 @@ import type { MenuItem } from '../Menu/Menu.tsx';
 import { iconSizes } from '../../theme.ts';
 import classes from './UnitRow.module.css';
 
-export type UnitRowTarget =
-  | 'initiative'
-  | 'hp'
-  | 'conditions'
-  | 'history'
-  | 'defenses'
-  | 'note'
-  | 'edit'
-  | 'more';
-
 export interface UnitRowCallbacks {
   onToggle: () => void;
   onInitiative: () => void;
@@ -69,7 +59,6 @@ interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childre
   menuOpen?: boolean;
   busy?: boolean;
   duplicateDisabled?: boolean;
-  'data-tap'?: UnitRowTarget;
 }
 
 export type UnitRowProps = UnitRowBaseProps &
@@ -111,7 +100,6 @@ export function UnitRow({
   onSaveAsPreset,
   onReleaseClaim,
   onRemove,
-  'data-tap': tap,
   className,
   onClick,
   ...rest
@@ -123,8 +111,6 @@ export function UnitRow({
   const dead = healthStatus(unit.hp, unit.maxHp, unit.role) === 'dead';
   const disabled = unit.disabled;
   const claimName = unit.claimedBy ? claimedByName : undefined;
-
-  const tapOf = (target: UnitRowTarget) => (tap === target ? '' : undefined);
 
   const handleClick = (event: MouseEvent<HTMLDivElement>) => {
     onClick?.(event);
@@ -203,7 +189,6 @@ export function UnitRow({
           aria-label={readOnly ? undefined : t('rollInitiative')}
           aria-haspopup={readOnly ? undefined : 'dialog'}
           aria-expanded={readOnly ? undefined : initiativeOpen}
-          data-tap={tapOf('initiative')}
           onClick={readOnly ? undefined : () => onInitiative?.()}
         />
       </div>
@@ -260,7 +245,6 @@ export function UnitRow({
           tempHp={unit.tempHp}
           disabled={disabled}
           count={!reduced}
-          data-tap={tapOf('hp')}
           onClick={readOnly ? undefined : () => onHp?.()}
         />
       </div>
@@ -277,7 +261,6 @@ export function UnitRow({
               aria-haspopup="dialog"
               aria-expanded={conditionsOpen}
               data-open={conditionsOpen || undefined}
-              data-tap={tapOf('conditions')}
               onClick={() => onConditions?.()}
             >
               <span className={classes.triggerLabel}>{t('conditions')}</span>
@@ -290,7 +273,6 @@ export function UnitRow({
               aria-haspopup="dialog"
               aria-expanded={historyOpen}
               data-open={historyOpen || undefined}
-              data-tap={tapOf('history')}
               onClick={() => onHistory?.()}
             >
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
@@ -303,14 +285,13 @@ export function UnitRow({
               aria-haspopup="dialog"
               aria-expanded={defensesOpen}
               data-open={defensesOpen || undefined}
-              data-tap={tapOf('defenses')}
               onClick={() => onDefenses?.()}
             >
               <span className={classes.triggerLabel}>{t('defenses')}</span>
               <IconChevronDown size={iconSizes.M} stroke={2} aria-hidden="true" />
             </UnstyledButton>
           </div>
-          <NoteField value={unit.note} onChange={onNoteChange ?? noop} data-tap={tapOf('note')} />
+          <NoteField value={unit.note} onChange={onNoteChange ?? noop} />
           <Menu
             opened={menuOpen}
             width={MENU_WIDTH}
@@ -322,7 +303,6 @@ export function UnitRow({
               <CardActions
                 open={menuOpen}
                 busy={busy}
-                data-tap={tap === 'edit' || tap === 'more' ? tap : undefined}
                 onEdit={() => onEdit?.()}
                 onMore={() => onMore?.()}
               />

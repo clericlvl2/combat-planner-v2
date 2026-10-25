@@ -90,7 +90,7 @@ const meta = preview.meta({
   args: { value: '', onChange: fn() },
 });
 
-const columns = ['Empty', 'With note', 'Focus', 'Tap', 'Read only'] as const;
+const columns = ['Empty', 'With note', 'Focus', 'Read only'] as const;
 
 type NoteFieldState = (typeof columns)[number];
 
@@ -102,7 +102,6 @@ const gridRows = [
         value={state === 'Empty' ? '' : note}
         readOnly={state === 'Read only'}
         data-focus={state === 'Focus' ? '' : undefined}
-        data-tap={state === 'Tap' ? '' : undefined}
         onChange={() => {}}
       />
     ),

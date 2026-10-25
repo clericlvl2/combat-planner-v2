@@ -137,7 +137,6 @@ export const hpActions = {
 
 export const interaction = {
   focus: seeds.hero,
-  tapMarker: lighten(seeds.brass, -20),
   dangerPressed: lighten(seeds.enemy, -8),
   dangerText: lighten(seeds.enemy, -20),
 };
@@ -222,8 +221,6 @@ export const iconSizes = { S: 16, M: 20, L: 24, XL: 32 } as const;
 export const borderWidth = { card: 1, control: 2 } as const;
 
 export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as const;
-
-export const tapMarker = { width: 3, color: interaction.tapMarker, offset: 2 } as const;
 
 const scrollShadow = { color: base.ink, alpha: 12 } as const;
 
@@ -331,7 +328,6 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
 
 export const theme: MantineThemeOverride = createTheme({
   focusRing: 'never',
-  focusClassName: classes.focus,
   activeClassName: '',
   respectReducedMotion: false,
   cursorType: 'pointer',

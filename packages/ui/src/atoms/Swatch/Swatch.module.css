@@ -34,10 +34,6 @@
       0 0 0 4px var(--cp-color-ink);
   }
 
-  &[data-tap] {
-    box-shadow: 0 0 0 3px var(--cp-state-tap-marker);
-  }
-
   &:disabled,
   &[data-disabled] {
     background: var(--cp-color-disabled);

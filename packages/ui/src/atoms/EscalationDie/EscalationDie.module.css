@@ -18,19 +18,13 @@
   }
 
   &[data-value]:focus-visible,
-  &[data-value][data-focus],
-  &[data-value][data-tap] {
+  &[data-value][data-focus] {
     outline: none;
   }
 
   &:focus-visible .tile,
   &[data-focus] .tile {
     outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
-
-  &[data-tap] .tile {
-    outline: 3px solid var(--cp-state-tap-marker);
     outline-offset: 2px;
   }
 }

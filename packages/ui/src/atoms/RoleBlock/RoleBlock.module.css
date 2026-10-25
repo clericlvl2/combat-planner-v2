@@ -57,11 +57,6 @@
     outline: 2px solid var(--cp-state-focus);
     outline-offset: 2px;
   }
-
-  &[data-unit-role][data-tap] {
-    outline: 3px solid var(--cp-role-on);
-    outline-offset: -3px;
-  }
 }
 
 .value {

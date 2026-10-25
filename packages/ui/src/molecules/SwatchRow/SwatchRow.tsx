@@ -19,14 +19,12 @@ export interface SwatchRowProps extends Omit<
   value: CombatColor;
   onChange: (value: CombatColor) => void;
   disabled?: boolean;
-  'data-tap'?: CombatColor;
 }
 
 export function SwatchRow({
   value,
   onChange,
   disabled = false,
-  'data-tap': tap,
   'aria-label': ariaLabel,
   className,
   ...rest
@@ -47,7 +45,6 @@ export function SwatchRow({
           aria-label={t(colorKeys[color] ?? 'red')}
           selected={color === value}
           disabled={disabled}
-          data-tap={color === tap ? '' : undefined}
           onSelect={onChange}
         />
       ))}

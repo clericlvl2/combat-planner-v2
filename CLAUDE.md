@@ -148,8 +148,8 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
 - Atoms and molecules whose stories multiply variant × state show one visible `AllStates` story
   built with `packages/ui/src/storybook/StateGrid.tsx`: rows are variants and sizes, columns are
   states, each cell is labelled `<Row> · <Column>` and cells wrap. States are set statically through
-  the attributes the CSS reads (`data-pressed`, `data-focus`, `data-tap`, `data-open`,
-  `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag (inert, see below).
+  the attributes the CSS reads (`data-pressed`, `data-focus`, `data-open`, `aria-invalid`,
+  `disabled`). `AllStates` carries the `visual` tag (inert, see below).
 - `FakeApiClient.failNext(code)` rejects the next call; `holdNext()` leaves it pending, for loading
   states; `holdNextExchange()` applies the next call at once but holds its reply and every document
   it broadcasts until `releaseReplies()`, which delivers the documents first, for sends that race
