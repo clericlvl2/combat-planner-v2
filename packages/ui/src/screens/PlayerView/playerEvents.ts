@@ -2,6 +2,7 @@ import type { PlayerCombat, PlayerUnit, UnitId } from '@combat-planner/domain';
 
 export type PlayerEvent =
   | { kind: 'restarted' }
+  | { kind: 'started' }
   | { kind: 'cleared' }
   | { kind: 'released'; unitId: UnitId; name: string }
   | { kind: 'removed'; unitId: UnitId; name: string }
@@ -17,6 +18,7 @@ export function playerEvents(previous: PlayerCombat, next: PlayerCombat): Player
   if (previous.units.length > 0 && next.units.length === 0) return [{ kind: 'cleared' }];
   const events: PlayerEvent[] = [];
   if (previous.status === 'active' && next.status === 'setup') events.push({ kind: 'restarted' });
+  if (previous.status === 'setup' && next.status === 'active') events.push({ kind: 'started' });
   const after = new Map(next.units.map((unit) => [unit.id, unit]));
   for (const unit of previous.units) {
     const current = after.get(unit.id);

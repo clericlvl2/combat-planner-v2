@@ -476,6 +476,17 @@ export const OtherPlayerClaimsQueued = meta.story({
   },
 });
 
+export const CombatStartAnnounced = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: setupScenario },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await rowOf(canvas, ME);
+    await actAsDm(fakeApiOf(loaded), { type: 'start', rolls: { [unitIds.vashti]: 10 } });
+    await expect(await canvas.findByText(t('Toast:combatStarted'))).toBeVisible();
+  },
+});
+
 export const RequestFailed = meta.story({
   play: async ({ canvas, loaded, parameters }) => {
     const t = playerT(parameters);

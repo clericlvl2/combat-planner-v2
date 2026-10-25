@@ -17,6 +17,7 @@
   "accountDeleted": "Tu cuenta se ha eliminado",
   "otherDevicesSignedOut": "Sesión cerrada en otros dispositivos",
   "dmRestarted": "El DM reinició el combate",
+  "combatStarted": "El combate ha comenzado",
   "dmCleared": "El DM vació el combate",
   "dmReleased": "El DM liberó a {{hero}}. Elige un héroe.",
   "dmRemoved": "El DM quitó a {{hero}}. Elige un héroe.",

@@ -17,6 +17,7 @@
   "accountDeleted": "Your account was deleted",
   "otherDevicesSignedOut": "Signed out on other devices",
   "dmRestarted": "The DM restarted the combat",
+  "combatStarted": "The combat has started",
   "dmCleared": "The DM cleared the combat",
   "dmReleased": "The DM released {{hero}}. Pick a hero.",
   "dmRemoved": "The DM removed {{hero}}. Pick a hero.",

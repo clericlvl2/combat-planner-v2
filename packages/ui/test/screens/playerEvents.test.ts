@@ -34,6 +34,15 @@ describe('playerEvents', () => {
     expect(eventsAfter(ferryCombat(), { type: 'restart' })).toEqual([{ kind: 'restarted' }]);
   });
 
+  it('reports the combat start', () => {
+    expect(
+      eventsAfter(ferryCombat({ status: 'setup' }), {
+        type: 'start',
+        rolls: { [unitIds.vashti]: 10 },
+      }),
+    ).toEqual([{ kind: 'started' }]);
+  });
+
   it('reports a DM clear without the releases it implies', () => {
     expect(eventsAfter(ferryCombat(), { type: 'clear' })).toEqual([{ kind: 'cleared' }]);
   });

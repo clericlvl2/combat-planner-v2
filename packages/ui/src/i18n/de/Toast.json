@@ -17,6 +17,7 @@
   "accountDeleted": "Dein Konto wurde gelöscht",
   "otherDevicesSignedOut": "Auf anderen Geräten abgemeldet",
   "dmRestarted": "Die Spielleitung hat den Kampf neu gestartet",
+  "combatStarted": "Der Kampf hat begonnen",
   "dmCleared": "Die Spielleitung hat den Kampf geleert",
   "dmReleased": "Die Spielleitung hat {{hero}} freigegeben. Wähle einen Helden.",
   "dmRemoved": "Die Spielleitung hat {{hero}} entfernt. Wähle einen Helden.",

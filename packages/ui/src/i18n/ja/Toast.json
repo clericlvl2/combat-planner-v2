@@ -17,6 +17,7 @@
   "accountDeleted": "アカウントを削除しました",
   "otherDevicesSignedOut": "他のデバイスからログアウトしました",
   "dmRestarted": "DMが戦闘をやり直しました",
+  "combatStarted": "戦闘が始まりました",
   "dmCleared": "DMが戦闘をクリアしました",
   "dmReleased": "DMが{{hero}}の担当を解除しました。ヒーローを選んでください。",
   "dmRemoved": "DMが{{hero}}を削除しました。ヒーローを選んでください。",

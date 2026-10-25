@@ -8,6 +8,7 @@ import type { PlayerEvent, PlayerEventKind } from './playerEvents.ts';
 
 const eventKinds: Record<PlayerEventKind, ToastKind> = {
   restarted: 'neutral',
+  started: 'neutral',
   cleared: 'neutral',
   released: 'neutral',
   removed: 'neutral',
@@ -17,6 +18,7 @@ const eventKinds: Record<PlayerEventKind, ToastKind> = {
 
 const toastKeys: Record<PlayerEventKind, string> = {
   restarted: 'dmRestarted',
+  started: 'combatStarted',
   cleared: 'dmCleared',
   released: 'dmReleased',
   removed: 'dmRemoved',
