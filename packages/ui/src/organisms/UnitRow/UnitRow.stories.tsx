@@ -3,6 +3,7 @@ import type { TFunction } from 'i18next';
 import { CONDITIONS } from '@combat-planner/domain';
 import type { Condition, Unit } from '@combat-planner/domain';
 import { useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 import type { HpChange } from '../../hooks/useHpChanges.ts';
@@ -11,6 +12,7 @@ import { fontSizes } from '../../theme.ts';
 import { UnitRow } from './UnitRow.tsx';
 import type { UnitRowCallbacks, UnitRowProps } from './UnitRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { createI18n, locales } from '../../provider.tsx';
 
 type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp'> &
   Partial<Unit> & { defenses: [number, number, number] };
@@ -840,6 +842,61 @@ export const StaggeredRibbon = meta.story({
     const number = numberOf(canvasElement);
     await expect(number).toHaveTextContent('−5');
     await expect(Number(getComputedStyle(number).zIndex)).toBeGreaterThan(Number(style.zIndex));
+  },
+});
+
+const ribbonStatuses = ['staggered', 'unconscious', 'dead'] as const;
+const ribbonI18n = createI18n('en');
+
+export const RibbonFitsEveryLanguage = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  render: () => (
+    <I18nextProvider i18n={ribbonI18n}>
+      <div data-motion-frozen="" style={{ display: 'grid', gap: 8 }}>
+        {ribbonStatuses.map((status, index) => (
+          <UnitRow
+            key={status}
+            readOnly
+            active={false}
+            unit={unitOf({ ...orcSeed, id: `${orcSeed.id}${index}`, hp: 0 })}
+            hpChange={{
+              key: 1,
+              unitId: `${orcSeed.id}${index}`,
+              kind: 'damage',
+              amount: 5,
+              status,
+            }}
+          />
+        ))}
+      </div>
+    </I18nextProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const locale of locales) {
+      await ribbonI18n.changeLanguage(locale);
+      const t = ribbonI18n.getFixedT(locale, 'HpBox');
+      const ribbons = [...canvasElement.querySelectorAll<HTMLElement>('[data-hp-change="ribbon"]')];
+      await waitFor(() =>
+        expect(ribbons.map((ribbon) => ribbon.textContent)).toEqual(
+          ribbonStatuses.map((status) => t(status)),
+        ),
+      );
+      for (const ribbon of ribbons) {
+        const label = ribbon.querySelector<HTMLElement>('[data-hp-change="ribbon-label"]');
+        const card = ribbon.closest<HTMLElement>('[data-unit-role]');
+        if (!label || !card) throw new Error('no ribbon label or card');
+        await expect(ribbon.scrollWidth).toBeLessThanOrEqual(ribbon.clientWidth);
+        await expect(label.getClientRects()).toHaveLength(1);
+        const text = label.getBoundingClientRect();
+        const edges = card.getBoundingClientRect();
+        await expect(text.left).toBeGreaterThanOrEqual(edges.left);
+        await expect(text.right).toBeLessThanOrEqual(edges.right);
+        await expect(parseFloat(getComputedStyle(label).fontSize)).toBeGreaterThanOrEqual(
+          fontSizes.meta,
+        );
+      }
+    }
   },
 });
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { HpChange } from '../../hooks/useHpChanges.ts';
 import { layout } from '../../layout.ts';
@@ -32,6 +33,15 @@ function Badge({ change, text }: { change: HpChange; text: string }) {
   );
 }
 
+function Ribbon({ status, label }: { status: string; label: string }) {
+  const style = { '--cp-ribbon-chars': Array.from(label).length } as CSSProperties;
+  return (
+    <span className={classes.ribbon} data-status={status} data-hp-change="ribbon" style={style}>
+      <span data-hp-change="ribbon-label">{label}</span>
+    </span>
+  );
+}
+
 export function HpChangeOverlay({ change, showNumber, reduced }: HpChangeOverlayProps) {
   const { t } = useTranslation('HpBox');
   const numberText = useNumberText(change);
@@ -46,9 +56,7 @@ export function HpChangeOverlay({ change, showNumber, reduced }: HpChangeOverlay
         </span>
       )}
       {change.status === undefined ? null : (
-        <span className={classes.ribbon} data-status={change.status} data-hp-change="ribbon">
-          {t(change.status)}
-        </span>
+        <Ribbon status={change.status} label={t(change.status)} />
       )}
     </span>
   );
