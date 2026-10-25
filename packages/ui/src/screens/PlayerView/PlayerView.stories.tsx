@@ -174,7 +174,7 @@ export const InitiativeSheet = meta.story({
         name: (label: string) => label.endsWith(t('RoleBlock:you')),
       }),
     );
-    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
+    const sheet = await canvas.findByRole('dialog', { name: ME });
     await expect(
       within(sheet).getByRole('button', {
         name: anyValue(t, 'InitiativeSheet:roll', 'bonus'),
@@ -195,7 +195,7 @@ export const RollDispatched = meta.story({
         name: (label: string) => label.endsWith(t('RoleBlock:you')),
       }),
     );
-    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
+    const sheet = await canvas.findByRole('dialog', { name: ME });
     await userEvent.click(
       within(sheet).getByRole('button', {
         name: anyValue(t, 'InitiativeSheet:roll', 'bonus'),

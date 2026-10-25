@@ -320,7 +320,7 @@ export const InitiativeBonus = meta.story({
         name: (label: string) => label.endsWith(t('RoleBlock:you')),
       }),
     );
-    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
+    const sheet = await canvas.findByRole('dialog', { name: ME });
     await expect(
       within(sheet).getByRole('button', {
         name: (label: string) => label.startsWith(t('InitiativeSheet:roll', { bonus: '+2' })),

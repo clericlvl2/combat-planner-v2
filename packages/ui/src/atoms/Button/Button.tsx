@@ -18,6 +18,7 @@ export interface ButtonProps extends Omit<
   size?: ButtonSize;
   icon?: Icon;
   fullWidth?: boolean;
+  stacked?: boolean;
   disabled?: boolean;
   loading?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
@@ -32,6 +33,7 @@ export function Button({
   size = 'M',
   icon: IconComponent,
   fullWidth = false,
+  stacked = false,
   disabled = false,
   loading = false,
   onClick,
@@ -40,7 +42,7 @@ export function Button({
   className,
   ...rest
 }: ButtonProps) {
-  const heavy = (variant === 'primary' || variant === 'danger') && size !== 'S';
+  const heavy = (variant === 'primary' || variant === 'danger') && size !== 'S' && !stacked;
   const spinning = useDelayed(loading);
   const content = (
     <>
@@ -62,6 +64,7 @@ export function Button({
         data-size={size}
         data-heavy={heavy || undefined}
         data-full-width={fullWidth || undefined}
+        data-stacked={stacked || undefined}
       >
         {content}
       </Link>
@@ -77,6 +80,7 @@ export function Button({
       data-size={size}
       data-heavy={heavy || undefined}
       data-full-width={fullWidth || undefined}
+      data-stacked={stacked || undefined}
       data-loading={spinning || undefined}
       aria-busy={spinning || undefined}
       disabled={disabled || spinning}

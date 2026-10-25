@@ -4,9 +4,11 @@ import { Button } from '../../atoms/Button/Button.tsx';
 import { IconDiceD20 } from '../../atoms/icons/IconDiceD20.ts';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Sheet } from '../Sheet/Sheet.tsx';
+import classes from './InitiativeSheet.module.css';
 
 export interface InitiativeSheetProps {
   opened: boolean;
+  unitName: string;
   value: number | null;
   bonus: number;
   onSet: (value: number) => void;
@@ -28,6 +30,7 @@ function rollD20(random: () => number): number {
 
 export function InitiativeSheet({
   opened,
+  unitName,
   value,
   bonus,
   onSet,
@@ -37,33 +40,35 @@ export function InitiativeSheet({
 }: InitiativeSheetProps) {
   const { t } = useTranslation('InitiativeSheet');
 
-  const title = t('title');
-
   const roll = () => {
     const face = rollD20(random);
     onRoll(rolledInitiative(face, bonus), face);
   };
 
   return (
-    <Sheet
-      opened={opened}
-      title={title}
-      header={null}
-      onClose={onClose}
-      actions={
-        <Button variant="primary" fullWidth icon={IconDiceD20} onClick={roll} data-sheet-action="">
-          {t('roll', { bonus: signed(bonus) })}
+    <Sheet opened={opened} title={unitName} onClose={onClose}>
+      <div className={classes.row}>
+        <Stepper
+          className={classes.stepper}
+          label={t('title')}
+          value={value}
+          min={LIMITS.initiative.min}
+          max={LIMITS.initiative.max}
+          signed={false}
+          onChange={onSet}
+        />
+        <span className={classes.divider} aria-hidden="true" />
+        <Button
+          variant="primary"
+          stacked
+          icon={IconDiceD20}
+          aria-label={t('roll', { bonus: signed(bonus) })}
+          onClick={roll}
+          data-sheet-action=""
+        >
+          {signed(bonus)}
         </Button>
-      }
-    >
-      <Stepper
-        label={title}
-        value={value}
-        min={LIMITS.initiative.min}
-        max={LIMITS.initiative.max}
-        signed={false}
-        onChange={onSet}
-      />
+      </div>
     </Sheet>
   );
 }

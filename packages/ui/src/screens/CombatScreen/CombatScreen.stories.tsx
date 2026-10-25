@@ -688,8 +688,8 @@ export const InitiativeSheetRolls = meta.story({
     const t = storyT(globals, 'CombatScreen');
     const orc = await rowOf(canvasElement, names.orc);
     await userEvent.click(within(orc).getByRole('button', { name: t('UnitRow:rollInitiative') }));
-    const sheet = await canvas.findByRole('dialog', { name: t('InitiativeSheet:title') });
-    await expect(within(sheet).queryByText(names.orc)).toBeNull();
+    const sheet = await canvas.findByRole('dialog', { name: names.orc });
+    await expect(within(sheet).getByRole('heading', { name: names.orc })).toBeVisible();
     await userEvent.click(
       within(sheet).getByRole('button', { name: anyValue(t, 'InitiativeSheet:roll', 'bonus') }),
     );

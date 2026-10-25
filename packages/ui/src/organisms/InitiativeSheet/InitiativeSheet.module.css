@@ -1,0 +1,18 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.stepper {
+  flex: 1;
+}
+
+.divider {
+  flex: none;
+  align-self: stretch;
+  width: 0;
+  margin: 4px 0;
+  border-left: 2px dashed var(--cp-color-border);
+}

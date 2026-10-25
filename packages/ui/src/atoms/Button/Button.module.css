@@ -35,6 +35,18 @@
     font-weight: 700;
   }
 
+  &[data-stacked] {
+    flex-direction: column;
+    gap: 2px;
+    width: var(--cp-control-m);
+    height: var(--cp-control-m);
+    padding: 0;
+    border-radius: var(--mantine-radius-field);
+    font-family: var(--cp-font-ui);
+    font-size: var(--mantine-font-size-meta);
+    font-weight: 700;
+  }
+
   &[data-full-width] {
     display: flex;
     width: 100%;

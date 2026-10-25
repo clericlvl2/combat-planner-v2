@@ -707,6 +707,7 @@ export function CombatScreen({
         <InitiativeSheet
           key={`initiative-${initiativeUnit.id}`}
           opened={initiativeOpen !== null}
+          unitName={initiativeUnit.name}
           value={initiativeUnit.initiative}
           bonus={initiativeUnit.initiativeBonus}
           random={random}
