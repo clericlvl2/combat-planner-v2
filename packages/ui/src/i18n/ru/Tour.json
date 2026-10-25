@@ -3,7 +3,7 @@
   "next": "Далее",
   "done": "Готово",
   "gotIt": "Понятно",
-  "counter": "Шаг {{current}} из {{total}}",
+  "counter": "{{current}} / {{total}}",
   "createTitle": "Создайте бой",
   "createBody": "Нажмите «Новый бой».",
   "titleTitle": "Назовите бой",

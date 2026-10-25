@@ -3,7 +3,7 @@
   "next": "Weiter",
   "done": "Fertig",
   "gotIt": "Verstanden",
-  "counter": "Schritt {{current}} von {{total}}",
+  "counter": "{{current}} / {{total}}",
   "createTitle": "Kampf erstellen",
   "createBody": "Tippe auf „Neuer Kampf“.",
   "titleTitle": "Kampf benennen",

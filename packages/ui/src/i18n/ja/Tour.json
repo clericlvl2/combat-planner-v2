@@ -3,7 +3,7 @@
   "next": "次へ",
   "done": "完了",
   "gotIt": "わかった",
-  "counter": "ステップ{{current}}/{{total}}",
+  "counter": "{{current}} / {{total}}",
   "createTitle": "戦闘を作成",
   "createBody": "「新しい戦闘」をタップします。",
   "titleTitle": "戦闘に名前を付ける",

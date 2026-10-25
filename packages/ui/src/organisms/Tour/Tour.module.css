@@ -125,7 +125,7 @@
   font-size: var(--mantine-font-size-meta);
   line-height: 1.2;
   text-align: center;
-  text-wrap: balance;
+  white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {

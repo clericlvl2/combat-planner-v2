@@ -3,7 +3,7 @@
   "next": "Next",
   "done": "Done",
   "gotIt": "Got it",
-  "counter": "Step {{current}} of {{total}}",
+  "counter": "{{current}} / {{total}}",
   "createTitle": "Create a combat",
   "createBody": "Tap “New combat”.",
   "titleTitle": "Name the combat",
