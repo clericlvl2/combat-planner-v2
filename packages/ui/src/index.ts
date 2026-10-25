@@ -72,6 +72,7 @@ export { PageHeader } from './organisms/PageHeader/PageHeader.tsx';
 export { PlayerHeader } from './organisms/PlayerHeader/PlayerHeader.tsx';
 export { PlayerRow } from './organisms/PlayerRow/PlayerRow.tsx';
 export { PresetCard } from './organisms/PresetCard/PresetCard.tsx';
+export { RoundSheet } from './organisms/RoundSheet/RoundSheet.tsx';
 export { ShareSheet } from './organisms/ShareSheet/ShareSheet.tsx';
 export { Sheet } from './organisms/Sheet/Sheet.tsx';
 export { SortSheet } from './organisms/SortSheet/SortSheet.tsx';

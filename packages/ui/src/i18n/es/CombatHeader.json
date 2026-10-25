@@ -1,9 +1,9 @@
 {
   "back": "Volver a los combates",
   "round": "Ronda",
-  "editRound": "Editar ronda, ronda {{round}}",
+  "editRoundAndEscalation": "Editar ronda y escalada: ronda {{round}}, escalada {{value}}",
+  "roundSheetTitle": "Ronda y escalada",
   "setup": "Preparación",
-  "setEscalation": "Fijar dado de escalada, escalada {{value}}",
   "escalationTitle": "Dado de escalada",
   "escalationFace": "Escalada {{value}}",
   "escalationCaption": "Escalada",

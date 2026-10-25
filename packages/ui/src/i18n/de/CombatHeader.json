@@ -1,9 +1,9 @@
 {
   "back": "Zurück zu den Kämpfen",
   "round": "Runde",
-  "editRound": "Runde bearbeiten, Runde {{round}}",
+  "editRoundAndEscalation": "Runde und Eskalation bearbeiten: Runde {{round}}, Eskalation {{value}}",
+  "roundSheetTitle": "Runde und Eskalation",
   "setup": "Vorbereitung",
-  "setEscalation": "Eskalationswürfel setzen, Eskalation {{value}}",
   "escalationTitle": "Eskalationswürfel",
   "escalationFace": "Eskalation {{value}}",
   "escalationCaption": "Eskalation",

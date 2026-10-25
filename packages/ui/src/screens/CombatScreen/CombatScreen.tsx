@@ -53,7 +53,7 @@ import { Toast } from '../../molecules/Toast/Toast.tsx';
 import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import type {
-  CombatHeaderPopover,
+  CombatHeaderPanel,
   CombatMenuAction,
 } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
@@ -62,6 +62,7 @@ import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import type { DialogProps } from '../../organisms/Dialog/Dialog.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
 import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
+import { RoundSheet } from '../../organisms/RoundSheet/RoundSheet.tsx';
 import { ShareSheet } from '../../organisms/ShareSheet/ShareSheet.tsx';
 import { TurnBar } from '../../organisms/TurnBar/TurnBar.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
@@ -192,7 +193,7 @@ export function CombatScreen({
   useConnection();
   const { presets, create: createPreset } = usePresets();
   const { tags } = useTags();
-  const [headerOpen, setHeaderOpen] = useState<CombatHeaderPopover | null>(null);
+  const [headerOpen, setHeaderOpen] = useState<CombatHeaderPanel | null>(null);
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Panel | null>(null);
   const [form, setForm] = useState<Form | null>(null);
@@ -581,15 +582,8 @@ export function CombatScreen({
         busy={undoing || (shareOpen && link.token === undefined && !linkFailed)}
         onBack={goToCombats}
         onRound={() => setHeaderOpen('round')}
-        onEscalation={() => setHeaderOpen('escalation')}
         onMenu={() => setHeaderOpen((current) => (current === 'menu' ? null : 'menu'))}
         onClose={() => setHeaderOpen(null)}
-        onRoundChange={(round) => {
-          if (round !== latest()?.round) void send({ type: 'editRound', round });
-        }}
-        onEscalationChange={(escalation) => {
-          if (escalation !== combat.escalation) void send({ type: 'setEscalation', escalation });
-        }}
         onMenuSelect={selectMenu}
       />
       <ScrollList className={classes.list} contentClassName={classes.listContent}>
@@ -697,6 +691,19 @@ export function CombatScreen({
           onHide={() => dismiss(toast.id)}
         />
       ) : null}
+      <RoundSheet
+        opened={!setup && headerOpen === 'round'}
+        combatTitle={combat.title}
+        round={combat.round}
+        escalation={combat.escalation as EscalationValue}
+        onRoundChange={(round) => {
+          if (round !== latest()?.round) void send({ type: 'editRound', round });
+        }}
+        onEscalationChange={(escalation) => {
+          if (escalation !== combat.escalation) void send({ type: 'setEscalation', escalation });
+        }}
+        onClose={() => setHeaderOpen(null)}
+      />
       {numpadUnit ? (
         <NumpadSheet
           key={`numpad-${numpadUnit.id}`}

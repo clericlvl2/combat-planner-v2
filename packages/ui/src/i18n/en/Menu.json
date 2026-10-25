@@ -12,7 +12,5 @@
   "releaseClaim": "Release claim",
   "remove": "Remove",
   "heroes": "Heroes",
-  "delete": "Delete",
-  "round": "Round",
-  "roundHint": "{{min}}–{{max}}. Changing the round doesn’t move the turn."
+  "delete": "Delete"
 }

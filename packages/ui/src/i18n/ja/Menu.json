@@ -12,7 +12,5 @@
   "releaseClaim": "担当を解除",
   "remove": "削除",
   "heroes": "ヒーロー",
-  "delete": "削除",
-  "round": "ラウンド",
-  "roundHint": "{{min}}–{{max}}。ラウンドを変えてもターンは移りません。"
+  "delete": "削除"
 }

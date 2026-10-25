@@ -43,6 +43,7 @@ const names = [
   'PlayerHeader',
   'PlayerRow',
   'PresetCard',
+  'RoundSheet',
   'ShareSheet',
   'Sheet',
   'SortSheet',

@@ -1,9 +1,9 @@
 {
   "back": "Back to combats",
   "round": "Round",
-  "editRound": "Edit round, round {{round}}",
+  "editRoundAndEscalation": "Edit round and escalation: round {{round}}, escalation {{value}}",
+  "roundSheetTitle": "Round and escalation",
   "setup": "Setup",
-  "setEscalation": "Set escalation die, escalation {{value}}",
   "escalationTitle": "Escalation die",
   "escalationFace": "Escalation {{value}}",
   "escalationCaption": "Escalation",

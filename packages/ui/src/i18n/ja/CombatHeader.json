@@ -1,9 +1,9 @@
 {
   "back": "戦闘一覧に戻る",
   "round": "ラウンド",
-  "editRound": "ラウンドを編集、ラウンド{{round}}",
+  "editRoundAndEscalation": "ラウンドとエスカレーションを編集、ラウンド{{round}}、エスカレーション{{value}}",
+  "roundSheetTitle": "ラウンドとエスカレーション",
   "setup": "準備中",
-  "setEscalation": "エスカレーションダイスを設定、エスカレーション{{value}}",
   "escalationTitle": "エスカレーションダイス",
   "escalationFace": "エスカレーション{{value}}",
   "escalationCaption": "エスカレーション",

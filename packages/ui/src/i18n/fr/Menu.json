@@ -12,7 +12,5 @@
   "releaseClaim": "Libérer l’attribution",
   "remove": "Retirer",
   "heroes": "Héros",
-  "delete": "Supprimer",
-  "round": "Round",
-  "roundHint": "{{min}}–{{max}}. Changer de round ne change pas le tour en cours."
+  "delete": "Supprimer"
 }
