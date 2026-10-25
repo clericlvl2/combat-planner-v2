@@ -17,7 +17,12 @@ import { renderToString } from 'react-dom/server';
 import { RouterProvider, createMemoryRouter } from 'react-router';
 import type { RouteObject } from 'react-router';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
-import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
+import { AboutPage } from './pages/about.tsx';
+import { CombatPage } from './pages/combat.tsx';
+import { DmPages } from './pages/dm.tsx';
+import { NotFoundPage } from './pages/notFound.tsx';
+import { PlayerPage } from './pages/player.tsx';
+import { RouteError } from './routeError.tsx';
 import { AppProviders } from './providers.tsx';
 import { GUEST_BOOT, createRoutes, withViewTransitions } from './router.tsx';
 
@@ -160,6 +165,32 @@ describe('router', () => {
     await router.navigate('/');
     expect(router.state.location.pathname).toBe('/combats');
     expect(leafElement(router).type).toBe(CombatList);
+  });
+
+  it('loads a screen on demand when the guest navigates to it', async () => {
+    const routes = createRoutes(
+      {
+        api: new FakeApiClient({ scenario: scenario({ session: null }) }),
+        queryClient: createQueryClient(),
+        about,
+        language: Promise.resolve(createI18n('en')),
+        reportError,
+        guestAtBoot: true,
+      },
+      () => router,
+    );
+    const router: MemoryRouter = createMemoryRouter(routes, {
+      initialEntries: ['/'],
+      hydrationData: GUEST_BOOT,
+    });
+    routers.push(router);
+    const signInRoute = () =>
+      router.routes[0]?.children?.find(({ id }) => id === 'auth')?.children?.[0];
+    expect(signInRoute()?.element).toBeUndefined();
+    await router.navigate('/auth/sign-in');
+    expect(routeIds(router)).toEqual(['root', 'auth', 'sign-in']);
+    expect(leafElement(router).type).toBe(SignIn);
+    expect(render(router)).toContain('Sign in');
   });
 
   it.each([true, false])('renders About with the build values, signed in: %s', async (signedIn) => {

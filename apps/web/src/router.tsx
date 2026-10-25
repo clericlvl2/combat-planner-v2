@@ -1,14 +1,7 @@
 import type { ApiClient, Session } from '@combat-planner/api/client';
-import {
-  Account,
-  CombatList,
-  Landing,
-  Library,
-  Settings,
-  SignIn,
-  SignUp,
-} from '@combat-planner/ui';
+import { Landing } from '@combat-planner/ui';
 import type { QueryClient } from '@tanstack/react-query';
+import type { ReactElement } from 'react';
 import { createBrowserRouter, redirect } from 'react-router';
 import type {
   DataRouter,
@@ -18,8 +11,9 @@ import type {
   RouterNavigateOptions,
   To,
 } from 'react-router';
-import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
-import type { CombatRouteData, PlayerRouteData } from './pages.tsx';
+import type { CombatRouteData } from './pages/combat.tsx';
+import type { PlayerRouteData } from './pages/player.tsx';
+import { RouteError } from './routeError.tsx';
 import { showsDmPage } from './routeLocale.ts';
 import type { LanguageSwitch, LocaleRouterState } from './routeLocale.ts';
 
@@ -47,6 +41,14 @@ export const GUEST_BOOT: HydrationState = { loaderData: { home: null } };
 export type RouterStateGetter = () => { state: LocaleRouterState };
 
 const unreachable = (): undefined => undefined;
+
+const page =
+  <M,>(load: () => Promise<M>, render: (module: M) => ReactElement) =>
+  async (): Promise<ReactElement> =>
+    render(await load());
+
+const dm = () => import('./pages/dm.tsx');
+const auth = () => import('./pages/auth.ts');
 
 export function createRoutes(
   { api, queryClient, about, language, reportError }: AppRouteOptions,
@@ -147,26 +149,90 @@ export function createRoutes(
         {
           id: 'dm',
           loader: requireSession,
-          element: <DmPages />,
+          lazy: { element: page(dm, ({ DmPages }) => <DmPages />) },
           children: [
-            { id: 'combats', path: 'combats', element: <CombatList /> },
-            { id: 'combat', path: 'combats/:id', loader: combatData, element: <CombatPage /> },
-            { id: 'library', path: 'library', element: <Library /> },
-            { id: 'settings', path: 'settings', element: <Settings /> },
-            { id: 'account', path: 'account', element: <Account /> },
+            {
+              id: 'combats',
+              path: 'combats',
+              lazy: { element: page(dm, ({ CombatList }) => <CombatList />) },
+            },
+            {
+              id: 'combat',
+              path: 'combats/:id',
+              loader: combatData,
+              lazy: {
+                element: page(
+                  () => import('./pages/combat.tsx'),
+                  ({ CombatPage }) => <CombatPage />,
+                ),
+              },
+            },
+            {
+              id: 'library',
+              path: 'library',
+              lazy: { element: page(dm, ({ Library }) => <Library />) },
+            },
+            {
+              id: 'settings',
+              path: 'settings',
+              lazy: { element: page(dm, ({ Settings }) => <Settings />) },
+            },
+            {
+              id: 'account',
+              path: 'account',
+              lazy: { element: page(dm, ({ Account }) => <Account />) },
+            },
           ],
         },
-        { id: 'about', path: 'about', loader: optionalSession, element: <AboutPage {...about} /> },
-        { id: 'play', path: 'combats/:id/play', loader: playerData, element: <PlayerPage /> },
+        {
+          id: 'about',
+          path: 'about',
+          loader: optionalSession,
+          lazy: {
+            element: page(
+              () => import('./pages/about.tsx'),
+              ({ AboutPage }) => <AboutPage {...about} />,
+            ),
+          },
+        },
+        {
+          id: 'play',
+          path: 'combats/:id/play',
+          loader: playerData,
+          lazy: {
+            element: page(
+              () => import('./pages/player.tsx'),
+              ({ PlayerPage }) => <PlayerPage />,
+            ),
+          },
+        },
         {
           id: 'auth',
           loader: requireGuest,
           children: [
-            { id: 'sign-in', path: 'auth/sign-in', element: <SignIn /> },
-            { id: 'sign-up', path: 'auth/sign-up', element: <SignUp /> },
+            {
+              id: 'sign-in',
+              path: 'auth/sign-in',
+              lazy: { element: page(auth, ({ SignIn }) => <SignIn />) },
+            },
+            {
+              id: 'sign-up',
+              path: 'auth/sign-up',
+              lazy: { element: page(auth, ({ SignUp }) => <SignUp />) },
+            },
           ],
         },
-        { id: 'not-found', path: '*', loader: notFound, element: <NotFoundPage /> },
+        {
+          id: 'not-found',
+          path: '*',
+          loader: notFound,
+          lazy: {
+            element: page(
+              () => import('./pages/notFound.tsx'),
+              ({ NotFoundPage }) => <NotFoundPage />,
+            ),
+          },
+        },
       ],
     },
   ];

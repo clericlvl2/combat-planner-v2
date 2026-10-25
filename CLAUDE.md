@@ -78,12 +78,22 @@ from the repository root.
     colour-vision separation, `storybook/ThemeAudit` shows every token. `layout.header` and its
     `--cp-header-*` variables size `PageHeader`, `CombatHeader` and `PlayerHeader` alike.
   - `i18n/<locale>/<Namespace>.json` for `en de es fr ja ru`.
+  - `package.json` declares `"sideEffects": ["**/*.css"]`: a module of `src/` runs nothing at
+    import beyond its CSS, so the bundler drops screens a chunk does not use. Global setup belongs
+    in a component or hook, not at module scope.
   - `storybook/` holds the decorators (`PhoneFrame`, `withApi`, `withLocale`, `withDocsTheme`) and
     `geometry.ts`.
 - `apps/web`: the SPA. `router.tsx` (React Router data mode, session loaders, DM language
   follower; `withViewTransitions` makes every navigation a view transition), `providers.tsx`,
-  `pages.tsx`, `errorReports.ts` (uncaught errors and rejections to `POST /api/errors`, each
+  `routeError.tsx`, `errorReports.ts` (uncaught errors and rejections to `POST /api/errors`, each
   message once, at most 5 per page load, never an `ApiError`).
+  - Every route but `root` (with `RouteError`) and `home` (`Landing`) loads its screen on demand:
+    `lazy: { element }` imports a module of `pages/` (`dm.tsx` for `dm`, `combats`, `library`,
+    `settings`, `account`; `combat.tsx`, `about.tsx`, `player.tsx`, `auth.ts` for `sign-in` and
+    `sign-up`, `notFound.tsx`), loaders stay eager. `root` and `home` stay eager because a lazy
+    route in the initial match leaves the router uninitialized, which defeats `GUEST_BOOT`. A
+    route module imports screens from the `@combat-planner/ui` barrel; `main.tsx` and `router.tsx`
+    import only what the first frame needs. `DmPages` prefetches `pages/combat.tsx` once mounted.
   - `main.tsx` passes `guestAtBoot` when `<html>` carries `data-boot="guest"`; `router.tsx` then
     hydrates the `home` route with `GUEST_BOOT`, so the landing renders on the first frame. In
     `pnpm dev` the `guestBoot` plugin in `apps/web/vite.config.ts` answers `GET /` like
