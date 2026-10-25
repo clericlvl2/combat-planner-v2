@@ -64,6 +64,7 @@ export function InitiativeSheet({
           icon={IconDiceD20}
           aria-label={t('roll', { bonus: signed(bonus) })}
           onClick={roll}
+          data-tour="roll"
           data-sheet-action=""
         >
           {signed(bonus)}

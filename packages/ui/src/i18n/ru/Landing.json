@@ -8,5 +8,14 @@
   "about": "О проекте",
   "source": "Исходный код",
   "dm": "Мастер",
-  "player": "Игрок"
+  "player": "Игрок",
+  "stageTitle": "Засада у переправы",
+  "stageAldric": "Сэр Альдрик",
+  "stageOrc": "Орк-берсерк",
+  "stageVashti": "Ведьма Вашти",
+  "stageGoblin": "Гоблин-лучник {{number}}",
+  "stageTomas": "Брат Томас",
+  "stageVashtiNote": "Порча на орке-берсерке",
+  "stagePlayerMika": "Мика",
+  "stagePlayerJonas": "Йонас"
 }

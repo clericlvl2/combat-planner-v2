@@ -348,9 +348,6 @@ export const Expanded = meta.story({
       'aria-expanded',
       'true',
     );
-    await expect(canvas.getByRole('button', { name: t('conditions') })).not.toHaveAttribute(
-      'data-tap',
-    );
     await expect(canvas.getByRole('button', { name: t('hpHistory') })).toBeVisible();
     await expect(
       canvas.getByRole('button', { name: `${t('NoteField:label')}: ${hexNote}` }),

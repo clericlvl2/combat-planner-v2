@@ -2,17 +2,27 @@ import { applyHp, healthStatus } from '@combat-planner/domain';
 import type { Role } from '@combat-planner/domain';
 import type { ConditionName } from '../../theme.ts';
 
-export const STAGE_COMBAT_TITLE = 'Ambush at the Ferry';
-
 export const STAGE_TURN_MS = 1700;
 
 export const STAGE_STILL_STEP = 9;
 
 export const STAGE_PLAYER_DELAYS = { mika: 320, jonas: 420 } as const;
 
+export type StagePlayer = 'mika' | 'jonas';
+
+export const STAGE_PLAYERS = {
+  mika: { nameKey: 'stagePlayerMika', hero: 'vashti' },
+  jonas: { nameKey: 'stagePlayerJonas', hero: 'aldric' },
+} as const satisfies Record<StagePlayer, { nameKey: string; hero: string }>;
+
+export interface StageName {
+  key: 'stageAldric' | 'stageOrc' | 'stageVashti' | 'stageGoblin' | 'stageTomas';
+  number?: number;
+}
+
 export interface StageUnit {
   id: string;
-  name: string;
+  name: StageName;
   role: Role;
   initiative: number;
   hp: number;
@@ -22,7 +32,8 @@ export interface StageUnit {
   pd: number;
   md: number;
   conditions: readonly ConditionName[];
-  note?: string;
+  note?: 'stageVashtiNote';
+  claimer?: StagePlayer;
 }
 
 export type StageDeltaKind = 'damage' | 'heal' | 'temp';
@@ -51,7 +62,8 @@ type StageOp =
 const seedUnits: readonly StageUnit[] = [
   {
     id: 'aldric',
-    name: 'Ser Aldric',
+    name: { key: 'stageAldric' },
+    claimer: 'jonas',
     role: 'hero',
     initiative: 19,
     hp: 52,
@@ -64,7 +76,7 @@ const seedUnits: readonly StageUnit[] = [
   },
   {
     id: 'orc',
-    name: 'Orc Berserker',
+    name: { key: 'stageOrc' },
     role: 'enemy',
     initiative: 17,
     hp: 40,
@@ -77,7 +89,7 @@ const seedUnits: readonly StageUnit[] = [
   },
   {
     id: 'vashti',
-    name: 'Vashti the Hexer',
+    name: { key: 'stageVashti' },
     role: 'hero',
     initiative: 15,
     hp: 36,
@@ -87,11 +99,12 @@ const seedUnits: readonly StageUnit[] = [
     pd: 14,
     md: 19,
     conditions: [],
-    note: 'Hex on Orc Berserker',
+    note: 'stageVashtiNote',
+    claimer: 'mika',
   },
   {
     id: 'goblin1',
-    name: 'Goblin Archer 1',
+    name: { key: 'stageGoblin', number: 1 },
     role: 'enemy',
     initiative: 12,
     hp: 18,
@@ -104,7 +117,7 @@ const seedUnits: readonly StageUnit[] = [
   },
   {
     id: 'tomas',
-    name: 'Brother Tomas',
+    name: { key: 'stageTomas' },
     role: 'ally',
     initiative: 9,
     hp: 30,
@@ -117,7 +130,7 @@ const seedUnits: readonly StageUnit[] = [
   },
   {
     id: 'goblin2',
-    name: 'Goblin Archer 2',
+    name: { key: 'stageGoblin', number: 2 },
     role: 'enemy',
     initiative: 7,
     hp: 18,
@@ -247,6 +260,6 @@ export function stageAt(steps: number): StageState {
   return { ...state, deltas: [] };
 }
 
-export function nextUnitName(state: StageState): string {
-  return state.units[nextIndex(state.units, state.active).index]?.name ?? '';
+export function nextUnit(state: StageState): StageUnit | undefined {
+  return state.units[nextIndex(state.units, state.active).index];
 }

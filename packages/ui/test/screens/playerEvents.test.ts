@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vite-plus/test';
 import { playerEvents } from '../../src/screens/PlayerView/playerEvents.ts';
 import {
   ALEX,
+  JONAS,
   MIKA,
   ferryCombat,
   unitIds,
@@ -33,6 +34,15 @@ describe('playerEvents', () => {
     expect(eventsAfter(ferryCombat(), { type: 'restart' })).toEqual([{ kind: 'restarted' }]);
   });
 
+  it('reports the combat start', () => {
+    expect(
+      eventsAfter(ferryCombat({ status: 'setup' }), {
+        type: 'start',
+        rolls: { [unitIds.vashti]: 10 },
+      }),
+    ).toEqual([{ kind: 'started' }]);
+  });
+
   it('reports a DM clear without the releases it implies', () => {
     expect(eventsAfter(ferryCombat(), { type: 'clear' })).toEqual([{ kind: 'cleared' }]);
   });
@@ -49,14 +59,76 @@ describe('playerEvents', () => {
     ]);
   });
 
-  it('reports a free hero just taken by another player', () => {
+  it('reports a free hero claimed by another player', () => {
     const combat = ferryCombat({ status: 'setup', joined: false, ilse: true });
     const events = eventsAfter(
       combat,
       { type: 'claimUnit', unitId: unitIds.vashti, displayName: 'Alex' },
       { kind: 'player', playerId: ALEX },
     );
-    expect(events).toEqual([{ kind: 'taken', unitId: unitIds.vashti, name: 'Vashti the Hexer' }]);
+    expect(events).toEqual([
+      { kind: 'playerClaimed', unitId: unitIds.vashti, player: 'Alex', hero: 'Vashti the Hexer' },
+    ]);
+  });
+
+  const aldricReleased = {
+    kind: 'playerReleased',
+    unitId: unitIds.aldric,
+    player: 'Jonas',
+    hero: 'Ser Aldric',
+  };
+
+  it('reports another player releasing their hero', () => {
+    const events = eventsAfter(
+      ferryCombat(),
+      { type: 'releaseUnit', unitId: unitIds.aldric },
+      { kind: 'player', playerId: JONAS },
+    );
+    expect(events).toEqual([aldricReleased]);
+  });
+
+  it('reports the DM releasing another player hero', () => {
+    expect(eventsAfter(ferryCombat(), { type: 'releaseUnit', unitId: unitIds.aldric })).toEqual([
+      aldricReleased,
+    ]);
+  });
+
+  it('reports only the new claim of a player holding another hero', () => {
+    const events = eventsAfter(
+      ferryCombat({ ilse: true }),
+      { type: 'claimUnit', unitId: unitIds.ilse, displayName: 'Jonas' },
+      { kind: 'player', playerId: JONAS },
+    );
+    expect(events).toEqual([
+      { kind: 'playerClaimed', unitId: unitIds.ilse, player: 'Jonas', hero: 'Ilse the Bold' },
+    ]);
+  });
+
+  it('reports a player removed from the combat as a release', () => {
+    const combat = ferryCombat();
+    const { [JONAS]: _removed, ...players } = combat.players;
+    const without: Combat = {
+      ...combat,
+      players,
+      units: combat.units.map((unit) =>
+        unit.id === unitIds.aldric ? { ...unit, claimedBy: null } : unit,
+      ),
+    };
+    expect(playerEvents(viewOf(combat), viewOf(without))).toEqual([aldricReleased]);
+  });
+
+  it('reports nothing when the DM removes another player hero', () => {
+    expect(eventsAfter(ferryCombat(), { type: 'removeUnit', unitId: unitIds.aldric })).toEqual([]);
+  });
+
+  it('reports a release when another player hero turns into an ally', () => {
+    const combat = ferryCombat();
+    const aldric = combat.units.find((unit) => unit.id === unitIds.aldric)!;
+    const { name, maxHp, ac, pd, md, initiativeBonus, tempHp, note } = aldric;
+    const form = { name, maxHp, ac, pd, md, initiativeBonus, tempHp, note };
+    expect(
+      eventsAfter(combat, { type: 'editUnit', unitId: unitIds.aldric, ...form, role: 'ally' }),
+    ).toEqual([aldricReleased]);
   });
 
   it('reports nothing on an ordinary update', () => {

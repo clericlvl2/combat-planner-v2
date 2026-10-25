@@ -14,7 +14,6 @@
   color: var(--cp-color-ink);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &[data-size='S'] {
     width: var(--cp-control-s);
@@ -37,6 +36,8 @@
   }
 
   &[data-variant='filled'] {
+    --cp-state-focus: var(--cp-color-surface);
+
     border: none;
     background: var(--cp-color-ink);
     color: var(--cp-color-surface);
@@ -56,6 +57,8 @@
   }
 
   &[data-open] {
+    --cp-state-focus: var(--cp-color-ink);
+
     border-color: var(--cp-color-ink);
     background: var(--cp-color-accent);
     color: var(--cp-color-ink);
@@ -77,16 +80,7 @@
     }
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
-
-  &[data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

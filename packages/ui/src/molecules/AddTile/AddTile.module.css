@@ -18,7 +18,6 @@
   text-align: center;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:active:not(:disabled),
   &[data-pressed] {
@@ -30,16 +29,7 @@
     cursor: not-allowed;
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
-
-  &[data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 }
 
 .line {

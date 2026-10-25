@@ -1,6 +1,7 @@
 import os from 'node:os';
 import path from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
+import { toursDone } from './e2e/tourStorage.ts';
 import { CREATED_DIR } from './e2e/teardown.ts';
 
 const PORT = Number(process.env.E2E_PORT) || 3000;
@@ -31,12 +32,17 @@ export default defineConfig({
     baseURL,
     viewport: { width: 320, height: 568 },
     locale: 'ru-RU',
+    storageState: toursDone(baseURL),
     trace: 'retain-on-failure',
     actionTimeout: 10_000,
   },
   projects: [
     { name: 'chromium', testIgnore: SHARING_SPEC },
-    { name: 'sharing', testMatch: SHARING_SPEC, use: { baseURL: sharingURL } },
+    {
+      name: 'sharing',
+      testMatch: SHARING_SPEC,
+      use: { baseURL: sharingURL, storageState: toursDone(sharingURL) },
+    },
   ],
   webServer: [
     {

@@ -51,7 +51,7 @@ const meta = preview.meta({
   args: { color: 0, onSelect: fn() },
 });
 
-const states = ['default', 'selected', 'disabled', 'focus', 'focus selected', 'tap'] as const;
+const states = ['default', 'selected', 'disabled', 'focus', 'focus selected'] as const;
 type State = (typeof states)[number];
 
 const row = (size: SwatchSize) => ({
@@ -63,7 +63,6 @@ const row = (size: SwatchSize) => ({
       selected={state === 'selected' || state === 'focus selected'}
       disabled={state === 'disabled'}
       data-focus={state === 'focus' || state === 'focus selected' ? '' : undefined}
-      data-tap={state === 'tap' ? '' : undefined}
       onSelect={fn()}
     />
   ),

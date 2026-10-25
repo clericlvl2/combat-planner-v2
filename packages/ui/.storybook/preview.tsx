@@ -21,7 +21,7 @@ import {
 } from '../src/storybook/PhoneFrame.tsx';
 import { apiLoader, withApi } from '../src/storybook/withApi.tsx';
 import { withDocsTheme } from '../src/storybook/withDocsTheme.tsx';
-import { localeGlobalType, withLocale } from '../src/storybook/withLocale.tsx';
+import { localeGlobalType, tourLoader, withLocale } from '../src/storybook/withLocale.tsx';
 
 export default definePreview({
   addons: [addonDocs()],
@@ -59,7 +59,7 @@ export default definePreview({
     motion: 'off',
     phoneFrame: false,
   },
-  loaders: [apiLoader],
+  loaders: [apiLoader, tourLoader],
   decorators: [withDocsTheme, withPhoneFrame, withLocale, withApi],
   beforeEach: async (context) => {
     await followFrameInTests(context);

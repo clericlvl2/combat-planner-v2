@@ -78,12 +78,22 @@ from the repository root.
     colour-vision separation, `storybook/ThemeAudit` shows every token. `layout.header` and its
     `--cp-header-*` variables size `PageHeader`, `CombatHeader` and `PlayerHeader` alike.
   - `i18n/<locale>/<Namespace>.json` for `en de es fr ja ru`.
+  - `package.json` declares `"sideEffects": ["**/*.css"]`: a module of `src/` runs nothing at
+    import beyond its CSS, so the bundler drops screens a chunk does not use. Global setup belongs
+    in a component or hook, not at module scope.
   - `storybook/` holds the decorators (`PhoneFrame`, `withApi`, `withLocale`, `withDocsTheme`) and
     `geometry.ts`.
 - `apps/web`: the SPA. `router.tsx` (React Router data mode, session loaders, DM language
   follower; `withViewTransitions` makes every navigation a view transition), `providers.tsx`,
-  `pages.tsx`, `errorReports.ts` (uncaught errors and rejections to `POST /api/errors`, each
+  `routeError.tsx`, `errorReports.ts` (uncaught errors and rejections to `POST /api/errors`, each
   message once, at most 5 per page load, never an `ApiError`).
+  - Every route but `root` (with `RouteError`) and `home` (`Landing`) loads its screen on demand:
+    `lazy: { element }` imports a module of `pages/` (`dm.tsx` for `dm`, `combats`, `library`,
+    `settings`, `account`; `combat.tsx`, `about.tsx`, `player.tsx`, `auth.ts` for `sign-in` and
+    `sign-up`, `notFound.tsx`), loaders stay eager. `root` and `home` stay eager because a lazy
+    route in the initial match leaves the router uninitialized, which defeats `GUEST_BOOT`. A
+    route module imports screens from the `@combat-planner/ui` barrel; `main.tsx` and `router.tsx`
+    import only what the first frame needs. `DmPages` prefetches `pages/combat.tsx` once mounted.
   - `main.tsx` passes `guestAtBoot` when `<html>` carries `data-boot="guest"`; `router.tsx` then
     hydrates the `home` route with `GUEST_BOOT`, so the landing renders on the first frame. In
     `pnpm dev` the `guestBoot` plugin in `apps/web/vite.config.ts` answers `GET /` like
@@ -148,14 +158,21 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
 - Atoms and molecules whose stories multiply variant × state show one visible `AllStates` story
   built with `packages/ui/src/storybook/StateGrid.tsx`: rows are variants and sizes, columns are
   states, each cell is labelled `<Row> · <Column>` and cells wrap. States are set statically through
-  the attributes the CSS reads (`data-pressed`, `data-focus`, `data-tap`, `data-open`,
-  `aria-invalid`, `disabled`). `AllStates` carries the `visual` tag (inert, see below).
+  the attributes the CSS reads (`data-pressed`, `data-focus`, `data-open`, `aria-invalid`,
+  `disabled`). `AllStates` carries the `visual` tag (inert, see below).
 - `FakeApiClient.failNext(code)` rejects the next call; `holdNext()` leaves it pending, for loading
   states; `holdNextExchange()` applies the next call at once but holds its reply and every document
   it broadcasts until `releaseReplies()`, which delivers the documents first, for sends that race
   their own reply.
 - Visual states come from real pseudo-classes and `data-*` attributes (`&:active, &[data-pressed]`),
   never from a `state` prop.
+- Focus rings come from the `postcss-preset-mantine` mixins in `postcss.config.cjs`:
+  `@mixin focus-ring;` on the focusable control; for a ring drawn on another element,
+  `@mixin focus-ring-keyboard;` under the keyboard-focus selector and `@mixin focus-ring-outline;`
+  under the `[data-focus]` selector. The ring is 2 px of `--cp-state-focus` inside the control and
+  shows on `:focus-visible` only under `(hover: hover) and (pointer: fine)`; on touch the pressed
+  state is the only feedback. A control on a non-paper fill sets `--cp-state-focus` to its label
+  colour. `-webkit-tap-highlight-color: transparent` is set once on `:root` in `theme.module.css`.
 - Screen stories seed state through `FakeApiClient` scenarios and play only their own interaction.
   `UiProvider` takes `motion: 'off'` in Storybook.
 - Geometry invariants run after every story (`packages/ui/.storybook/preview.tsx` → `expectGeometry`):
@@ -197,14 +214,16 @@ project references. Relative imports carry the `.ts`/`.tsx` extension.
 
 ## Versions
 
-- `vite-plus` 1.3.0 provides the one binary `vp`. `vite` is overridden to
-  `npm:@voidzero-dev/vite-plus-core@1.3.0` and `vitest` to 5.0.5 in `pnpm-workspace.yaml`. Test
+- `vite-plus` 1.4.0 provides the one binary `vp`. `vite` is overridden to
+  `npm:@voidzero-dev/vite-plus-core@1.4.0` and `vitest` to 5.0.5 in `pnpm-workspace.yaml`. Test
   code imports from `vite-plus/test` and `vite-plus/test/browser`.
 - Storybook 10.6 with `@storybook/addon-vitest`. Its runner resets each story to the Storybook
   `viewport` global, so the test viewport is set in `preview.tsx` (`initialGlobals` `locale: 'ru'`,
   `frame: 'narrow'`, `viewport: 'narrow'`), not in `vite.config.ts`.
+- TypeScript 7: `tsc` is the native compiler and the `typescript` package exports no JS API, so
+  `scripts/check-stories.mjs` and `scripts/check-comments.mjs` parse with `@typescript/typescript6`.
 - Playwright 1.64.1 exact.
-- React Router 7 data mode.
+- React Router 8 data mode.
 - Mantine 9; `postcss-preset-mantine` runs from `postcss.config.cjs`.
 
 ## 13th Age glossary

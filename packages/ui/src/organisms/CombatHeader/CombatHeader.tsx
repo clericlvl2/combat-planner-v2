@@ -183,6 +183,7 @@ export function CombatHeader({
               component="button"
               type="button"
               className={classes.menu}
+              data-tour="menu"
               aria-label={t('menu')}
               aria-haspopup="menu"
               aria-expanded={menuOpen}

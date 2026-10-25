@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { containsT, escapeRegExp, t } from './t.ts';
+import { toursDone } from './tourStorage.ts';
 
 test('a DM runs a combat and a player follows the turn order', async ({
   page,
@@ -61,6 +62,7 @@ test('a DM runs a combat and a player follows the turn order', async ({
   const playerContext = await browser.newContext({
     viewport: { width: 320, height: 568 },
     locale: 'ru-RU',
+    storageState: toursDone(new URL(link ?? '').origin),
   });
   try {
     const player = await playerContext.newPage();

@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { storyNameFromExport } from 'storybook/internal/csf';
-import ts from 'typescript';
+import ts from '@typescript/typescript6';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const uiSrcDir = path.join(rootDir, 'packages/ui/src');

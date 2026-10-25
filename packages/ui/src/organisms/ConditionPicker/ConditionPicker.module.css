@@ -23,13 +23,4 @@
   height: 44px;
   padding: 0 8px;
   border-radius: var(--mantine-radius-field);
-
-  &[data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: -3px;
-  }
-
-  &[data-tap] > span:first-child {
-    outline: none;
-  }
 }

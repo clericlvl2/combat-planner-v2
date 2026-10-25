@@ -1,4 +1,6 @@
 .root {
+  --cp-state-focus: var(--cp-color-surface);
+
   position: relative;
   box-sizing: border-box;
   display: inline-flex;
@@ -16,7 +18,6 @@
   color: var(--cp-color-surface);
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &[data-size='S'] {
     width: 32px;
@@ -34,26 +35,16 @@
       0 0 0 4px var(--cp-color-ink);
   }
 
-  &[data-tap] {
-    box-shadow: 0 0 0 3px var(--cp-state-tap-marker);
-  }
-
   &:disabled,
   &[data-disabled] {
+    --cp-state-focus: inherit;
+
     background: var(--cp-color-disabled);
     color: var(--cp-color-muted);
     cursor: not-allowed;
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-
-    &[data-selected] {
-      outline-offset: 6px;
-    }
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

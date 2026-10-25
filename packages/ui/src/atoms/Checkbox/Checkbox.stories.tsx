@@ -53,7 +53,7 @@ const meta = preview.meta({
   args: { checked: false, onChange: fn() },
 });
 
-const states = ['off', 'on', 'disabled off', 'disabled on', 'focus', 'tap'] as const;
+const states = ['off', 'on', 'disabled off', 'disabled on', 'focus'] as const;
 type State = (typeof states)[number];
 
 const row = (label: string, props: Partial<CheckboxCellProps>) => ({
@@ -62,10 +62,9 @@ const row = (label: string, props: Partial<CheckboxCellProps>) => ({
     <CheckboxCell
       {...props}
       onChange={fn()}
-      checked={state === 'on' || state === 'disabled on' || state === 'tap'}
+      checked={state === 'on' || state === 'disabled on'}
       disabled={state === 'disabled off' || state === 'disabled on'}
       data-focus={state === 'focus' ? '' : undefined}
-      data-tap={state === 'tap' ? '' : undefined}
     />
   ),
 });

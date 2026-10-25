@@ -8,5 +8,14 @@
   "about": "À propos",
   "source": "Code source",
   "dm": "MJ",
-  "player": "Joueur"
+  "player": "Joueur",
+  "stageTitle": "Embuscade au bac",
+  "stageAldric": "Sire Aldric",
+  "stageOrc": "Orque berserker",
+  "stageVashti": "Vashti l’Envoûteuse",
+  "stageGoblin": "Archer gobelin {{number}}",
+  "stageTomas": "Frère Tomas",
+  "stageVashtiNote": "Malédiction sur l’orque berserker",
+  "stagePlayerMika": "Mika",
+  "stagePlayerJonas": "Jonas"
 }

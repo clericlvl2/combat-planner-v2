@@ -25,7 +25,6 @@ export interface NumpadSheetProps extends NumpadHealth {
   history: readonly HpHistoryEntry[];
   onApply: (kind: HpHistoryKind, amount: number) => void | Promise<unknown>;
   onClose: () => void;
-  'data-tap'?: HpHistoryKind;
 }
 
 const previewId = '00000000000000000000000000';
@@ -170,7 +169,6 @@ export function NumpadSheet({
   history,
   onApply,
   onClose,
-  'data-tap': tap,
 }: NumpadSheetProps) {
   const { t } = useTranslation('NumpadSheet');
   const [amount, setAmount] = useState<number | null>(null);
@@ -271,8 +269,8 @@ export function NumpadSheet({
               key={kind}
               className={classes.action}
               data-kind={kind}
+              data-tour={kind === 'damage' || kind === 'heal' ? `hp-${kind}` : undefined}
               data-sheet-action=""
-              data-tap={tap === kind ? '' : undefined}
               size={kind === 'damage' ? 'M' : 'S'}
               fullWidth
               disabled={!enabled(kind) || (waiting !== null && waiting !== kind)}
@@ -325,7 +323,7 @@ export function NumpadSheet({
           </output>
           <span className={classes.caret} aria-hidden="true" />
         </div>
-        <div className={classes.keys} role="group" aria-label={t('keypad')}>
+        <div className={classes.keys} role="group" aria-label={t('keypad')} data-tour="hp-keys">
           {keypadKeys.map((key) =>
             key === 'delete' ? (
               <UnstyledButton

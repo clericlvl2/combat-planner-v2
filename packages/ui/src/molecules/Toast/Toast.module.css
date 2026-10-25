@@ -95,18 +95,13 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
     background: var(--cp-color-ink-pressed);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';
@@ -128,18 +123,13 @@
   border-radius: var(--mantine-radius-full);
   color: var(--cp-color-surface);
   cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
     background: var(--cp-color-ink-pressed);
   }
 
-  &:focus-visible,
-  &[data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
+  @mixin focus-ring;
 
   &::after {
     content: '';

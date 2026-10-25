@@ -4,21 +4,26 @@ import type { ApiErrorCode } from '@combat-planner/api/client';
 import type { Action } from '@combat-planner/domain';
 import type { Loader } from '@storybook/react-vite';
 import { focusManager } from '@tanstack/react-query';
-import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fn, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
 import {
+  ALEX,
   COMBAT_ID,
   COMBAT_TITLE,
+  JONAS,
   ME,
   MIKA,
   TOKEN,
   actAsDm,
+  claimAs,
   ferryCombat,
   playerScenario,
+  releaseAs,
   unitIds,
 } from './PlayerView.scenarios.ts';
+import { TURN_VIBRATION_MS } from './ownTurn.ts';
 import { PlayerView } from './PlayerView.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import { storyLocale } from '../../storybook/withLocale.tsx';
@@ -127,6 +132,31 @@ export const HeroList = meta.story({
   },
 });
 
+export const TourJoin = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: joinScenario, tour: { player: 'unset' } },
+  play: async ({ canvas, parameters }) => {
+    const t = storyT({ locale: parameters.scenario?.settings.language }, 'Tour');
+    const tooltip = await canvas.findByRole('dialog', { name: t('playerNameTitle') });
+    await expect(within(tooltip).getByText(t('counter', { current: 1, total: 6 }))).toBeVisible();
+    await typeName(canvas, playerT(parameters));
+    await expect(await canvas.findByRole('dialog', { name: t('playerHeroTitle') })).toBeVisible();
+  },
+});
+
+export const TourTurnStrip = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: ownTurn, tour: { player: 'done', turn: 'unset' } },
+  play: async ({ canvas, parameters }) => {
+    const t = storyT({ locale: parameters.scenario?.settings.language }, 'Tour');
+    const tooltip = await canvas.findByRole('dialog', { name: t('playerTurnTitle') });
+    await expect(within(tooltip).queryByRole('button', { name: t('skip') })).toBeNull();
+    await expect(within(tooltip).queryByText(/\d/)).toBeNull();
+    await userEvent.click(within(tooltip).getByRole('button', { name: t('gotIt') }));
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+  },
+});
+
 export const WaitingForDm = meta.story({
   name: 'Waiting For DM',
   tags: ['visual'],
@@ -222,6 +252,34 @@ export const OwnTurn = meta.story({
     const vashti = await rowOf(canvas, ME);
     await expect(vashti).toHaveAttribute('data-active');
     await expect(within(vashti).getByRole('button', { name: /^20 \/36/ })).toBeEnabled();
+  },
+});
+
+export const OwnTurnVibrates = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    await rowOf(canvas, ME);
+    const spy = spyOn(navigator, 'vibrate').mockReturnValue(true);
+    try {
+      await actAsDm(api, { type: 'nextTurn' });
+      await waitFor(() => expect(spy).toHaveBeenCalledTimes(1));
+      await expect(spy).toHaveBeenLastCalledWith(TURN_VIBRATION_MS);
+      const gets = () => api.calls.filter((call) => call.method === 'play.get').length;
+      const before = gets();
+      refocus();
+      await waitFor(() => expect(gets()).toBeGreaterThan(before));
+      await expect(spy).toHaveBeenCalledTimes(1);
+      for (const unitId of [unitIds.aldric, unitIds.orc, unitIds.tomas]) {
+        await actAsDm(api, { type: 'setDisabled', unitId, disabled: true });
+      }
+      await actAsDm(api, { type: 'nextTurn' });
+      await waitFor(() => expect(spy).toHaveBeenCalledTimes(2));
+      await expect(spy).toHaveBeenLastCalledWith(TURN_VIBRATION_MS);
+    } finally {
+      spy.mockRestore();
+    }
   },
 });
 
@@ -422,7 +480,64 @@ export const MenuOpensHeroPicker = meta.story({
     await expect(
       canvas.queryByText(t('Toast:dmReleased', { hero: 'Vashti the Hexer' })),
     ).toBeNull();
+    await expect(
+      canvas.queryByText(t('Toast:playerClaimed', { name: 'Mika', hero: 'Ilse the Bold' })),
+    ).toBeNull();
     await expect(canvas.getByRole('button', { name: t('Sheet:done') })).toBeEnabled();
+  },
+});
+
+export const HeroTakenByAnotherPlayer = meta.story({
+  parameters: { scenario: joinScenario },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    await typeName(canvas, t);
+    await userEvent.click(canvas.getByRole('checkbox', { name: ME }));
+    await expect(canvas.getByRole('button', { name: t('Heroes:join') })).toBeEnabled();
+    await claimAs(api, ALEX, 'Alex', unitIds.vashti);
+    const toast = await canvas.findByRole('status');
+    await expect(toast).toHaveTextContent(t('Toast:playerClaimed', { name: 'Alex', hero: ME }));
+    const bar = canvas.getByRole('button', { name: t('Heroes:join') }).parentElement!;
+    await expect(
+      Math.round(bar.getBoundingClientRect().top - toast.getBoundingClientRect().bottom),
+    ).toBe(12);
+    const vashti = canvas.getByRole('checkbox', { name: ME });
+    await expect(vashti).toBeDisabled();
+    await expect(vashti).not.toBeChecked();
+    await expect(canvas.getByText(t('Heroes:playing', { name: 'Alex' }))).toBeVisible();
+    await expect(canvas.getByRole('button', { name: t('Heroes:join') })).toBeDisabled();
+    await expect(sentBy(api)).toEqual([]);
+  },
+});
+
+export const OtherPlayerClaimsQueued = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: playerScenario(ferryCombat({ active: 'orc', ilse: true })) },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    const api = fakeApiOf(loaded);
+    await rowOf(canvas, ME);
+    await claimAs(api, JONAS, 'Jonas', unitIds.ilse);
+    await expect(
+      await canvas.findByText(t('Toast:playerClaimed', { name: 'Jonas', hero: 'Ilse the Bold' })),
+    ).toBeVisible();
+    await releaseAs(api, JONAS, unitIds.aldric);
+    const released = t('Toast:playerReleased', { name: 'Jonas', hero: 'Ser Aldric' });
+    await expect(canvas.queryByText(released)).toBeNull();
+    await userEvent.click(canvas.getByRole('button', { name: t('Toast:dismiss') }));
+    await expect(await canvas.findByText(released)).toBeVisible();
+  },
+});
+
+export const CombatStartAnnounced = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: setupScenario },
+  play: async ({ canvas, loaded, parameters }) => {
+    const t = playerT(parameters);
+    await rowOf(canvas, ME);
+    await actAsDm(fakeApiOf(loaded), { type: 'start', rolls: { [unitIds.vashti]: 10 } });
+    await expect(await canvas.findByText(t('Toast:combatStarted'))).toBeVisible();
   },
 });
 

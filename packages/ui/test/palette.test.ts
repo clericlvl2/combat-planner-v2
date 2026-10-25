@@ -118,7 +118,6 @@ describe('palette derivation', () => {
     });
     expect(interaction).toEqual({
       focus: seeds.hero,
-      tapMarker: lighten(seeds.brass, -20),
       dangerPressed: lighten(seeds.enemy, -8),
       dangerText: lighten(seeds.enemy, -20),
     });
@@ -309,17 +308,24 @@ const apcaPairs: [string, string, string, number][] = [
   ['focus ring on chrome', base.onChrome, base.chrome, 45],
   ['focus ring on the brass fill', base.ink, base.accent, 45],
   ['focus ring on ink', base.surface, base.ink, 45],
-  ...paper.map((fill): [string, string, string, number] => [
-    `tap ring on ${fill}`,
-    interaction.tapMarker,
-    base[fill],
+  ['focus ring on primary', base.onPrimary, base.primary, 45],
+  ...(['damage', 'heal', 'setTemp', 'max'] as const).map(
+    (action): [string, string, string, number] => [
+      `focus ring on ${action}`,
+      hpActions.on,
+      hpActions[action],
+      45,
+    ],
+  ),
+  ...conditionNames.map((name): [string, string, string, number] => [
+    `focus ring on the ${name} chip`,
+    conditions[name].text,
+    conditions[name].fill,
     45,
   ]),
-  ['tap ring on chrome', base.accent, base.chrome, 45],
-  ['tap ring on the brass fill', base.ink, base.accent, 45],
   ...(['hero', 'enemy', 'ally', 'inactive'] as const).map(
     (role): [string, string, string, number] => [
-      `tap ring inside ${role}`,
+      `focus ring inside ${role}`,
       roles.on,
       roles[role],
       45,

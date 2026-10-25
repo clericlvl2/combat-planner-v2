@@ -29,11 +29,6 @@
   &[data-selected] {
     background: var(--cp-color-highlight);
   }
-
-  &[data-tap] {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: -2px;
-  }
 }
 
 .root .row .radio {

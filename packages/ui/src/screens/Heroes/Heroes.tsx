@@ -12,11 +12,13 @@ import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { TextField } from '../../atoms/TextField/TextField.tsx';
 import type { DispatchResult } from '../../hooks/combat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
+import { usePlayerTour } from '../../hooks/useTour.ts';
 import { layout } from '../../layout.ts';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { BottomBar } from '../../organisms/BottomBar/BottomBar.tsx';
 import { PlayerHeader } from '../../organisms/PlayerHeader/PlayerHeader.tsx';
-import { PlayerToast, usePlayerToasts } from '../PlayerView/PlayerToast.tsx';
+import { Tour } from '../../organisms/Tour/Tour.tsx';
+import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
 import { playerEvents } from '../PlayerView/playerEvents.ts';
 import type { PlayerEvent } from '../PlayerView/playerEvents.ts';
 import { localeNames } from '../Settings/localeNames.ts';
@@ -48,7 +50,6 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
   const { locale } = useLocaleChoice();
   const [languageOpen, setLanguageOpen] = useState(false);
   const languageName = localeNames[locale];
-  const notify = usePlayerToasts();
   const storedName = combat.myName ?? undefined;
   const joined = storedName !== undefined;
   const [name, setName] = useState(storedName ?? '');
@@ -70,23 +71,31 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
   });
   const displayName = validName(name);
   const ready = displayName !== null && picked.length > 0;
+  const firstFree = heroes.find((unit) => stateOf(unit) === 'free');
+  const tour = usePlayerTour({
+    screen: 'heroes',
+    holdsHero: heroes.some((unit) => unit.mine === true),
+    nameFilled: displayName !== null,
+    picked: picked.length > 0,
+    freeHero: firstFree !== undefined,
+    calm: !languageOpen,
+  });
 
   useEffect(() => {
     const before = previous.current;
     previous.current = combat;
     if (before === combat) return;
     const taken = playerEvents(before, combat).filter(
-      (event): event is Extract<PlayerEvent, { kind: 'taken' }> =>
-        event.kind === 'taken' && chosen.has(event.unitId),
+      (event): event is Extract<PlayerEvent, { kind: 'playerClaimed' }> =>
+        event.kind === 'playerClaimed' && chosen.has(event.unitId),
     );
     if (taken.length === 0) return;
-    for (const event of taken) notify('taken', event.name);
     setChosen((current) => {
       const next = new Set(current);
       for (const event of taken) next.delete(event.unitId);
       return next;
     });
-  }, [combat, chosen, notify]);
+  }, [combat, chosen]);
 
   const toggle = (unit: PlayerUnit, checked: boolean) => {
     const state = stateOf(unit);
@@ -186,6 +195,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
             </Button>
           </div>
           <TextField
+            data-tour="player-name"
             label={t('nameLabel')}
             placeholder={t('namePlaceholder')}
             value={name}
@@ -207,6 +217,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
                     key={unit.id}
                     className={classes.hero}
                     data-state={state}
+                    data-tour={unit.id === firstFree?.id ? 'hero' : undefined}
                     checked={state === 'own' || state === 'chosen'}
                     disabled={state === 'taken'}
                     aria-label={unit.name}
@@ -249,6 +260,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
       </ScrollList>
       <div className={classes.footer}>
         <BottomBar
+          data-tour="join"
           label={joined ? t('done') : t('join')}
           icon={IconLogin2}
           disabled={!ready}
@@ -261,6 +273,7 @@ export function Heroes({ combat, dispatch, onDone }: HeroesProps) {
         </div>
       </div>
       <LanguageSheet opened={languageOpen} onClose={() => setLanguageOpen(false)} />
+      <Tour step={tour.view} onNext={tour.onNext} onSkip={tour.onSkip} />
     </div>
   );
 }

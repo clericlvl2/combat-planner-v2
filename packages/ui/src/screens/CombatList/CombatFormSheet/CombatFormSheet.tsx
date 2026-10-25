@@ -65,6 +65,7 @@ export function CombatFormSheet({
       actions={
         <Button
           data-sheet-action=""
+          data-tour="confirm"
           variant="primary"
           fullWidth
           loading={pending}
@@ -77,6 +78,7 @@ export function CombatFormSheet({
       }
     >
       <TextField
+        data-tour="title"
         label={t('title')}
         value={title}
         placeholder={fallback}

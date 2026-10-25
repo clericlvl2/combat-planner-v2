@@ -10,7 +10,12 @@ import '@fontsource/noto-sans-jp/500.css';
 import '@fontsource/noto-sans-jp/700.css';
 import './root.css';
 import { createHonoApiClient } from '@combat-planner/api/hono-client';
-import { DesktopAside, createQueryClient, guestLocale } from '@combat-planner/ui';
+import {
+  DesktopAside,
+  createQueryClient,
+  guestLocale,
+  resetToursFromUrl,
+} from '@combat-planner/ui';
 import { StrictMode } from 'react';
 import { createPortal } from 'react-dom';
 import { createRoot } from 'react-dom/client';
@@ -25,6 +30,8 @@ import { createAppRouter } from './router.tsx';
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Element #root is missing');
 const asideElement = document.getElementById('aside');
+
+resetToursFromUrl(browserStorage, window.location, window.history);
 
 const currentGuestLocale = () => guestLocale(browserStorage, navigator.languages);
 const locale = currentGuestLocale();
@@ -53,6 +60,7 @@ createRoot(rootElement).render(
       queryClient={queryClient}
       locale={locale}
       localeStorage={browserStorage}
+      tourStorage={browserStorage}
     >
       <BindLanguage bind={bind} />
       <RouteLocale router={router} locale={currentGuestLocale} />

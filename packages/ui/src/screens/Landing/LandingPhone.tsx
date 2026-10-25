@@ -3,8 +3,14 @@ import { IconChevronLeft, IconDots, IconNote } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { iconSizes } from '../../theme.ts';
 import classes from './LandingPhone.module.css';
-import { STAGE_COMBAT_TITLE, nextUnitName } from './landingStage.ts';
-import type { StageDelta, StageDeltaKind, StageState, StageUnit } from './landingStage.ts';
+import { STAGE_PLAYERS, nextUnit } from './landingStage.ts';
+import type {
+  StageDelta,
+  StageDeltaKind,
+  StageName,
+  StageState,
+  StageUnit,
+} from './landingStage.ts';
 
 export type LandingViewer = 'dm' | 'player';
 
@@ -27,6 +33,11 @@ const dieFaces: Record<number, readonly number[]> = {
 const dieSlots = [0, 1, 2, 3, 4, 5, 6, 7, 8] as const;
 
 const defenses = ['ac', 'pd', 'md'] as const;
+
+function useStageName(): (name: StageName) => string {
+  const { t } = useTranslation('Landing');
+  return (name) => t(name.key, { number: name.number });
+}
 
 function formatHp(value: number): string {
   return value < 0 ? `−${Math.abs(value)}` : String(value);
@@ -51,20 +62,10 @@ function Swap({ text, className, ellipsis = false }: SwapProps) {
   );
 }
 
-interface DieProps {
-  value: number;
-  ticket?: boolean;
-}
-
-function Die({ value, ticket = false }: DieProps) {
-  const { t } = useTranslation('EscalationDie');
+function Die({ value }: { value: number }) {
   const face = dieFaces[value] ?? [];
   return (
-    <span
-      className={classes.die}
-      data-empty={value === 0 || undefined}
-      data-ticket={ticket || undefined}
-    >
+    <span className={classes.die} data-empty={value === 0 || undefined}>
       <span className={classes.dieTile}>
         {dieSlots.map((slot) => (
           <span key={slot} className={classes.dieSlot}>
@@ -72,12 +73,6 @@ function Die({ value, ticket = false }: DieProps) {
           </span>
         ))}
       </span>
-      {ticket ? null : (
-        <Swap
-          className={classes.dieCaption}
-          text={value === 0 ? t('none') : t('value', { value })}
-        />
-      )}
     </span>
   );
 }
@@ -130,7 +125,8 @@ interface RowProps {
 }
 
 function Row({ unit, viewer, mine, active, deltas }: RowProps) {
-  const { t } = useTranslation(['RoleBlock', 'DefenseLine', 'Chip']);
+  const { t } = useTranslation(['RoleBlock', 'DefenseLine', 'Chip', 'Landing']);
+  const stageName = useStageName();
   const dead = healthStatus(unit.hp, unit.maxHp, unit.role) === 'dead';
   const showDefenses = viewer === 'dm' || unit.role !== 'enemy';
   return (
@@ -148,7 +144,17 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
         {mine ? <span className={classes.you}>{t('RoleBlock:you')}</span> : null}
       </span>
       <div className={classes.main}>
-        <span className={classes.name}>{unit.name}</span>
+        <span className={classes.nameLine}>
+          <span className={classes.name}>{stageName(unit.name)}</span>
+          {unit.claimer ? (
+            <>
+              {' '}
+              <span className={classes.claimer}>
+                @{t(`Landing:${STAGE_PLAYERS[unit.claimer].nameKey}`)}
+              </span>
+            </>
+          ) : null}
+        </span>
         {showDefenses ? (
           <span className={classes.defenses}>
             {defenses.map((defense) => (
@@ -175,10 +181,12 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
             ))}
           </span>
         ) : null}
-        {mine && unit.note ? (
+        {(viewer === 'dm' || mine) && unit.note ? (
           <span className={classes.note}>
-            <IconNote size={iconSizes.S} stroke={2} />
-            {unit.note}
+            <IconNote className={classes.noteIcon} size={iconSizes.S} stroke={2} />
+            <span className={classes.noteText} data-ellipsis="">
+              {t(`Landing:${unit.note}`)}
+            </span>
           </span>
         ) : null}
       </div>
@@ -195,17 +203,19 @@ function Row({ unit, viewer, mine, active, deltas }: RowProps) {
   );
 }
 
-function DmHeader({ state }: { state: StageState }) {
-  const { t } = useTranslation('CombatHeader');
+function Header({ state, viewer }: { state: StageState; viewer: LandingViewer }) {
+  const { t } = useTranslation(['CombatHeader', 'Landing']);
   return (
     <div className={classes.header}>
       <span className={classes.headerStatus} />
       <span className={classes.bar}>
-        <span className={classes.back}>
-          <IconChevronLeft size={iconSizes.L} stroke={2} />
-        </span>
+        {viewer === 'dm' ? (
+          <span className={classes.back}>
+            <IconChevronLeft size={iconSizes.L} stroke={2} />
+          </span>
+        ) : null}
         <span className={classes.title} data-ellipsis="">
-          {STAGE_COMBAT_TITLE}
+          {t('Landing:stageTitle')}
         </span>
         <span className={classes.menu}>
           <IconDots size={iconSizes.L} stroke={2} />
@@ -218,7 +228,7 @@ function DmHeader({ state }: { state: StageState }) {
         </span>
         <span className={classes.divider} />
         <span className={classes.cell} data-part="escalation">
-          <Die value={state.escalation} ticket />
+          <Die value={state.escalation} />
           <span className={classes.stack}>
             <span className={classes.caption}>{t('escalationCaption')}</span>
             <Swap className={classes.number} text={`+${state.escalation}`} />
@@ -229,31 +239,35 @@ function DmHeader({ state }: { state: StageState }) {
   );
 }
 
-function PlayerHeader({ state }: { state: StageState }) {
-  const { t } = useTranslation('PlayerHeader');
+function TurnStripMock({ state, mine }: { state: StageState; mine?: string }) {
+  const { t } = useTranslation('TurnOrder');
+  const stageName = useStageName();
+  if (mine === undefined) return null;
+  const active = state.units[state.active];
+  const kind = active?.id === mine ? 'turn' : nextUnit(state)?.id === mine ? 'next' : null;
+  if (kind === null) return null;
   return (
-    <div className={classes.header}>
-      <span className={classes.headerStatus} />
-      <span className={classes.playerBody}>
-        <span className={classes.playerText}>
-          <span className={classes.playerTitle} data-ellipsis="">
-            {STAGE_COMBAT_TITLE}
-          </span>
-          <Swap className={classes.playerRound} text={t('round', { round: state.round })} />
+    <span className={classes.strip}>
+      <span key={kind} className={classes.stripBar} data-kind={kind}>
+        <span className={classes.stripLabel} data-ellipsis="">
+          {kind === 'turn' && active
+            ? t('yourTurn', { name: stageName(active.name) })
+            : t('youAreNext')}
         </span>
-        <Die value={state.escalation} />
       </span>
-    </div>
+    </span>
   );
 }
 
 function TurnBar({ state }: { state: StageState }) {
   const { t } = useTranslation('TurnBar');
+  const stageName = useStageName();
+  const next = nextUnit(state);
   return (
     <div className={classes.turnBar}>
       <span key={`${state.loop}-${state.step}`} className={classes.turnButton}>
         <span className={classes.turnTitle}>{t('nextTurn')}</span>
-        <Swap className={classes.turnNext} text={nextUnitName(state)} ellipsis />
+        <Swap className={classes.turnNext} text={next ? stageName(next.name) : ''} ellipsis />
       </span>
     </div>
   );
@@ -264,7 +278,8 @@ export function LandingPhone({ state, viewer, mine }: LandingPhoneProps) {
     <div className={classes.phone}>
       <span className={classes.statusBar}>9:41</span>
       <div className={classes.screen}>
-        {viewer === 'dm' ? <DmHeader state={state} /> : <PlayerHeader state={state} />}
+        <Header state={state} viewer={viewer} />
+        {viewer === 'player' ? <TurnStripMock state={state} mine={mine} /> : null}
         <div className={classes.list}>
           {state.units.map((unit, index) => (
             <Row

@@ -19,8 +19,6 @@ import classes from './CombatCard.module.css';
 
 export type CombatCardAction = 'duplicate' | 'export' | 'delete';
 
-export type CombatCardTarget = 'chevron' | 'edit' | 'more';
-
 export interface CombatCardProps extends Omit<
   ComponentPropsWithoutRef<'article'>,
   'children' | 'title' | 'color'
@@ -42,7 +40,6 @@ export interface CombatCardProps extends Omit<
   onMore: () => void;
   onMenuClose: () => void;
   onMenuSelect: (action: CombatCardAction) => void;
-  'data-tap'?: CombatCardTarget;
 }
 
 const MENU_WIDTH = 240;
@@ -69,7 +66,6 @@ export function CombatCard({
   onMore,
   onMenuClose,
   onMenuSelect,
-  'data-tap': tap,
   className,
   style,
   ...rest
@@ -134,7 +130,6 @@ export function CombatCard({
           aria-label={t('details', { title })}
           aria-expanded={expanded}
           aria-controls={expanded ? detailsId : undefined}
-          data-tap={tap === 'chevron' ? '' : undefined}
           onClick={() => onToggle()}
         >
           <Chevron size={iconSizes.L} stroke={2} aria-hidden="true" />
@@ -154,7 +149,6 @@ export function CombatCard({
               <CardActions
                 open={menuOpen}
                 busy={busy}
-                data-tap={tap === 'edit' || tap === 'more' ? tap : undefined}
                 onEdit={() => onEdit()}
                 onMore={() => onMore()}
               />

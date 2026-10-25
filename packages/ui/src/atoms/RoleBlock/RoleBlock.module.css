@@ -1,4 +1,6 @@
 .root {
+  --cp-state-focus: var(--cp-role-on);
+
   position: relative;
   box-sizing: border-box;
   display: flex;
@@ -15,7 +17,6 @@
   color: var(--cp-role-on);
   font-family: var(--cp-font-ui);
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:is(button) {
     cursor: pointer;
@@ -52,15 +53,8 @@
     color: var(--cp-role-on);
   }
 
-  &[data-unit-role]:focus-visible,
-  &[data-unit-role][data-focus] {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
-
-  &[data-unit-role][data-tap] {
-    outline: 3px solid var(--cp-role-on);
-    outline-offset: -3px;
+  &[data-unit-role] {
+    @mixin focus-ring;
   }
 }
 

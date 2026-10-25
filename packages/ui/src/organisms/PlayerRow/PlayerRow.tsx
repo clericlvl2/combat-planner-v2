@@ -17,8 +17,6 @@ import { Reveal } from '../../motion/Reveal.tsx';
 import { iconSizes } from '../../theme.ts';
 import classes from './PlayerRow.module.css';
 
-export type PlayerRowTarget = 'initiative' | 'hp' | 'conditions' | 'history' | 'defenses' | 'note';
-
 export interface PlayerRowProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'children' | 'onToggle'
@@ -41,7 +39,6 @@ export interface PlayerRowProps extends Omit<
   onNoteChange: (note: string) => void;
   onEdit: () => void;
   onMore: (event: MouseEvent<HTMLButtonElement>) => void;
-  'data-tap'?: PlayerRowTarget;
 }
 
 const INTERACTIVE = 'button, a, input, textarea, select, [role="button"], [data-part="details"]';
@@ -65,7 +62,6 @@ export function PlayerRow({
   onNoteChange,
   onEdit,
   onMore,
-  'data-tap': tap,
   className,
   onClick,
   ...rest
@@ -105,8 +101,6 @@ export function PlayerRow({
     onToggle();
   };
 
-  const tapOf = (target: PlayerRowTarget) => (tap === target ? '' : undefined);
-
   return (
     <div
       {...rest}
@@ -128,7 +122,7 @@ export function PlayerRow({
         editable={mine}
         mine={mine}
         dead={dead}
-        data-tap={tapOf('initiative')}
+        data-tour="initiative"
         onClick={mine ? onInitiative : undefined}
       />
       <div className={classes.main}>
@@ -162,6 +156,7 @@ export function PlayerRow({
           component="button"
           type="button"
           className={classes.toggle}
+          data-tour="toggle"
           aria-label={unit.name}
           aria-expanded={expanded}
           aria-controls={expanded ? detailsId : undefined}
@@ -171,6 +166,7 @@ export function PlayerRow({
       <div className={classes.hp}>
         {numbers ? (
           <HpBox
+            data-tour="hp"
             viewer="player"
             hp={numbers.hp}
             maxHp={numbers.maxHp}
@@ -178,7 +174,6 @@ export function PlayerRow({
             tempHp={numbers.tempHp}
             mine={mine}
             count={!reduced}
-            data-tap={tapOf('hp')}
             onClick={mine ? () => onHp() : undefined}
           />
         ) : (
@@ -203,7 +198,6 @@ export function PlayerRow({
               aria-haspopup="dialog"
               aria-expanded={conditionsOpen}
               data-open={conditionsOpen || undefined}
-              data-tap={tapOf('conditions')}
               onClick={() => onConditions()}
             >
               <span className={classes.triggerLabel}>{t('conditions')}</span>
@@ -218,7 +212,6 @@ export function PlayerRow({
               type="button"
               className={classes.trigger}
               aria-haspopup="dialog"
-              data-tap={tapOf('history')}
               onClick={() => onHistory()}
             >
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
@@ -230,7 +223,6 @@ export function PlayerRow({
                 type="button"
                 className={`${classes.trigger} ${classes.wideTrigger}`}
                 aria-haspopup="dialog"
-                data-tap={tapOf('defenses')}
                 onClick={() => onDefenses()}
               >
                 <span className={classes.triggerLabel}>{t('defenses')}</span>
@@ -238,7 +230,7 @@ export function PlayerRow({
               </UnstyledButton>
             ) : null}
           </div>
-          <NoteField value={note} onChange={onNoteChange} data-tap={tapOf('note')} />
+          <NoteField value={note} onChange={onNoteChange} />
           <CardActions open={moreOpen} busy={busy} onEdit={onEdit} onMore={onMore} />
         </div>
       </Reveal>

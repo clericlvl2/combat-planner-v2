@@ -18,7 +18,7 @@ interface SegmentedCellProps extends Omit<
   labels?: readonly string[];
   disabledValues?: readonly string[];
   width?: number;
-  mark?: { index: number; attribute: 'data-pressed' | 'data-focus' | 'data-tap' };
+  mark?: { index: number; attribute: 'data-pressed' | 'data-focus' };
   onChange: (value: string) => void;
 }
 
@@ -80,14 +80,13 @@ const meta = preview.meta({
   args: { value: 'enemy', onChange: fn() },
 });
 
-const columns = ['Default', 'Pressed', 'Disabled', 'Focus', 'Tap'] as const;
+const columns = ['Default', 'Pressed', 'Disabled', 'Focus'] as const;
 
 type SegmentedState = (typeof columns)[number];
 
 const markOf = (state: SegmentedState, index: number): SegmentedCellProps['mark'] => {
   if (state === 'Pressed') return { index, attribute: 'data-pressed' };
   if (state === 'Focus') return { index, attribute: 'data-focus' };
-  if (state === 'Tap') return { index, attribute: 'data-tap' };
   return undefined;
 };
 

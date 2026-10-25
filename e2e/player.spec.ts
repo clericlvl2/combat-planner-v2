@@ -293,7 +293,9 @@ test('when two players pick the same hero, the second sees it taken', async ({ p
 
     await joinAsPlayer(player, link, 'Pat', 'Aria');
 
-    await expect(second.getByText(t('Toast:heroTaken', { hero: 'Aria' }))).toBeVisible();
+    await expect(
+      second.getByText(t('Toast:playerClaimed', { name: 'Pat', hero: 'Aria' })),
+    ).toBeVisible();
     await expect(second.getByRole('checkbox', { name: 'Aria' })).toBeDisabled();
     await expect(second.getByRole('checkbox', { name: 'Aria' })).not.toBeChecked();
     await expect(second.getByText(t('Heroes:playing', { name: 'Pat' }))).toBeVisible();

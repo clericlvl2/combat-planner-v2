@@ -226,6 +226,7 @@ export function UnitForm({
             fullWidth
             disabled={library && !pickedPreset}
             onClick={submit}
+            data-tour="unit-save"
             data-sheet-action=""
           >
             {ctaLabel}
@@ -338,6 +339,7 @@ export function UnitForm({
           <>
             <TextField
               className={draft.name === '' ? classes.name : `${classes.name} ${classes.named}`}
+              data-tour="unit-name"
               label={t('name')}
               value={draft.name}
               placeholder={fallbackName}

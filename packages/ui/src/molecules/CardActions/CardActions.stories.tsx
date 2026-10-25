@@ -38,7 +38,7 @@ const meta = preview.meta({
   args: { onEdit: fn(), onMore: fn() },
 });
 
-const columns = ['Default', 'Tap edit', 'Tap more', 'Disabled'] as const;
+const columns = ['Default', 'Disabled'] as const;
 
 type CardActionsState = (typeof columns)[number];
 
@@ -52,7 +52,6 @@ const gridRows = [
       width={318}
       open={open}
       disabled={state === 'Disabled'}
-      data-tap={state === 'Tap edit' ? 'edit' : state === 'Tap more' ? 'more' : undefined}
       onEdit={() => {}}
       onMore={() => {}}
     />

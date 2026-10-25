@@ -266,6 +266,19 @@ export const NoCombatsYet = meta.story({
   },
 });
 
+export const TourFirstCombat = meta.story({
+  tags: ['visual'],
+  parameters: { scenario: noCombatsScenario, tour: { dm: 'unset' } },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Tour');
+    const tooltip = await canvas.findByRole('dialog', { name: t('createTitle') });
+    await expect(within(tooltip).getByText(t('createBody'))).toBeVisible();
+    await expect(within(tooltip).getByText(t('counter', { current: 1, total: 8 }))).toBeVisible();
+    await userEvent.click(within(tooltip).getByRole('button', { name: t('next') }));
+    await expect(await canvas.findByRole('dialog', { name: t('titleTitle') })).toBeVisible();
+  },
+});
+
 export const CreateSendsPayload = meta.story({
   tags: ['!dev'],
   play: async ({ canvas, canvasElement, globals, loaded }) => {

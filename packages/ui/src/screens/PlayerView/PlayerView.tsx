@@ -14,6 +14,7 @@ import { errorToast } from '../../hooks/toasts.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { useWakeLock } from '../../hooks/useWakeLock.ts';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatDeleted } from '../CombatDeleted/CombatDeleted.tsx';
@@ -22,6 +23,7 @@ import { LinkExpired } from '../LinkExpired/LinkExpired.tsx';
 import { LoadingScreen } from '../shared/LoadingScreen.tsx';
 import { TurnOrder } from '../TurnOrder/TurnOrder.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
+import { ownTurnStarted, vibrateOwnTurn } from './ownTurn.ts';
 import { usePlayerToasts } from './PlayerToast.tsx';
 import { playerEvents } from './playerEvents.ts';
 import classes from './PlayerView.module.css';
@@ -51,6 +53,7 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     pending,
     tracker,
   } = useCombat(combatId, PLAYER, token);
+  useWakeLock(server !== undefined && ended === null);
   const queryClient = useQueryClient();
   const combat = useMemo(() => server && overlay(server, pending, PLAYER), [server, pending]);
   const { i18n } = useTranslation();
@@ -82,19 +85,15 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     if (before === undefined || server === undefined || before === server) return;
     let lostHero = false;
     for (const event of playerEvents(before, server)) {
-      if (event.kind === 'taken') continue;
       if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) {
         lostHero = true;
         continue;
       }
-      if (event.kind === 'released' || event.kind === 'removed') {
-        lostHero = true;
-        notify(event.kind, event.name);
-      } else {
-        notify(event.kind);
-      }
+      if (event.kind === 'released' || event.kind === 'removed') lostHero = true;
+      notify(event);
     }
     if (lostHero && !holdsHero(server)) setView('heroes');
+    if (ownTurnStarted(before, server)) vibrateOwnTurn();
   }, [server, notify]);
 
   const send = useCallback(

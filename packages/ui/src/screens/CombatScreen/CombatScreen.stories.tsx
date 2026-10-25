@@ -331,6 +331,26 @@ export const EmptyCombat = meta.story({
   },
 });
 
+export const TourDamageInSheet = meta.story({
+  tags: ['visual'],
+  parameters: { tour: { dm: { stage: 6, skipped: [] } } },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Tour');
+    const hp = await canvas.findByRole('dialog', { name: t('hpTitle') });
+    await expect(within(hp).getByText(t('counter', { current: 6, total: 8 }))).toBeVisible();
+    await userEvent.click(within(hp).getByRole('button', { name: t('next') }));
+    const tooltip = await canvas.findByRole('dialog', { name: t('hpApplyTitle') });
+    const box = tooltip.getBoundingClientRect();
+    const keys = canvasElement.querySelector("[data-tour='hp-keys']");
+    if (!keys) throw new Error('keypad is missing');
+    await expect(box.bottom).toBeLessThanOrEqual(keys.getBoundingClientRect().top);
+    await userEvent.click(within(tooltip).getByRole('button', { name: t('gotIt') }));
+    const next = await canvas.findByRole('dialog', { name: t('nextTurnTitle') });
+    await expect(within(next).getByText(t('counter', { current: 7, total: 8 }))).toBeVisible();
+    await expect(canvasElement.querySelector("[data-tour='hp-keys']")).toBeNull();
+  },
+});
+
 export const AddUnitSheet = meta.story({
   tags: ['visual'],
   parameters: { scenario: noUnitsScenario() },

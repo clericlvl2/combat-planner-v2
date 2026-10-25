@@ -12,7 +12,6 @@
   line-height: 1.25;
   cursor: pointer;
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:has(.label) {
     min-height: var(--cp-tap-target);
@@ -66,15 +65,12 @@
     border-color: var(--cp-color-disabled);
   }
 
-  &:has(.input:focus-visible),
-  .root[data-focus] & {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+  &:has(.input:focus-visible) {
+    @mixin focus-ring-keyboard;
   }
 
-  .root[data-tap] & {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
+  .root[data-focus] & {
+    @mixin focus-ring-outline;
   }
 }
 

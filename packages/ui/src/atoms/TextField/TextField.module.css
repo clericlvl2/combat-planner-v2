@@ -69,11 +69,6 @@
     cursor: not-allowed;
   }
 
-  &:has(.input[data-tap]) {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
-  }
-
   &::before {
     content: '';
     position: absolute;

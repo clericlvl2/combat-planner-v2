@@ -8,5 +8,14 @@
   "about": "Acerca de",
   "source": "Código fuente",
   "dm": "DM",
-  "player": "Jugador"
+  "player": "Jugador",
+  "stageTitle": "Emboscada en el transbordador",
+  "stageAldric": "Sir Aldric",
+  "stageOrc": "Orco berserker",
+  "stageVashti": "Vashti la Bruja",
+  "stageGoblin": "Arquero goblin {{number}}",
+  "stageTomas": "Hermano Tomás",
+  "stageVashtiNote": "Maleficio sobre el orco berserker",
+  "stagePlayerMika": "Mika",
+  "stagePlayerJonas": "Jonás"
 }

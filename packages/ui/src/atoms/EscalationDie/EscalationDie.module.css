@@ -11,31 +11,28 @@
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
   user-select: none;
-  -webkit-tap-highlight-color: transparent;
 
   &:is(button) {
     cursor: pointer;
   }
 
   &[data-value]:focus-visible,
-  &[data-value][data-focus],
-  &[data-value][data-tap] {
+  &[data-value][data-focus] {
     outline: none;
   }
 
-  &:focus-visible .tile,
-  &[data-focus] .tile {
-    outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
+  &:focus-visible .tile {
+    @mixin focus-ring-keyboard;
   }
 
-  &[data-tap] .tile {
-    outline: 3px solid var(--cp-state-tap-marker);
-    outline-offset: 2px;
+  &[data-focus] .tile {
+    @mixin focus-ring-outline;
   }
 }
 
 .tile {
+  --cp-state-focus: var(--cp-color-surface);
+
   box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -47,6 +44,8 @@
   background: var(--cp-color-ink);
 
   [data-empty] > & {
+    --cp-state-focus: inherit;
+
     padding: 6px;
     border: 2px dashed var(--cp-color-muted);
     background: transparent;

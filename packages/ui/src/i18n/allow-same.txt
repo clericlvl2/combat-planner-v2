@@ -38,4 +38,7 @@ DefenseLine.ac
 DesktopAside.title
 Landing.name
 Landing.dm
+Landing.stagePlayerMika
+Landing.stagePlayerJonas
 DefenseSheet.base
+Tour.counter

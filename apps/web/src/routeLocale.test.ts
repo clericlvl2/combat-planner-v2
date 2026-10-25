@@ -6,7 +6,7 @@ import {
   scenario,
 } from '@combat-planner/ui';
 import type { ReactElement } from 'react';
-import { createMemoryRouter } from 'react-router';
+import { RouterContextProvider, createMemoryRouter } from 'react-router';
 import type { LoaderFunctionArgs, RouteObject } from 'react-router';
 import { afterEach, describe, expect, it, vi } from 'vite-plus/test';
 import { createRoutes } from './router.tsx';
@@ -120,7 +120,7 @@ const loaderArgs = {
   url: new URL(LOADER_URL),
   pattern: '/combats/:id/play',
   params: { id: COMBAT_ID },
-  context: {},
+  context: new RouterContextProvider(),
 } as LoaderFunctionArgs;
 
 const SESSION_LANGUAGE_PAGES: readonly string[] = ['dm', 'about'];

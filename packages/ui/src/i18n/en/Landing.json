@@ -8,5 +8,14 @@
   "about": "About",
   "source": "Source code",
   "dm": "DM",
-  "player": "Player"
+  "player": "Player",
+  "stageTitle": "Ambush at the Ferry",
+  "stageAldric": "Ser Aldric",
+  "stageOrc": "Orc Berserker",
+  "stageVashti": "Vashti the Hexer",
+  "stageGoblin": "Goblin Archer {{number}}",
+  "stageTomas": "Brother Tomas",
+  "stageVashtiNote": "Hex on Orc Berserker",
+  "stagePlayerMika": "Mika",
+  "stagePlayerJonas": "Jonas"
 }
