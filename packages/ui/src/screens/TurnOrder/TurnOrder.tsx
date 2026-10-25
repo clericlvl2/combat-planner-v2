@@ -270,7 +270,6 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
         <InitiativeSheet
           key={`initiative-${initiativeUnit.id}`}
           opened={initiativeOpen !== null}
-          unitName={initiativeUnit.name}
           value={initiativeUnit.initiative}
           bonus={initiativeUnit.initiativeBonus ?? 0}
           random={random}

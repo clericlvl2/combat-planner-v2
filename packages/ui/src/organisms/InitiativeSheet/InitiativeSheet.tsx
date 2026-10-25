@@ -8,7 +8,6 @@ import classes from './InitiativeSheet.module.css';
 
 export interface InitiativeSheetProps {
   opened: boolean;
-  unitName: string;
   value: number | null;
   bonus: number;
   onSet: (value: number) => void;
@@ -30,7 +29,6 @@ function rollD20(random: () => number): number {
 
 export function InitiativeSheet({
   opened,
-  unitName,
   value,
   bonus,
   onSet,
@@ -40,6 +38,8 @@ export function InitiativeSheet({
 }: InitiativeSheetProps) {
   const { t } = useTranslation('InitiativeSheet');
 
+  const title = t('title');
+
   const roll = () => {
     const face = rollD20(random);
     onRoll(rolledInitiative(face, bonus), face);
@@ -48,17 +48,17 @@ export function InitiativeSheet({
   return (
     <Sheet
       opened={opened}
-      title={t('title')}
-      subtitle={unitName}
-      onClose={onClose}
-      actions={
-        <Button variant="primary" fullWidth icon={IconDiceD20} data-sheet-action="" onClick={roll}>
-          {t('roll', { bonus: signed(bonus) })}
-        </Button>
+      title={title}
+      header={
+        <span className={classes.title}>
+          {title} <span className={classes.bonus}>({signed(bonus)})</span>
+        </span>
       }
+      onClose={onClose}
     >
       <div className={classes.steps}>
         <Stepper
+          className={classes.stepper}
           value={value}
           min={LIMITS.initiative.min}
           max={LIMITS.initiative.max}
@@ -67,6 +67,9 @@ export function InitiativeSheet({
           onChange={onSet}
         />
       </div>
+      <Button size="S" fullWidth icon={IconDiceD20} onClick={roll}>
+        {t('roll', { bonus: signed(bonus) })}
+      </Button>
     </Sheet>
   );
 }

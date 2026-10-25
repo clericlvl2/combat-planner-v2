@@ -1,12 +1,11 @@
 import preview from '#.storybook/preview';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
-import { expect, fn, userEvent } from 'storybook/test';
+import { expect, fn, userEvent, within } from 'storybook/test';
 import { InitiativeSheet } from './InitiativeSheet.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
 interface InitiativeSheetCellProps {
-  unitName?: string;
   value?: number | null;
   bonus?: number;
   random?: () => number;
@@ -18,7 +17,6 @@ interface InitiativeSheetCellProps {
 const stage: CSSProperties = { position: 'absolute', inset: 0, contain: 'layout' };
 
 function InitiativeSheetCell({
-  unitName = 'Orc Berserker',
   value: initialValue = 15,
   bonus = 3,
   random,
@@ -32,7 +30,6 @@ function InitiativeSheetCell({
     <div style={stage}>
       <InitiativeSheet
         opened={opened}
-        unitName={unitName}
         value={value}
         bonus={bonus}
         random={random}
@@ -61,8 +58,10 @@ export const Default = meta.story({
   tags: ['visual'],
   play: async ({ canvas, globals }) => {
     const t = storyT(globals, 'InitiativeSheet');
-    await expect(await canvas.findByRole('dialog', { name: t('title') })).toBeVisible();
-    await expect(canvas.getByText('Orc Berserker')).toBeVisible();
+    const sheet = await canvas.findByRole('dialog', { name: t('title') });
+    await expect(sheet).toBeVisible();
+    await expect(within(sheet).getByText('(+3)')).toBeVisible();
+    await expect(within(sheet).queryByRole('heading')).toBeNull();
     await expect(canvas.getByRole('spinbutton')).toHaveValue('15');
     const roll = canvas.getByRole('button', { name: t('roll', { bonus: '+3' }) });
     await expect(roll).toBeVisible();
