@@ -74,18 +74,14 @@
   -webkit-tap-highlight-color: transparent;
 
   &:active,
-  &[data-pressed] {
+  &[data-pressed],
+  &[data-open] {
     background: color-mix(in srgb, var(--cp-color-on-chrome) 24%, transparent);
   }
 
   &:focus-visible,
   &[data-focus] {
     outline: 2px solid var(--cp-state-focus);
-    outline-offset: 2px;
-  }
-
-  &[data-open] {
-    outline: 3px solid var(--cp-state-tap-marker);
     outline-offset: 2px;
   }
 }
