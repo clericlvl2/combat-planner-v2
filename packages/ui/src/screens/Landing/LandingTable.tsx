@@ -102,7 +102,7 @@ function stageLayout({ width, height }: LandingSize): StageLayout {
       { id: 'dm', x: 0, y: 44, z: 30, rotate: -1, scale: dm, scrollDepth: -0.1, pointerDepth: 12 },
       {
         id: 'mika',
-        x: -112 * fit,
+        x: -100 * fit,
         y: -44,
         z: 10,
         rotate: -5,
@@ -112,7 +112,7 @@ function stageLayout({ width, height }: LandingSize): StageLayout {
       },
       {
         id: 'jonas',
-        x: 112 * fit,
+        x: 100 * fit,
         y: -50,
         z: 10,
         rotate: 6,

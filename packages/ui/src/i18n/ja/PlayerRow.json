@@ -1,6 +1,7 @@
 {
   "conditions": "状態",
   "hpHistory": "HP履歴",
+  "defenses": "防御値の修正",
   "charmed": "魅了",
   "confused": "混乱",
   "dazed": "眩暈",

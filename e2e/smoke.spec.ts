@@ -35,6 +35,7 @@ test('a DM runs a combat and a player follows the turn order', async ({
     .getByRole('dialog', { name: t('UnitForm:addTitle') })
     .getByRole('button', { name: t('UnitForm:addUnit') })
     .click();
+  await expect(page.getByRole('dialog', { name: t('UnitForm:addTitle') })).toBeHidden();
   await expect(page.getByText('Aria')).toBeVisible();
 
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
@@ -68,7 +69,7 @@ test('a DM runs a combat and a player follows the turn order', async ({
       player.getByRole('banner').getByText(`${t('CombatHeader:round')} 2`, { exact: true }),
     ).toBeVisible();
     await expect(player.getByRole('heading', { name: t('Heroes:title') })).toBeHidden();
-    await expect(player.getByText('Aria')).toBeVisible();
+    await expect(player.getByText('Aria', { exact: true })).toBeVisible();
     await expect(player.getByText(t('RoleBlock:you'), { exact: true })).toBeVisible();
   } finally {
     await playerContext.close();

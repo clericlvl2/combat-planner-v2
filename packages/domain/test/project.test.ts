@@ -135,6 +135,9 @@ const FRIENDLY_COLUMNS = [
   'ac',
   'pd',
   'md',
+  'acMod',
+  'pdMod',
+  'mdMod',
 ];
 const OWN_COLUMN = [...FRIENDLY_COLUMNS, 'initiativeBonus', 'note', 'hpHistory'];
 
@@ -273,8 +276,8 @@ describe('Visibility for players', () => {
   });
 
   it('Health status | Other Hero, Ally', () => {
-    expect(otherUnit).toMatchObject({ healthStatus: 'wounded', healthSegments: 3 });
-    expect(allyUnit).toMatchObject({ healthStatus: 'full', healthSegments: 4 });
+    expect(otherUnit).toMatchObject({ healthStatus: 'wounded', healthSegments: 2 });
+    expect(allyUnit).toMatchObject({ healthStatus: 'full', healthSegments: 2 });
     const down = project({ ...combat, units: [{ ...other, hp: 0 }] }, PLAYER);
     expect(pu(down, 2)).toMatchObject({ healthStatus: 'unconscious', healthSegments: 0 });
   });
@@ -417,6 +420,61 @@ describe('project of a combat without claims', () => {
     for (const unit of project(projected, PLAYER).units) {
       expect('initiativeBonus' in unit).toBe(unit.id === own.id);
       expect('disabled' in unit).toBe(false);
+    }
+  });
+});
+
+describe('nextUnitId', () => {
+  it('names the unit after the active one in turn order', () => {
+    expect(doc.nextUnitId).toBe(id(3));
+    expect(project({ ...combat, activeUnitId: id(3) }, PLAYER).nextUnitId).toBe(id(1));
+  });
+
+  it('skips a dead unit', () => {
+    const deadAlly = { ...ally, hp: -ally.maxHp, role: 'enemy' as const };
+    const next = project({ ...combat, units: [own, other, deadAlly, enemy, disabled] }, PLAYER);
+    expect(next.nextUnitId).toBe(id(1));
+  });
+
+  it('skips a disabled unit, which players never see', () => {
+    const hiddenAlly = { ...ally, disabled: true };
+    const next = project({ ...combat, units: [own, other, hiddenAlly, enemy, disabled] }, PLAYER);
+    expect(next.units.some((unit) => unit.id === id(3))).toBe(false);
+    expect(next.nextUnitId).toBe(id(1));
+  });
+
+  it('wraps to the first eligible unit of the next round, past a disabled one', () => {
+    const last = project({ ...combat, activeUnitId: id(4) }, PLAYER);
+    expect(last.nextUnitId).toBe(id(2));
+  });
+
+  it('is null in setup and without an active unit', () => {
+    expect(project({ ...combat, status: 'setup' }, PLAYER).nextUnitId).toBeNull();
+    expect(project({ ...combat, activeUnitId: null }, PLAYER).nextUnitId).toBeNull();
+  });
+});
+
+describe('lastActionId', () => {
+  it('carries the given action id to the player and is null by default', () => {
+    expect(doc.lastActionId).toBeNull();
+    expect(project(combat, PLAYER, id(77)).lastActionId).toBe(id(77));
+  });
+});
+
+describe('Defense modifiers for players', () => {
+  const modded = (unit: Unit): Unit => ({ ...unit, acMod: 2, pdMod: -1, mdMod: 3 });
+  const projected = project({ ...combat, units: combat.units.map((unit) => modded(unit)) }, PLAYER);
+
+  it('shows the modifiers of the own hero and of other friendly units', () => {
+    expect(pu(projected, 1)).toMatchObject({ ac: 15, acMod: 2, pdMod: -1, mdMod: 3 });
+    expect(pu(projected, 2)).toMatchObject({ acMod: 2, pdMod: -1, mdMod: 3 });
+    expect(pu(projected, 3)).toMatchObject({ acMod: 2, pdMod: -1, mdMod: 3 });
+  });
+
+  it('never sends the defenses or modifiers of an enemy', () => {
+    const goblin = pu(projected, 4);
+    for (const key of ['ac', 'pd', 'md', 'acMod', 'pdMod', 'mdMod']) {
+      expect(key in goblin).toBe(false);
     }
   });
 });

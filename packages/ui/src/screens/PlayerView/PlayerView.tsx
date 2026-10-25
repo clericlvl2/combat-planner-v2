@@ -2,9 +2,10 @@ import { ApiError } from '@combat-planner/api/client';
 import type { LinkToken } from '@combat-planner/api/client';
 import type { Action, CombatId, PlayerCombat, UnitId } from '@combat-planner/domain';
 import { IconLogout } from '@tabler/icons-react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../api/ApiProvider.tsx';
+import { overlay } from '../../hooks/optimistic.ts';
 import { errorToast } from '../../hooks/toasts.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
@@ -14,6 +15,7 @@ import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatDeleted } from '../CombatDeleted/CombatDeleted.tsx';
 import { Heroes } from '../Heroes/Heroes.tsx';
 import { LinkExpired } from '../LinkExpired/LinkExpired.tsx';
+import { LoadingScreen } from '../shared/LoadingScreen.tsx';
 import { TurnOrder } from '../TurnOrder/TurnOrder.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
 import { usePlayerToasts } from './PlayerToast.tsx';
@@ -35,7 +37,16 @@ const holdsHero = (combat: PlayerCombat): boolean =>
   combat.units.some((unit) => unit.mine === true);
 
 export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps) {
-  const { combat, language, error, ended, dispatch, refetch } = useCombat(combatId, PLAYER, token);
+  const {
+    combat: server,
+    language,
+    error,
+    ended,
+    dispatch,
+    refetch,
+    pending,
+  } = useCombat(combatId, PLAYER, token);
+  const combat = useMemo(() => server && overlay(server, pending, PLAYER), [server, pending]);
   const { i18n } = useTranslation();
   const { chosen } = useLocaleChoice();
   const { t: tDialog } = useTranslation('Dialog');
@@ -44,6 +55,7 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
   const notify = usePlayerToasts();
   const [view, setView] = useState<View | null>(null);
   const [leaving, setLeaving] = useState(false);
+  const [departing, setDeparting] = useState(false);
   const [seenTitle, setSeenTitle] = useState<string | null>(null);
   const ownReleases = useRef(new Set<UnitId>());
   const previous = useRef<PlayerCombat | undefined>(undefined);
@@ -58,10 +70,10 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
 
   useEffect(() => {
     const before = previous.current;
-    previous.current = combat;
-    if (before === undefined || combat === undefined || before === combat) return;
+    previous.current = server;
+    if (before === undefined || server === undefined || before === server) return;
     let lostHero = false;
-    for (const event of playerEvents(before, combat)) {
+    for (const event of playerEvents(before, server)) {
       if (event.kind === 'taken') continue;
       if (event.kind === 'released' && ownReleases.current.delete(event.unitId)) {
         lostHero = true;
@@ -74,8 +86,8 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
         notify(event.kind);
       }
     }
-    if (lostHero && !holdsHero(combat)) setView('heroes');
-  }, [combat, notify]);
+    if (lostHero && !holdsHero(server)) setView('heroes');
+  }, [server, notify]);
 
   const send = useCallback(
     async (action: Action) => {
@@ -93,13 +105,15 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
   };
 
   const leave = () => {
-    setLeaving(false);
+    setDeparting(true);
     void api.play.leave(combatId).then(
       () => onHome(),
       (failure: unknown) => {
+        setDeparting(false);
+        setLeaving(false);
         show(
-          errorToast(failure, tToast, leave) ?? {
-            message: tToast('serverUnreachable'),
+          errorToast(failure, tToast, 'serverUnreachableNothingChanged', leave) ?? {
+            message: tToast('serverUnreachableNothingChanged'),
             kind: 'error',
           },
         );
@@ -115,7 +129,7 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
     );
   }
   if (combat === undefined) {
-    if (error === null) return null;
+    if (error === null) return <LoadingScreen />;
     if (error instanceof ApiError && error.code === 'linkRevoked')
       return <LinkExpired onHome={onHome} />;
     if (error instanceof ApiError && error.code === 'notFound') {
@@ -146,6 +160,7 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
         title={tDialog('leaveTitle')}
         body={tDialog('leaveBody')}
         confirmLabel={tDialog('leave')}
+        loading={departing}
         onConfirm={leave}
         onCancel={() => setLeaving(false)}
       />

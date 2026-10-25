@@ -204,10 +204,10 @@ export const StaticVariantsAreNotButtons = meta.story({
     const t = storyT(globals, 'Chip');
     await expect(canvas.queryAllByRole('button')).toHaveLength(0);
     const setup = canvas.getByText(t('setup')).parentElement as HTMLElement;
-    await expect(getComputedStyle(setup).backgroundColor).toBe('rgb(243, 237, 226)');
-    await expect(getComputedStyle(setup).color).toBe('rgb(95, 87, 77)');
+    await expect(getComputedStyle(setup).backgroundColor).toBe(rgb(base.soft));
+    await expect(getComputedStyle(setup).color).toBe(rgb(base.secondary));
     const active = canvas.getByText(t('active')).parentElement as HTMLElement;
-    await expect(getComputedStyle(active).backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(getComputedStyle(active).backgroundColor).toBe(rgb(base.accent));
   },
 });
 
@@ -222,7 +222,7 @@ export const ClickTogglesTag = meta.story({
     await expect(args.onClick).toHaveBeenCalledOnce();
     await expect(chip).toHaveAttribute('aria-pressed', 'true');
     await expect(chip).toHaveAttribute('data-selected');
-    await expect(getComputedStyle(chip).backgroundColor).toBe('rgb(35, 31, 28)');
+    await expect(getComputedStyle(chip).backgroundColor).toBe(rgb(base.ink));
     await userEvent.click(chip);
     await expect(args.onClick).toHaveBeenCalledTimes(2);
     await expect(chip).toHaveAttribute('aria-pressed', 'false');

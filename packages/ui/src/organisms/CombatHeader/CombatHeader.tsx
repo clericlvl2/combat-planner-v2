@@ -1,5 +1,5 @@
 import { LIMITS } from '@combat-planner/domain';
-import { Popover, UnstyledButton } from '@mantine/core';
+import { Loader, Popover, UnstyledButton } from '@mantine/core';
 import {
   IconArrowBackUp,
   IconChevronLeft,
@@ -25,6 +25,7 @@ import type {
 import { useTranslation } from 'react-i18next';
 import { EscalationDie } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
+import { useDelayed } from '../../hooks/useDelayed.ts';
 import { IconButton } from '../../atoms/IconButton/IconButton.tsx';
 import { Stepper } from '../../molecules/Stepper/Stepper.tsx';
 import { Menu, PopoverFrame } from '../Menu/Menu.tsx';
@@ -59,6 +60,7 @@ export interface CombatHeaderProps extends Omit<
   languageName?: string;
   onLeave?: () => void;
   undoDisabled?: boolean;
+  busy?: boolean;
 }
 
 const MENU_WIDTH = 240;
@@ -275,6 +277,7 @@ export function CombatHeader({
   languageName,
   onLeave,
   undoDisabled = false,
+  busy = false,
   className,
   ...rest
 }: CombatHeaderProps) {
@@ -289,6 +292,7 @@ export function CombatHeader({
   const roundOpen = !setup && open === 'round';
   const escalationOpen = !setup && open === 'escalation';
   const menuOpen = open === 'menu';
+  const spinning = useDelayed(busy);
 
   const items: MenuItem[] = player
     ? [
@@ -461,9 +465,15 @@ export function CombatHeader({
               aria-label={t('menu')}
               aria-haspopup="menu"
               aria-expanded={menuOpen}
-              onClick={() => onMenu()}
+              aria-busy={spinning || undefined}
+              disabled={spinning}
+              onClick={busy ? undefined : () => onMenu()}
             >
-              <IconDots size={24} stroke={2} aria-hidden="true" />
+              {spinning ? (
+                <Loader size={24} color="currentColor" />
+              ) : (
+                <IconDots size={24} stroke={2} aria-hidden="true" />
+              )}
             </UnstyledButton>
           }
         />

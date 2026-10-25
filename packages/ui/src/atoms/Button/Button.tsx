@@ -1,7 +1,8 @@
-import { UnstyledButton } from '@mantine/core';
+import { Loader, UnstyledButton } from '@mantine/core';
 import type { Icon } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, MouseEventHandler, ReactNode } from 'react';
 import { Link } from 'react-router';
+import { useDelayed } from '../../hooks/useDelayed.ts';
 import classes from './Button.module.css';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -17,10 +18,13 @@ export interface ButtonProps extends Omit<
   icon?: Icon;
   fullWidth?: boolean;
   disabled?: boolean;
+  loading?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
   to?: string;
   children: ReactNode;
 }
+
+const loaderSize: Record<ButtonSize, number> = { S: 18, M: 22, L: 22 };
 
 export function Button({
   variant = 'primary',
@@ -28,6 +32,7 @@ export function Button({
   icon: IconComponent,
   fullWidth = false,
   disabled = false,
+  loading = false,
   onClick,
   to,
   children,
@@ -35,8 +40,12 @@ export function Button({
   ...rest
 }: ButtonProps) {
   const heavy = (variant === 'primary' || variant === 'danger') && size !== 'S';
+  const spinning = useDelayed(loading);
   const content = (
     <>
+      {spinning ? (
+        <Loader className={classes.loader} size={loaderSize[size]} color="currentColor" />
+      ) : null}
       {IconComponent ? (
         <IconComponent className={classes.icon} size={20} stroke={2} aria-hidden="true" />
       ) : null}
@@ -67,8 +76,10 @@ export function Button({
       data-size={size}
       data-heavy={heavy || undefined}
       data-full-width={fullWidth || undefined}
-      disabled={disabled}
-      onClick={onClick}
+      data-loading={spinning || undefined}
+      aria-busy={spinning || undefined}
+      disabled={disabled || spinning}
+      onClick={loading ? undefined : onClick}
     >
       {content}
     </UnstyledButton>

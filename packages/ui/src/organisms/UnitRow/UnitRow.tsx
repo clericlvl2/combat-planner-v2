@@ -17,9 +17,13 @@ import { Chip } from '../../atoms/Chip/Chip.tsx';
 import { RoleBlock } from '../../atoms/RoleBlock/RoleBlock.tsx';
 import { CardActions } from '../../molecules/CardActions/CardActions.tsx';
 import { DefenseLine } from '../../molecules/DefenseLine/DefenseLine.tsx';
+import type { HpChange } from '../../hooks/useHpChanges.ts';
+import { useHpMotionReduced } from '../../hooks/useHpChanges.ts';
 import { HpBox } from '../../molecules/HpBox/HpBox.tsx';
+import { HpChangeOverlay } from '../../molecules/HpChangeOverlay/HpChangeOverlay.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { NoteField } from '../../molecules/NoteField/NoteField.tsx';
+import { Reveal } from '../../motion/Reveal.tsx';
 import { Menu } from '../Menu/Menu.tsx';
 import type { MenuItem } from '../Menu/Menu.tsx';
 import classes from './UnitRow.module.css';
@@ -29,6 +33,7 @@ export type UnitRowTarget =
   | 'hp'
   | 'conditions'
   | 'history'
+  | 'defenses'
   | 'note'
   | 'edit'
   | 'more';
@@ -41,6 +46,7 @@ export interface UnitRowCallbacks {
   onInitiativeClose: () => void;
   onHp: () => void;
   onConditions: () => void;
+  onDefenses: () => void;
   onHistory: () => void;
   onNoteChange: (note: string) => void;
   onEdit: () => void;
@@ -58,11 +64,13 @@ interface UnitRowBaseProps extends Omit<HTMLAttributes<HTMLDivElement>, 'childre
   claimedByName?: string;
   active?: boolean;
   expanded?: boolean;
-  flash?: boolean;
+  hpChange?: HpChange;
   initiativeOpen?: boolean;
   conditionsOpen?: boolean;
   historyOpen?: boolean;
+  defensesOpen?: boolean;
   menuOpen?: boolean;
+  busy?: boolean;
   duplicateDisabled?: boolean;
   random?: () => number;
   'data-tap'?: UnitRowTarget;
@@ -83,12 +91,14 @@ export function UnitRow({
   claimedByName,
   active = false,
   expanded: expandedProp = false,
-  flash = false,
+  hpChange,
   readOnly = false,
   initiativeOpen = false,
   conditionsOpen = false,
   historyOpen = false,
+  defensesOpen = false,
   menuOpen = false,
+  busy = false,
   duplicateDisabled = false,
   random,
   onToggle,
@@ -98,6 +108,7 @@ export function UnitRow({
   onInitiativeClose,
   onHp,
   onConditions,
+  onDefenses,
   onHistory,
   onNoteChange,
   onEdit,
@@ -115,6 +126,7 @@ export function UnitRow({
 }: UnitRowProps) {
   const { t } = useTranslation('UnitRow');
   const detailsId = useId();
+  const reduced = useHpMotionReduced();
   const roleCellRef = useRef<HTMLDivElement>(null);
   const initiativeRef = useRef<HTMLDivElement>(null);
   const expanded = !readOnly && expandedProp;
@@ -190,7 +202,6 @@ export function UnitRow({
       data-expanded={expanded || undefined}
       data-dead={dead || undefined}
       data-disabled={disabled || undefined}
-      data-flash={flash || undefined}
       data-readonly={readOnly || undefined}
       data-unit-role={unit.role}
       onClick={handleClick}
@@ -199,6 +210,7 @@ export function UnitRow({
         <RoleBlock
           className={classes.role}
           fill
+          tile
           unitRole={unit.role}
           top={unit.initiative === null ? null : { kind: 'initiative', value: unit.initiative }}
           active={active}
@@ -240,7 +252,14 @@ export function UnitRow({
             </>
           ) : null}
         </span>
-        <DefenseLine ac={unit.ac} pd={unit.pd} md={unit.md} />
+        <DefenseLine
+          ac={unit.ac}
+          pd={unit.pd}
+          md={unit.md}
+          acMod={unit.acMod}
+          pdMod={unit.pdMod}
+          mdMod={unit.mdMod}
+        />
         {unit.conditions.length > 0 ? (
           <span className={classes.conditions} role="list" aria-label={t('conditions')}>
             {unit.conditions.map((condition) => (
@@ -250,9 +269,9 @@ export function UnitRow({
             ))}
           </span>
         ) : null}
-        {!expanded && unit.note ? (
+        <Reveal open={!expanded && unit.note !== ''} className={classes.noteSlot}>
           <NoteField value={unit.note} onChange={onNoteChange ?? noop} collapsed />
-        ) : null}
+        </Reveal>
       </div>
       {readOnly ? null : (
         <UnstyledButton
@@ -273,11 +292,15 @@ export function UnitRow({
           role={unit.role}
           tempHp={unit.tempHp}
           disabled={disabled}
+          count={!reduced}
           data-tap={tapOf('hp')}
           onClick={readOnly ? undefined : () => onHp?.()}
         />
       </div>
-      {expanded ? (
+      {hpChange ? (
+        <HpChangeOverlay key={hpChange.key} change={hpChange} showNumber reduced={reduced} />
+      ) : null}
+      <Reveal open={expanded} className={classes.detailsSlot}>
         <div id={detailsId} className={classes.details} data-part="details">
           <div className={classes.triggers}>
             <UnstyledButton
@@ -306,6 +329,19 @@ export function UnitRow({
               <span className={classes.triggerLabel}>{t('hpHistory')}</span>
               <IconChevronDown size={20} stroke={2} aria-hidden="true" />
             </UnstyledButton>
+            <UnstyledButton
+              component="button"
+              type="button"
+              className={`${classes.trigger} ${classes.wideTrigger}`}
+              aria-haspopup="dialog"
+              aria-expanded={defensesOpen}
+              data-open={defensesOpen || undefined}
+              data-tap={tapOf('defenses')}
+              onClick={() => onDefenses?.()}
+            >
+              <span className={classes.triggerLabel}>{t('defenses')}</span>
+              <IconChevronDown size={20} stroke={2} aria-hidden="true" />
+            </UnstyledButton>
           </div>
           <NoteField value={unit.note} onChange={onNoteChange ?? noop} data-tap={tapOf('note')} />
           <Menu
@@ -318,6 +354,7 @@ export function UnitRow({
             target={
               <CardActions
                 open={menuOpen}
+                busy={busy}
                 data-tap={tap === 'edit' || tap === 'more' ? tap : undefined}
                 onEdit={() => onEdit?.()}
                 onMore={() => onMore?.()}
@@ -325,7 +362,7 @@ export function UnitRow({
             }
           />
         </div>
-      ) : null}
+      </Reveal>
     </div>
   );
 }

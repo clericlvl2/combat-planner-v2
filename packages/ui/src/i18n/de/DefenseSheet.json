@@ -1,0 +1,5 @@
+{
+  "title": "Verteidigungen von {{name}}",
+  "base": "Basis {{value}}",
+  "reset": "Zurücksetzen"
+}

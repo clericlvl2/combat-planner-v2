@@ -19,7 +19,7 @@ import type { RouteObject } from 'react-router';
 import { afterEach, describe, expect, it } from 'vite-plus/test';
 import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import { AppProviders } from './providers.tsx';
-import { createRoutes } from './router.tsx';
+import { createRoutes, withViewTransitions } from './router.tsx';
 
 const COMBAT_ID = '01JA0000000000000000000001';
 const about = {
@@ -232,5 +232,40 @@ describe('router', () => {
     expect(element.type).toBe(RouteError);
     expect(element.props.onShow).toBeTypeOf('function');
     expect(element.props.onReport).toBe(reportError);
+  });
+});
+
+describe('withViewTransitions', () => {
+  const transitionsOf = async (navigate: (router: MemoryRouter) => Promise<void>) => {
+    const router = withViewTransitions(
+      createMemoryRouter([
+        { path: '/', element: null },
+        { path: '/a', element: null },
+        { path: '/b', element: null },
+      ]),
+    );
+    routers.push(router);
+    router.initialize();
+    const transitions: boolean[] = [];
+    router.subscribe((_state, { viewTransitionOpts }) => {
+      transitions.push(viewTransitionOpts !== undefined);
+    });
+    await navigate(router);
+    return transitions;
+  };
+
+  it('asks for a view transition on every navigation by path', async () => {
+    const transitions = await transitionsOf(async (router) => {
+      await router.navigate('/a');
+      await router.navigate('/b', { replace: true, viewTransition: undefined });
+    });
+    expect(transitions).toEqual([true, true]);
+  });
+
+  it('keeps an explicit opt-out', async () => {
+    const transitions = await transitionsOf((router) =>
+      router.navigate('/a', { viewTransition: false }),
+    );
+    expect(transitions).toEqual([false]);
   });
 });

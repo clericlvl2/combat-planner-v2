@@ -151,6 +151,15 @@ export const subscribeEntry = <Document extends CombatDocument>(
     onPresence,
   );
 
+export interface PendingTracker {
+  optimistic: (action: Action) => boolean;
+  add: (action: Action) => void;
+  settle: (actionId: string, version: number) => void;
+  refuse: (actionId: string) => void;
+  drop: (actionId: string) => void;
+  prune: () => void;
+}
+
 export interface DispatcherOptions {
   send: (action: Action) => Promise<VersionResult>;
   refetch: () => Promise<void>;
@@ -158,6 +167,7 @@ export interface DispatcherOptions {
   t: Translate;
   generation: () => number;
   failed?: (error: unknown) => void;
+  pending?: PendingTracker;
 }
 
 const NOT_APPLIED: DispatchResult = { applied: false };
@@ -171,21 +181,30 @@ export function createDispatcher({
   t,
   generation,
   failed,
+  pending,
 }: DispatcherOptions): Dispatch {
   const dispatch: Dispatch = async (action, onRetryShown) => {
     const sentIn = generation();
+    const tracked = pending?.optimistic(action) === true ? pending : undefined;
+    tracked?.add(action);
     try {
       const { version } = await send(action);
+      tracked?.settle(action.id, version);
       return { applied: true, version };
     } catch (error) {
+      tracked?.refuse(action.id);
       failed?.(error);
-      if (generation() !== sentIn) return NOT_APPLIED;
+      if (generation() !== sentIn) {
+        tracked?.drop(action.id);
+        return NOT_APPLIED;
+      }
       if (error instanceof ApiError && error.code === 'version') await refetch().catch(() => {});
       return new Promise<DispatchResult>((resolve) => {
         let retried = false;
         const toast = errorToast(
           error,
           t,
+          'serverUnreachable',
           () => {
             retried = true;
             void dispatch(action).then(resolve);
@@ -193,6 +212,7 @@ export function createDispatcher({
           t('unitCap', { limit: LIMITS.unitsPerCombat }),
         );
         if (!toast?.action) {
+          tracked?.drop(action.id);
           if (toast) show(toast);
           resolve(NOT_APPLIED);
           return;
@@ -200,7 +220,9 @@ export function createDispatcher({
         show({
           ...toast,
           onDismiss: () => {
-            if (!retried) resolve(NOT_APPLIED);
+            if (retried) return;
+            tracked?.drop(action.id);
+            resolve(NOT_APPLIED);
           },
         });
         onRetryShown?.();

@@ -70,15 +70,15 @@
   padding: 0;
   border: none;
   border-radius: 50%;
-  background: var(--cp-color-ink);
-  color: var(--cp-color-surface);
+  background: var(--cp-color-primary);
+  color: var(--cp-color-on-primary);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
-    background: var(--cp-color-ink-pressed);
+    background: var(--cp-color-primary-pressed);
   }
 
   &[data-copied] {

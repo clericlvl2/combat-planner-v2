@@ -1,5 +1,5 @@
 :root {
-  --cp-layout-status-bar: env(safe-area-inset-top, 0px);
+  --cp-layout-status-bar: max(env(safe-area-inset-top, 0px), 12px);
   --cp-layout-viewport-width: min(100vw, 440px);
 }
 
@@ -14,7 +14,7 @@ body {
   align-items: center;
   justify-content: center;
   margin: 0;
-  background: var(--cp-color-soft);
+  background: var(--cp-color-field);
   touch-action: pan-y pinch-zoom;
 }
 
@@ -38,10 +38,10 @@ body {
 
 @media (min-width: 441px) {
   body {
-    background-color: var(--cp-color-soft);
+    background-color: var(--cp-color-field);
     background-image: radial-gradient(
       circle at 1px 1px,
-      color-mix(in srgb, var(--cp-color-muted) 35%, transparent) 1px,
+      color-mix(in srgb, var(--cp-color-ink) 30%, transparent) 1px,
       transparent 0
     );
     background-size: 22px 22px;
@@ -56,6 +56,11 @@ body {
       0 0 0 10px var(--cp-color-surface),
       0 0 0 12px var(--cp-color-border),
       0 24px 48px -16px color-mix(in srgb, var(--cp-color-ink) 35%, transparent);
+  }
+
+  ::view-transition-group(header) {
+    overflow: clip;
+    border-radius: 28px 28px 0 0;
   }
 }
 
@@ -96,4 +101,33 @@ body:has(> #root > [data-landing]) > #aside {
   height: 100dvh;
   border-radius: 0;
   box-shadow: none;
+}
+
+:root:active-view-transition #root:not(:has([data-scrim])) > * > header {
+  view-transition-name: header;
+}
+
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root),
+::view-transition-group(header),
+::view-transition-old(header),
+::view-transition-new(header) {
+  animation-duration: var(--cp-page-transition-duration);
+  animation-timing-function: var(--cp-page-transition-easing);
+}
+
+::view-transition-old(header),
+::view-transition-new(header) {
+  height: 100%;
+  object-fit: none;
+  object-position: top;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none;
+  }
 }

@@ -11,12 +11,16 @@
 .list {
   flex: 1;
   min-height: 0;
+
+  &:has(.card) {
+    background: var(--cp-color-field);
+  }
 }
 
 .listContent {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cp-card-gap);
   padding: var(--cp-list-inset-top) 12px var(--cp-list-inset-bottom);
 
   & > * {

@@ -168,3 +168,16 @@ export const SendsChosenLanguage = meta.story({
     );
   },
 });
+
+export const SubmitWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'SignUp');
+    await fill(canvas, 'Nova', 'nova@ferry.games', 'ferry-crossing', t);
+    fakeApiOf(loaded).holdNext();
+    const submit = canvas.getByRole('button', { name: t('submit') });
+    await userEvent.click(submit);
+    await waitFor(() => expect(submit).toHaveAttribute('aria-busy', 'true'));
+    await expect(submit).toBeDisabled();
+  },
+});

@@ -4,10 +4,27 @@
   flex: none;
   flex-direction: column;
   width: 100%;
-  border-bottom: 2px solid var(--cp-color-border);
-  background: var(--cp-color-background);
-  color: var(--cp-color-ink);
+  border-bottom: 2px solid color-mix(in srgb, var(--cp-color-on-chrome) 25%, var(--cp-color-chrome));
+  background: var(--cp-color-chrome);
+  color: var(--cp-color-on-chrome);
   font-family: var(--cp-font-ui);
+
+  & [data-tile] {
+    background: var(--cp-color-surface);
+  }
+
+  & [data-empty] [data-tile] {
+    border-color: color-mix(in srgb, var(--cp-color-on-chrome) 60%, transparent);
+    background: transparent;
+  }
+
+  & [data-pip] {
+    background: var(--cp-color-ink);
+  }
+
+  & [data-value] > span:last-child {
+    color: var(--cp-color-on-chrome);
+  }
 }
 
 .statusBar {
@@ -17,22 +34,25 @@
 
 .body {
   box-sizing: border-box;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-rows: calc(var(--cp-header-row) - var(--cp-header-pad-top)) var(
+      --cp-header-second-row
+    );
   align-items: center;
-  gap: 8px;
-  min-height: 82px;
-  padding: 4px 12px 12px 16px;
+  column-gap: 8px;
+  row-gap: var(--cp-header-gap);
+  padding: var(--cp-header-pad-top) 12px var(--cp-header-pad-bottom);
 }
 
-.text {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+.die {
+  grid-row: 1 / span 2;
+  grid-column: 2;
 }
 
 .title {
+  grid-row: 1;
+  grid-column: 1;
   overflow: hidden;
   font-size: var(--mantine-font-size-small);
   font-weight: 600;
@@ -42,6 +62,8 @@
 }
 
 .main {
+  grid-row: 2;
+  grid-column: 1;
   margin: 0;
   font-family: var(--cp-font-display);
   font-size: var(--mantine-font-size-title);

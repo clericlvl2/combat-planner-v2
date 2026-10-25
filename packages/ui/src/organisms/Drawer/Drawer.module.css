@@ -1,31 +1,44 @@
-.root {
-  position: fixed;
-  inset: 0;
-  z-index: 200;
-}
-
 .scrim {
   position: fixed;
   inset: 0;
-  background: color-mix(in srgb, var(--cp-color-ink) 50%, transparent);
+  background: var(--cp-color-scrim);
 }
 
-.panel {
+.inner {
   position: fixed;
   top: 0;
   bottom: 0;
   left: 0;
-  box-sizing: border-box;
+  z-index: var(--mb-z-index);
+  display: flex;
   width: min(300px, var(--cp-layout-viewport-width, 100%) - 56px);
-  border-right: 2px solid var(--cp-color-ink);
+  pointer-events: none;
+}
+
+.panel {
+  box-sizing: border-box;
+  flex: 1 1 auto;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  border-right: 2px solid var(--cp-color-primary);
   border-radius: 0 var(--mantine-radius-sheet) var(--mantine-radius-sheet) 0;
-  background: var(--cp-color-background);
+  background: var(--cp-color-surface);
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
+  box-shadow: none;
+  pointer-events: all;
 
   &:focus {
     outline: none;
   }
+}
+
+.scroll {
+  height: 100%;
 }
 
 .content {

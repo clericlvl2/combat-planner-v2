@@ -17,8 +17,11 @@ import { ulid } from 'ulid';
 import { queryKeys } from '../../hooks/queryKeys.ts';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { usePresets } from '../../hooks/usePresets.ts';
+import { useDelayed } from '../../hooks/useDelayed.ts';
+import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
+import { CardSkeleton } from '../../molecules/CardSkeleton/CardSkeleton.tsx';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
@@ -138,6 +141,8 @@ export function Library() {
   const [formKey, setFormKey] = useState(0);
   const [deleteId, setDeleteId] = useState<PresetId | null>(null);
   const [pending, setPending] = useState(false);
+  const [busyId, setBusyId] = useState<PresetId | null>(null);
+  const [removing, setRemoving] = useState(false);
   const tagCreates = useRef(new Map<TagId, Promise<Tag>>());
   const failedTags = useRef(new Map<TagId, string>());
   const signedOut =
@@ -151,13 +156,16 @@ export function Library() {
   const all = presets ?? [];
   const allTags = tags ?? [];
   const loaded = presets !== undefined;
+  const skeleton = useDelayed(!loaded && error === null);
   const counts = tagCounts(all);
   const tagName = (id: string) => allTags.find((tag) => tag.id === id)?.name ?? '';
   const activeFilter = filter.filter((id) => (counts.get(id) ?? 0) > 0);
   const visible = filterPresets(sortPresets(all, sort, locale), query, activeFilter, locale);
   const atLimit = all.length >= LIMITS.presetsPerDm;
   const custom = sort !== DEFAULT_SORT;
-  const editing = form?.mode === 'edit' ? all.find((preset) => preset.id === form.id) : undefined;
+  const shownForm = useRetained(form);
+  const editing =
+    shownForm?.mode === 'edit' ? all.find((preset) => preset.id === shownForm.id) : undefined;
   const deleting = all.find((preset) => preset.id === deleteId);
   const sheetTags: TagSheetTag[] = allTags
     .map((tag) => ({ id: tag.id, name: tag.name, count: counts.get(tag.id) ?? 0 }))
@@ -238,15 +246,26 @@ export function Library() {
 
   const duplicatePreset = (preset: Preset) => {
     setMenuId(null);
-    setExpandedId(null);
-    duplicate(preset.id, ulid()).catch(() => {});
+    if (busyId !== null) return;
+    setBusyId(preset.id);
+    duplicate(preset.id, ulid())
+      .then(() => setExpandedId(null))
+      .catch(() => {})
+      .finally(() => {
+        setBusyId(null);
+      });
   };
 
   const confirmDelete = () => {
-    if (deleting === undefined) return;
-    setDeleteId(null);
-    setExpandedId(null);
-    remove(deleting.id).catch(() => {});
+    if (deleting === undefined || removing) return;
+    setRemoving(true);
+    remove(deleting.id)
+      .then(() => setExpandedId(null))
+      .catch(() => {})
+      .finally(() => {
+        setRemoving(false);
+        setDeleteId(null);
+      });
   };
 
   const navigateTo = (section: DrawerSection) => {
@@ -300,10 +319,12 @@ export function Library() {
         {visible.map((preset) => (
           <PresetCard
             key={preset.id}
+            className={classes.card}
             preset={preset}
             tags={preset.tags.map(tagName).filter((name) => name !== '')}
             expanded={expandedId === preset.id}
             menuOpened={menuId === preset.id}
+            busy={busyId === preset.id}
             duplicateDisabled={atLimit}
             onToggle={() => {
               setMenuId(null);
@@ -319,6 +340,7 @@ export function Library() {
             }}
           />
         ))}
+        {skeleton ? <CardSkeleton variant="preset" count={4} /> : null}
         {loaded && all.length === 0 ? (
           <EmptyState icon={IconBooks} title={t('emptyTitle')} body={t('emptyBody')} />
         ) : null}
@@ -367,12 +389,12 @@ export function Library() {
         }}
         onClose={() => setFilterDraft(null)}
       />
-      {form !== null ? (
+      {shownForm !== null ? (
         <PresetFormSheet
           key={formKey}
-          opened
+          opened={form !== null}
           pending={pending}
-          mode={form.mode}
+          mode={shownForm.mode}
           value={editing ? formValueOf(editing) : emptyPresetForm}
           tags={sheetTags}
           onSubmit={(value) => {
@@ -389,6 +411,7 @@ export function Library() {
         title={tDialog('deletePresetTitle', { name: deleting?.name ?? '' })}
         body={tDialog('deletePresetBody')}
         confirmLabel={tDialog('delete')}
+        loading={removing}
         onConfirm={confirmDelete}
         onCancel={() => setDeleteId(null)}
       />

@@ -82,3 +82,47 @@ export const FollowsLargeFrame = meta.story({
     await waitFor(() => expect([window.innerWidth, window.innerHeight]).toEqual([width, height]));
   },
 });
+
+const phoneBezel = 12;
+
+async function expectSceneInsideScreen(canvasElement: HTMLElement) {
+  const root = canvasElement.querySelector<HTMLElement>('[data-landing]');
+  const screen = (root as HTMLElement).getBoundingClientRect();
+  const table = canvasElement.querySelector<HTMLElement>('[data-landing-stage] > div');
+  const phones = [...canvasElement.querySelectorAll<HTMLElement>('[data-phone]')];
+  await expect(phones).toHaveLength(3);
+  for (const part of [table as HTMLElement, ...phones]) {
+    const box = part.getBoundingClientRect();
+    const bezel = phoneBezel * Number(part.style.getPropertyValue('--landing-k') || 0);
+    await expect(box.left - bezel).toBeGreaterThanOrEqual(screen.left);
+    await expect(box.right + bezel).toBeLessThanOrEqual(screen.right);
+  }
+}
+
+export const SceneInsideTheScreen = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvasElement }) => {
+    await expect(window.innerWidth).toBe(layout.viewports.narrow.width);
+    await expectSceneInsideScreen(canvasElement);
+  },
+});
+
+export const SceneInsideTheLargeFrame = meta.story({
+  tags: ['!dev'],
+  globals: { frame: 'large' },
+  play: async ({ canvasElement }) => {
+    const { width } = layout.viewports.large;
+    await waitFor(() => expect(window.innerWidth).toBe(width));
+    await expectSceneInsideScreen(canvasElement);
+  },
+});
+
+export const SceneInsideTheDesktopFrame = meta.story({
+  tags: ['!dev'],
+  globals: { frame: 'desktop' },
+  play: async ({ canvasElement }) => {
+    const { width } = layout.viewports.desktop;
+    await waitFor(() => expect(window.innerWidth).toBe(width));
+    await expectSceneInsideScreen(canvasElement);
+  },
+});

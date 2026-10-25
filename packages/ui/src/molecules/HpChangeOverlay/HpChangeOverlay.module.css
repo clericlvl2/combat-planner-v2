@@ -1,0 +1,176 @@
+@keyframes rise {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+
+  15% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes ribbon {
+  0% {
+    opacity: 0;
+    clip-path: inset(0 100% 0 0);
+  }
+
+  15% {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+
+  75% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fade {
+  0%,
+  60% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  grid-area: 1 / 1 / 2 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+}
+
+.number {
+  position: relative;
+  z-index: 1;
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+  -webkit-text-stroke: 6px var(--cp-color-surface);
+  paint-order: stroke fill;
+  animation: rise var(--cp-hp-number-duration) ease-out both;
+
+  &[data-kind='damage'] {
+    color: var(--cp-hp-damage);
+  }
+
+  &[data-kind='heal'] {
+    color: var(--cp-hp-heal);
+  }
+
+  &[data-kind='temp'] {
+    color: var(--cp-hp-set-temp);
+  }
+}
+
+.ribbon {
+  position: absolute;
+  inset: -1px;
+  z-index: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--mantine-spacing-sm);
+  container-type: inline-size;
+  border-radius: var(--mantine-radius-card);
+  color: var(--cp-color-surface);
+  font-family: var(--cp-font-display);
+  font-size: var(--mantine-font-size-body);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  opacity: 0;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  animation: ribbon 1700ms 700ms forwards;
+
+  & > span {
+    font-size: clamp(
+      var(--mantine-font-size-meta),
+      100cqi / (var(--cp-ribbon-chars) * 1.15),
+      var(--mantine-font-size-body)
+    );
+  }
+
+  &[data-status='staggered'] {
+    background: color-mix(in srgb, var(--cp-health-staggered) 94%, transparent);
+  }
+
+  &[data-status='unconscious'] {
+    background: color-mix(in srgb, var(--cp-health-unconscious) 94%, transparent);
+  }
+
+  &[data-status='dead'] {
+    background: color-mix(in srgb, var(--cp-health-dead) 94%, transparent);
+  }
+}
+
+.badge {
+  position: absolute;
+  top: 50%;
+  grid-area: 1 / 1 / 2 / -1;
+  right: 89px;
+  z-index: 2;
+  padding: 0 6px;
+  border-radius: var(--mantine-radius-full);
+  background: var(--cp-color-surface);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-meta);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 20px;
+  white-space: nowrap;
+  pointer-events: none;
+  transform: translateY(-50%);
+  animation: fade var(--cp-hp-number-duration) linear both;
+
+  &[data-kind='damage'] {
+    color: var(--cp-hp-damage);
+  }
+
+  &[data-kind='heal'] {
+    color: var(--cp-hp-heal);
+  }
+
+  &[data-kind='temp'] {
+    color: var(--cp-hp-set-temp);
+  }
+}
+
+:global([data-motion-frozen]) :is(.number, .badge) {
+  animation-delay: -400ms;
+  animation-play-state: paused;
+}
+
+:global([data-motion-frozen]) .ribbon {
+  animation-delay: -1000ms;
+  animation-play-state: paused;
+}

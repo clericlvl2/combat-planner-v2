@@ -6,6 +6,7 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
+  background: var(--cp-color-background);
 }
 
 .body {
@@ -53,7 +54,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cp-card-gap);
 }
 
 .hero {
@@ -65,7 +66,7 @@
   min-height: 64px;
   padding: 12px;
   overflow: hidden;
-  border: 2px solid var(--cp-color-border);
+  border: 1px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
 
@@ -96,7 +97,7 @@
 
 .role {
   align-self: stretch;
-  min-height: 64px;
+  margin: var(--cp-role-tile-inset);
 }
 
 .tile {

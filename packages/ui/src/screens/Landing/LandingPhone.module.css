@@ -14,7 +14,7 @@
     0 0 0 2px var(--cp-color-border),
     0 0 0 10px var(--cp-color-surface),
     0 0 0 12px var(--cp-color-border),
-    0 40px 60px -10px rgb(0 0 0 / 60%);
+    0 40px 60px -10px color-mix(in srgb, var(--cp-color-ink) 60%, transparent);
   contain: layout paint;
 }
 
@@ -29,6 +29,7 @@
   align-items: center;
   height: 44px;
   padding: 0 32px;
+  color: var(--cp-color-on-chrome);
   font-size: var(--mantine-font-size-body);
   font-weight: 600;
   line-height: 1;
@@ -48,8 +49,9 @@
   flex: none;
   flex-direction: column;
   width: 100%;
-  border-bottom: 2px solid var(--cp-color-border);
-  background: var(--cp-color-background);
+  border-bottom: 2px solid color-mix(in srgb, var(--cp-color-on-chrome) 25%, var(--cp-color-chrome));
+  background: var(--cp-color-chrome);
+  color: var(--cp-color-on-chrome);
 }
 
 .headerStatus {
@@ -91,7 +93,7 @@
   width: 44px;
   height: 44px;
   border-radius: var(--mantine-radius-field);
-  background: var(--cp-color-soft);
+  background: color-mix(in srgb, var(--cp-color-on-chrome) 12%, transparent);
 }
 
 .ticket {
@@ -102,6 +104,7 @@
   margin: 12px;
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-surface);
+  color: var(--cp-color-ink);
 }
 
 .divider {
@@ -215,10 +218,19 @@
   border-radius: var(--mantine-radius-field);
   background: var(--cp-color-ink);
 
+  .playerBody & {
+    border-color: var(--cp-color-surface);
+    background: var(--cp-color-surface);
+  }
+
   .die[data-empty] & {
     padding: 6px;
     border: 2px dashed var(--cp-color-muted);
     background: transparent;
+  }
+
+  .playerBody .die[data-empty] & {
+    border-color: color-mix(in srgb, var(--cp-color-on-chrome) 60%, transparent);
   }
 
   .die[data-ticket] & {
@@ -245,6 +257,11 @@
   border-radius: 50%;
   background: var(--cp-color-surface);
   opacity: 0;
+
+  .playerBody & {
+    background: var(--cp-color-ink);
+  }
+
   transform: scale(0);
   transition:
     transform 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -271,6 +288,11 @@
   .die[data-empty] & {
     color: var(--cp-color-secondary);
   }
+
+  .playerBody &,
+  .playerBody .die[data-empty] & {
+    color: var(--cp-color-on-chrome);
+  }
 }
 
 .list {
@@ -278,10 +300,12 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--cp-card-gap);
   min-height: 0;
   padding: 8px 12px;
-  overflow: hidden;
+  overflow: clip;
+  overflow-clip-margin: 20px;
+  background: var(--cp-color-field);
 }
 
 .row {
@@ -289,19 +313,28 @@
   box-sizing: border-box;
   display: grid;
   flex: none;
-  grid-template-columns: 48px minmax(0, 1fr) 84px;
+  grid-template-columns: 49px minmax(0, 1fr) 85px;
   min-height: 64px;
-  border: 2px solid var(--cp-color-border);
+  border: 1px solid var(--cp-color-border);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease;
 
   &[data-dead] {
-    background: var(--cp-role-inactive-fill);
+    background: var(--cp-color-soft);
   }
 
   &[data-active] {
-    border-color: var(--cp-color-ink);
+    z-index: 1;
+    border-color: var(--cp-color-accent);
     background: var(--cp-color-accent);
+    color: var(--cp-color-on-accent);
+    box-shadow: var(--cp-active-shadow);
+    transform: translateY(calc(-1 * var(--cp-active-lift)));
   }
 }
 
@@ -313,9 +346,10 @@
   align-items: center;
   justify-content: center;
   gap: 3px;
-  width: 48px;
-  padding: 8px 0;
-  border-radius: 14px 0 0 14px;
+  width: var(--cp-role-tile-width);
+  margin: var(--cp-role-tile-inset);
+  padding: 6px 0;
+  border-radius: var(--mantine-radius-tile);
   background: var(--cp-role-enemy);
   color: var(--cp-color-surface);
 
@@ -329,28 +363,6 @@
 
   .row[data-dead] & {
     background: var(--cp-role-inactive);
-  }
-}
-
-.notch {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 0;
-  height: 0;
-  margin-top: -9px;
-  border-top: 9px solid transparent;
-  border-bottom: 9px solid transparent;
-  border-left: 9px solid var(--cp-color-accent);
-  opacity: 0;
-  transform: translateX(-9px);
-  transition:
-    opacity 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    transform 320ms cubic-bezier(0.2, 0.7, 0.2, 1);
-
-  .row[data-active] & {
-    opacity: 1;
-    transform: none;
   }
 }
 
@@ -370,17 +382,17 @@
 
 .roleLabel {
   max-width: 100%;
-  font-size: var(--mantine-font-size-caps);
+  font-size: var(--mantine-font-size-capsTile);
   font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   text-align: center;
   text-transform: uppercase;
 }
 
 .you {
-  max-width: 44px;
-  padding: 1px 5px;
+  max-width: 100%;
+  padding: 1px 3px;
   border-radius: var(--mantine-radius-full);
   background: var(--cp-color-surface);
   color: var(--cp-role-hero);
@@ -427,11 +439,15 @@
   gap: 2px;
   height: 22px;
   padding: 0 4px;
-  border: 1px solid var(--cp-color-border);
+  border: 1px solid transparent;
   border-radius: var(--mantine-radius-full);
-  background: var(--cp-color-surface);
+  background: var(--cp-color-background);
   line-height: 20px;
   white-space: nowrap;
+
+  .row[data-active] & {
+    background: var(--cp-color-surface);
+  }
 }
 
 .defenseLabel {
@@ -500,6 +516,11 @@
   padding: 4px 0;
   border-radius: var(--mantine-radius-field);
   background: var(--stage-hp-tint);
+
+  &[data-status='wounded'] {
+    --stage-hp-status: var(--cp-health-wounded);
+    --stage-hp-tint: var(--cp-health-tint-wounded);
+  }
 
   &[data-status='staggered'] {
     --stage-hp-status: var(--cp-health-staggered);
@@ -579,7 +600,7 @@
   width: 24px;
   height: 5px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-health-empty);
+  background: var(--cp-color-disabled);
 
   &[data-filled] {
     background: var(--stage-hp-status);
@@ -596,7 +617,7 @@
   border: 2px solid var(--cp-color-surface);
   border-radius: var(--mantine-radius-full);
   background: var(--cp-hp-set-temp);
-  color: var(--cp-color-surface);
+  color: var(--cp-hp-on);
   font-size: var(--mantine-font-size-micro);
   font-weight: 700;
   line-height: 14px;
@@ -654,8 +675,8 @@
   min-height: 58px;
   padding: 6px 16px;
   border-radius: 29px;
-  background: var(--cp-color-ink);
-  color: var(--cp-color-surface);
+  background: var(--cp-color-primary);
+  color: var(--cp-color-on-primary);
   animation: press 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
 }
 
@@ -729,5 +750,9 @@
   .phone *::after {
     transition: none !important;
     animation: none !important;
+  }
+
+  .row[data-active] {
+    transform: none;
   }
 }

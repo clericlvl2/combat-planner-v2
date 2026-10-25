@@ -2,7 +2,6 @@
   position: relative;
   flex: none;
   margin: 8px 8px 16px;
-  overflow-x: clip;
   perspective: 1200px;
   perspective-origin: 50% 35%;
   pointer-events: none;
@@ -21,10 +20,14 @@
     content: '';
     position: absolute;
     inset: 0;
-    border: 2px solid #4a4038;
+    border: 2px solid color-mix(in srgb, var(--cp-color-primary-deep) 70%, var(--cp-color-accent));
     border-radius: 32px;
-    background-color: #2a2420;
-    background-image: radial-gradient(circle at 1px 1px, rgb(255 231 163 / 14%) 1px, transparent 0);
+    background-color: var(--cp-color-primary-deep);
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in srgb, var(--cp-color-accent) 14%, transparent) 1px,
+      transparent 0
+    );
     background-size: 20px 20px;
   }
 }

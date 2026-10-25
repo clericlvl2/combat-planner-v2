@@ -213,7 +213,7 @@ export const SocialSignInFailed = meta.story({
     const google = await canvas.findByRole('button', { name: t('google') });
     await userEvent.dblClick(google);
     await expect(calls).toEqual(['google']);
-    await expect(google).toBeDisabled();
+    await waitFor(() => expect(google).toBeDisabled());
     fail(new ApiError({ status: 422, code: 'invalid' }));
     await expect(await canvas.findByRole('alert')).toHaveTextContent(t('socialFailed'));
     await expect(args.onRedirect).not.toHaveBeenCalled();
@@ -229,7 +229,9 @@ export const CantReachServer = meta.story({
     await userEvent.type(canvas.getByLabelText(t('password')), 'ferry-crossing');
     fakeApiOf(loaded).failNext('network');
     await userEvent.click(canvas.getByRole('button', { name: t('submit') }));
-    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:serverUnreachable'));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('Toast:serverUnreachableNothingChanged'),
+    );
     await expect(canvas.getByRole('button', { name: t('Toast:retry') })).toBeVisible();
     await expect(locationOf(canvasElement)).toBe('/auth/sign-in');
   },
@@ -279,5 +281,32 @@ export const SwitchesLanguage = meta.story({
     await expect(
       canvas.getByRole('button', { name: new RegExp(localeNames[target]) }),
     ).toBeVisible();
+  },
+});
+
+export const SubmitWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
+    await userEvent.type(canvas.getByRole('textbox', { name: t('email') }), 'dm@ferry.games');
+    await userEvent.type(canvas.getByLabelText(t('password')), 'secret');
+    fakeApiOf(loaded).holdNext();
+    const submit = canvas.getByRole('button', { name: t('submit') });
+    await userEvent.click(submit);
+    await waitFor(() => expect(submit).toHaveAttribute('aria-busy', 'true'));
+    await expect(submit).toBeDisabled();
+  },
+});
+
+export const SocialSignInWaits = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: withSocial },
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'SignIn');
+    const google = await canvas.findByRole('button', { name: t('google') });
+    fakeApiOf(loaded).holdNext();
+    await userEvent.click(google);
+    await waitFor(() => expect(google).toHaveAttribute('aria-busy', 'true'));
+    await expect(canvas.getByRole('button', { name: t('github') })).toBeDisabled();
   },
 });

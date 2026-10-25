@@ -22,7 +22,8 @@ function useSize(element: HTMLElement | null): LandingSize {
   useLayoutEffect(() => {
     if (!element) return;
     const measure = () => {
-      const next = { width: element.clientWidth, height: element.clientHeight };
+      const { width, height } = element.getBoundingClientRect();
+      const next = { width, height };
       setSize((current) =>
         current.width === next.width && current.height === next.height ? current : next,
       );

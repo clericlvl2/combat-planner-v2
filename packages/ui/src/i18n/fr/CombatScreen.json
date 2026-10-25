@@ -19,6 +19,7 @@
   "undoSetMaxHp": "Annulé : PV max {{amount}} pour {{name}}",
   "undoToggleCondition": "Annulé : {{condition}} sur {{name}}",
   "undoEditNote": "Annulé : remarque de {{name}}",
+  "undoSetDefenseMods": "Annulé : défenses de {{name}}",
   "nextWrap": "{{name}} · round {{round}}",
   "presetFailed": "Impossible d’enregistrer le modèle. Réessayez.",
   "linkFailed": "Impossible de charger le lien des joueurs. Réessayez."

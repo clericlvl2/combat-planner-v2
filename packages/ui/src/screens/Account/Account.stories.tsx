@@ -241,3 +241,44 @@ export const SignOutOthersFailed = meta.story({
     await expect(probeOf(canvasElement).location).toBe('/account');
   },
 });
+
+export const SignOutWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
+    await canvas.findByText('dm@ferry.games');
+    fakeApiOf(loaded).holdNext();
+    const button = canvas.getByRole('button', { name: t('signOut') });
+    await userEvent.click(button);
+    await waitFor(() => expect(button).toHaveAttribute('aria-busy', 'true'));
+    await expect(button).toBeDisabled();
+  },
+});
+
+export const SignOutOthersWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
+    await canvas.findByText('dm@ferry.games');
+    fakeApiOf(loaded).holdNext();
+    const button = canvas.getByRole('button', { name: t('signOutOthers') });
+    await userEvent.click(button);
+    await waitFor(() => expect(button).toHaveAttribute('aria-busy', 'true'));
+    await expect(button).toBeDisabled();
+  },
+});
+
+export const DeleteWaits = meta.story({
+  tags: ['!dev'],
+  play: async ({ canvas, globals, loaded }) => {
+    const t = storyT(globals, 'Account');
+    await canvas.findByText('dm@ferry.games');
+    await userEvent.click(canvas.getByRole('button', { name: t('deleteAccount') }));
+    const dialog = await canvas.findByRole('alertdialog', { name: t('Dialog:deleteAccountTitle') });
+    fakeApiOf(loaded).holdNext();
+    const confirm = within(dialog).getByRole('button', { name: t('Button:delete') });
+    await userEvent.click(confirm);
+    await waitFor(() => expect(confirm).toHaveAttribute('aria-busy', 'true'));
+    await expect(confirm).toBeDisabled();
+  },
+});

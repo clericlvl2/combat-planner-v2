@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   amountSchema,
   conditionSchema,
+  defenseModSchema,
   defenseSchema,
   displayNameSchema,
   escalationSchema,
@@ -118,6 +119,13 @@ export const editNoteActionSchema = z.object({
   type: z.literal('editNote'),
   note: noteSchema,
 });
+export const setDefenseModsActionSchema = z.object({
+  ...unitTarget,
+  type: z.literal('setDefenseMods'),
+  ac: defenseModSchema,
+  pd: defenseModSchema,
+  md: defenseModSchema,
+});
 export const claimUnitActionSchema = z.object({
   ...unitTarget,
   type: z.literal('claimUnit'),
@@ -146,6 +154,7 @@ export const actionSchema = z.discriminatedUnion('type', [
   setMaxHpActionSchema,
   toggleConditionActionSchema,
   editNoteActionSchema,
+  setDefenseModsActionSchema,
   claimUnitActionSchema,
   releaseUnitActionSchema,
 ]);
@@ -174,6 +183,7 @@ export type SetTempHpAction = ActionOf<'setTempHp'>;
 export type SetMaxHpAction = ActionOf<'setMaxHp'>;
 export type ToggleConditionAction = ActionOf<'toggleCondition'>;
 export type EditNoteAction = ActionOf<'editNote'>;
+export type SetDefenseModsAction = ActionOf<'setDefenseMods'>;
 export type ClaimUnitAction = ActionOf<'claimUnit'>;
 export type ReleaseUnitAction = ActionOf<'releaseUnit'>;
 

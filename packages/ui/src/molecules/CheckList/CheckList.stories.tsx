@@ -7,6 +7,12 @@ import { CheckList } from './CheckList.tsx';
 import type { CheckListOption, CheckListProps } from './CheckList.tsx';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { anyValue, storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type TagKey = Exclude<keyof typeof en, 'create' | 'noMatch'>;
 
@@ -195,7 +201,7 @@ export const NewTagBadge = meta.story({
     await expect(created).toBeChecked();
     const row = created.closest('label');
     await expect(row).toHaveAttribute('data-new');
-    await expect(row && getComputedStyle(row).backgroundColor).toBe('rgb(255, 244, 210)');
+    await expect(row && getComputedStyle(row).backgroundColor).toBe(rgb(base.highlight));
     await expect(canvas.queryByText('0')).toBeNull();
     const plain = canvas.getByRole('checkbox', { name: `${t('orcs')} 2` }).closest('label');
     await expect(plain).not.toHaveAttribute('data-new');

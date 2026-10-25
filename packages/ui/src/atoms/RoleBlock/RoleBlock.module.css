@@ -12,7 +12,7 @@
   border: none;
   border-radius: 0;
   background: var(--cp-role-enemy);
-  color: var(--cp-color-surface);
+  color: var(--cp-role-on);
   font-family: var(--cp-font-ui);
   user-select: none;
   -webkit-tap-highlight-color: transparent;
@@ -25,21 +25,31 @@
     align-self: stretch;
   }
 
+  &[data-tile] {
+    width: var(--cp-role-tile-width);
+    padding: 6px 0;
+    border-radius: var(--mantine-radius-tile);
+  }
+
+  &[data-tile]:is(button)::after {
+    content: '';
+    position: absolute;
+    inset: min(0px, (100% - var(--cp-tap-target)) / 2);
+  }
+
   &[data-unit-role='hero'] {
     background: var(--cp-role-hero);
+    color: var(--cp-role-on);
   }
 
   &[data-unit-role='ally'] {
     background: var(--cp-role-ally);
+    color: var(--cp-role-on);
   }
 
   &[data-inactive][data-unit-role] {
     background: var(--cp-role-inactive);
-  }
-
-  &[data-neutral][data-unit-role] {
-    background: var(--cp-color-soft);
-    color: var(--cp-color-ink);
+    color: var(--cp-role-on);
   }
 
   &[data-unit-role]:focus-visible,
@@ -54,18 +64,6 @@
   }
 }
 
-.notch {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  width: 0;
-  height: 0;
-  margin-top: -9px;
-  border-top: 9px solid transparent;
-  border-bottom: 9px solid transparent;
-  border-left: 9px solid var(--cp-color-accent);
-}
-
 .value {
   font-family: var(--cp-font-display);
   padding-bottom: 2px;
@@ -76,7 +74,7 @@
   white-space: nowrap;
 
   &[data-editable] {
-    border-bottom: 2px dashed var(--cp-color-surface);
+    border-bottom: 2px dashed currentColor;
   }
 }
 
@@ -87,7 +85,7 @@
   width: 32px;
   height: 32px;
   border-radius: 16px;
-  background: color-mix(in srgb, var(--cp-color-surface) 22%, transparent);
+  background: color-mix(in srgb, currentColor 22%, transparent);
 }
 
 .label {
@@ -98,6 +96,11 @@
   letter-spacing: 0.08em;
   text-align: center;
   text-transform: uppercase;
+
+  .root[data-tile] & {
+    font-size: var(--mantine-font-size-capsTile);
+    letter-spacing: 0.04em;
+  }
 }
 
 .chip {
@@ -113,4 +116,9 @@
   line-height: var(--mantine-line-height-tight);
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  .root[data-tile] & {
+    max-width: 100%;
+    padding-inline: 3px;
+  }
 }

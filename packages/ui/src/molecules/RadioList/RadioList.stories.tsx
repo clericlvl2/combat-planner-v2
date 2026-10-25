@@ -8,6 +8,12 @@ import { RadioList } from './RadioList.tsx';
 import type { RadioListOption, RadioListProps } from './RadioList.tsx';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 interface RadioListCellProps extends Omit<
   RadioListProps<string>,
@@ -101,7 +107,7 @@ export const TapAppliesAtOnce = meta.story({
     await expect(lastPlayed).toBeChecked();
     const tinted = canvasElement.querySelector<HTMLElement>('[data-selected]');
     await expect(tinted).toHaveTextContent(t('lastPlayed'));
-    await expect(tinted && getComputedStyle(tinted).backgroundColor).toBe('rgb(255, 244, 210)');
+    await expect(tinted && getComputedStyle(tinted).backgroundColor).toBe(rgb(base.highlight));
     await userEvent.click(canvas.getByText(t('lastPlayed')));
     await expect(args.onChange).toHaveBeenCalledOnce();
   },

@@ -4,7 +4,7 @@
   gap: 6px;
   margin: -16px;
   padding: 6px;
-  background: #dcd8cf;
+  background: var(--cp-color-field);
   color: var(--cp-color-ink);
   font-family: var(--cp-font-ui);
 }
@@ -58,7 +58,7 @@
   justify-content: center;
   width: 12px;
   height: 12px;
-  border: 1px solid rgb(0 0 0 / 12%);
+  border: 1px solid color-mix(in srgb, var(--cp-color-ink) 12%, transparent);
   border-radius: 3px;
   font-size: 5px;
   font-weight: 700;

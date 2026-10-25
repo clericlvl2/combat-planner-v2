@@ -20,6 +20,7 @@ export interface DialogProps {
   opened: boolean;
   lockScroll?: boolean;
   trapFocus?: boolean;
+  loading?: boolean;
 }
 
 const defaultProps = {
@@ -40,6 +41,7 @@ export function Dialog(props: DialogProps) {
     opened,
     lockScroll,
     trapFocus,
+    loading,
   } = useProps('CpDialog', defaultProps, props);
   const { t } = useTranslation('Dialog');
   const titleId = useId();
@@ -108,6 +110,7 @@ export function Dialog(props: DialogProps) {
                     variant={tone === 'ink' ? 'primary' : 'danger'}
                     size="M"
                     fullWidth
+                    loading={loading}
                     onClick={onConfirm}
                     data-mantine-stop-propagation="true"
                   >

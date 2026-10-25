@@ -27,6 +27,9 @@ const unit = (index: number) => ({
   ac: 15,
   pd: 12,
   md: 11,
+  acMod: 1,
+  pdMod: -1,
+  mdMod: 0,
   note: 'Hides in the reeds',
   conditions: ['dazed' as const],
   disabled: false,
@@ -59,6 +62,32 @@ const fileOf = (units: number): CombatFile =>
     units: Array.from({ length: units }, (_, index) => unit(index)),
   });
 
+const activeFile = (): CombatFile => {
+  const file = toCombatFile(source);
+  return {
+    ...file,
+    combat: {
+      ...file.combat,
+      status: source.status,
+      round: source.round,
+      escalation: source.escalation,
+      activeUnitId: source.activeUnitId,
+      units: file.combat.units.map((each, index) => {
+        const live = source.units[index];
+        if (!live) throw new Error(`No source unit ${index}`);
+        return {
+          ...each,
+          initiative: live.initiative,
+          hp: live.hp,
+          tempHp: live.tempHp,
+          conditions: [...live.conditions],
+          disabled: live.disabled,
+        };
+      }),
+    },
+  };
+};
+
 let opened: TestApp;
 let dm: ReturnType<typeof withUser>;
 
@@ -73,7 +102,7 @@ afterAll(() => {
 
 describe('POST /combats/import', () => {
   it('creates a new combat owned by the DM from a valid file', async () => {
-    const response = await call(dm, 'POST', '/combats/import', toCombatFile(source));
+    const response = await call(dm, 'POST', '/combats/import', activeFile());
     expect(response.status).toBe(200);
     const imported = combatSchema.parse(await response.json());
     expect(imported.id).not.toBe(COMBAT_ID);
@@ -92,7 +121,14 @@ describe('POST /combats/import', () => {
     expect(imported.units.map((each) => each.id)).not.toContain(ulidAt(1));
     expect(imported.activeUnitId).toBe(imported.units[1]?.id);
     expect(imported.units.map(({ id: _id, ...rest }) => rest)).toEqual(
-      source.units.map(({ id: _id, ...rest }) => ({ ...rest, claimedBy: null, hpHistory: [] })),
+      source.units.map(({ id: _id, ...rest }) => ({
+        ...rest,
+        acMod: 0,
+        pdMod: 0,
+        mdMod: 0,
+        claimedBy: null,
+        hpHistory: [],
+      })),
     );
     expect(await fetchCombat(dm, imported.id)).toMatchObject({ id: imported.id, undo: null });
     expect(

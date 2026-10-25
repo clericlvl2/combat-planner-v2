@@ -2,6 +2,7 @@ import { ApiError } from '@combat-planner/api/client';
 import type { DmCombat, PresenceEvent } from '@combat-planner/api/client';
 import {
   LIMITS,
+  healthStatus,
   nextTurnBlockReason,
   nextTurnTarget,
   presetFromUnit,
@@ -26,34 +27,39 @@ import {
   IconUsers,
 } from '@tabler/icons-react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { ulid } from 'ulid';
 import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.tsx';
 import { combatKey } from '../../hooks/combat.ts';
 import type { CombatEntry } from '../../hooks/combat.ts';
+import { overlay } from '../../hooks/optimistic.ts';
 import type { ToastAction, ToastKind } from '../../hooks/toasts.ts';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { useCombat } from '../../hooks/useCombat.ts';
 import { useCombatLink } from '../../hooks/useCombatLink.ts';
 import { useConnection } from '../../hooks/useConnection.ts';
+import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { usePresets } from '../../hooks/usePresets.ts';
+import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
 import { Toast } from '../../molecules/Toast/Toast.tsx';
+import { TurnBracket } from '../../molecules/TurnBracket/TurnBracket.tsx';
 import { CombatHeader } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import type {
   CombatHeaderPopover,
   CombatMenuAction,
 } from '../../organisms/CombatHeader/CombatHeader.tsx';
 import { ConditionPicker } from '../../organisms/ConditionPicker/ConditionPicker.tsx';
+import { DefenseSheet } from '../../organisms/DefenseSheet/DefenseSheet.tsx';
 import { Dialog } from '../../organisms/Dialog/Dialog.tsx';
 import type { DialogProps } from '../../organisms/Dialog/Dialog.tsx';
 import { HpHistory } from '../../organisms/HpHistory/HpHistory.tsx';
-import { NumpadSheet, useHpFlash } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
+import { NumpadSheet } from '../../organisms/NumpadSheet/NumpadSheet.tsx';
 import { ShareSheet } from '../../organisms/ShareSheet/ShareSheet.tsx';
 import { TurnBar } from '../../organisms/TurnBar/TurnBar.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
@@ -63,6 +69,7 @@ import { CantReachServer } from '../CantReachServer/CantReachServer.tsx';
 import { CombatNotFound } from '../CombatNotFound/CombatNotFound.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
 import { saveCombatFile } from '../shared/combatFile.ts';
+import { LoadingScreen } from '../shared/LoadingScreen.tsx';
 import { toastLook } from '../shared/toastLook.ts';
 import { claimEvents } from './claimEvents.ts';
 import { isUndoable, undoLabel } from './undoLabel.ts';
@@ -86,7 +93,7 @@ interface PinnedUndo {
   version: number;
 }
 
-type RowPanel = 'initiative' | 'menu' | 'conditions' | 'history' | 'numpad';
+type RowPanel = 'initiative' | 'menu' | 'conditions' | 'defenses' | 'history' | 'numpad';
 
 interface Panel {
   panel: RowPanel;
@@ -170,7 +177,16 @@ export function CombatScreen({
         : tToast('playerLeft', { name: event.name }),
     );
   };
-  const { combat, error, ended, dispatch, refetch } = useCombat(combatId, DM, { onPresence });
+  const {
+    combat: server,
+    error,
+    ended,
+    dispatch,
+    refetch,
+    pending,
+    tracker,
+  } = useCombat(combatId, DM, { onPresence });
+  const combat = useMemo(() => server && overlay(server, pending, DM), [server, pending]);
   useConnection();
   const { presets, create: createPreset } = usePresets();
   const { tags } = useTags();
@@ -178,10 +194,11 @@ export function CombatScreen({
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Panel | null>(null);
   const [form, setForm] = useState<Form | null>(null);
+  const [formKey, setFormKey] = useState(0);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
-  const [flashId, setFlashId] = useState<UnitId | null>(null);
-  const { flashing, flash } = useHpFlash();
+  const [busyUnitId, setBusyUnitId] = useState<UnitId | null>(null);
+  const [undoing, setUndoing] = useState(false);
   const link = useCombatLink(combatId, shareOpen);
   const knownVersion = useRef(0);
   const previous = useRef<DmCombat | undefined>(undefined);
@@ -213,9 +230,9 @@ export function CombatScreen({
 
   useEffect(() => {
     const before = previous.current;
-    previous.current = combat;
-    if (before === undefined || combat === undefined || before === combat) return;
-    for (const event of claimEvents(before, combat)) {
+    previous.current = server;
+    if (before === undefined || server === undefined || before === server) return;
+    for (const event of claimEvents(before, server)) {
       if (event.kind === 'released' && ownReleases.current.has(event.unitId)) continue;
       announce(
         tToast(event.kind === 'claimed' ? 'playerClaimed' : 'playerReleased', {
@@ -224,22 +241,26 @@ export function CombatScreen({
         }),
       );
     }
-    settleOwnReleases(ownReleases.current, before, combat);
-  }, [combat, announce, tToast]);
+    settleOwnReleases(ownReleases.current, before, server);
+  }, [server, announce, tToast]);
 
   const key = combatKey(combatId, DM);
   const latest = (): DmCombat | undefined =>
-    queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document ?? combat;
+    queryClient.getQueryData<CombatEntry<DmCombat>>(key)?.document ?? server;
 
   const sendNow = async (
     body: ActionBody,
     release: () => void,
     pinnedVersion?: number,
+    id: string = ulid(),
   ): Promise<Sent | null> => {
     const before = latest();
-    if (before === undefined) return null;
+    if (before === undefined) {
+      tracker.drop(id);
+      return null;
+    }
     const version = pinnedVersion ?? Math.max(before.version, knownVersion.current);
-    const action = { ...body, id: ulid(), version } as Action;
+    const action = { ...body, id, version } as Action;
     const result = await dispatch(action, release);
     if (!result.applied) return null;
     knownVersion.current = Math.max(knownVersion.current, result.version);
@@ -257,16 +278,15 @@ export function CombatScreen({
     return next;
   };
 
-  const send = (body: ActionBody): Promise<Sent | null> =>
-    enqueue((release) => sendNow(body, release));
+  const send = (body: ActionBody): Promise<Sent | null> => {
+    const id = ulid();
+    const queued = { ...body, id, version: 0 } as Action;
+    if (tracker.optimistic(queued)) tracker.add(queued);
+    return enqueue((release) => sendNow(body, release, undefined, id));
+  };
 
   const notify = (message: string, kind: ToastKind, action?: ToastAction) => {
     showToast({ message, kind, action });
-  };
-
-  const flashUnit = (unitId: UnitId) => {
-    setFlashId(unitId);
-    flash();
   };
 
   const undoMessage = (summary: UndoSummary): string | null => {
@@ -295,8 +315,13 @@ export function CombatScreen({
       const summary = pinned?.summary ?? latest()?.undo;
       if (!summary) return;
       const message = undoMessage(summary);
-      const undone = await sendNow({ type: 'undo' }, release, pinned?.version);
-      if (undone && message !== null) notify(message, 'neutral');
+      setUndoing(true);
+      try {
+        const undone = await sendNow({ type: 'undo' }, release, pinned?.version);
+        if (undone && message !== null) notify(message, 'neutral');
+      } finally {
+        setUndoing(false);
+      }
     });
 
   const close = () => setOpen(null);
@@ -311,13 +336,41 @@ export function CombatScreen({
     void navigate('/combats');
   };
 
+  const hpChanges = useHpChanges(
+    (combat?.units ?? []).map((unit) => ({
+      id: unit.id,
+      hp: unit.hp,
+      tempHp: unit.tempHp,
+      healthStatus: healthStatus(unit.hp, unit.maxHp, unit.role),
+    })),
+  );
+
   const goHome = () => {
     void navigate('/');
   };
 
+  const panelUnit = (panel: RowPanel) =>
+    (open?.panel === panel ? combat?.units.find((unit) => unit.id === open.unitId) : undefined) ??
+    null;
+  const numpadOpen = panelUnit('numpad');
+  const conditionsOpen = panelUnit('conditions');
+  const historyOpen = panelUnit('history');
+  const defensesOpen = panelUnit('defenses');
+  const editingOpen =
+    (form?.mode === 'edit' ? combat?.units.find((unit) => unit.id === form.unitId) : undefined) ??
+    null;
+  const addingOpen = form?.mode === 'add' ? form : null;
+  const numpadUnit = useRetained(numpadOpen);
+  const conditionsUnit = useRetained(conditionsOpen);
+  const historyUnit = useRetained(historyOpen);
+  const defensesUnit = useRetained(defensesOpen);
+  const editing = useRetained(editingOpen);
+  const adding = useRetained(addingOpen);
+
   if (ended?.type === 'deleted') return <CombatNotFound onHome={goHome} />;
   if (combat === undefined) {
-    if (error === null || signedOut) return null;
+    if (signedOut) return null;
+    if (error === null) return <LoadingScreen onBack={goToCombats} />;
     if (error instanceof ApiError && error.code === 'notFound') {
       return <CombatNotFound onHome={goHome} />;
     }
@@ -331,8 +384,10 @@ export function CombatScreen({
   const units = setup ? combat.units : turnOrder(combat.units);
   const atCap = combat.units.length >= LIMITS.unitsPerCombat;
   const unitById = (unitId: UnitId | undefined) => combat.units.find((unit) => unit.id === unitId);
-  const panelUnit = (panel: RowPanel) =>
-    open?.panel === panel ? unitById(open.unitId) : undefined;
+  const openForm = (next: Form) => {
+    setFormKey((current) => current + 1);
+    setForm(next);
+  };
 
   const capToast = () => {
     notify(tToast('unitCap', { limit: LIMITS.unitsPerCombat }), 'warning');
@@ -343,7 +398,7 @@ export function CombatScreen({
       capToast();
       return;
     }
-    setForm({ mode: 'add' });
+    openForm({ mode: 'add' });
   };
 
   const start = () => {
@@ -364,21 +419,20 @@ export function CombatScreen({
     else setConfirm({ kind: action });
   };
 
-  const applyHp = async (unit: Unit, kind: HpHistoryKind, amount: number) => {
+  const applyHp = (unit: Unit, kind: HpHistoryKind, amount: number) => {
     close();
-    const applied = await send({ type: hpActionTypes[kind], unitId: unit.id, amount });
-    if (applied) flashUnit(unit.id);
+    void send({ type: hpActionTypes[kind], unitId: unit.id, amount });
   };
 
-  const duplicate = async (unit: Unit) => {
+  const duplicate = (unit: Unit) => {
     close();
     const newUnitId = ulid();
-    const applied = await send({ type: 'duplicateUnit', unitId: unit.id, newUnitId });
-    if (applied) flashUnit(newUnitId);
+    void send({ type: 'duplicateUnit', unitId: unit.id, newUnitId });
   };
 
   const saveAsPreset = (unit: Unit) => {
     close();
+    setBusyUnitId(unit.id);
     const {
       createdAt: _createdAt,
       updatedAt: _updatedAt,
@@ -389,7 +443,8 @@ export function CombatScreen({
       .catch((error: unknown) => {
         if (error instanceof ApiError && toastedCodes.has(error.code)) return;
         notify(t('presetFailed'), 'error');
-      });
+      })
+      .finally(() => setBusyUnitId(null));
   };
 
   const changeConditions = (unit: Unit, next: readonly Condition[]) => {
@@ -522,10 +577,6 @@ export function CombatScreen({
   };
   const dialog = dialogs[confirm?.kind ?? 'remove'];
 
-  const numpadUnit = panelUnit('numpad');
-  const conditionsUnit = panelUnit('conditions');
-  const historyUnit = panelUnit('history');
-  const editing = form?.mode === 'edit' ? unitById(form.unitId) : undefined;
   const toast = toasts[0];
 
   return (
@@ -535,7 +586,8 @@ export function CombatScreen({
         round={setup ? null : combat.round}
         escalation={combat.escalation as EscalationValue}
         open={headerOpen}
-        undoDisabled={!combat.undo}
+        undoDisabled={!combat.undo || pending.length > 0}
+        busy={undoing || (shareOpen && link.token === undefined && !linkFailed)}
         onBack={goToCombats}
         onRound={() => setHeaderOpen('round')}
         onEscalation={() => setHeaderOpen('escalation')}
@@ -550,19 +602,23 @@ export function CombatScreen({
         onMenuSelect={selectMenu}
       />
       <ScrollList className={classes.list} contentClassName={classes.listContent}>
+        <TurnBracket activeId={setup ? null : combat.activeUnitId} />
         {units.map((unit) => (
           <UnitRow
             key={unit.id}
             className={classes.row}
+            data-unit-id={unit.id}
             unit={unit}
             claimedByName={unit.claimedBy === null ? undefined : combat.players[unit.claimedBy]}
             active={!setup && combat.activeUnitId === unit.id}
             expanded={expandedId === unit.id}
-            flash={flashing && flashId === unit.id}
+            hpChange={hpChanges.get(unit.id)}
             initiativeOpen={isOpen('initiative', unit)}
             conditionsOpen={isOpen('conditions', unit)}
             historyOpen={isOpen('history', unit)}
+            defensesOpen={isOpen('defenses', unit)}
             menuOpen={isOpen('menu', unit)}
+            busy={busyUnitId === unit.id}
             duplicateDisabled={atCap}
             random={random}
             onToggle={() => {
@@ -580,19 +636,18 @@ export function CombatScreen({
             onInitiativeClose={close}
             onHp={() => show('numpad', unit)}
             onConditions={() => show('conditions', unit)}
+            onDefenses={() => show('defenses', unit)}
             onHistory={() => show('history', unit)}
             onNoteChange={(note) => {
               if (note !== unit.note) void send({ type: 'editNote', unitId: unit.id, note });
             }}
             onEdit={() => {
               close();
-              setForm({ mode: 'edit', unitId: unit.id });
+              openForm({ mode: 'edit', unitId: unit.id });
             }}
             onMore={() => (isOpen('menu', unit) ? close() : show('menu', unit))}
             onMenuClose={close}
-            onDuplicate={() => {
-              void duplicate(unit);
-            }}
+            onDuplicate={() => duplicate(unit)}
             onSetDisabled={(disabled) => {
               close();
               if (disabled) setExpandedId(null);
@@ -601,11 +656,12 @@ export function CombatScreen({
             onSaveAsPreset={() => saveAsPreset(unit)}
             onReleaseClaim={() => {
               close();
+              setBusyUnitId(unit.id);
               void releaseAsDm(
                 [unit.id],
                 async () =>
                   (await send({ type: 'releaseUnit', unitId: unit.id }))?.version ?? false,
-              );
+              ).finally(() => setBusyUnitId(null));
             }}
             onRemove={() => {
               close();
@@ -644,7 +700,8 @@ export function CombatScreen({
       ) : null}
       {numpadUnit ? (
         <NumpadSheet
-          opened
+          key={`numpad-${numpadUnit.id}`}
+          opened={numpadOpen !== null}
           name={numpadUnit.name}
           role={numpadUnit.role}
           initiative={numpadUnit.initiative}
@@ -652,34 +709,48 @@ export function CombatScreen({
           maxHp={numpadUnit.maxHp}
           tempHp={numpadUnit.tempHp}
           history={numpadUnit.hpHistory.toReversed()}
-          onApply={(kind, amount) => {
-            void applyHp(numpadUnit, kind, amount);
-          }}
+          onApply={(kind, amount) => applyHp(numpadUnit, kind, amount)}
           onClose={close}
         />
       ) : null}
       {conditionsUnit ? (
         <ConditionPicker
-          opened
+          key={`conditions-${conditionsUnit.id}`}
+          opened={conditionsOpen !== null}
           unitName={conditionsUnit.name}
           value={conditionsUnit.conditions}
           onChange={(next) => changeConditions(conditionsUnit, next)}
           onClose={close}
         />
       ) : null}
+      {defensesUnit ? (
+        <DefenseSheet
+          key={`defenses-${defensesUnit.id}`}
+          opened={defensesOpen !== null}
+          unitName={defensesUnit.name}
+          base={{ ac: defensesUnit.ac, pd: defensesUnit.pd, md: defensesUnit.md }}
+          mods={{ ac: defensesUnit.acMod, pd: defensesUnit.pdMod, md: defensesUnit.mdMod }}
+          onChange={(mods) => {
+            void send({ type: 'setDefenseMods', unitId: defensesUnit.id, ...mods });
+          }}
+          onClose={close}
+        />
+      ) : null}
       {historyUnit ? (
         <HpHistory
+          key={`history-${historyUnit.id}`}
           variant="sheet"
-          opened
+          opened={historyOpen !== null}
           unitName={historyUnit.name}
           entries={historyUnit.hpHistory.toReversed()}
           maxHp={historyUnit.maxHp}
           onClose={close}
         />
       ) : null}
-      {form?.mode === 'add' ? (
+      {adding ? (
         <UnitForm
-          opened
+          key={`add-${formKey}`}
+          opened={addingOpen !== null}
           mode="add"
           presets={presets ?? []}
           tags={(tags ?? []).map((tag) => ({
@@ -696,7 +767,8 @@ export function CombatScreen({
       ) : null}
       {editing ? (
         <UnitForm
-          opened
+          key={`edit-${formKey}`}
+          opened={editingOpen !== null}
           mode="edit"
           value={{
             name: editing.name,

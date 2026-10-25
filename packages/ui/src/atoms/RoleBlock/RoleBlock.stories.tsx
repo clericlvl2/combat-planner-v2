@@ -22,7 +22,7 @@ const fillOf = (canvasElement: HTMLElement) => {
   return block ? getComputedStyle(block).backgroundColor : null;
 };
 
-const states = ['default', 'active turn', 'editable', 'dead', 'focus', 'tap'] as const;
+const states = ['default', 'editable', 'dead', 'focus', 'tap'] as const;
 type State = (typeof states)[number];
 
 const row = (label: string, unitRole: UnitRole, value: number) => ({
@@ -31,7 +31,6 @@ const row = (label: string, unitRole: UnitRole, value: number) => ({
     <RoleBlock
       unitRole={unitRole}
       top={{ kind: 'initiative', value }}
-      active={state === 'active turn'}
       editable={state === 'editable' || state === 'focus' || state === 'tap'}
       dead={state === 'dead'}
       onClick={state === 'editable' || state === 'focus' || state === 'tap' ? fn() : undefined}
@@ -82,7 +81,7 @@ export const NoInitiativeDie = meta.story({
   },
 });
 
-export const NeutralPreset = meta.story({
+export const PresetRoles = meta.story({
   tags: ['visual'],
   render: () => (
     <div style={{ display: 'flex', gap: 8, height: 64 }}>
@@ -96,8 +95,8 @@ export const NeutralPreset = meta.story({
     const blocks = [...canvasElement.querySelectorAll<HTMLElement>('[data-unit-role]')];
     await expect(blocks).toHaveLength(3);
     for (const block of blocks) {
-      await expect(getComputedStyle(block).backgroundColor).toBe(rgb(base.soft));
-      await expect(getComputedStyle(block).color).toBe(rgb(base.ink));
+      const unitRole = block.dataset.unitRole as 'hero' | 'enemy' | 'ally';
+      await expect(getComputedStyle(block).backgroundColor).toBe(rgb(roles[unitRole]));
       await expect(block.getBoundingClientRect().width).toBe(48);
     }
     await expect(canvas.getByText(t('enemy'))).toBeVisible();

@@ -3,12 +3,21 @@ import type { TFunction } from 'i18next';
 import { CONDITIONS } from '@combat-planner/domain';
 import type { Condition, Unit } from '@combat-planner/domain';
 import { useState } from 'react';
+import { I18nextProvider } from 'react-i18next';
 import type { CSSProperties } from 'react';
 import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import type { HpChange } from '../../hooks/useHpChanges.ts';
 import { layout } from '../../layout.ts';
+import { base, fontSizes, hpActions } from '../../theme.ts';
 import { UnitRow } from './UnitRow.tsx';
 import type { UnitRowCallbacks, UnitRowProps } from './UnitRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { createI18n, locales } from '../../provider.tsx';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp'> &
   Partial<Unit> & { defenses: [number, number, number] };
@@ -16,6 +25,9 @@ type UnitSeed = Pick<Unit, 'id' | 'name' | 'role' | 'initiative' | 'hp' | 'maxHp
 const unitDefaults = {
   initiativeBonus: 0,
   tempHp: 0,
+  acMod: 0,
+  pdMod: 0,
+  mdMod: 0,
   note: '',
   conditions: [],
   disabled: false,
@@ -188,6 +200,7 @@ const meta = preview.meta({
     onInitiativeClose: fn(),
     onHp: fn(),
     onConditions: fn(),
+    onDefenses: fn(),
     onHistory: fn(),
     onNoteChange: fn(),
     onEdit: fn(),
@@ -220,7 +233,17 @@ export const ActiveTurnWounded = meta.story({
     await expect(
       canvas.getByRole('button', { name: `20 /36 ${t('HpBox:wounded')}` }),
     ).toBeVisible();
-    await expect(canvasElement.querySelector('[data-active] [data-notch]')).not.toBeNull();
+    const row = canvasElement.querySelector<HTMLElement>('[data-active]');
+    await expect(row).not.toBeNull();
+    const style = getComputedStyle(row as HTMLElement);
+    await expect(style.borderTopWidth).toBe('1px');
+    await expect(style.boxShadow).toBe('none');
+    await expect(style.transform).toBe(`matrix(1, 0, 0, 1, 0, -${layout.activeLift})`);
+    const surface = getComputedStyle(row as HTMLElement, '::before');
+    await expect(surface.backgroundColor).toBe(rgb(base.accent));
+    await expect(surface.boxShadow).not.toBe('none');
+    await expect(surface.transform).toBe('none');
+    await expect(canvasElement.querySelector('[data-notch]')).toBeNull();
   },
 });
 
@@ -507,23 +530,6 @@ export const MenuOpenDuplicateDisabled = meta.story({
   },
 });
 
-export const ChangedRowFlash = meta.story({
-  args: { active: false, flash: true },
-  render: (args) => (
-    <div style={{ ...screen, display: 'grid', gap: layout.listGap }}>
-      <UnitRow {...args} unit={unitOf(goblinSeed)} readOnly data-testid="dead" />
-      <UnitRow {...args} unit={shadowArcher} readOnly data-testid="disabled" />
-      <UnitRow {...args} unit={unitOf(orcSeed)} readOnly data-testid="alive" />
-    </div>
-  ),
-  play: async ({ canvas }) => {
-    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
-    await expect(border('dead')).toBe('rgb(226, 216, 198)');
-    await expect(border('disabled')).toBe('rgb(226, 216, 198)');
-    await expect(border('alive')).not.toBe('rgb(226, 216, 198)');
-  },
-});
-
 export const SetupNoInitiative = meta.story({
   args: { active: false, unit: unitOf({ ...vashtiSeed, initiative: null }) },
   play: async ({ args, canvas, globals }) => {
@@ -750,5 +756,197 @@ export const KeyboardWithMotionOn = meta.story({
     const t = storyT(globals, 'UnitRow');
     await keyboardWalk(canvasElement, args, t);
     await expect(args.onInitiativeSet).not.toHaveBeenCalled();
+  },
+});
+
+const frozenChange = (unit: Unit, change: Omit<HpChange, 'key' | 'unitId'>) => ({
+  active: false,
+  unit,
+  hpChange: { key: 1, unitId: unit.id, ...change },
+});
+
+const renderFrozen = (args: UnitRowCellProps) => (
+  <div data-motion-frozen="">
+    <UnitRowCell {...args} />
+  </div>
+);
+
+const numberOf = (canvasElement: HTMLElement) => {
+  const number = canvasElement.querySelector<HTMLElement>('[data-hp-change="number"]');
+  if (!number) throw new Error('no HP number');
+  return number;
+};
+
+export const DamageNumber = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 17 }), { kind: 'damage', amount: 3 }),
+  render: renderFrozen,
+  play: async ({ canvasElement }) => {
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent('−3');
+    const style = getComputedStyle(number);
+    await expect(style.color).toBe(rgb(hpActions.damage));
+    await expect(style.fontSize).toBe(`${fontSizes.display}px`);
+    await expect(Number(style.opacity)).toBeGreaterThan(0.5);
+    await expect(getComputedStyle(number.parentElement as HTMLElement).pointerEvents).toBe('none');
+  },
+});
+
+export const HealNumber = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 30 }), { kind: 'heal', amount: 10 }),
+  render: renderFrozen,
+  play: async ({ canvasElement }) => {
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent('+10');
+    await expect(getComputedStyle(number).color).toBe(rgb(hpActions.heal));
+  },
+});
+
+export const TempNumber = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, tempHp: 5 }), { kind: 'temp', amount: 5 }),
+  render: renderFrozen,
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent(t('temp', { amount: 5 }));
+    await expect(getComputedStyle(number).color).toBe(rgb(hpActions.setTemp));
+  },
+});
+
+export const StaggeredRibbon = meta.story({
+  tags: ['visual'],
+  parameters: { motion: 'on' },
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 15 }), {
+    kind: 'damage',
+    amount: 5,
+    status: 'staggered',
+  }),
+  render: renderFrozen,
+  play: async ({ canvasElement, globals }) => {
+    const t = storyT(globals, 'HpBox');
+    const ribbon = canvasElement.querySelector<HTMLElement>('[data-hp-change="ribbon"]');
+    await expect(ribbon).toHaveTextContent(t('staggered'));
+    const style = getComputedStyle(ribbon as HTMLElement);
+    await expect(style.textTransform).toBe('uppercase');
+    await expect(style.backgroundColor).toBe('color(srgb 0.686275 0.176471 0.0941176 / 0.94)');
+    await expect(style.color).toBe(rgb(base.surface));
+    const card = (ribbon as HTMLElement).closest<HTMLElement>('[data-unit-role]');
+    const plate = (ribbon as HTMLElement).getBoundingClientRect();
+    const edges = (card as HTMLElement).getBoundingClientRect();
+    await expect([plate.left, plate.right, plate.top, plate.bottom]).toEqual([
+      edges.left,
+      edges.right,
+      edges.top,
+      edges.bottom,
+    ]);
+    const number = numberOf(canvasElement);
+    await expect(number).toHaveTextContent('−5');
+    await expect(Number(getComputedStyle(number).zIndex)).toBeGreaterThan(Number(style.zIndex));
+  },
+});
+
+const ribbonStatuses = ['staggered', 'unconscious', 'dead'] as const;
+const ribbonI18n = createI18n('en');
+
+export const RibbonFitsEveryLanguage = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  render: () => (
+    <I18nextProvider i18n={ribbonI18n}>
+      <div data-motion-frozen="" style={{ display: 'grid', gap: 8 }}>
+        {ribbonStatuses.map((status, index) => (
+          <UnitRow
+            key={status}
+            readOnly
+            active={false}
+            unit={unitOf({ ...orcSeed, id: `${orcSeed.id}${index}`, hp: 0 })}
+            hpChange={{
+              key: 1,
+              unitId: `${orcSeed.id}${index}`,
+              kind: 'damage',
+              amount: 5,
+              status,
+            }}
+          />
+        ))}
+      </div>
+    </I18nextProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    for (const locale of locales) {
+      await ribbonI18n.changeLanguage(locale);
+      const t = ribbonI18n.getFixedT(locale, 'HpBox');
+      const ribbons = [...canvasElement.querySelectorAll<HTMLElement>('[data-hp-change="ribbon"]')];
+      await waitFor(() =>
+        expect(ribbons.map((ribbon) => ribbon.textContent)).toEqual(
+          ribbonStatuses.map((status) => t(status)),
+        ),
+      );
+      for (const ribbon of ribbons) {
+        const label = ribbon.querySelector<HTMLElement>('[data-hp-change="ribbon-label"]');
+        const card = ribbon.closest<HTMLElement>('[data-unit-role]');
+        if (!label || !card) throw new Error('no ribbon label or card');
+        await expect(ribbon.scrollWidth).toBeLessThanOrEqual(ribbon.clientWidth);
+        await expect(label.getClientRects()).toHaveLength(1);
+        const text = label.getBoundingClientRect();
+        const edges = card.getBoundingClientRect();
+        await expect(text.left).toBeGreaterThanOrEqual(edges.left);
+        await expect(text.right).toBeLessThanOrEqual(edges.right);
+        await expect(parseFloat(getComputedStyle(label).fontSize)).toBeGreaterThanOrEqual(
+          fontSizes.meta,
+        );
+      }
+    }
+  },
+});
+
+export const NoRibbonWithMotionOff = meta.story({
+  tags: ['!dev'],
+  args: frozenChange(unitOf({ ...vashtiSeed, hp: 15 }), {
+    kind: 'damage',
+    amount: 5,
+    status: 'staggered',
+  }),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelector('[data-hp-change="ribbon"]')).toBeNull();
+    await expect(canvasElement.querySelector('[data-hp-change="number"]')).toBeNull();
+  },
+});
+
+const detailsTransitionEnd = (root: HTMLElement) =>
+  new Promise<HTMLElement>((resolve) => {
+    const handle = (event: TransitionEvent) => {
+      const target = event.target;
+      if (event.propertyName !== 'grid-template-rows' || !(target instanceof HTMLElement)) return;
+      if (!target.querySelector('[data-part="details"]')) return;
+      root.removeEventListener('transitionend', handle);
+      resolve(target);
+    };
+    root.addEventListener('transitionend', handle);
+  });
+
+export const DetailsSlideOpenAndShut = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  args: { unit: vashtiExpanded },
+  play: async ({ canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'UnitRow');
+    const name = canvas.getByRole('button', { name: 'Vashti the Hexer' });
+    const opened = detailsTransitionEnd(canvasElement);
+    await userEvent.click(name);
+    const region = await opened;
+    await waitFor(() => expect(region).toHaveAttribute('data-reveal', 'open'));
+    await expect(canvas.getByRole('button', { name: t('hpHistory') })).toBeVisible();
+    const closed = detailsTransitionEnd(canvasElement);
+    await userEvent.click(name);
+    await expect(region).toHaveAttribute('data-reveal', 'closing');
+    await closed;
+    await waitFor(() => expect(region).not.toBeInTheDocument());
+    await expect(canvas.getByRole('img', { name: t('NoteField:label') })).toBeVisible();
   },
 });

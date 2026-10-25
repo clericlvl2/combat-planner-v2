@@ -1,0 +1,56 @@
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+  }
+}
+
+.root {
+  flex: none;
+  height: var(--cp-turn-strip);
+  overflow: hidden;
+}
+
+.strip {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--cp-color-border);
+  background: var(--cp-color-soft);
+  color: var(--cp-color-ink);
+  font-family: var(--cp-font-ui);
+  font-size: var(--mantine-font-size-body);
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &[data-kind='turn'] {
+    border-bottom-color: var(--cp-color-primary);
+    background: var(--cp-color-primary);
+    color: var(--cp-color-on-primary);
+    font-weight: 700;
+    animation: slideIn 200ms ease-out;
+  }
+
+  &:focus-visible,
+  &[data-focus] {
+    outline: 2px solid var(--cp-state-focus);
+    outline-offset: -2px;
+  }
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strip[data-kind='turn'] {
+    animation: none;
+  }
+}

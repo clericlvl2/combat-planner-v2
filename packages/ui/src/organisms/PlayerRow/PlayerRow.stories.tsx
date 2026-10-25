@@ -12,6 +12,12 @@ import { Menu } from '../Menu/Menu.tsx';
 import { PlayerRow } from './PlayerRow.tsx';
 import type { PlayerRowProps } from './PlayerRow.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 interface UnitSeed {
   id: string;
@@ -55,6 +61,9 @@ function unitOf(seed: UnitSeed): Unit {
     ac,
     pd,
     md,
+    acMod: 0,
+    pdMod: 0,
+    mdMod: 0,
     note: seed.note ?? '',
     conditions: seed.conditions ?? [],
     disabled: false,
@@ -236,6 +245,7 @@ const meta = preview.meta({
     onInitiative: fn(),
     onHp: fn(),
     onConditions: fn(),
+    onDefenses: fn(),
     onHistory: fn(),
     onNoteChange: fn(),
     onEdit: fn(),
@@ -274,8 +284,16 @@ export const OwnHero = meta.story({
 export const OwnHeroActiveTurn = meta.story({
   args: { active: true },
   play: async ({ canvasElement }) => {
-    await expect(canvasElement.querySelector('[data-active][data-mine]')).not.toBeNull();
-    await expect(canvasElement.querySelector('[data-notch]')).not.toBeNull();
+    const row = canvasElement.querySelector<HTMLElement>('[data-active][data-mine]');
+    await expect(row).not.toBeNull();
+    const style = getComputedStyle(row as HTMLElement);
+    await expect(style.boxShadow).toBe('none');
+    await expect(style.transform).toBe(`matrix(1, 0, 0, 1, 0, -${layout.activeLift})`);
+    const surface = getComputedStyle(row as HTMLElement, '::before');
+    await expect(surface.backgroundColor).toBe(rgb(base.accent));
+    await expect(surface.boxShadow).not.toBe('none');
+    await expect(surface.transform).toBe('none');
+    await expect(canvasElement.querySelector('[data-notch]')).toBeNull();
   },
 });
 
@@ -473,24 +491,6 @@ export const OwnHeroLongName = meta.story({
   },
 });
 
-export const ChangedRowFlash = meta.story({
-  args: { flash: true },
-  render: (args) => (
-    <div style={{ display: 'grid', alignContent: 'start', minHeight: 0, overflowY: 'auto' }}>
-      <PlayerRowCell {...args} data-testid="own" />
-      <PlayerRowCell {...args} unit={goblin} mine={false} data-testid="dead" />
-      <PlayerRowCell {...args} unit={orc} mine={false} active data-testid="active" />
-      <PlayerRowCell {...args} unit={orc} mine={false} flash={false} data-testid="still" />
-    </div>
-  ),
-  play: async ({ canvas }) => {
-    const border = (id: string) => getComputedStyle(canvas.getByTestId(id)).borderTopColor;
-    await expect(canvas.getByTestId('own')).toHaveAttribute('data-flash');
-    await expect(border('own')).not.toBe(border('still'));
-    await expect(border('dead')).toBe(border('still'));
-    await expect(border('active')).toBe('rgb(35, 31, 28)');
-  },
-});
 export const TapRowExpandsAndCollapses = meta.story({
   tags: ['!dev'],
   play: async ({ args, canvas, globals }) => {
@@ -591,9 +591,8 @@ export const RoleFillsRow = meta.story({
       .closest('[data-unit-role]');
     const role = canvasElement.querySelector<HTMLElement>('[data-fill]');
     await expect(role).not.toBeNull();
-    const rowBox = row?.getBoundingClientRect();
-    const roleBox = role?.getBoundingClientRect();
-    await expect(roleBox?.height).toBe((rowBox?.height ?? 0) - 4);
+    const rowHeight = row instanceof HTMLElement ? row.offsetHeight : 0;
+    await expect(role?.offsetHeight).toBe(rowHeight - 10);
   },
 });
 

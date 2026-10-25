@@ -24,15 +24,15 @@
   padding: 6px 16px;
   border: none;
   border-radius: 29px;
-  background: var(--cp-color-ink);
-  color: var(--cp-color-surface);
+  background: var(--cp-color-primary);
+  color: var(--cp-color-on-primary);
   cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 
   &:active,
   &[data-pressed] {
-    background: var(--cp-color-ink-pressed);
+    background: var(--cp-color-primary-pressed);
   }
 
   &:disabled,

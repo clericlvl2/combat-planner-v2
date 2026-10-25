@@ -1,7 +1,7 @@
 import preview from '#.storybook/preview';
 import { IconDice5, IconPlus, IconUserX } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { expect, fn, userEvent } from 'storybook/test';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import type en from '../../i18n/en/Button.json';
 import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
@@ -25,13 +25,14 @@ const meta = preview.meta({
   args: { onClick: fn() },
 });
 
-const states = ['default', 'pressed', 'disabled', 'focus'] as const;
+const states = ['default', 'pressed', 'disabled', 'focus', 'loading'] as const;
 type State = (typeof states)[number];
 
 const stateProps = (state: State) => ({
   'data-pressed': state === 'pressed' ? '' : undefined,
   'data-focus': state === 'focus' ? '' : undefined,
   disabled: state === 'disabled',
+  loading: state === 'loading',
 });
 
 const row = (label: string, props: ButtonCellProps) => ({
@@ -107,5 +108,18 @@ export const EnterAndSpaceActivate = meta.story({
     await expect(args.onClick).toHaveBeenCalledTimes(1);
     await userEvent.keyboard('[Space]');
     await expect(args.onClick).toHaveBeenCalledTimes(2);
+  },
+});
+
+export const LoadingIgnoresClick = meta.story({
+  tags: ['!dev'],
+  args: { variant: 'primary', size: 'M', labelKey: 'save', loading: true, onClick: fn() },
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Button');
+    const button = canvas.getByRole('button', { name: t('save') });
+    await userEvent.click(button, { pointerEventsCheck: 0 });
+    await expect(args.onClick).not.toHaveBeenCalled();
+    await waitFor(() => expect(button).toHaveAttribute('aria-busy', 'true'));
+    await expect(button).toBeDisabled();
   },
 });

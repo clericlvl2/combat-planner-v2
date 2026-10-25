@@ -16,6 +16,7 @@ export const LIMITS = {
   hp: { min: -999, max: 999 },
   tempHp: { min: 0, max: 999 },
   defense: { min: 0, max: 99 },
+  defenseMod: { min: -20, max: 20 },
   initiativeBonus: { min: -99, max: 99 },
   initiative: { min: -9, max: 99 },
   round: { min: 1, max: 99 },
@@ -52,6 +53,7 @@ export const maxHpSchema = intRange(LIMITS.maxHp);
 export const hpSchema = intRange(LIMITS.hp);
 export const tempHpSchema = intRange(LIMITS.tempHp);
 export const defenseSchema = intRange(LIMITS.defense);
+export const defenseModSchema = intRange(LIMITS.defenseMod);
 export const initiativeBonusSchema = intRange(LIMITS.initiativeBonus);
 export const initiativeSchema = intRange(LIMITS.initiative);
 export const roundSchema = intRange(LIMITS.round);
@@ -96,6 +98,9 @@ export const unitSchema = z
     ac: defenseSchema,
     pd: defenseSchema,
     md: defenseSchema,
+    acMod: defenseModSchema.default(0),
+    pdMod: defenseModSchema.default(0),
+    mdMod: defenseModSchema.default(0),
     note: noteSchema,
     conditions: conditionsSchema,
     disabled: z.boolean(),
@@ -155,7 +160,7 @@ export const playerUnitSchema = z.object({
   name: unitNameSchema,
   role: roleSchema,
   healthStatus: healthStatusSchema,
-  healthSegments: z.literal([0, 1, 2, 3, 4]),
+  healthSegments: z.literal([0, 1, 2]),
   conditions: conditionsSchema,
   position: z.number().int().positive(),
   initiative: initiativeSchema.nullable(),
@@ -168,6 +173,9 @@ export const playerUnitSchema = z.object({
   ac: defenseSchema.optional(),
   pd: defenseSchema.optional(),
   md: defenseSchema.optional(),
+  acMod: defenseModSchema.optional(),
+  pdMod: defenseModSchema.optional(),
+  mdMod: defenseModSchema.optional(),
   note: noteSchema.optional(),
   hpHistory: z.array(hpHistoryEntrySchema).optional(),
 });
@@ -176,6 +184,8 @@ export const playerCombatSchema = z
   .object({
     ...combatFields,
     myName: displayNameSchema.nullable(),
+    nextUnitId: ulidSchema.nullable(),
+    lastActionId: ulidSchema.nullable(),
     units: z.array(playerUnitSchema).max(LIMITS.unitsPerCombat),
   })
   .omit({ linkGeneration: true, players: true });

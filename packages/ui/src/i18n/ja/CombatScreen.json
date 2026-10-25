@@ -19,6 +19,7 @@
   "undoSetMaxHp": "取り消し：{{name}}の最大HP {{amount}}",
   "undoToggleCondition": "取り消し：{{name}}の{{condition}}",
   "undoEditNote": "取り消し：{{name}}のメモ",
+  "undoSetDefenseMods": "取り消し：{{name}}の防御値",
   "nextWrap": "{{name}} · ラウンド{{round}}",
   "presetFailed": "プリセットを保存できませんでした。もう一度お試しください。",
   "linkFailed": "プレイヤー用リンクを読み込めませんでした。もう一度お試しください。"

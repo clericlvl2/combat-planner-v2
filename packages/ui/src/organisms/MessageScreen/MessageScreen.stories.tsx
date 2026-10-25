@@ -2,7 +2,8 @@ import preview from '#.storybook/preview';
 import { IconLinkOff, IconTrash, IconWifiOff } from '@tabler/icons-react';
 import type { Icon } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { expect, fn, userEvent } from 'storybook/test';
+import { expect, fn, userEvent, waitFor } from 'storybook/test';
+import { layout } from '../../layout.ts';
 import { MessageScreen } from './MessageScreen.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 
@@ -164,5 +165,25 @@ export const LabelWithoutHandlerHasNoButton = meta.story({
   play: async ({ canvas }) => {
     await expect(canvas.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(canvas.queryByRole('button')).toBeNull();
+  },
+});
+
+export const CentredOnTallPhone = meta.story({
+  tags: ['!dev'],
+  globals: { frame: 'large' },
+  play: async ({ canvasElement }) => {
+    const { height } = layout.viewports.large;
+    await waitFor(() => expect(window.innerHeight).toBe(height));
+    const screen = canvasElement.querySelector<HTMLElement>('[data-system-screen]');
+    const tile = screen?.querySelector<HTMLElement>('[aria-hidden="true"]');
+    const buttons = screen?.querySelectorAll<HTMLElement>('button');
+    const last = buttons?.[buttons.length - 1];
+    await expect(screen?.getBoundingClientRect().height).toBeGreaterThan(
+      layout.ranges.tallMinHeight,
+    );
+    const box = (screen as HTMLElement).getBoundingClientRect();
+    const above = (tile as HTMLElement).getBoundingClientRect().top - box.top;
+    const below = box.bottom - (last as HTMLElement).getBoundingClientRect().bottom;
+    await expect(Math.abs(above - below)).toBeLessThanOrEqual(1);
   },
 });

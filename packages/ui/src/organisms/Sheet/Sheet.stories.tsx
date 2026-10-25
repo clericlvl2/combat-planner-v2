@@ -261,7 +261,14 @@ const meta = preview.meta({
   },
 });
 
-export const Default = meta.story({ tags: ['visual'] });
+export const Default = meta.story({
+  tags: ['visual'],
+  play: async ({ canvas }) => {
+    const grip = canvas.getByRole('dialog').querySelector<HTMLElement>('[data-sheet-grip]');
+    await expect(grip).toBeVisible();
+    await expect(grip).toHaveAttribute('aria-hidden', 'true');
+  },
+});
 
 export const ChecklistWithSearch = meta.story({
   tags: ['visual'],
@@ -335,7 +342,7 @@ export const LongContentScrolls = meta.story({
     const frame = canvasElement.querySelector<HTMLElement>('[data-phone-frame]');
     const frameBox = frame?.getBoundingClientRect();
     const sheetBox = sheet.getBoundingClientRect();
-    await expect(sheetBox.bottom).toBeLessThanOrEqual((frameBox?.bottom ?? 0) - 12);
+    await expect(sheetBox.bottom).toBe(frameBox?.bottom ?? 0);
     await expect(sheetBox.top).toBe((frameBox?.top ?? 0) + layout.statusBar + layout.sheet.inset);
     const body = sheet.querySelector<HTMLElement>('[data-sheet-content]');
     await expect(body).not.toBeNull();
@@ -557,6 +564,35 @@ export const InitialFocusWinsOverSection = meta.story({
   },
 });
 
+const slideEnded = fn();
+
+export const MountedOpenSlidesUp = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  render: (args) => (
+    <div
+      style={stage}
+      onTransitionEnd={(event) => {
+        if (event.propertyName === 'transform' && event.target instanceof HTMLElement) {
+          slideEnded(event.target.getAttribute('role'));
+        }
+      }}
+    >
+      <TitledCell {...args} />
+    </div>
+  ),
+  beforeEach: () => {
+    slideEnded.mockClear();
+  },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    await expect(document.documentElement.dataset.motion).toBe('on');
+    const sheet = await canvas.findByRole('dialog', { name: t('sortCombats') });
+    await waitFor(() => expect(slideEnded).toHaveBeenCalledWith('dialog'));
+    await expect(new DOMMatrixReadOnly(getComputedStyle(sheet).transform).f).toBe(0);
+  },
+});
+
 export const MotionOffNoTransition = meta.story({
   tags: ['!dev'],
   args: { opened: false, withOpener: true },
@@ -580,5 +616,89 @@ export const ClosedSheetDoesNotBlock = meta.story({
     const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
     await expect(hit).not.toBeNull();
     await expect(opener).toContainElement(hit as HTMLElement);
+  },
+});
+
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const pointer = (target: Element, type: string, clientX: number, clientY: number) =>
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      pointerId: 7,
+      pointerType: 'touch',
+      isPrimary: true,
+      button: type === 'pointermove' ? -1 : 0,
+      clientX,
+      clientY,
+    }),
+  );
+
+const drag = async (target: Element, distance: number, steps = 10, stepMs = 30) => {
+  const box = target.getBoundingClientRect();
+  const x = box.left + box.width / 2;
+  const y = box.top + box.height / 2;
+  pointer(target, 'pointerdown', x, y);
+  for (let step = 1; step <= steps; step += 1) {
+    await pause(stepMs);
+    pointer(target, 'pointermove', x, y + (distance * step) / steps);
+  }
+  return () => pointer(target, 'pointerup', x, y + distance);
+};
+
+export const SwipeDownCloses = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
+    const header = sheet.querySelector<HTMLElement>('[data-sheet-header]');
+    await expect(header).not.toBeNull();
+    if (!header) return;
+    const release = await drag(header, sheet.getBoundingClientRect().height * 0.4);
+    await expect(args.onClose).not.toHaveBeenCalled();
+    release();
+    await expect(args.onClose).toHaveBeenCalledOnce();
+    await waitFor(() => expect(canvas.queryByRole('dialog')).toBeNull());
+  },
+});
+
+export const ShortSwipeStaysOpen = meta.story({
+  tags: ['!dev'],
+  play: async ({ args, canvas, canvasElement, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    const sheet = canvas.getByRole('dialog', { name: t('sortCombats') });
+    const header = sheet.querySelector<HTMLElement>('[data-sheet-header]');
+    const scrim = canvasElement.querySelector<HTMLElement>('[data-scrim]');
+    await expect(header).not.toBeNull();
+    if (!header) return;
+    const release = await drag(header, 40, 10, 40);
+    await expect(sheet.style.transform).toBe('translateY(40px)');
+    await expect(Number(scrim?.style.opacity)).toBeLessThan(1);
+    release();
+    await expect(args.onClose).not.toHaveBeenCalled();
+    await expect(sheet.style.transform).not.toContain('40px');
+    await expect(sheet).toBeVisible();
+  },
+});
+
+export const ContentScrollDoesNotDrag = meta.story({
+  tags: ['!dev'],
+  args: { sample: 'long', titleKey: 'tags' },
+  play: async ({ args, canvas }) => {
+    const sheet = canvas.getByRole('dialog');
+    const body = sheet.querySelector<HTMLElement>('[data-sheet-content]');
+    await expect(body).not.toBeNull();
+    if (!body) return;
+    body.scrollTop = 120;
+    await waitFor(() => expect(body.scrollTop).toBeGreaterThan(0));
+    const option = canvas.getAllByRole('checkbox').at(6);
+    await expect(option).toBeInstanceOf(HTMLElement);
+    if (!option) return;
+    const release = await drag(option, 200);
+    await expect(sheet.style.transform).not.toContain('translateY');
+    release();
+    await expect(args.onClose).not.toHaveBeenCalled();
+    await expect(sheet).toBeVisible();
   },
 });

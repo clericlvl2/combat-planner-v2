@@ -7,6 +7,12 @@ import { expect, fn, userEvent, waitFor } from 'storybook/test';
 import { expectNoHorizontalOverflow, expectNotTruncated } from '../../storybook/geometry.ts';
 import { ShareSheet } from './ShareSheet.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { health } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 interface ShareSheetCellProps {
   combatTitle?: string;
@@ -131,7 +137,7 @@ export const LinkCopied = meta.story({
     await expect(args.onCopy).toHaveBeenCalledWith(linkG3);
     const copied = canvas.getByRole('button', { name: t('copied') });
     await expect(copied).toHaveAttribute('data-copied');
-    await expect(getComputedStyle(copied).backgroundColor).toBe('rgb(46, 122, 67)');
+    await expect(getComputedStyle(copied).backgroundColor).toBe(rgb(health.full));
     await expect(args.onReissue).not.toHaveBeenCalled();
     await restFocusOnSheet(canvas.getByRole('dialog'));
   },

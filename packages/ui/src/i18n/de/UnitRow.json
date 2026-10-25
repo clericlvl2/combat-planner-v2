@@ -1,6 +1,7 @@
 {
   "conditions": "Zustände",
   "hpHistory": "TP-Verlauf",
+  "defenses": "Verteidigungs­modifikatoren",
   "charmed": "bezaubert",
   "confused": "verwirrt",
   "dazed": "benommen",

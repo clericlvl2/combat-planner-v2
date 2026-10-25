@@ -1,12 +1,5 @@
-import { LIMITS, apply, healthStatus } from '@combat-planner/domain';
-import type {
-  Action,
-  Combat,
-  HealthStatus,
-  HpHistoryEntry,
-  HpHistoryKind,
-  Role,
-} from '@combat-planner/domain';
+import { LIMITS, apply, healthSegments, healthStatus } from '@combat-planner/domain';
+import type { Action, Combat, HpHistoryEntry, HpHistoryKind, Role } from '@combat-planner/domain';
 import { UnstyledButton, VisuallyHidden } from '@mantine/core';
 import { IconArrowRight, IconBackspace } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -29,12 +22,10 @@ export interface NumpadSheetProps extends NumpadHealth {
   role: Role;
   initiative: number | null;
   history: readonly HpHistoryEntry[];
-  onApply: (kind: HpHistoryKind, amount: number) => void;
+  onApply: (kind: HpHistoryKind, amount: number) => void | Promise<unknown>;
   onClose: () => void;
   'data-tap'?: HpHistoryKind;
 }
-
-export const hpFlashDuration = 2000;
 
 const previewId = '00000000000000000000000000';
 const previewAt = '1970-01-01T00:00:00.000Z';
@@ -48,13 +39,6 @@ const actionLabels = {
   max: 'setMax',
 } as const satisfies Record<HpHistoryKind, string>;
 const pipSlots = [0, 1] as const;
-const filledPips: Record<HealthStatus, number> = {
-  full: 2,
-  wounded: 1,
-  staggered: 1,
-  unconscious: 0,
-  dead: 0,
-};
 
 function hpAction(kind: HpHistoryKind, amount: number): Action {
   const target = { id: previewId, version: 0, unitId: previewId, amount };
@@ -100,6 +84,9 @@ export function hpAfter(health: NumpadHealth, kind: HpHistoryKind, amount: numbe
         ac: 0,
         pd: 0,
         md: 0,
+        acMod: 0,
+        pdMod: 0,
+        mdMod: 0,
         note: '',
         conditions: [],
         disabled: false,
@@ -112,22 +99,6 @@ export function hpAfter(health: NumpadHealth, kind: HpHistoryKind, amount: numbe
   if (!('combat' in result)) return health;
   const unit = result.combat.units[0];
   return unit ? { hp: unit.hp, maxHp: unit.maxHp, tempHp: unit.tempHp } : health;
-}
-
-export function useHpFlash(): { flashing: boolean; flash: () => void } {
-  const motion = useMotion();
-  const [flashing, setFlashing] = useState(false);
-  const [started, setStarted] = useState(0);
-  const flash = useCallback(() => {
-    setFlashing(true);
-    setStarted((count) => count + 1);
-  }, []);
-  useEffect(() => {
-    if (started === 0 || motion === 'off') return;
-    const timer = setTimeout(() => setFlashing(false), hpFlashDuration);
-    return () => clearTimeout(timer);
-  }, [started, motion]);
-  return { flashing, flash };
 }
 
 function formatNumber(value: number): string {
@@ -164,7 +135,7 @@ function HpReading({ label, health, role, side }: HpReadingProps) {
             <span
               key={slot}
               className={classes.pip}
-              data-filled={slot < filledPips[status] || undefined}
+              data-filled={slot < healthSegments(status) || undefined}
             />
           ))}
         </span>
@@ -200,6 +171,7 @@ export function NumpadSheet({
   const [previewKind, setPreviewKind] = useState<HpHistoryKind>('damage');
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const [openedBefore, setOpenedBefore] = useState(opened);
+  const [waiting, setWaiting] = useState<HpHistoryKind | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const appliedRef = useRef(false);
   const motion = useMotion();
@@ -265,9 +237,20 @@ export function NumpadSheet({
   const applyKind = (kind: HpHistoryKind) => {
     if (amount === null || !enabled(kind) || appliedRef.current) return;
     appliedRef.current = true;
-    onApply(kind, amount);
-    setAmount(null);
-    onClose();
+    const applied = onApply(kind, amount);
+    if (!(applied instanceof Promise)) {
+      setAmount(null);
+      onClose();
+      return;
+    }
+    setWaiting(kind);
+    void applied
+      .catch(() => undefined)
+      .then(() => {
+        setWaiting(null);
+        setAmount(null);
+        onClose();
+      });
   };
 
   return (
@@ -286,7 +269,8 @@ export function NumpadSheet({
               data-tap={tap === kind ? '' : undefined}
               size={kind === 'damage' ? 'M' : 'S'}
               fullWidth
-              disabled={!enabled(kind)}
+              disabled={!enabled(kind) || (waiting !== null && waiting !== kind)}
+              loading={waiting === kind}
               onPointerEnter={() => setPreviewKind(kind)}
               onFocus={() => setPreviewKind(kind)}
               onClick={() => applyKind(kind)}

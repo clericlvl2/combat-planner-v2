@@ -4,6 +4,12 @@ import { StateGrid } from '../../storybook/StateGrid.tsx';
 import { storyT } from '../../storybook/storyT.ts';
 import { EscalationDie } from './EscalationDie.tsx';
 import type { EscalationDieProps, EscalationValue } from './EscalationDie.tsx';
+import { base, interaction } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 const meta = preview.meta({
   title: 'Atoms/EscalationDie',
@@ -54,11 +60,11 @@ export const ZeroIsEmptyDashedTile = meta.story({
     const t = storyT(globals, 'EscalationDie');
     const caption = canvas.getByText(t('none'));
     await expect(caption).toBeVisible();
-    await expect(getComputedStyle(caption).color).toBe('rgb(95, 87, 77)');
+    await expect(getComputedStyle(caption).color).toBe(rgb(base.secondary));
     await expect(pipCount(canvasElement)).toBe(0);
     const tile = tileOf(canvasElement);
     await expect(tile && getComputedStyle(tile).borderTopStyle).toBe('dashed');
-    await expect(tile && getComputedStyle(tile).borderTopColor).toBe('rgb(140, 133, 120)');
+    await expect(tile && getComputedStyle(tile).borderTopColor).toBe(rgb(base.muted));
     await expect(tile && getComputedStyle(tile).backgroundColor).toBe('rgba(0, 0, 0, 0)');
   },
 });
@@ -94,7 +100,7 @@ export const FocusRing = meta.story({
   render: (args: EscalationDieProps) => <EscalationDie {...args} data-focus="" />,
   play: async ({ canvasElement }) => {
     const tile = tileOf(canvasElement);
-    await expect(tile && getComputedStyle(tile).outlineColor).toBe('rgb(30, 95, 168)');
+    await expect(tile && getComputedStyle(tile).outlineColor).toBe(rgb(interaction.focus));
   },
 });
 

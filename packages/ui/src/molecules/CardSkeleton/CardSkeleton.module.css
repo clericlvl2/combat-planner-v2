@@ -1,0 +1,57 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.card {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 12px 12px 16px;
+  border: 2px solid var(--cp-color-border);
+  border-radius: var(--mantine-radius-card);
+  background: var(--cp-color-surface);
+
+  .root[data-variant='combat'] & {
+    min-height: 76px;
+  }
+}
+
+.dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.lines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.title {
+  width: 60%;
+  height: 16px;
+  border-radius: 4px;
+}
+
+.meta {
+  width: 40%;
+  height: 12px;
+  border-radius: 4px;
+}
+
+.value {
+  flex: none;
+  width: 48px;
+  height: 24px;
+  border-radius: 4px;
+}

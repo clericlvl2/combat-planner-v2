@@ -58,7 +58,7 @@
   gap: 8px;
   padding: 16px;
   border-radius: var(--mantine-radius-card);
-  background: var(--cp-color-background);
+  background: var(--cp-color-soft);
 }
 
 .arrow {
@@ -77,6 +77,10 @@
 
   &[data-side='after'] {
     align-items: flex-end;
+  }
+
+  &[data-status='wounded'] {
+    --numpad-health: var(--cp-health-wounded);
   }
 
   &[data-status='staggered'] {
@@ -142,7 +146,7 @@
   width: 32px;
   height: 7px;
   border-radius: var(--mantine-radius-segment);
-  background: var(--cp-health-empty);
+  background: var(--cp-color-disabled);
 
   &[data-filled] {
     background: var(--numpad-health);
@@ -155,7 +159,7 @@
   padding: 0 7px;
   border-radius: var(--mantine-radius-full);
   background: var(--cp-hp-set-temp);
-  color: var(--cp-color-surface);
+  color: var(--cp-hp-on);
   font-size: var(--mantine-font-size-meta);
   font-weight: 700;
   line-height: 20px;
@@ -287,18 +291,22 @@
 
   &[data-kind='damage']:not(:disabled, :active, [data-pressed]) {
     background: var(--cp-hp-damage);
+    color: var(--cp-hp-on);
   }
 
   &[data-kind='heal']:not(:disabled, :active, [data-pressed]) {
     background: var(--cp-hp-heal);
+    color: var(--cp-hp-on);
   }
 
   &[data-kind='temp']:not(:disabled, :active, [data-pressed]) {
     background: var(--cp-hp-set-temp);
+    color: var(--cp-hp-on);
   }
 
   &[data-kind='max']:not(:disabled, :active, [data-pressed]) {
-    background: var(--cp-hp-set-max);
+    background: var(--cp-hp-max);
+    color: var(--cp-hp-on);
   }
 }
 

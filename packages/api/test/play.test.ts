@@ -64,6 +64,9 @@ const FRIENDLY_COLUMNS = [
   'ac',
   'pd',
   'md',
+  'acMod',
+  'pdMod',
+  'mdMod',
 ];
 const OWN_COLUMNS = [...FRIENDLY_COLUMNS, 'initiativeBonus', 'note', 'hpHistory'];
 
@@ -80,6 +83,8 @@ const assertVisibility = (document: PlayerCombat, source: Combat) => {
         (key) => key !== 'linkGeneration' && key !== 'undo' && key !== 'players',
       ),
       'myName',
+      'nextUnitId',
+      'lastActionId',
     ].sort(),
   );
   const disabled = source.units.filter((unit) => unit.disabled).map((unit) => unit.id);
@@ -433,6 +438,35 @@ describe('POST /play/:id/actions', () => {
     expect((await fetchCombat(dm)).version).toBe(combat.version);
   });
 
+  it('sets defense modifiers on the own hero and refuses them on any other unit', async () => {
+    const before = await fetchCombat(dm);
+    for (const unitId of [SECOND_HERO, ENEMY_ID]) {
+      const response = await postAction(token, PLAYER_ID, {
+        id: nextActionId(),
+        version: before.version,
+        type: 'setDefenseMods',
+        unitId,
+        ac: 0,
+        pd: 0,
+        md: -2,
+      });
+      expect(response.status).toBe(403);
+      expect(await response.json()).toMatchObject({ code: 'forbidden' });
+    }
+    const response = await postAction(token, PLAYER_ID, {
+      id: nextActionId(),
+      version: before.version,
+      type: 'setDefenseMods',
+      unitId: HERO_ID,
+      ac: 0,
+      pd: 0,
+      md: -2,
+    });
+    expect(response.status).toBe(200);
+    const hero = (await fetchCombat(dm)).units.find((unit) => unit.id === HERO_ID);
+    expect(hero).toMatchObject({ acMod: 0, pdMod: 0, mdMod: -2 });
+  });
+
   it('answers 403 forbidden for a DM-only action', async () => {
     const combat = await fetchCombat(dm);
     const response = await postAction(token, PLAYER_ID, {
@@ -560,6 +594,31 @@ describe('GET /play/:id/events', () => {
       healthStatus: 'wounded',
     });
     await stream.cancel();
+    await settled();
+  });
+
+  it("carries the player's own latest action id in a relayed document, never another actor's", async () => {
+    const own = openSse(await openEvents(token, PLAYER_ID));
+    const other = openSse(await openEvents(token, SECOND_PLAYER));
+    expect((await own.event()).event).toMatchObject({ document: { lastActionId: null } });
+    await other.event();
+    const actionId = nextActionId();
+    const before = await fetchCombat(dm);
+    const posted = await postAction(token, PLAYER_ID, {
+      id: actionId,
+      version: before.version,
+      type: 'damage',
+      unitId: HERO_ID,
+      amount: 1,
+    });
+    expect(posted.status).toBe(200);
+    expect((await own.event()).event).toMatchObject({ document: { lastActionId: actionId } });
+    expect((await other.event()).event).toMatchObject({ document: { lastActionId: null } });
+    await dmAction({ type: 'damage', unitId: ENEMY_ID, amount: 1 });
+    expect((await own.event()).event).toMatchObject({ document: { lastActionId: actionId } });
+    expect((await other.event()).event).toMatchObject({ document: { lastActionId: null } });
+    await own.cancel();
+    await other.cancel();
     await settled();
   });
 

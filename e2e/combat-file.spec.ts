@@ -8,7 +8,7 @@ import {
   unitRow,
   unitRows,
 } from './helpers.ts';
-import { escapeRegExp, t } from './t.ts';
+import { containsT, escapeRegExp, t } from './t.ts';
 
 test('a DM exports a combat to a file and imports it back as a new combat', async ({ page }) => {
   await signUp(page);
@@ -27,6 +27,8 @@ test('a DM exports a combat to a file and imports it back as a new combat', asyn
   await numpad.getByRole('button', { name: t('NumpadSheet:damage') }).click();
   await expect(numpad).toBeHidden();
   await expect(unitRow(page, 'Grak').getByRole('button', { name: '7 /10' })).toBeVisible();
+  await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();
+  await expect(page.getByRole('button', { name: containsT('TurnBar:startCombat') })).toBeHidden();
 
   const downloading = page.waitForEvent('download');
   await openCombatMenu(page, t('CombatHeader:export'));
@@ -50,7 +52,8 @@ test('a DM exports a combat to a file and imports it back as a new combat', asyn
   expect(new URL(page.url()).pathname).not.toBe(original);
   await expect(page.getByRole('heading', { level: 1, name: 'Goblin ambush' })).toBeVisible();
   await expect(unitRows(page)).toHaveCount(2);
-  expect(await unitNames(page)).toEqual(['Aria', 'Grak']);
+  expect([...(await unitNames(page))].sort()).toEqual(['Aria', 'Grak']);
+  await expect(page.getByRole('button', { name: containsT('TurnBar:startCombat') })).toBeVisible();
   await expect(unitRow(page, 'Aria').getByRole('button', { name: '10 /10' })).toBeVisible();
-  await expect(unitRow(page, 'Grak').getByRole('button', { name: '7 /10' })).toBeVisible();
+  await expect(unitRow(page, 'Grak').getByRole('button', { name: '10 /10' })).toBeVisible();
 });

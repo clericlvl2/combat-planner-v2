@@ -1,4 +1,4 @@
-import { healthStatus } from '@combat-planner/domain';
+import { healthSegments, healthStatus } from '@combat-planner/domain';
 import type { HealthStatus, Role } from '@combat-planner/domain';
 import preview from '#.storybook/preview';
 import type { TFunction } from 'i18next';
@@ -36,14 +36,6 @@ const boxOf = (canvasElement: HTMLElement) => {
 
 const minus = (value: number) => (value < 0 ? `−${Math.abs(value)}` : String(value));
 
-const pipsOf: Record<HealthStatus, number> = {
-  full: 2,
-  wounded: 1,
-  staggered: 1,
-  unconscious: 0,
-  dead: 0,
-};
-
 const boxFacts = (box: HTMLElement) => ({
   numbers: box.querySelector('[data-part="numbers"]')?.textContent ?? null,
   pips: box.querySelectorAll('[data-pip]').length,
@@ -63,7 +55,7 @@ const boxExpected = (
   return {
     numbers: `${minus(hp)}/${maxHp}`,
     pips: 2,
-    filled: pipsOf[status],
+    filled: healthSegments(status),
     status: viewer === 'dm' && status === 'full' ? null : t(status),
     unconscious: status === 'unconscious',
   };
@@ -285,7 +277,7 @@ export const DmFacts = meta.story({
     await expect(filled?.getBoundingClientRect().width).toBe(24);
     await expect(filled?.getBoundingClientRect().height).toBe(5);
     const empty = staggered.querySelector<HTMLElement>('[data-pip]:not([data-filled])');
-    await expect(empty && getComputedStyle(empty).backgroundColor).toBe(rgb(health.empty));
+    await expect(empty && getComputedStyle(empty).backgroundColor).toBe(rgb(base.disabled));
     const dead = caseAt(canvasElement, 1);
     await expect(boxFacts(dead)).toEqual(boxExpected(t, -3, 18));
     await expect(getComputedStyle(dead).backgroundColor).toBe('rgba(0, 0, 0, 0)');
@@ -309,7 +301,7 @@ export const PlayerTints = meta.story({
     await expect(getComputedStyle(full).backgroundColor).toBe(rgb(healthTints.full));
     const wounded = caseAt(canvasElement, 1);
     await expect(boxFacts(wounded)).toEqual(boxExpected(t, 24, 40, 'player'));
-    await expect(getComputedStyle(wounded).backgroundColor).toBe(rgb(healthTints.full));
+    await expect(getComputedStyle(wounded).backgroundColor).toBe(rgb(healthTints.wounded));
     const own = caseAt(canvasElement, 2);
     const ownNumbers = own.querySelector('[data-part="numbers"]');
     await expect(ownNumbers && getComputedStyle(ownNumbers).borderBottomStyle).toBe('dashed');
@@ -396,7 +388,7 @@ export const DamageSteps = meta.story({
     const t = storyT(globals, 'HpBox');
     const tints: Record<HealthStatus, string> = {
       full: rgb(healthTints.full),
-      wounded: rgb(healthTints.full),
+      wounded: rgb(healthTints.wounded),
       staggered: rgb(healthTints.staggered),
       unconscious: rgb(healthTints.unconscious),
       dead: 'rgba(0, 0, 0, 0)',
@@ -467,5 +459,54 @@ export const DisabledStillOpens = meta.story({
   play: async ({ args, canvas }) => {
     await userEvent.click(canvas.getByRole('button'));
     await expect(args.onClick).toHaveBeenCalledOnce();
+  },
+});
+
+const filledColors = (box: HTMLElement) =>
+  [...box.querySelectorAll<HTMLElement>('[data-pip][data-filled]')].map(
+    (pip) => getComputedStyle(pip).backgroundColor,
+  );
+
+export const OneHpLostKeepsTwoSegments = meta.story({
+  name: 'One HP Lost Keeps Two Segments',
+  tags: ['!dev'],
+  render: () => (
+    <HpBoxList
+      boxes={[
+        { viewer: 'dm', hp: 39, maxHp: 40, role: 'enemy', count: true },
+        { viewer: 'player', hp: 35, maxHp: 36, role: 'hero', mine: true },
+        { viewer: 'dm', hp: 20, maxHp: 40, role: 'enemy' },
+        { viewer: 'player', status: 'wounded' },
+      ]}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const wounded = rgb(health.wounded);
+    for (const index of [0, 1, 2, 3]) {
+      const box = caseAt(canvasElement, index);
+      await expect(box).toHaveAttribute('data-status', 'wounded');
+      await expect(filledColors(box)).toEqual([wounded, wounded]);
+    }
+  },
+});
+
+export const BelowHalfShowsOneRed = meta.story({
+  tags: ['!dev'],
+  render: () => (
+    <HpBoxList
+      boxes={[
+        { viewer: 'dm', hp: 19, maxHp: 40, role: 'enemy' },
+        { viewer: 'player', hp: 1, maxHp: 36, role: 'hero', mine: true },
+        { viewer: 'player', status: 'staggered' },
+      ]}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    for (const index of [0, 1, 2]) {
+      const box = caseAt(canvasElement, index);
+      await expect(box).toHaveAttribute('data-status', 'staggered');
+      await expect(filledColors(box)).toEqual([rgb(health.staggered)]);
+      await expect(box.querySelectorAll('[data-pip]:not([data-filled])')).toHaveLength(1);
+    }
   },
 });

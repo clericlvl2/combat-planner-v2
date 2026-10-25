@@ -21,9 +21,11 @@ afterEach(() => {
 });
 
 describe('toast durations', () => {
-  it('is 4 s plain, 8 s with an action, and keeps an explicit null or number', () => {
+  it('is 4 s plain, 8 s with an action, 5 s for an error without one, and keeps an explicit null or number', () => {
     expect(durationOf({ message: 'Link copied' })).toBe(4000);
     expect(durationOf({ message: 'Goblin deleted', action })).toBe(8000);
+    expect(durationOf({ message: 'Failed', kind: 'error' })).toBe(5000);
+    expect(durationOf({ message: 'Failed', kind: 'error', action })).toBe(8000);
     expect(durationOf({ message: 'Reconnecting…', duration: null })).toBeNull();
     expect(durationOf({ message: 'x', action, duration: 1500 })).toBe(1500);
   });
@@ -150,9 +152,13 @@ describe('createToastStore', () => {
 });
 
 describe('errorToast', () => {
-  it('maps network to serverUnreachable with a Retry that calls back', () => {
+  it('maps network to the caller’s unreachable message with a Retry that calls back', () => {
     const retry = vi.fn();
-    const toast = errorToast(new ApiError({ status: 0, code: 'network' }), t, retry);
+    const network = new ApiError({ status: 0, code: 'network' });
+    expect(errorToast(network, t, 'serverUnreachableNothingChanged', retry)).toMatchObject({
+      message: 't:serverUnreachableNothingChanged',
+    });
+    const toast = errorToast(network, t, 'serverUnreachable', retry);
     expect(toast).toMatchObject({
       message: 't:serverUnreachable',
       kind: 'error',
@@ -163,7 +169,9 @@ describe('errorToast', () => {
   });
 
   it('maps version to combatChanged without a button', () => {
-    expect(errorToast(new ApiError({ status: 409, code: 'version' }), t, () => {})).toEqual({
+    expect(
+      errorToast(new ApiError({ status: 409, code: 'version' }), t, 'serverUnreachable', () => {}),
+    ).toEqual({
       message: 't:combatChanged',
       kind: 'warning',
     });
@@ -171,15 +179,27 @@ describe('errorToast', () => {
 
   it('maps limit to "limit reached" or the given cap copy', () => {
     const limit = new ApiError({ status: 422, code: 'limit' });
-    expect(errorToast(limit, t, () => {})).toEqual({ message: 't:limitReached', kind: 'warning' });
-    expect(errorToast(limit, t, () => {}, 'This combat already has 99 units')).toEqual({
+    expect(errorToast(limit, t, 'serverUnreachable', () => {})).toEqual({
+      message: 't:limitReached',
+      kind: 'warning',
+    });
+    expect(
+      errorToast(limit, t, 'serverUnreachable', () => {}, 'This combat already has 99 units'),
+    ).toEqual({
       message: 'This combat already has 99 units',
       kind: 'warning',
     });
   });
 
   it('shows nothing for other errors', () => {
-    expect(errorToast(new ApiError({ status: 403, code: 'forbidden' }), t, () => {})).toBeNull();
-    expect(errorToast(new Error('boom'), t, () => {})).toBeNull();
+    expect(
+      errorToast(
+        new ApiError({ status: 403, code: 'forbidden' }),
+        t,
+        'serverUnreachable',
+        () => {},
+      ),
+    ).toBeNull();
+    expect(errorToast(new Error('boom'), t, 'serverUnreachable', () => {})).toBeNull();
   });
 });

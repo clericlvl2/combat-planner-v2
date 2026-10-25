@@ -1,7 +1,7 @@
 {
   "cancel": "Abbrechen",
   "restartTitle": "Kampf neu starten?",
-  "restartBody": "Einheiten und Zuordnungen bleiben. Initiative, TP, temporäre TP, Zustände, Deaktivierung, TP-Verlauf, Runde und Eskalationswürfel werden zurückgesetzt.",
+  "restartBody": "Einheiten und Zuordnungen bleiben. Initiative, TP, temporäre TP, Zustände, Verteidigungsmodifikatoren, Deaktivierung, TP-Verlauf, Runde und Eskalationswürfel werden zurückgesetzt.",
   "restart": "Neu starten",
   "clearTitle": "Kampf leeren?",
   "clearBody_one": "Die einzige Einheit wird entfernt und jede Spielerzuordnung wird freigegeben.",

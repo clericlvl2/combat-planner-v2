@@ -9,60 +9,24 @@ import '@fontsource/noto-sans-jp/500.css';
 import '@fontsource/noto-sans-jp/700.css';
 import { colorsTuple, createTheme } from '@mantine/core';
 import type { CSSVariablesResolver, MantineThemeOverride } from '@mantine/core';
+import { fromOklch, lighten, mix, on, tint } from './color.ts';
 import { layout } from './layout.ts';
 import classes from './theme.module.css';
 
-export const base = {
-  background: '#FAF6EE',
-  surface: '#FFFFFF',
-  soft: '#F3EDE2',
-  highlight: '#FFF4D2',
-  accent: '#FFE7A3',
-  border: '#E2D8C6',
-  disabled: '#E6DDCC',
-  ink: '#231F1C',
-  inkPressed: '#3A3531',
-  secondary: '#5F574D',
-  muted: '#8C8578',
+export const seeds = {
+  paper: '#F9F4EC',
+  ink: '#302017',
+  moss: '#3D4E2B',
+  brass: '#EFA831',
+  hero: '#1E59CD',
+  enemy: '#C50710',
+  ally: '#007570',
+  full: '#009157',
+  wounded: '#938010',
+  staggered: '#AF2D18',
+  unconscious: '#7D3AB7',
+  max: '#785300',
 } as const;
-
-export const roles = {
-  hero: '#1E5FA8',
-  enemy: '#B4232A',
-  ally: '#2D7D46',
-  inactive: '#5F574D',
-  inactiveFill: '#F3EDE2',
-} as const;
-
-export const health = {
-  full: '#2E7A43',
-  staggered: '#B33A0A',
-  unconscious: '#5B4B9E',
-  dead: '#57534E',
-  empty: '#E6DDCC',
-} as const;
-
-export const healthTints = {
-  full: '#E3F1E6',
-  staggered: '#FBE3D8',
-  unconscious: '#ECE8F7',
-} as const;
-
-export const hpActions = {
-  damage: '#B4232A',
-  heal: '#2E7A43',
-  setTemp: '#1E5FA8',
-  setMax: '#A85400',
-  dangerSoft: '#F7E4E2',
-} as const;
-
-export const interaction = {
-  focus: '#1E5FA8',
-  tapMarker: '#FFE7A3',
-  dangerPressed: '#9B1C1C',
-} as const;
-
-export const historyTemp = { fill: '#DCE6F7', text: '#1E4E8C' } as const;
 
 export const conditionNames = [
   'charmed',
@@ -80,38 +44,133 @@ export const conditionNames = [
 
 export type ConditionName = (typeof conditionNames)[number];
 
-export const conditions: Record<ConditionName, { fill: string; text: string }> = {
-  charmed: { fill: '#F9DDE6', text: '#8A2448' },
-  confused: { fill: '#DDEFD5', text: '#2F6B1F' },
-  dazed: { fill: '#FFF1B8', text: '#6B5600' },
-  fear: { fill: '#E3E1DC', text: '#3D3A35' },
-  helpless: { fill: '#F6DCD5', text: '#8A2E17' },
-  hampered: { fill: '#D7EBF5', text: '#12506E' },
-  shocked: { fill: '#D5F0F0', text: '#0E5E63' },
-  stuck: { fill: '#E9DFD1', text: '#5C4026' },
-  stunned: { fill: '#FBE0C2', text: '#8A3F00' },
-  vulnerable: { fill: '#F8D7D7', text: '#9B1C1C' },
-  weakened: { fill: '#EDE6C9', text: '#5E5214' },
+export const conditionHues: Record<ConditionName, number | null> = {
+  charmed: 349,
+  confused: 135,
+  dazed: 95,
+  fear: null,
+  helpless: 35,
+  hampered: 230,
+  shocked: 197,
+  stuck: 76,
+  stunned: 49,
+  vulnerable: 17,
+  weakened: 110,
 };
 
+export const paperSteps = {
+  soft: { l: -4, c: 0.008 },
+  background: { l: -6, c: 0.008 },
+  field: { l: -9, c: 0.013 },
+  disabled: { l: -12, c: 0.007 },
+  border: { l: -21, c: 0.018 },
+} as const;
+
+export const conditionTone = {
+  fill: { l: 90, c: 0.05, neutralC: 0.013 },
+  text: { l: 38, c: 0.07, neutralC: 0.016 },
+} as const;
+
+const onPaper = (fill: string) => on(fill, seeds.ink, seeds.paper);
+
+const paperStep = (step: keyof typeof paperSteps) =>
+  lighten(seeds.paper, paperSteps[step].l, paperSteps[step].c);
+
+export const base = {
+  background: paperStep('background'),
+  field: paperStep('field'),
+  surface: seeds.paper,
+  soft: paperStep('soft'),
+  highlight: mix(seeds.brass, seeds.paper, 25),
+  accent: seeds.brass,
+  onAccent: onPaper(seeds.brass),
+  border: paperStep('border'),
+  disabled: paperStep('disabled'),
+  ink: seeds.ink,
+  inkPressed: lighten(seeds.ink, 8),
+  secondary: lighten(seeds.ink, 22),
+  muted: lighten(seeds.ink, 36),
+  chrome: seeds.moss,
+  onChrome: onPaper(seeds.moss),
+  primary: seeds.moss,
+  onPrimary: onPaper(seeds.moss),
+  primaryPressed: lighten(seeds.moss, 7),
+  primaryDeep: lighten(seeds.moss, -10, -0.01),
+};
+
+export const roles = {
+  hero: seeds.hero,
+  enemy: seeds.enemy,
+  ally: seeds.ally,
+  inactive: lighten(seeds.ink, 26),
+  on: onPaper(seeds.hero),
+};
+
+export const health = {
+  full: seeds.full,
+  wounded: seeds.wounded,
+  staggered: seeds.staggered,
+  unconscious: seeds.unconscious,
+  dead: lighten(seeds.ink, 19, -0.02),
+};
+
+export const healthTints = {
+  full: tint(seeds.full, 92, 0.05),
+  wounded: tint(seeds.wounded, 92, 0.05),
+  staggered: tint(seeds.staggered, 92, 0.05),
+  unconscious: tint(seeds.unconscious, 92, 0.05),
+};
+
+export const hpActions = {
+  damage: seeds.enemy,
+  heal: lighten(seeds.full, -8),
+  setTemp: seeds.hero,
+  max: seeds.max,
+  on: onPaper(seeds.enemy),
+  dangerSoft: tint(seeds.enemy, 93, 0.03),
+};
+
+export const interaction = {
+  focus: seeds.hero,
+  tapMarker: seeds.brass,
+  dangerPressed: lighten(seeds.enemy, -8),
+};
+
+export const historyTemp = { text: lighten(seeds.hero, -5, -0.03) };
+
+function conditionColor(name: ConditionName, tone: keyof typeof conditionTone): string {
+  const hue = conditionHues[name];
+  const { l, c, neutralC } = conditionTone[tone];
+  return hue === null ? tint(seeds.paper, l, neutralC) : fromOklch({ l: l / 100, c, h: hue });
+}
+
+export const conditions = Object.fromEntries(
+  conditionNames.map((name) => [
+    name,
+    { fill: conditionColor(name, 'fill'), text: conditionColor(name, 'text') },
+  ]),
+) as Record<ConditionName, { fill: string; text: string }>;
+
 export const combatColors = [
-  '#B4232A',
-  '#A85400',
-  '#8A6A00',
-  '#2E7A43',
-  '#0E5E63',
-  '#1E5FA8',
-  '#5C4026',
-  '#8C8578',
+  seeds.enemy,
+  seeds.max,
+  seeds.wounded,
+  seeds.full,
+  seeds.ally,
+  seeds.hero,
+  base.secondary,
+  base.muted,
 ] as const;
 
 export const palette = {
+  seeds,
   base,
   roles,
   health,
   healthTints,
   hpActions,
   interaction,
+  historyTemp,
   conditions,
   combatColors,
 } as const;
@@ -122,6 +181,7 @@ export const fontFamilies = {
 } as const;
 
 export const fontSizes = {
+  capsTile: 7,
   caps: 8,
   micro: 11,
   meta: 12,
@@ -144,6 +204,7 @@ export const spacing = [4, 8, 12, 16, 24, 32] as const;
 export const radius = {
   segment: 2,
   field: 12,
+  tile: 10,
   card: 16,
   sheet: 24,
   full: 9999,
@@ -158,6 +219,22 @@ export const focusRing = { width: 2, color: interaction.focus, offset: 2 } as co
 export const tapMarker = { width: 3, color: interaction.tapMarker, offset: 2 } as const;
 
 const scrollShadow = { color: base.ink, alpha: 12 } as const;
+
+const activeShadow = {
+  color: base.ink,
+  layers: [
+    { y: 6, blur: 18, alpha: 16 },
+    { y: 1, blur: 3, alpha: 8 },
+  ],
+} as const;
+
+const shadowLayers = ({ color, layers }: typeof activeShadow) =>
+  layers
+    .map(
+      ({ y, blur, alpha }) =>
+        `0 ${y}px ${blur}px color-mix(in srgb, ${color} ${alpha}%, transparent)`,
+    )
+    .join(', ');
 
 const px = (value: number) => `${value}px`;
 
@@ -185,6 +262,7 @@ export function paletteVariables(): Record<string, string> {
     variables[`--cp-condition-${name}-fill`] = conditions[name].fill;
     variables[`--cp-condition-${name}-text`] = conditions[name].text;
   }
+  variables['--cp-color-scrim'] = `color-mix(in srgb, ${base.ink} 50%, transparent)`;
   combatColors.forEach((value, index) => {
     variables[`--cp-combat-${index}`] = value;
   });
@@ -199,8 +277,24 @@ export const cssVariablesResolver: CSSVariablesResolver = () => ({
     '--cp-tap-target': `${layout.tapTarget}px`,
     '--cp-scroll-shadow': `${layout.scrollShadow}px`,
     '--cp-scroll-shadow-color': `color-mix(in srgb, ${scrollShadow.color} ${scrollShadow.alpha}%, transparent)`,
+    '--cp-turn-strip': `${layout.turnStrip}px`,
+    '--cp-header-pad-top': `${layout.header.padTop}px`,
+    '--cp-header-row': `${layout.header.row}px`,
+    '--cp-header-gap': `${layout.header.gap}px`,
+    '--cp-header-second-row': `${layout.header.secondRow}px`,
+    '--cp-header-pad-bottom': `${layout.header.padBottom}px`,
+    '--cp-hp-number-duration': `${layout.hpNumberMs}ms`,
+    '--cp-card-expand-duration': `${layout.cardExpandMs}ms`,
+    '--cp-card-expand-easing': layout.cardExpandEasing,
     '--cp-list-inset-top': `${layout.listInset.top}px`,
     '--cp-list-inset-bottom': `${layout.listInset.bottom}px`,
+    '--cp-card-gap': `${layout.cardGap}px`,
+    '--cp-active-lift': `${layout.activeLift}px`,
+    '--cp-active-shadow': shadowLayers(activeShadow),
+    '--cp-role-tile-width': `${layout.roleTile.width}px`,
+    '--cp-role-tile-inset': `${layout.roleTile.inset}px`,
+    '--cp-page-transition-duration': `${layout.pageTransitionMs}ms`,
+    '--cp-page-transition-easing': layout.sheetEasing,
   },
   light: {},
   dark: {},
@@ -217,15 +311,9 @@ export const theme: MantineThemeOverride = createTheme({
   black: base.ink,
   colors: {
     ink: colorsTuple(base.ink),
-    hero: colorsTuple(roles.hero),
-    enemy: colorsTuple(roles.enemy),
-    ally: colorsTuple(roles.ally),
-    damage: colorsTuple(hpActions.damage),
-    heal: colorsTuple(hpActions.heal),
-    setTemp: colorsTuple(hpActions.setTemp),
-    setMax: colorsTuple(hpActions.setMax),
+    primary: colorsTuple(base.primary),
   },
-  primaryColor: 'ink',
+  primaryColor: 'primary',
   primaryShade: 0,
   autoContrast: false,
   fontFamily: fontFamilies.ui,
@@ -250,6 +338,7 @@ export const theme: MantineThemeOverride = createTheme({
     lg: px(fontSizes.number),
     xl: px(fontSizes.heading),
     caps: px(fontSizes.caps),
+    capsTile: px(fontSizes.capsTile),
     micro: px(fontSizes.micro),
     meta: px(fontSizes.meta),
     small: px(fontSizes.small),
@@ -284,6 +373,7 @@ export const theme: MantineThemeOverride = createTheme({
     lg: px(radius.sheet),
     xl: px(radius.full),
     segment: px(radius.segment),
+    tile: px(radius.tile),
     field: px(radius.field),
     card: px(radius.card),
     sheet: px(radius.sheet),

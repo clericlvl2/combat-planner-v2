@@ -1,6 +1,7 @@
 import type { CombatId, PlayerCombat, PlayerId, Viewer } from '@combat-planner/domain';
 import { project } from '@combat-planner/domain';
 import type { ApiEvent, DmCombat, Locale } from '../client.ts';
+import type { LastActions } from '../combats/log.ts';
 
 export type Audience = Viewer['kind'];
 
@@ -43,16 +44,25 @@ export function broadcast(combatId: CombatId, event: ApiEvent, audience?: Audien
   for (const subscriber of audienceOf(combatId, audience)) subscriber.send(event);
 }
 
-export const documentFor = (combat: DmCombat, viewer: Viewer): DmCombat | PlayerCombat =>
-  viewer.kind === 'dm' ? combat : project(combat, viewer);
+export const documentFor = (
+  combat: DmCombat,
+  viewer: Viewer,
+  lastActions: LastActions = {},
+): DmCombat | PlayerCombat =>
+  viewer.kind === 'dm' ? combat : project(combat, viewer, lastActions[viewer.playerId] ?? null);
 
-export function broadcastDocument(combatId: CombatId, combat: DmCombat, audience?: Audience): void {
+export function broadcastDocument(
+  combatId: CombatId,
+  combat: DmCombat,
+  audience?: Audience,
+  lastActions: LastActions = {},
+): void {
   for (const subscriber of audienceOf(combatId, audience)) {
     const language = subscriber.language?.();
     subscriber.send({
       type: 'document',
       version: combat.version,
-      document: documentFor(combat, subscriber.viewer),
+      document: documentFor(combat, subscriber.viewer, lastActions),
       ...(language === undefined ? {} : { language }),
     });
   }

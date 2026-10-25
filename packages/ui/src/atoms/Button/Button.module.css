@@ -10,8 +10,8 @@
   padding: 0 24px;
   border: none;
   border-radius: 29px;
-  background: var(--cp-color-ink);
-  color: var(--cp-color-surface);
+  background: var(--cp-color-primary);
+  color: var(--cp-color-on-primary);
   font-family: var(--cp-font-ui);
   font-size: 19px;
   font-weight: 600;
@@ -48,7 +48,7 @@
 
   &[data-variant='danger'] {
     background: var(--cp-role-enemy);
-    color: var(--cp-color-surface);
+    color: var(--cp-role-on);
   }
 
   &[data-variant='ghost'] {
@@ -58,7 +58,7 @@
 
   &:active,
   &[data-pressed] {
-    background: var(--cp-color-ink-pressed);
+    background: var(--cp-color-primary-pressed);
 
     &[data-variant='secondary'],
     &[data-variant='ghost'] {
@@ -110,4 +110,35 @@
 
 .label {
   white-space: nowrap;
+}
+
+.loader {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+}
+
+.root[data-loading] {
+  position: relative;
+  cursor: progress;
+
+  &[data-variant='primary'] {
+    background: var(--cp-color-primary);
+    color: var(--cp-color-on-primary);
+  }
+
+  &[data-variant='danger'] {
+    background: var(--cp-role-enemy);
+    color: var(--cp-role-on);
+  }
+
+  &[data-variant='secondary'],
+  &[data-variant='ghost'] {
+    color: var(--cp-color-ink);
+  }
+
+  & .icon,
+  & .label {
+    visibility: hidden;
+  }
 }

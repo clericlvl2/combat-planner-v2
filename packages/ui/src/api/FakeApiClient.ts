@@ -21,6 +21,7 @@ import type {
 } from '@combat-planner/api/client';
 import type {
   Action,
+  ActionId,
   Combat,
   CombatId,
   DomainErrorCode,
@@ -134,6 +135,10 @@ const summaryOf = (combat: Combat): CombatSummary => ({
   updatedAt: combat.updatedAt,
 });
 
+const lastActionOf = (log: readonly UndoableEntry[], playerId: PlayerId): ActionId | null =>
+  log.findLast(({ author }) => author.kind === 'player' && author.playerId === playerId)?.action
+    .id ?? null;
+
 const sessionOf = (account: FakeAccount): Session => ({
   userId: account.userId,
   email: account.email,
@@ -166,6 +171,8 @@ export class FakeApiClient implements ApiClient {
   private pendingFailure: ApiError | null = null;
   private pendingHold = false;
   private broadcastsDeferred = false;
+  private pendingReplyHold = false;
+  private heldReplies: Array<() => void> = [];
 
   constructor({ scenario, delay = 0 }: FakeApiClientOptions) {
     this.delay = delay;
@@ -224,6 +231,16 @@ export class FakeApiClient implements ApiClient {
     this.pendingHold = true;
   }
 
+  holdNextReply(): void {
+    this.pendingReplyHold = true;
+  }
+
+  releaseReplies(): void {
+    const held = this.heldReplies;
+    this.heldReplies = [];
+    for (const reply of held) reply();
+  }
+
   private run<T>(method: string, args: unknown[], operation: () => T): Promise<T> {
     this.calls.push({ method, args });
     if (this.pendingHold) {
@@ -232,6 +249,17 @@ export class FakeApiClient implements ApiClient {
     }
     const failure = this.pendingFailure;
     this.pendingFailure = null;
+    if (this.pendingReplyHold && !failure) {
+      this.pendingReplyHold = false;
+      return new Promise<T>((resolve, reject) => {
+        try {
+          const value = operation();
+          this.heldReplies.push(() => resolve(value));
+        } catch (error) {
+          this.heldReplies.push(() => reject(error));
+        }
+      });
+    }
     return new Promise<T>((resolve, reject) => {
       const settle = () => {
         if (failure) {
@@ -283,7 +311,7 @@ export class FakeApiClient implements ApiClient {
     }
     if (audience === 'dm') return;
     for (const subscriber of this.playerSubscribers.get(combat.id) ?? []) {
-      this.deliverToPlayer(subscriber, combat);
+      this.deliverToPlayer(subscriber, combat, lastActionOf(stored.log, subscriber.playerId));
     }
   }
 
@@ -293,11 +321,15 @@ export class FakeApiClient implements ApiClient {
     subscriber.onDocument(dmDocument(stored));
   }
 
-  private deliverToPlayer(subscriber: PlayerSubscriber, combat: Combat): void {
+  private deliverToPlayer(
+    subscriber: PlayerSubscriber,
+    combat: Combat,
+    lastActionId: ActionId | null = null,
+  ): void {
     if (combat.version <= subscriber.version) return;
     subscriber.version = combat.version;
     subscriber.onDocument(
-      project(combat, { kind: 'player', playerId: subscriber.playerId }),
+      project(combat, { kind: 'player', playerId: subscriber.playerId }, lastActionId),
       this.settingsValue.language,
     );
   }

@@ -253,9 +253,10 @@ export const Saving = meta.story({
   play: async ({ args, canvas, globals }) => {
     const t = storyT(globals, 'PresetFormSheet');
     const save = canvas.getByRole('button', { name: t('save') });
-    await expect(save).toBeDisabled();
     await userEvent.click(save, { pointerEventsCheck: 0 });
     await expect(args.onSubmit).not.toHaveBeenCalled();
+    await waitFor(() => expect(save).toHaveAttribute('aria-busy', 'true'));
+    await expect(save).toBeDisabled();
   },
 });
 

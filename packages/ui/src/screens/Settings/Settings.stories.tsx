@@ -59,7 +59,9 @@ export const SavingFailed = meta.story({
     await waitFor(() => expect(canvas.getByRole('radio', { name: localeNames.en })).toBeChecked());
     fakeApiOf(loaded).failNext('network');
     await userEvent.click(canvas.getByRole('radio', { name: localeNames.de }));
-    await expect(await canvas.findByRole('status')).toHaveTextContent(t('Toast:serverUnreachable'));
+    await expect(await canvas.findByRole('status')).toHaveTextContent(
+      t('Toast:serverUnreachableNothingChanged'),
+    );
     await expect(canvas.getByRole('button', { name: t('Toast:retry') })).toBeVisible();
   },
 });

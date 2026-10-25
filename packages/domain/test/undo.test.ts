@@ -137,6 +137,8 @@ const payloadFor = (type: Action['type']): Payload => {
       return { type, unitId: id(2), condition: 'stunned' };
     case 'editNote':
       return { type, unitId: id(2), note: 'Заметка' };
+    case 'setDefenseMods':
+      return { type, unitId: id(2), ac: 2, pd: -1, md: 0 };
     case 'claimUnit':
       return { type, unitId: id(3), displayName: 'Bob' };
   }
@@ -489,5 +491,25 @@ describe('undoSummary', () => {
   it('has no unit name for a combat action', () => {
     const state = dispatch(active(), { type: 'nextTurn' });
     expect(summaryOf(state)).toMatchObject({ unitName: null });
+  });
+});
+
+describe('Undo of defense modifiers', () => {
+  it('restores the previous modifiers', () => {
+    const first = dispatch(setup(), {
+      type: 'setDefenseMods',
+      unitId: id(2),
+      ac: 2,
+      pd: -1,
+      md: 0,
+    });
+    const second = dispatch(first, { type: 'setDefenseMods', unitId: id(2), ac: 0, pd: 0, md: 0 });
+    const goblinMods = (state: State) => {
+      const unit = state.combat.units[1];
+      return [unit?.acMod, unit?.pdMod, unit?.mdMod];
+    };
+    expect(goblinMods(second)).toEqual([0, 0, 0]);
+    expect(goblinMods(undo(second))).toEqual([2, -1, 0]);
+    expect(goblinMods(undo(undo(second)))).toEqual([0, 0, 0]);
   });
 });

@@ -2,7 +2,7 @@ import { LIMITS } from '@combat-planner/domain';
 import { UnstyledButton } from '@mantine/core';
 import { IconCheck } from '@tabler/icons-react';
 import type { ComponentPropsWithoutRef, CSSProperties } from 'react';
-import { combatColors } from '../../theme.ts';
+import { palette } from '../../theme.ts';
 import classes from './Swatch.module.css';
 
 type UpTo<N extends number, Acc extends number[] = []> = Acc['length'] extends N
@@ -37,7 +37,7 @@ export function Swatch({
   style,
   ...rest
 }: SwatchProps) {
-  const fill = { '--swatch-fill': combatColors[color] } as CSSProperties;
+  const fill = { '--swatch-fill': palette.combatColors[color] } as CSSProperties;
   return (
     <UnstyledButton
       {...rest}

@@ -18,6 +18,7 @@ export interface RoleBlockProps extends Omit<HTMLAttributes<HTMLElement>, 'child
   dead?: boolean;
   disabled?: boolean;
   fill?: boolean;
+  tile?: boolean;
   onClick?: MouseEventHandler<HTMLButtonElement>;
 }
 
@@ -35,16 +36,15 @@ export function RoleBlock({
   dead = false,
   disabled = false,
   fill = false,
+  tile = false,
   onClick,
   className,
   ...rest
 }: RoleBlockProps) {
   const { t } = useTranslation('RoleBlock');
   const shownLabel = label ?? t(unitRole);
-  const neutral = top?.kind === 'none';
   const content = (
     <>
-      {active ? <span className={classes.notch} data-notch="" aria-hidden="true" /> : null}
       {top === null ? (
         <span className={classes.die} role="img" aria-label={t('noInitiative')}>
           <IconDice5 size={20} stroke={2} aria-hidden="true" />
@@ -61,10 +61,10 @@ export function RoleBlock({
   const shared = {
     className: className ? `${classes.root} ${className}` : classes.root,
     'data-unit-role': unitRole,
-    'data-neutral': neutral || undefined,
     'data-active': active || undefined,
     'data-inactive': dead || disabled || undefined,
     'data-fill': fill || undefined,
+    'data-tile': tile || undefined,
   };
   if (!onClick) {
     return (

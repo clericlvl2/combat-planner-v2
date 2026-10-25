@@ -4,7 +4,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 12px;
-  border: 2px solid var(--cp-color-ink);
+  border: 2px solid var(--cp-color-primary);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);
@@ -27,7 +27,7 @@
   display: flex;
   flex-direction: column;
   padding: 6px;
-  border: 2px solid var(--cp-color-ink);
+  border: 2px solid var(--cp-color-primary);
   border-radius: var(--mantine-radius-card);
   background: var(--cp-color-surface);
   color: var(--cp-color-ink);

@@ -25,6 +25,12 @@ import { Sheet } from '../Sheet/Sheet.tsx';
 import { Menu, PopoverFrame } from './Menu.tsx';
 import type { MenuItem } from './Menu.tsx';
 import { storyT } from '../../storybook/storyT.ts';
+import { base } from '../../theme.ts';
+
+const rgb = (hex: string) => {
+  const channel = (start: number) => Number.parseInt(hex.slice(start, start + 2), 16);
+  return `rgb(${channel(1)}, ${channel(3)}, ${channel(5)})`;
+};
 
 type Preset = 'combat' | 'unit' | 'card' | 'player';
 
@@ -208,7 +214,7 @@ export const OpenAtSource = meta.story({
   play: async ({ canvas }) => {
     const more = canvas.getByRole('button', { name: moreLabel });
     await expect(more).toHaveAttribute('data-open');
-    await expect(getComputedStyle(more).backgroundColor).toBe('rgb(255, 231, 163)');
+    await expect(getComputedStyle(more).backgroundColor).toBe(rgb(base.accent));
     await expect(canvas.getByRole('menu')).toBeVisible();
   },
 });

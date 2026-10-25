@@ -10,7 +10,13 @@ import {
 } from '@combat-planner/ui';
 import type { QueryClient } from '@tanstack/react-query';
 import { createBrowserRouter, redirect } from 'react-router';
-import type { DataRouter, LoaderFunctionArgs, RouteObject } from 'react-router';
+import type {
+  DataRouter,
+  LoaderFunctionArgs,
+  RouteObject,
+  RouterNavigateOptions,
+  To,
+} from 'react-router';
 import { AboutPage, CombatPage, DmPages, NotFoundPage, PlayerPage, RouteError } from './pages.tsx';
 import type { CombatRouteData, PlayerRouteData } from './pages.tsx';
 import { showsDmPage } from './routeLocale.ts';
@@ -164,5 +170,17 @@ export function createRoutes(
 
 export function createAppRouter(options: AppRouteOptions): DataRouter {
   const router: DataRouter = createBrowserRouter(createRoutes(options, () => router));
+  return withViewTransitions(router);
+}
+
+export function withViewTransitions(router: DataRouter): DataRouter {
+  const navigate = router.navigate.bind(router);
+  router.navigate = ((to: To | null | number, opts?: RouterNavigateOptions) =>
+    typeof to === 'number'
+      ? navigate(to)
+      : navigate(to, {
+          ...opts,
+          viewTransition: opts?.viewTransition ?? true,
+        })) as DataRouter['navigate'];
   return router;
 }
