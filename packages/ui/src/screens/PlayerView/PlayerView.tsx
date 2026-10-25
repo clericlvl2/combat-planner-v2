@@ -22,6 +22,7 @@ import { LinkExpired } from '../LinkExpired/LinkExpired.tsx';
 import { LoadingScreen } from '../shared/LoadingScreen.tsx';
 import { TurnOrder } from '../TurnOrder/TurnOrder.tsx';
 import { UnexpectedError } from '../UnexpectedError/UnexpectedError.tsx';
+import { ownTurnStarted, vibrateOwnTurn } from './ownTurn.ts';
 import { usePlayerToasts } from './PlayerToast.tsx';
 import { playerEvents } from './playerEvents.ts';
 import classes from './PlayerView.module.css';
@@ -90,6 +91,7 @@ export function PlayerView({ combatId, token, random, onHome }: PlayerViewProps)
       notify(event);
     }
     if (lostHero && !holdsHero(server)) setView('heroes');
+    if (ownTurnStarted(before, server)) vibrateOwnTurn();
   }, [server, notify]);
 
   const send = useCallback(

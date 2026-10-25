@@ -30,6 +30,7 @@ import { PlayerRow } from '../../organisms/PlayerRow/PlayerRow.tsx';
 import { UnitForm } from '../../organisms/UnitForm/UnitForm.tsx';
 import type { UnitDraft } from '../../organisms/UnitForm/UnitForm.tsx';
 import { useMotion } from '../../provider.tsx';
+import { ownsUnit, turnHeroOf } from '../PlayerView/ownTurn.ts';
 import { PlayerToast } from '../PlayerView/PlayerToast.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import { LanguageSheet } from '../shared/LanguageSheet.tsx';
@@ -86,10 +87,9 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   const viewportRef = useRef<HTMLDivElement>(null);
 
   const setup = combat.status === 'setup';
-  const own = (unit: PlayerUnit) => unit.role !== 'enemy' && unit.mine === true;
   const ownById = (unitId: UnitId | null) =>
-    setup ? undefined : combat.units.find((unit) => unit.id === unitId && own(unit));
-  const turnHero = ownById(combat.activeUnitId);
+    setup ? undefined : combat.units.find((unit) => unit.id === unitId && ownsUnit(unit));
+  const turnHero = turnHeroOf(combat);
   const nextHero = turnHero ? undefined : ownById(combat.nextUnitId);
   const turnHeroId = turnHero?.id ?? null;
 
@@ -103,7 +103,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
   useEffect(() => {
     if (turnHeroId !== null) revealRef.current(turnHeroId);
   }, [turnHeroId]);
-  const openUnit = combat.units.find((unit) => unit.id === open?.unitId && own(unit));
+  const openUnit = combat.units.find((unit) => unit.id === open?.unitId && ownsUnit(unit));
   const panelOf = (panel: Panel): PlayerUnit | null =>
     (open?.panel === panel ? openUnit : undefined) ?? null;
   const isOpen = (panel: Panel, unit: PlayerUnit) =>
@@ -218,7 +218,7 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
             </div>
           ) : null}
           {combat.units.map((unit) => {
-            const mine = own(unit);
+            const mine = ownsUnit(unit);
             return (
               <div key={unit.id} className={classes.slot} data-unit-id={unit.id}>
                 <PlayerRow

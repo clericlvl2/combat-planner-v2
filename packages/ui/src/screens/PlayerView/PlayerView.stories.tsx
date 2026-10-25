@@ -4,7 +4,7 @@ import type { ApiErrorCode } from '@combat-planner/api/client';
 import type { Action } from '@combat-planner/domain';
 import type { Loader } from '@storybook/react-vite';
 import { focusManager } from '@tanstack/react-query';
-import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
+import { expect, fn, spyOn, userEvent, waitFor, within } from 'storybook/test';
 import { FakeApiClient } from '../../api/FakeApiClient.ts';
 import type { Scenario } from '../../api/scenarios.ts';
 import { fakeApiOf } from '../../storybook/withApi.tsx';
@@ -23,6 +23,7 @@ import {
   releaseAs,
   unitIds,
 } from './PlayerView.scenarios.ts';
+import { TURN_VIBRATION_MS } from './ownTurn.ts';
 import { PlayerView } from './PlayerView.tsx';
 import { localeNames } from '../Settings/localeNames.ts';
 import { storyLocale } from '../../storybook/withLocale.tsx';
@@ -226,6 +227,34 @@ export const OwnTurn = meta.story({
     const vashti = await rowOf(canvas, ME);
     await expect(vashti).toHaveAttribute('data-active');
     await expect(within(vashti).getByRole('button', { name: /^20 \/36/ })).toBeEnabled();
+  },
+});
+
+export const OwnTurnVibrates = meta.story({
+  tags: ['!dev'],
+  parameters: { scenario: orcTurn },
+  play: async ({ canvas, loaded }) => {
+    const api = fakeApiOf(loaded);
+    await rowOf(canvas, ME);
+    const spy = spyOn(navigator, 'vibrate').mockReturnValue(true);
+    try {
+      await actAsDm(api, { type: 'nextTurn' });
+      await waitFor(() => expect(spy).toHaveBeenCalledTimes(1));
+      await expect(spy).toHaveBeenLastCalledWith(TURN_VIBRATION_MS);
+      const gets = () => api.calls.filter((call) => call.method === 'play.get').length;
+      const before = gets();
+      refocus();
+      await waitFor(() => expect(gets()).toBeGreaterThan(before));
+      await expect(spy).toHaveBeenCalledTimes(1);
+      for (const unitId of [unitIds.aldric, unitIds.orc, unitIds.tomas]) {
+        await actAsDm(api, { type: 'setDisabled', unitId, disabled: true });
+      }
+      await actAsDm(api, { type: 'nextTurn' });
+      await waitFor(() => expect(spy).toHaveBeenCalledTimes(2));
+      await expect(spy).toHaveBeenLastCalledWith(TURN_VIBRATION_MS);
+    } finally {
+      spy.mockRestore();
+    }
   },
 });
 
