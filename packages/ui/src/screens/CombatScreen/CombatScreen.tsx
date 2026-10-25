@@ -42,6 +42,7 @@ import { useCombatLink } from '../../hooks/useCombatLink.ts';
 import { useConnection } from '../../hooks/useConnection.ts';
 import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { usePresets } from '../../hooks/usePresets.ts';
+import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
@@ -193,6 +194,7 @@ export function CombatScreen({
   const [expandedId, setExpandedId] = useState<UnitId | null>(null);
   const [open, setOpen] = useState<Panel | null>(null);
   const [form, setForm] = useState<Form | null>(null);
+  const [formKey, setFormKey] = useState(0);
   const [confirm, setConfirm] = useState<Confirm | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
   const [busyUnitId, setBusyUnitId] = useState<UnitId | null>(null);
@@ -347,6 +349,24 @@ export function CombatScreen({
     void navigate('/');
   };
 
+  const panelUnit = (panel: RowPanel) =>
+    (open?.panel === panel ? combat?.units.find((unit) => unit.id === open.unitId) : undefined) ??
+    null;
+  const numpadOpen = panelUnit('numpad');
+  const conditionsOpen = panelUnit('conditions');
+  const historyOpen = panelUnit('history');
+  const defensesOpen = panelUnit('defenses');
+  const editingOpen =
+    (form?.mode === 'edit' ? combat?.units.find((unit) => unit.id === form.unitId) : undefined) ??
+    null;
+  const addingOpen = form?.mode === 'add' ? form : null;
+  const numpadUnit = useRetained(numpadOpen);
+  const conditionsUnit = useRetained(conditionsOpen);
+  const historyUnit = useRetained(historyOpen);
+  const defensesUnit = useRetained(defensesOpen);
+  const editing = useRetained(editingOpen);
+  const adding = useRetained(addingOpen);
+
   if (ended?.type === 'deleted') return <CombatNotFound onHome={goHome} />;
   if (combat === undefined) {
     if (signedOut) return null;
@@ -364,8 +384,10 @@ export function CombatScreen({
   const units = setup ? combat.units : turnOrder(combat.units);
   const atCap = combat.units.length >= LIMITS.unitsPerCombat;
   const unitById = (unitId: UnitId | undefined) => combat.units.find((unit) => unit.id === unitId);
-  const panelUnit = (panel: RowPanel) =>
-    open?.panel === panel ? unitById(open.unitId) : undefined;
+  const openForm = (next: Form) => {
+    setFormKey((current) => current + 1);
+    setForm(next);
+  };
 
   const capToast = () => {
     notify(tToast('unitCap', { limit: LIMITS.unitsPerCombat }), 'warning');
@@ -376,7 +398,7 @@ export function CombatScreen({
       capToast();
       return;
     }
-    setForm({ mode: 'add' });
+    openForm({ mode: 'add' });
   };
 
   const start = () => {
@@ -555,11 +577,6 @@ export function CombatScreen({
   };
   const dialog = dialogs[confirm?.kind ?? 'remove'];
 
-  const numpadUnit = panelUnit('numpad');
-  const conditionsUnit = panelUnit('conditions');
-  const historyUnit = panelUnit('history');
-  const defensesUnit = panelUnit('defenses');
-  const editing = form?.mode === 'edit' ? unitById(form.unitId) : undefined;
   const toast = toasts[0];
 
   return (
@@ -626,7 +643,7 @@ export function CombatScreen({
             }}
             onEdit={() => {
               close();
-              setForm({ mode: 'edit', unitId: unit.id });
+              openForm({ mode: 'edit', unitId: unit.id });
             }}
             onMore={() => (isOpen('menu', unit) ? close() : show('menu', unit))}
             onMenuClose={close}
@@ -683,7 +700,8 @@ export function CombatScreen({
       ) : null}
       {numpadUnit ? (
         <NumpadSheet
-          opened
+          key={`numpad-${numpadUnit.id}`}
+          opened={numpadOpen !== null}
           name={numpadUnit.name}
           role={numpadUnit.role}
           initiative={numpadUnit.initiative}
@@ -697,7 +715,8 @@ export function CombatScreen({
       ) : null}
       {conditionsUnit ? (
         <ConditionPicker
-          opened
+          key={`conditions-${conditionsUnit.id}`}
+          opened={conditionsOpen !== null}
           unitName={conditionsUnit.name}
           value={conditionsUnit.conditions}
           onChange={(next) => changeConditions(conditionsUnit, next)}
@@ -706,7 +725,8 @@ export function CombatScreen({
       ) : null}
       {defensesUnit ? (
         <DefenseSheet
-          opened
+          key={`defenses-${defensesUnit.id}`}
+          opened={defensesOpen !== null}
           unitName={defensesUnit.name}
           base={{ ac: defensesUnit.ac, pd: defensesUnit.pd, md: defensesUnit.md }}
           mods={{ ac: defensesUnit.acMod, pd: defensesUnit.pdMod, md: defensesUnit.mdMod }}
@@ -718,17 +738,19 @@ export function CombatScreen({
       ) : null}
       {historyUnit ? (
         <HpHistory
+          key={`history-${historyUnit.id}`}
           variant="sheet"
-          opened
+          opened={historyOpen !== null}
           unitName={historyUnit.name}
           entries={historyUnit.hpHistory.toReversed()}
           maxHp={historyUnit.maxHp}
           onClose={close}
         />
       ) : null}
-      {form?.mode === 'add' ? (
+      {adding ? (
         <UnitForm
-          opened
+          key={`add-${formKey}`}
+          opened={addingOpen !== null}
           mode="add"
           presets={presets ?? []}
           tags={(tags ?? []).map((tag) => ({
@@ -745,7 +767,8 @@ export function CombatScreen({
       ) : null}
       {editing ? (
         <UnitForm
-          opened
+          key={`edit-${formKey}`}
+          opened={editingOpen !== null}
           mode="edit"
           value={{
             name: editing.name,

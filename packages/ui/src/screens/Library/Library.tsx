@@ -18,6 +18,7 @@ import { queryKeys } from '../../hooks/queryKeys.ts';
 import { useAccount } from '../../hooks/useAccount.ts';
 import { usePresets } from '../../hooks/usePresets.ts';
 import { useDelayed } from '../../hooks/useDelayed.ts';
+import { useRetained } from '../../hooks/useRetained.ts';
 import { useTags } from '../../hooks/useTags.ts';
 import { useToasts } from '../../hooks/useToasts.ts';
 import { CardSkeleton } from '../../molecules/CardSkeleton/CardSkeleton.tsx';
@@ -162,7 +163,9 @@ export function Library() {
   const visible = filterPresets(sortPresets(all, sort, locale), query, activeFilter, locale);
   const atLimit = all.length >= LIMITS.presetsPerDm;
   const custom = sort !== DEFAULT_SORT;
-  const editing = form?.mode === 'edit' ? all.find((preset) => preset.id === form.id) : undefined;
+  const shownForm = useRetained(form);
+  const editing =
+    shownForm?.mode === 'edit' ? all.find((preset) => preset.id === shownForm.id) : undefined;
   const deleting = all.find((preset) => preset.id === deleteId);
   const sheetTags: TagSheetTag[] = allTags
     .map((tag) => ({ id: tag.id, name: tag.name, count: counts.get(tag.id) ?? 0 }))
@@ -386,12 +389,12 @@ export function Library() {
         }}
         onClose={() => setFilterDraft(null)}
       />
-      {form !== null ? (
+      {shownForm !== null ? (
         <PresetFormSheet
           key={formKey}
-          opened
+          opened={form !== null}
           pending={pending}
-          mode={form.mode}
+          mode={shownForm.mode}
           value={editing ? formValueOf(editing) : emptyPresetForm}
           tags={sheetTags}
           onSubmit={(value) => {

@@ -14,6 +14,7 @@ import type { EscalationValue } from '../../atoms/EscalationDie/EscalationDie.ts
 import type { DispatchResult } from '../../hooks/combat.ts';
 import { useHpChanges } from '../../hooks/useHpChanges.ts';
 import { useLocaleChoice } from '../../hooks/useLocaleChoice.ts';
+import { useRetained } from '../../hooks/useRetained.ts';
 import { EmptyState } from '../../molecules/EmptyState/EmptyState.tsx';
 import { InitiativePopover } from '../../molecules/InitiativePopover/InitiativePopover.tsx';
 import { ScrollList } from '../../molecules/ScrollList/ScrollList.tsx';
@@ -101,8 +102,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
     if (turnHeroId !== null) revealRef.current(turnHeroId);
   }, [turnHeroId]);
   const openUnit = combat.units.find((unit) => unit.id === open?.unitId && own(unit));
-  const panelOf = (panel: Panel): PlayerUnit | undefined =>
-    open?.panel === panel ? openUnit : undefined;
+  const panelOf = (panel: Panel): PlayerUnit | null =>
+    (open?.panel === panel ? openUnit : undefined) ?? null;
   const isOpen = (panel: Panel, unit: PlayerUnit) =>
     open?.panel === panel && open.unitId === unit.id;
   const show = (panel: Panel, unit: PlayerUnit) => setOpen({ panel, unitId: unit.id });
@@ -149,11 +150,16 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
     });
   };
 
-  const numpadUnit = panelOf('numpad');
-  const conditionsUnit = panelOf('conditions');
-  const historyUnit = panelOf('history');
-  const defensesUnit = panelOf('defenses');
-  const editUnit = panelOf('edit');
+  const numpadOpen = panelOf('numpad');
+  const conditionsOpen = panelOf('conditions');
+  const historyOpen = panelOf('history');
+  const defensesOpen = panelOf('defenses');
+  const editOpen = panelOf('edit');
+  const numpadUnit = useRetained(numpadOpen);
+  const conditionsUnit = useRetained(conditionsOpen);
+  const historyUnit = useRetained(historyOpen);
+  const defensesUnit = useRetained(defensesOpen);
+  const editUnit = useRetained(editOpen);
 
   return (
     <div className={classes.root}>
@@ -265,7 +271,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
       </ScrollList>
       {numpadUnit ? (
         <NumpadSheet
-          opened
+          key={`numpad-${numpadUnit.id}`}
+          opened={numpadOpen !== null}
           name={numpadUnit.name}
           role={numpadUnit.role}
           initiative={numpadUnit.initiative}
@@ -279,7 +286,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
       ) : null}
       {conditionsUnit ? (
         <ConditionPicker
-          opened
+          key={`conditions-${conditionsUnit.id}`}
+          opened={conditionsOpen !== null}
           unitName={conditionsUnit.name}
           value={conditionsUnit.conditions}
           onChange={(next) => changeConditions(conditionsUnit, next)}
@@ -289,7 +297,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
       ) : null}
       {defensesUnit ? (
         <DefenseSheet
-          opened
+          key={`defenses-${defensesUnit.id}`}
+          opened={defensesOpen !== null}
           unitName={defensesUnit.name}
           base={{ ac: defensesUnit.ac ?? 0, pd: defensesUnit.pd ?? 0, md: defensesUnit.md ?? 0 }}
           mods={{
@@ -303,8 +312,9 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
       ) : null}
       {historyUnit ? (
         <HpHistory
+          key={`history-${historyUnit.id}`}
           variant="sheet"
-          opened
+          opened={historyOpen !== null}
           unitName={historyUnit.name}
           entries={(historyUnit.hpHistory ?? []).toReversed()}
           maxHp={historyUnit.maxHp ?? 1}
@@ -313,7 +323,8 @@ export function TurnOrder({ combat, dispatch, onHeroes, onLeave, random }: TurnO
       ) : null}
       {editUnit ? (
         <UnitForm
-          opened
+          key={`edit-${editUnit.id}`}
+          opened={editOpen !== null}
           mode="edit"
           lockRole
           value={{

@@ -35,6 +35,7 @@ test('a DM runs a combat and a player follows the turn order', async ({
     .getByRole('dialog', { name: t('UnitForm:addTitle') })
     .getByRole('button', { name: t('UnitForm:addUnit') })
     .click();
+  await expect(page.getByRole('dialog', { name: t('UnitForm:addTitle') })).toBeHidden();
   await expect(page.getByText('Aria')).toBeVisible();
 
   await page.getByRole('button', { name: containsT('TurnBar:startCombat') }).click();

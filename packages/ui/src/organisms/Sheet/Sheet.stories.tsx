@@ -564,6 +564,35 @@ export const InitialFocusWinsOverSection = meta.story({
   },
 });
 
+const slideEnded = fn();
+
+export const MountedOpenSlidesUp = meta.story({
+  tags: ['!dev'],
+  parameters: { motion: 'on' },
+  render: (args) => (
+    <div
+      style={stage}
+      onTransitionEnd={(event) => {
+        if (event.propertyName === 'transform' && event.target instanceof HTMLElement) {
+          slideEnded(event.target.getAttribute('role'));
+        }
+      }}
+    >
+      <TitledCell {...args} />
+    </div>
+  ),
+  beforeEach: () => {
+    slideEnded.mockClear();
+  },
+  play: async ({ canvas, globals }) => {
+    const t = storyT(globals, 'Sheet');
+    await expect(document.documentElement.dataset.motion).toBe('on');
+    const sheet = await canvas.findByRole('dialog', { name: t('sortCombats') });
+    await waitFor(() => expect(slideEnded).toHaveBeenCalledWith('dialog'));
+    await expect(new DOMMatrixReadOnly(getComputedStyle(sheet).transform).f).toBe(0);
+  },
+});
+
 export const MotionOffNoTransition = meta.story({
   tags: ['!dev'],
   args: { opened: false, withOpener: true },
