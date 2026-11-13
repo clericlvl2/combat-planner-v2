@@ -9,7 +9,7 @@
   "dependencies": {
     "@combat-planner/api": "workspace:*",
     "@combat-planner/domain": "workspace:*",
-    "@hono/node-server": "^2.1.5",
+    "@hono/node-server": "^2.1.6",
     "better-auth": "^1.7.13",
     "better-sqlite3": "^13.0.3",
     "drizzle-orm": "^0.45.4",
